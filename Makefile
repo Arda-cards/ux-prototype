@@ -1,4 +1,4 @@
-.PHONY: help install dev build lint clean
+.PHONY: help install dev build lint lint-fix typecheck check clean
 
 ## ── Local Development ───────────────────────────────────────────────────
 
@@ -11,13 +11,15 @@ install: ## Install dependencies
 
 dev: ## Start development server (port 3000)
 	npm run dev
-	@echo "Navigate to `http://localhost:3000` to view the Gallery."
 
 build: ## Build for production
 	npm run build
 
-lint: ## Run ESLint
+lint: ## Run ESLint (zero warnings allowed)
 	npm run lint
+
+lint-fix: ## Run ESLint with auto-fix
+	npm run lint:fix
 
 typecheck: ## Run TypeScript type checks
 	npx tsc --noEmit

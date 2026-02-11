@@ -1,87 +1,74 @@
 // eslint.config.mjs
-import typescript from '@typescript-eslint/eslint-plugin';
-import tsParser from '@typescript-eslint/parser';
-import prettier from 'eslint-plugin-prettier';
+import tsPlugin from "@typescript-eslint/eslint-plugin";
+import tsParser from "@typescript-eslint/parser";
+import unicorn from "eslint-plugin-unicorn";
 
 export default [
+  // ── Global ignores ──────────────────────────────────────────────────
   {
-    files: ['**/*.ts', '**/*.tsx'],
+    ignores: [
+      ".next/**",
+      "node_modules/**",
+      "public/**",
+      "next-env.d.ts",
+    ],
+  },
+
+  // ── TypeScript strict rules ─────────────────────────────────────────
+  {
+    files: ["**/*.ts", "**/*.tsx"],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
-        project: './tsconfig.json', // Adjust if needed
-        sourceType: 'module',
+        project: "./tsconfig.json",
+        sourceType: "module",
+        ecmaFeatures: { jsx: true },
       },
     },
     plugins: {
-      '@typescript-eslint': typescript,
-      prettier: prettier,
+      "@typescript-eslint": tsPlugin,
     },
     rules: {
-      // Enforce camelCase for variables and functions
-      '@typescript-eslint/naming-convention': [
-        'error',
-        // Variables and functions
+      // ── Unused code (mirrors Vercel / tsc strict checks) ──────────
+      "@typescript-eslint/no-unused-vars": [
+        "error",
         {
-          selector: 'variableLike',
-          format: ['camelCase'],
-          leadingUnderscore: 'allow',
-          trailingUnderscore: 'allow',
-        },
-        // Constants (UPPER_SNAKE_CASE)
-        {
-          selector: 'variable',
-          modifiers: ['const'],
-//          types: ['boolean', 'string', 'number'],
-          format: ['UPPER_CASE', 'camelCase'],
-        },
-        // Types (type aliases, interfaces)
-        {
-          selector: 'typeLike',
-          format: ['PascalCase'],
-        },
-        // Enums
-        {
-          selector: 'enum',
-          format: ['PascalCase'],
-        },
-        {
-          selector: 'enumMember',
-          format: ['PascalCase', 'UPPER_CASE'],
-        },
-        // Booleans should start with "is", "has", "should", "can"
-        {
-          selector: 'variable',
-          types: ['boolean'],
-          format: ['camelCase'],
-          custom: {
-            regex: '^(is|has|should|can)[A-Z]',
-            match: true,
-          },
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+          destructuredArrayIgnorePattern: "^_",
         },
       ],
+      "@typescript-eslint/no-unused-expressions": "error",
 
-      // Disallow abbreviations (optional)
-      'id-length': ['error', { min: 2, exceptions: ['i', 'j', 'k', '_'] }],
+      // ── Type safety ───────────────────────────────────────────────
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-non-null-assertion": "warn",
+      "@typescript-eslint/prefer-as-const": "error",
 
-      // Prettier integration (optional)
-      'prettier/prettier': 'error',
+      // ── Import hygiene ────────────────────────────────────────────
+      "no-duplicate-imports": "error",
+
+      // ── General code quality ──────────────────────────────────────
+      "no-console": ["warn", { allow: ["warn", "error"] }],
+      "no-debugger": "error",
+      "no-var": "error",
+      "prefer-const": "error",
+      "eqeqeq": ["error", "always"],
     },
   },
 
-  // Enforce file naming convention: kebab-case
+  // ── File naming: kebab-case ─────────────────────────────────────────
   {
-    files: ['**/*.ts', '**/*.tsx'],
+    files: ["**/*.ts", "**/*.tsx"],
     plugins: {
-      'unicorn': (await import('eslint-plugin-unicorn')).default,
+      unicorn,
     },
     rules: {
-      'unicorn/filename-case': [
-        'error',
+      "unicorn/filename-case": [
+        "error",
         {
-          cases: {
-            kebabCase: true,
-          },
+          cases: { kebabCase: true },
         },
       ],
     },

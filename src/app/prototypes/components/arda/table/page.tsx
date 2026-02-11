@@ -10,7 +10,7 @@ import {
   ArdaTableHead,
   ArdaTableCell
 } from "@/components/arda/table";
-import { ArdaBadge } from "@/components/arda/badge";
+import { ArdaBadge, type ArdaBadgeVariant } from "@/components/arda/badge";
 
 export default function TablePrototype() {
   const data = [
@@ -79,7 +79,7 @@ export default function TablePrototype() {
                     <ArdaTableCell className="text-right">{item.stock}</ArdaTableCell>
                     <ArdaTableCell>
                       <ArdaBadge
-                        variant={item.status as any}
+                        variant={item.status as ArdaBadgeVariant}
                         dot={item.status !== "info"}
                       >
                         {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
