@@ -11,24 +11,63 @@ make dev       # Start dev server at http://localhost:3000
 
 Run `make help` to see all available targets.
 
+## Deployment
+
+The site is deployed to **Vercel** and auto-deploys on every push to `main`.
+
+### Environment Variables
+
+| Variable        | Purpose                              | Where to set                                      |
+| --------------- | ------------------------------------ | ------------------------------------------------- |
+| `SHARED_SECRET` | Password for the login gate          | Vercel → Project Settings → Environment Variables |
+| `VERCEL_TOKEN`  | CLI access token (agent deployments) | Local `.env` only — never commit                  |
+
+### Password Protection
+
+All pages are gated behind a shared-secret login (see `src/middleware.ts`). The password is the value of the `SHARED_SECRET` environment variable configured in Vercel.
+
+### How to Deploy
+
+**Automatic (recommended):** Push to `main` and Vercel will build and deploy automatically.
+
+```bash
+git add -A && git commit -m "your message" && git push
+```
+
+**Manual CLI deploy** (if needed):
+
+```bash
+npx vercel --prod --token="$VERCEL_TOKEN"
+```
+
+### Initial Setup (already done)
+
+1. Install the [Vercel GitHub App](https://github.com/apps/vercel) on the `Arda-cards` organization.
+2. Link the project: `npx vercel link --yes --token="$VERCEL_TOKEN"`
+3. Connect the repo: `npx vercel git connect https://github.com/Arda-cards/ux-prototype --token="$VERCEL_TOKEN"`
+4. Set the env var: `npx vercel env add SHARED_SECRET production --token="$VERCEL_TOKEN"`
+
+---
+
 ## Creating a New Prototype
 
 1. **Copy the sample folder:**
    ```bash
-   cp -r src/app/prototypes/sample src/app/prototypes/my-feature
+   cp -r src/app/prototypes/components/sample src/app/prototypes/components/my-feature
    ```
 
-2. **Edit `src/app/prototypes/my-feature/page.tsx`** with your wireframe components.
+2. **Edit `page.tsx`** with your wireframe components.
 
 3. **Register it in the gallery** by adding an entry to the `prototypes` array in `src/app/page.tsx`.
 
-4. Run `make dev` and browse to `http://localhost:3000/prototypes/my-feature`.
+4. Run `make dev` and browse to `http://localhost:3000/prototypes/components/my-feature`.
 
 ## Conventions
 
 | Convention          | Value                                   |
 | ------------------- | --------------------------------------- |
 | Prototype directory | `src/app/prototypes/<kebab-case-name>/` |
+| Reusable components | `src/components/arda/`                  |
 | Component library   | shadcn/ui (new-york style)              |
 | Icons               | `lucide-react`                          |
 | Styling             | Tailwind v4 with `@tailwindcss/postcss` |
