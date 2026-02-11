@@ -8,7 +8,6 @@ import {
   Check,
   Clock,
   MoreHorizontal,
-  Truck,
 } from "lucide-react";
 
 /* ── Mock data ───────────────────────────────────────────────────────── */
