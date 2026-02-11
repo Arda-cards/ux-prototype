@@ -1,0 +1,135 @@
+/* Scoped Button Styles for the Prototype Gallery */
+
+.btn-demo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 2rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+}
+
+.btn-demo-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.btn-demo-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.btn-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Arda Button Base */
+.arda-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  cursor: pointer;
+  white-space: nowrap;
+  gap: 0.5rem;
+  border: 1px solid transparent;
+}
+
+/* Variants */
+.arda-btn-primary {
+  background: var(--base-primary);
+  color: white;
+}
+
+.arda-btn-primary:hover {
+  filter: brightness(1.1);
+}
+
+.arda-btn-secondary {
+  background: white;
+  border-color: var(--border);
+  color: var(--foreground);
+}
+
+.arda-btn-secondary:hover {
+  background: var(--muted);
+}
+
+.arda-btn-ghost {
+  background: transparent;
+  color: var(--foreground);
+}
+
+.arda-btn-ghost:hover {
+  background: var(--muted);
+}
+
+.arda-btn-destructive {
+  background: #ef4444;
+  color: white;
+}
+
+.arda-btn-destructive:hover {
+  filter: brightness(1.1);
+}
+
+/* Sizes */
+.arda-btn-sm {
+  height: 2rem;
+  padding: 0 0.75rem;
+  font-size: 0.75rem;
+}
+
+.arda-btn-md {
+  height: 2.5rem;
+  padding: 0 1rem;
+}
+
+.arda-btn-lg {
+  height: 3rem;
+  padding: 0 1.5rem;
+  font-size: 1rem;
+}
+
+/* States */
+.arda-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.arda-btn-loading {
+  position: relative;
+  color: transparent !important;
+}
+
+.arda-btn-loading::after {
+  content: "";
+  position: absolute;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: rotate 0.8s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
