@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
 import { ChevronLeft, Plus, Download, Trash2, Loader2, Mail } from "lucide-react";
 import "./button-demo.css";

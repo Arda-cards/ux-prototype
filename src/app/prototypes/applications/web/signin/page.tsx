@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { ArdaLogo } from "../arda-logo";
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";

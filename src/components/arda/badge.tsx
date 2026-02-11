@@ -1,6 +1,6 @@
 "use client";
-
 import React from "react";
+
 import { cn } from "@/lib/utils";
 
 export type ArdaBadgeVariant = "default" | "success" | "warning" | "info" | "destructive" | "outline";

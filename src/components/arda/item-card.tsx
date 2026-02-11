@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { PackageMinus, MapPin, Package, ShoppingCart } from "lucide-react";
 
 export interface ArdaItemCardProps {

@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
 import { ChevronLeft, Download, ExternalLink } from "lucide-react";
 
@@ -12,7 +11,7 @@ interface AssetCardProps {
   isImage?: boolean;
 }
 
-function AssetCard({ name, filename, category, description, isImage }: AssetCardProps) {
+function AssetCard({ name, filename, description }: AssetCardProps) {
   const path = `/images/arda/${filename}`;
 
   return (

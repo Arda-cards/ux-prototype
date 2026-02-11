@@ -1,6 +1,6 @@
 "use client";
-
 import React from "react";
+
 import { cn } from "@/lib/utils";
 
 export function ArdaTable({ children, className }: { children: React.ReactNode; className?: string }) {
@@ -54,7 +54,7 @@ export function ArdaTableRow({
   );
 }
 
-export function ArdaTableHead({ children, className }: { children: React.ReactNode; className?: string }) {
+export function ArdaTableHead({ children, className }: { children?: React.ReactNode; className?: string }) {
   return (
     <th className={cn("h-10 px-4 py-2 align-middle font-semibold text-[#737373] text-[13px] uppercase tracking-wider", className)}>
       {children}
@@ -62,7 +62,7 @@ export function ArdaTableHead({ children, className }: { children: React.ReactNo
   );
 }
 
-export function ArdaTableCell({ children, className }: { children: React.ReactNode; className?: string }) {
+export function ArdaTableCell({ children, className }: { children?: React.ReactNode; className?: string }) {
   return (
     <td className={cn("p-4 align-middle text-[#0A0A0A]", className)}>
       {children}

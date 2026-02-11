@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
 import { ChevronLeft, MoreVertical, Filter, Download } from "lucide-react";
 import {

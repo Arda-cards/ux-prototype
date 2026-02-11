@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
 import { ChevronLeft, Info, HelpCircle } from "lucide-react";
 import { ArdaBadge } from "@/components/arda/badge";
