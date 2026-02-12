@@ -1,0 +1,63 @@
+import { Canvas, Meta, ArgTypes } from '@storybook/blocks';
+import * as ItemCardStories from './item-card.stories';
+
+<Meta of={ItemCardStories} />
+
+# ArdaItemCard
+
+A physical-card-style component representing an inventory item. Designed to be printed or displayed on screen as a visual reference card with all key item details at a glance.
+
+## Configuration Lifecycle
+
+### Static Configuration (Design Time)
+
+Content properties set when the card is composed. These define what data the card displays and do not change during the component's lifetime:
+
+- **title** — Item display name (required).
+- **minQty / minUnit** — Minimum reorder quantity and unit of measure.
+- **location** — Physical storage location code.
+- **orderQty / orderUnit** — Standard order quantity and unit.
+- **supplier** — Preferred supplier name.
+- **sku** — Stock keeping unit identifier, shown as an overlay on the product image.
+- **image** — Product image URL. Falls back to a placeholder.
+- **cardIndex / totalCards** — Position in a card set (e.g. "Card 1 of 3").
+- **cardNotes** — Free-text notes displayed in italic below the header.
+
+### Runtime Configuration (Dynamic)
+
+Properties that may change based on application state:
+
+- **status** — Current item status (e.g. "Low Stock", "Reorder"). Displayed as a diagonal sash in the top-right corner.
+
+## Usage
+
+### Default Card
+
+<Canvas of={ItemCardStories.Default} />
+
+### With Status Sash
+
+<Canvas of={ItemCardStories.WithStatusSash} />
+
+### With Notes
+
+<Canvas of={ItemCardStories.WithCardNotes} />
+
+### Multiple Cards
+
+<Canvas of={ItemCardStories.MultipleCards} />
+
+## Props
+
+<ArgTypes of={ItemCardStories} />
+
+## Accessibility
+
+- The card title renders as an `<h2>` element.
+- Product images include an `alt` attribute matching the item title.
+- The status sash is a visual indicator — ensure status information is also available in accessible form (e.g. in a table or screen-reader-only text) when the card is part of a larger data view.
+
+## Related Components
+
+- **ArdaTable** — For tabular inventory display.
+- **ArdaBadge** — For inline status indicators.

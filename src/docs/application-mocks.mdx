@@ -1,0 +1,103 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Docs/Application Mocks" />
+
+# Application Mocks
+
+Application mocks are full-page layouts that simulate how components look and behave in a real application context.
+
+## Overview
+
+Each application mock comes in three versions:
+
+<table>
+  <thead>
+    <tr><th>Version</th><th>Purpose</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Production</strong></td><td>Mirrors the real app as closely as possible</td></tr>
+    <tr><td><strong>Development</strong></td><td>Includes debug overlays and in-progress feature banners</td></tr>
+    <tr><td><strong>Design</strong></td><td>Structural dotted borders for design review</td></tr>
+  </tbody>
+</table>
+
+Mocks live in `src/applications/` and are organized by application area (e.g., dashboard, settings, onboarding).
+
+## How to Add a Page
+
+1. **Create a directory** under `src/applications/`:
+
+```
+src/applications/my-page/
+  MyPage.tsx
+  MyPage.stories.tsx
+```
+
+2. **Build the page component** using library components:
+
+```tsx
+import { Button } from '@/components/atoms/Button/Button';
+import { Card } from '@/components/molecules/Card/Card';
+
+export function MyPage() {
+  return (
+    <div className="mx-auto max-w-4xl space-y-6 p-8">
+      <h1 className="text-2xl font-bold">My Page</h1>
+      <Card>
+        <p>Page content goes here.</p>
+        <Button>Take Action</Button>
+      </Card>
+    </div>
+  );
+}
+```
+
+3. **Create the story**:
+
+```tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import { MyPage } from './MyPage';
+
+const meta = {
+  title: 'Applications/My Page',
+  component: MyPage,
+  parameters: {
+    layout: 'fullscreen',
+  },
+} satisfies Meta<typeof MyPage>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {};
+```
+
+## Using Custom Components
+
+Sometimes a page mock needs a component that does not (yet) exist in the library. You can define it locally within the application mock directory:
+
+```
+src/applications/my-page/
+  MyPage.tsx
+  MyPage.stories.tsx
+  components/
+    CustomWidget.tsx    # Local to this mock
+```
+
+Import it in the page:
+
+```tsx
+import { CustomWidget } from './components/CustomWidget';
+```
+
+This keeps the library clean while still allowing rapid prototyping.
+
+## Promoting to Library
+
+When a custom component proves useful across multiple mocks, promote it to the library:
+
+1. Move the file to the appropriate level: `src/components/atoms/`, `molecules/`, or `organisms/`.
+2. Create a standalone story file.
+3. Add unit tests.
+4. Export it from `src/index.ts`.
+5. Update all imports in the application mocks that used the local version.

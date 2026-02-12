@@ -1,0 +1,125 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Docs/Getting Started" />
+
+# Getting Started
+
+Welcome to `@arda-cards/ui-components` — the shared component library and prototype gallery for Arda.
+
+## Prerequisites
+
+- **Node.js 22** (LTS) — install via [nvm](https://github.com/nvm-sh/nvm) or [fnm](https://github.com/Schniz/fnm)
+- **npm** (ships with Node)
+
+```bash
+node --version  # v22.x.x
+npm --version   # 10.x.x
+```
+
+## Installation
+
+Clone the repository and install dependencies:
+
+```bash
+git clone https://github.com/Arda-cards/ux-prototype.git
+cd ux-prototype
+npm install
+```
+
+Or use the Makefile shortcut:
+
+```bash
+make install
+```
+
+## Running Storybook
+
+Start the development server on port 6006:
+
+```bash
+npm run storybook
+```
+
+Then open [http://localhost:6006](http://localhost:6006) in your browser.
+
+## Project Structure
+
+```
+src/
+  components/
+    atoms/        # Buttons, inputs, badges, etc.
+    molecules/    # Cards, form groups, nav items, etc.
+    organisms/    # Headers, sidebars, data tables, etc.
+  visual-elements/  # Design tokens, colors, typography
+  applications/     # Full-page application mocks
+  use-cases/        # User workflow scenarios
+  docs/             # Documentation (these pages)
+  lib/              # Shared utilities (cn, etc.)
+  styles/           # Global CSS and Tailwind config
+```
+
+## Quick Start: Create Your First Component
+
+See the **Component Guidelines** doc page for full details on the interface separation pattern and Storybook requirements. Below is a minimal example.
+
+1. Create a component file at `src/components/atoms/my-button/my-button.tsx`:
+
+```tsx
+import { cn } from '@/lib/utils';
+
+/** Design-time configuration. */
+export interface MyButtonStaticConfig {
+  variant?: 'primary' | 'secondary';
+}
+
+/** Runtime configuration. */
+export interface MyButtonRuntimeConfig {
+  onClick?: () => void;
+}
+
+/** Combined props. */
+export interface MyButtonProps extends MyButtonStaticConfig, MyButtonRuntimeConfig {
+  label: string;
+}
+
+export function MyButton({ label, variant = 'primary', onClick }: MyButtonProps) {
+  return (
+    <button
+      className={cn(
+        'rounded-md px-4 py-2 font-medium',
+        variant === 'primary' && 'bg-blue-600 text-white',
+        variant === 'secondary' && 'border border-gray-300 bg-white text-gray-700',
+      )}
+      onClick={onClick}
+    >
+      {label}
+    </button>
+  );
+}
+```
+
+2. Create a story at `src/components/atoms/my-button/my-button.stories.tsx`:
+
+```tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import { MyButton } from './my-button';
+
+const meta: Meta<typeof MyButton> = {
+  title: 'Components/Atoms/My Button',
+  component: MyButton,
+  tags: ['autodocs'],
+  argTypes: {
+    variant: { control: 'select', options: ['primary', 'secondary'], table: { category: 'Static' } },
+    onClick: { action: 'clicked', table: { category: 'Events' } },
+  },
+  args: { label: 'Click me' },
+};
+
+export default meta;
+type Story = StoryObj<typeof MyButton>;
+
+export const Primary: Story = {};
+export const Secondary: Story = { args: { variant: 'secondary' } };
+```
+
+3. Run `npm run storybook` and find your component in the sidebar under **Components/Atoms/My Button**.

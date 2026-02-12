@@ -1,0 +1,89 @@
+---
+name: ci
+on:
+  push:
+  pull_request:
+    types: [opened, ready_for_review, reopened, synchronize]
+
+permissions: {}
+
+jobs:
+  build-and-test:
+    if: ${{ ! github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - run: npm run test -- --reporter=verbose
+      - run: npm run build-storybook
+      # Storybook test runner with Playwright
+      - run: npx playwright install --with-deps chromium
+      - run: |
+          npx concurrently -k -s first -n "SB,TEST" \
+            "npx http-server storybook-static --port 6006 --silent" \
+            "npx wait-on http://127.0.0.1:6006 && npm run test:storybook"
+
+  is-target-branch-protected:
+    if: ${{ ! github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    outputs:
+      yes: ${{ steps.gh-query.outputs.validate_in_list }}
+    steps:
+      - name: "Check branch protection status"
+        id: gh-query
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [ "${RUNNER_DEBUG}" == 1 ] && set -xv
+          set -u
+
+          if gh ruleset check --repo "${GITHUB_REPOSITORY}" "${GITHUB_BASE_REF:-$GITHUB_REF_NAME}" \
+            | grep -q context:validate-release; \
+          then
+            echo "validate_in_list=true" >>"${GITHUB_OUTPUT}"
+          fi
+
+  validate-release:
+    if: ${{ needs.is-target-branch-protected.outputs.yes }}
+    needs: is-target-branch-protected
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+      - name: "Extract tag from the changelog"
+        uses: denisa/clq-action@v1
+        id: clq-extract
+        with:
+          changeMap: .github/clq/changemap.json
+          mode: release
+      - uses: denisa/semantic-tag-helper@v1
+        with:
+          mode: test
+          tag: ${{ steps.clq-extract.outputs.tag }}
+
+  tag:
+    if: github.event_name == 'push'
+    needs: [validate-release]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      deployments: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: denisa/clq-action@v1
+        id: clq-extract
+        with:
+          changeMap: .github/clq/changemap.json
+      - uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.clq-extract.outputs.tag }}
+          prerelease: ${{ steps.clq-extract.outputs.status == 'prereleased' }}
+          name: ${{ steps.clq-extract.outputs.name }}
+          body: ${{ steps.clq-extract.outputs.changes }}

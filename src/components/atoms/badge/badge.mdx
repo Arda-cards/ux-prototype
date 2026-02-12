@@ -1,0 +1,48 @@
+import { Canvas, Meta, ArgTypes } from '@storybook/blocks';
+import * as BadgeStories from './badge.stories';
+
+<Meta of={BadgeStories} />
+
+# ArdaBadge
+
+A small status label with color-coded variants. Use badges to indicate item status, workflow state, or categorical tags.
+
+## Configuration Lifecycle
+
+### Static Configuration (Design Time)
+
+Properties that define the badge's appearance, chosen at composition time and never changed at runtime:
+
+- **variant** — One of six visual styles: `default`, `success`, `warning`, `info`, `destructive`, `outline`. Each maps to a distinct color palette.
+- **dot** — Prepends a small colored circle before the text content. Useful for reinforcing status meaning alongside color.
+
+This component has no runtime or initialization configuration — it is purely presentational.
+
+## Usage
+
+### Default
+
+<Canvas of={BadgeStories.Default} />
+
+### With Dot Indicator
+
+<Canvas of={BadgeStories.WithDot} />
+
+### All Variants
+
+<Canvas of={BadgeStories.AllVariants} />
+
+## Props
+
+<ArgTypes of={BadgeStories} />
+
+## Accessibility
+
+- Renders as a `<div>` with `inline-flex` display. Add `role="status"` when used to indicate a live-updating state.
+- Color alone should not convey meaning — pair variants with descriptive text (e.g. "In Stock" not just a green badge).
+- The dot indicator is decorative and does not require separate ARIA labeling.
+
+## Related Components
+
+- **ArdaButton** — For interactive actions.
+- **ArdaTable** — Badges are commonly used inside table cells for status columns.

@@ -1,0 +1,202 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Docs/Component Guidelines" />
+
+# Component Guidelines
+
+How to create React components for the Arda UX prototype. These guidelines ensure clear separation of concerns, proper documentation, and comprehensive testing.
+
+## Component Structure
+
+### File Layout
+
+```
+src/components/{level}/{component-name}/
+  {component-name}.tsx           Component implementation
+  {component-name}.stories.tsx   Storybook stories
+  {component-name}.test.tsx      Unit tests (Vitest)
+  {component-name}.mdx           Documentation
+  {component-name}.css           Styles (optional)
+```
+
+Levels follow the Atomic Design hierarchy: `atoms/`, `molecules/`, `organisms/`.
+
+File names use **kebab-case**. Component names use **PascalCase** with the `Arda` prefix (e.g. `ArdaBadge`, `ArdaButton`).
+
+### Interface Separation by Lifecycle Phase
+
+Split component props into distinct TypeScript interfaces based on when they change:
+
+#### StaticConfig (Design Time)
+
+Properties chosen when the component is placed in a layout. These never change after composition.
+
+- Labels, titles, static text content
+- Structural variations (variant, size)
+- Accessibility identifiers
+- Content data for display-only components
+
+#### RuntimeConfig (Dynamic)
+
+Properties driven by application state that may change during the component's lifetime.
+
+- Dynamic state from parent (loading, disabled, active)
+- Event handlers (onChange, onClick)
+- Controlled values
+- Conditional rendering flags
+
+#### InitConfig (Mount Time) &#8212; Optional
+
+Properties that execute once when the component mounts. Only include when the component actually performs initialization work (e.g. async data fetching).
+
+- Async data fetching functions
+- One-time computations
+- Initial values for uncontrolled mode
+
+#### Combined Props Interface
+
+```tsx
+/** Design-time configuration. */
+export interface ArdaWidgetStaticConfig {
+  /** Visual style variant. */
+  variant?: 'default' | 'compact';
+  /** Display label. */
+  label: string;
+}
+
+/** Runtime configuration. */
+export interface ArdaWidgetRuntimeConfig {
+  /** Whether the widget is in a loading state. */
+  loading?: boolean;
+  /** Called when the widget value changes. */
+  onChange?: (value: string) => void;
+}
+
+/** Combined props. Extends HTML attributes for passthrough. */
+export interface ArdaWidgetProps
+  extends ArdaWidgetStaticConfig,
+    ArdaWidgetRuntimeConfig,
+    React.HTMLAttributes<HTMLDivElement> {}
+```
+
+**Guidelines:**
+
+- Purely presentational components (like Badge) may only need `StaticConfig`.
+- Omit `InitConfig` if the component has no mount-time behavior.
+- HTML attribute passthrough (`extends React.HTMLAttributes<...>`) goes on the combined interface, not the sub-interfaces.
+- Add JSDoc comments to every interface and every property.
+- Export the sub-interfaces so consumers can use them for partial typing.
+
+## Storybook Requirements
+
+### Meta Configuration
+
+Every story file must include:
+
+1. **`parameters.docs.description.component`** &#8212; a prose description of the component.
+2. **`argTypes`** with `table.category` &#8212; group args by lifecycle phase (`Static`, `Runtime`, `Events`, `Initialization`).
+
+> **Note:** Do **not** use `tags: ['autodocs']` when the component has a dedicated `.mdx` documentation file &#8212; Storybook will error on the conflict. The MDX file replaces autodocs entirely.
+
+```tsx
+const meta: Meta<typeof ArdaWidget> = {
+  title: 'Components/Atoms/Widget',
+  component: ArdaWidget,
+  tags: ['autodocs'],
+  parameters: {
+    docs: {
+      description: {
+        component: 'A brief description of what the component does.',
+      },
+    },
+  },
+  argTypes: {
+    variant: {
+      control: 'select',
+      options: ['default', 'compact'],
+      description: 'Visual style variant.',
+      table: { category: 'Static' },
+    },
+    loading: {
+      control: 'boolean',
+      description: 'Whether the widget is loading.',
+      table: { category: 'Runtime' },
+    },
+    onChange: {
+      action: 'changed',
+      description: 'Called when the value changes.',
+      table: { category: 'Events' },
+    },
+  },
+};
+```
+
+### Required Stories
+
+<table>
+  <thead>
+    <tr><th>Story Type</th><th>Purpose</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Default</strong></td><td>Minimal required props showing default behavior. Include a <code>play</code> function that verifies initial render.</td></tr>
+    <tr><td><strong>Static Variations</strong></td><td>One story per visual variant (e.g. Primary, Secondary, Ghost, Destructive).</td></tr>
+    <tr><td><strong>Runtime States</strong></td><td>Stories demonstrating dynamic states: loading, disabled, active, error, etc.</td></tr>
+    <tr><td><strong>Composition</strong></td><td>A render story showing multiple instances together (e.g. AllVariants, AllSizes).</td></tr>
+    <tr><td><strong>Interactive</strong></td><td>At least one story with a <code>play</code> function exercising user interaction.</td></tr>
+  </tbody>
+</table>
+
+### MDX Documentation
+
+Every component must have a `.mdx` file alongside its story file. Structure:
+
+1. **Title and description** &#8212; What the component does and when to use it.
+2. **Configuration Lifecycle** &#8212; StaticConfig, RuntimeConfig (and InitConfig if applicable) with bullet-point descriptions of each property.
+3. **Usage** &#8212; `Canvas` blocks rendering key stories.
+4. **Props** &#8212; `ArgTypes` auto-generated table.
+5. **Accessibility** &#8212; ARIA attributes, keyboard navigation, screen reader notes.
+6. **Related Components** &#8212; Links to components commonly used together.
+
+## Implementation Principles
+
+### Controlled/Uncontrolled Pattern
+
+When a component manages a value that can optionally be controlled by a parent:
+
+```tsx
+const value = controlledValue ?? internalValue;
+const isControlled = controlledValue !== undefined;
+```
+
+### Accessibility
+
+- Use `useId()` for unique DOM IDs.
+- Include proper ARIA attributes (`aria-label`, `aria-invalid`, `aria-describedby`).
+- Map validation state to ARIA attributes.
+- Ensure keyboard navigability.
+
+### Styling
+
+- Use Tailwind CSS utility classes.
+- Use the `cn()` utility from `@/lib/utils` for conditional class composition.
+- Accept a `className` prop for consumer overrides.
+- Use CSS files (BEM naming) only when Tailwind alone is insufficient (e.g. keyframe animations).
+
+## Anti-Patterns
+
+- **Don't** mix lifecycle concerns in a single interface without clear separation.
+- **Don't** expose imperative methods via refs unless absolutely necessary.
+- **Don't** manage parent state inside the component.
+- **Don't** skip accessibility attributes.
+- **Don't** create stories without play functions for interactive behaviors.
+- **Don't** force empty `InitConfig` or `RuntimeConfig` interfaces when a component doesn't need them.
+
+## Checklist
+
+When creating or updating a component, deliver:
+
+- Component file with separated interface definitions and JSDoc comments
+- Stories file with meta description, argTypes categories, and play functions
+- MDX documentation file
+- Unit tests (Vitest + Testing Library)
+- Proper TypeScript types throughout

@@ -1,0 +1,57 @@
+import { Canvas, Meta, ArgTypes } from '@storybook/blocks';
+import * as SidebarStories from './sidebar.stories';
+
+<Meta of={SidebarStories} />
+
+# ArdaSidebar
+
+A fixed-position sidebar with collapsible navigation, active-item highlighting, and an optional user footer.
+
+## Configuration Lifecycle
+
+### Static Configuration (Design Time)
+
+Properties that define the sidebar's structure, set at composition time:
+
+- **navItems** — Array of navigation items, each with an `href`, Lucide `icon`, `label`, and optional `exact` flag for path matching. Defines the menu structure.
+- **user** — Optional user object (`name`, `email`, `avatar`) displayed in the sidebar footer with an avatar circle and logout button.
+
+### Runtime Configuration (Dynamic)
+
+Properties driven by application state that change during the component's lifetime:
+
+- **collapsed** — Toggles between expanded (240px, labels visible) and collapsed (56px, icon-only with hover tooltips) modes.
+- **currentPath** — The current route path. Used to highlight the active navigation item with an orange indicator bar.
+- **onNavigate** — Called with the `href` when a navigation item is clicked. Prevents default anchor behavior when provided.
+- **onLogout** — Called when the logout button in the user footer is clicked.
+
+## Usage
+
+### Expanded
+
+<Canvas of={SidebarStories.Expanded} />
+
+### Collapsed
+
+<Canvas of={SidebarStories.Collapsed} />
+
+### Interactive Toggle
+
+<Canvas of={SidebarStories.WithToggle} />
+
+## Props
+
+<ArgTypes of={SidebarStories} />
+
+## Accessibility
+
+- Renders as an `<aside>` landmark element.
+- Navigation items are `<a>` elements with proper `href` attributes.
+- The active item is indicated visually with a colored bar and `font-medium` — consider adding `aria-current="page"` for screen reader users.
+- The logout button has `aria-label="Log out"`.
+- In collapsed mode, labels are hidden visually but remain in the DOM inside tooltip elements.
+
+## Related Components
+
+- **ArdaButton** — Used for the logout action styling pattern.
+- **ArdaLogo / ArdaLogoFull** — Logo sub-components rendered in the sidebar header.
