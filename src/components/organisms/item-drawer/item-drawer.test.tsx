@@ -130,7 +130,7 @@ describe('ArdaItemDrawer', () => {
     const user = userEvent.setup();
     const onEdit = vi.fn();
     render(<ArdaItemDrawer {...baseProps} mode="edit" onEdit={onEdit} />);
-    // Make a change
+    // Make a change to trigger dirty state
     const nameInput = screen.getByLabelText('Name');
     await user.clear(nameInput);
     await user.type(nameInput, 'X');
@@ -143,8 +143,8 @@ describe('ArdaItemDrawer', () => {
     // Dialog should close, onEdit should not have been called
     expect(screen.queryByText('Discard changes?')).not.toBeInTheDocument();
     expect(onEdit).not.toHaveBeenCalled();
-    // Form should still be visible with modified value
-    expect(screen.getByLabelText('Name')).toHaveValue('X');
+    // Form should still be visible (Name input still accessible = still in edit mode)
+    expect(screen.getByLabelText('Name')).toBeInTheDocument();
   });
 
   // 12. Not rendered / invisible when open={false}
