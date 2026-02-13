@@ -1,7 +1,10 @@
 // server.js - serves built storybook with basic auth
-const express = require('express');
-const basicAuth = require('express-basic-auth');
-const path = require('node:path');
+import express from 'express';
+import basicAuth from 'express-basic-auth';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const PORT = process.env.PORT || 8080;
 const SECRET = process.env.STORYBOOK_SECRET || 'ArdaSecretPrototypes';

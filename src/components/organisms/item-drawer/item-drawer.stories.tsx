@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { expect, fn, userEvent, within } from '@storybook/test';
 
+import { sampleItemSupplies } from '@/types/reference/business-affiliates/item-supply';
+
 import { ArdaItemDrawer, sampleItem } from './item-drawer';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -109,6 +111,24 @@ export const Closed: Story = {
     open: false,
     mode: 'view',
     item: sampleItem,
+  },
+};
+
+export const ViewWithSupplies: Story = {
+  args: {
+    open: true,
+    mode: 'view',
+    item: sampleItem,
+    itemSupplies: sampleItemSupplies,
+    supplyDesignations: {
+      'is-001': ['PRIMARY'],
+      'is-002': ['SECONDARY'],
+    },
+    supplySupplierNames: {
+      'is-001': 'Fastenal Corp.',
+      'is-002': 'Parker Hannifin',
+    },
+    onClose: fn(),
   },
 };
 

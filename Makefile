@@ -40,7 +40,7 @@ test-storybook: ## Run Storybook interaction tests
 
 ## -- Serving & Publishing ----------------------------------------------------
 
-serve: ## Serve built Storybook with basic auth
+serve: build ## Serve built Storybook with basic auth
 	npm run serve
 
 preview: build serve ## Build Storybook then serve with basic auth
