@@ -1,0 +1,99 @@
+import { Canvas, Meta, ArgTypes } from '@storybook/blocks';
+import * as ItemDrawerStories from './item-drawer.stories';
+
+<Meta of={ItemDrawerStories} />
+
+# ArdaItemDrawer
+
+A right-side slide-in panel for viewing, adding, and editing inventory items. Supports three operating modes &#8212; view, add, and edit &#8212; with a confirmation dialog for unsaved changes.
+
+## Configuration Lifecycle
+
+### Static Configuration (Design Time)
+
+Properties that define the drawer's structure, set at composition time:
+
+- **title** &#8212; Override the drawer header title. When omitted, the title is derived from the current mode: the item name in view mode, "Add New Item" in add mode, or "Edit Item" in edit mode.
+- **classificationTypes** &#8212; Array of classification type strings for the form select dropdown. When empty, the classification type renders as a free-text input instead.
+- **orderMechanismLabels** &#8212; Partial map to override the default display labels for order mechanism enum values (e.g. PURCHASE_ORDER &#8594; "Purchase Order").
+
+### Runtime Configuration (Dynamic)
+
+Properties driven by application state that change during the component's lifetime:
+
+- **open** &#8212; Controls drawer visibility. The panel slides in from the right with a 300ms transform transition.
+- **mode** &#8212; Current operating mode: "view" (read-only field display), "add" (empty form), or "edit" (form pre-populated from item prop).
+- **item** &#8212; Item data for view and edit modes. Ignored in add mode.
+- **onClose** &#8212; Called when the drawer requests to close (overlay click, X button, or Escape key in view mode).
+- **onSubmit** &#8212; Called with the form data when the user submits the form in add or edit mode.
+- **onEdit** &#8212; Called when the user clicks the Edit button in view mode. The parent should respond by switching mode to "edit".
+
+## Modes
+
+<table>
+  <thead>
+    <tr>
+      <th>Mode</th>
+      <th>Content</th>
+      <th>Footer Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>view</td>
+      <td>Read-only field display with image preview, grouped label/value rows</td>
+      <td>Edit button</td>
+    </tr>
+    <tr>
+      <td>add</td>
+      <td>Empty form with all item fields organized into sections</td>
+      <td>Cancel, Add Item</td>
+    </tr>
+    <tr>
+      <td>edit</td>
+      <td>Form pre-populated from item prop</td>
+      <td>Cancel, Save</td>
+    </tr>
+  </tbody>
+</table>
+
+### Cancel Behavior
+
+When the user clicks Cancel in add or edit mode:
+
+1. If the form has no unsaved changes, the drawer closes (add mode) or returns to view mode (edit mode).
+2. If changes are detected, an ArdaConfirmDialog appears asking to discard changes.
+3. On confirm ("Discard"), changes are discarded and the drawer closes or returns to view mode.
+4. On cancel ("Keep editing"), the dialog closes and the user remains in the form.
+
+## Usage
+
+### View Mode
+
+<Canvas of={ItemDrawerStories.ViewMode} />
+
+### Add Mode
+
+<Canvas of={ItemDrawerStories.AddMode} />
+
+### Edit Mode
+
+<Canvas of={ItemDrawerStories.EditMode} />
+
+## Props
+
+<ArgTypes of={ItemDrawerStories} />
+
+## Accessibility
+
+- The drawer panel uses `role="dialog"` with `aria-modal="true"`.
+- The header title is linked via `aria-labelledby` for screen reader context.
+- The close button has `aria-label="Close drawer"`.
+- Escape key closes the drawer in view mode, or triggers the cancel flow in add/edit modes.
+- Focus moves to the first focusable element when the drawer opens.
+- All form inputs have associated `label` elements with `htmlFor` attributes.
+- The confirmation dialog uses `role="alertdialog"` with focus trapping and Escape key support.
+
+## Related Components
+
+- **ArdaConfirmDialog** &#8212; Atom used for the cancel-with-confirmation flow when discarding unsaved form changes.
