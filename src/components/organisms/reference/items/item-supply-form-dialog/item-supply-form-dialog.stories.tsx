@@ -43,7 +43,7 @@ export const AddMode: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(canvas.getByText('Add Supply')).toBeInTheDocument();
+    await expect(canvas.getByRole('heading', { name: 'Add Supply' })).toBeInTheDocument();
   },
 };
 
