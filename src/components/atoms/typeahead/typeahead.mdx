@@ -1,0 +1,75 @@
+import { Canvas, Meta, ArgTypes } from '@storybook/blocks';
+import * as TypeaheadStories from './typeahead.stories';
+
+<Meta of={TypeaheadStories} />
+
+# ArdaTypeahead
+
+A generic typeahead/autocomplete input with search, select, and create-new capabilities. Supports debounced input, keyboard navigation, and loading states.
+
+## Configuration Lifecycle
+
+### Static Configuration (Design Time)
+
+Properties chosen at composition time:
+
+- **placeholder** &#8212; Placeholder text for the input field (default: "Search...")
+- **createNewLabel** &#8212; Label shown in the create-new option (default: "Create new")
+- **allowCreate** &#8212; Whether to show a create-new option when there are no matches
+
+### Runtime Configuration (Dynamic)
+
+Properties that control component state and behavior:
+
+- **value** &#8212; Current input value
+- **options** &#8212; Array of TypeaheadOption objects to display in the dropdown
+- **onInputChange** &#8212; Callback when the debounced input value changes
+- **onSelect** &#8212; Callback when an option is selected
+- **onCreate** &#8212; Callback when the user chooses to create a new entry
+- **loading** &#8212; Whether options are currently loading (shows spinner)
+
+## Usage
+
+### Default
+
+<Canvas of={TypeaheadStories.Default} />
+
+### With Options
+
+<Canvas of={TypeaheadStories.WithOptions} />
+
+### No Matches (Create New)
+
+<Canvas of={TypeaheadStories.NoMatches} />
+
+### Loading State
+
+<Canvas of={TypeaheadStories.Loading} />
+
+## Props
+
+<ArgTypes of={TypeaheadStories} />
+
+## TypeaheadOption
+
+The `TypeaheadOption` type is exported alongside the component:
+
+```ts
+interface TypeaheadOption {
+  label: string;   // Display text
+  value: string;   // Unique identifier
+  meta?: string;   // Optional secondary text (e.g. category)
+}
+```
+
+## Accessibility
+
+- Uses `role="combobox"` on the input with `aria-expanded` and `aria-controls`
+- Dropdown uses `role="listbox"` with `role="option"` for each item
+- Active option tracked via `aria-activedescendant`
+- `aria-selected` indicates the currently highlighted option
+- Keyboard navigation: Arrow Up/Down to move, Enter to select, Escape to close
+
+## Related Components
+
+- **ArdaSupplyCard** &#8212; Uses ArdaTypeahead for supplier search in the supply form

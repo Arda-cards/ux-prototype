@@ -1,0 +1,26 @@
+import { Canvas, Meta, Controls } from '@storybook/blocks';
+import * as ItemSupplySectionStories from './item-supply-section.stories';
+
+<Meta of={ItemSupplySectionStories} />
+
+# ArdaItemSupplySection
+
+A section organism that displays all supply relationships for an item. Composes `ArdaSupplyCard` molecules into a vertical list with an "Add" button and an empty-state illustration.
+
+## With Supplies
+
+<Canvas of={ItemSupplySectionStories.WithSupplies} />
+
+<Controls of={ItemSupplySectionStories.WithSupplies} />
+
+## Empty State
+
+<Canvas of={ItemSupplySectionStories.Empty} />
+
+## With Legacy Supply
+
+<Canvas of={ItemSupplySectionStories.WithLegacy} />
+
+## Interactive
+
+<Canvas of={ItemSupplySectionStories.Interactive} />
