@@ -18,6 +18,14 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [1.1.0] - 2026-02-13
+
+### Added
+
+- Atom component: ArdaConfirmDialog for cancel-with-confirmation flows
+- Organism component: ArdaItemDrawer with view, add, and edit modes for inventory items
+- Exported public types: ItemData, Supply, Money, Quantity, Duration, Locator, ItemClassification, OrderMechanism, Currency, TimeUnit, ItemDrawerMode
+
 ## [1.0.0] - 2026-02-12
 
 ### Added

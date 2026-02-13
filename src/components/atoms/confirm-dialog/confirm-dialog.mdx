@@ -1,0 +1,54 @@
+import { Canvas, Meta, ArgTypes } from '@storybook/blocks';
+import * as ConfirmDialogStories from './confirm-dialog.stories';
+
+<Meta of={ConfirmDialogStories} />
+
+# ArdaConfirmDialog
+
+A modal confirmation dialog for destructive or important actions. Renders as a centered overlay with backdrop, focus trapping, and keyboard support.
+
+## Configuration Lifecycle
+
+### Static Configuration (Design Time)
+
+Properties that define the dialog content and appearance:
+
+- **title** &#8212; Dialog heading text
+- **message** &#8212; Descriptive body explaining the action
+- **confirmLabel** &#8212; Text for the confirm button (default: "Confirm")
+- **cancelLabel** &#8212; Text for the cancel button (default: "Cancel")
+- **confirmVariant** &#8212; Visual style: "destructive" (red) or "primary" (blue)
+
+### Runtime Configuration (Dynamic)
+
+Properties that control dialog visibility and behavior:
+
+- **open** &#8212; Whether the dialog is currently visible
+- **onConfirm** &#8212; Callback when the user confirms the action
+- **onCancel** &#8212; Callback when the user cancels or presses Escape
+
+## Usage
+
+### Default
+
+<Canvas of={ConfirmDialogStories.Default} />
+
+### Custom Labels
+
+<Canvas of={ConfirmDialogStories.CustomLabels} />
+
+## Props
+
+<ArgTypes of={ConfirmDialogStories} />
+
+## Accessibility
+
+- Uses `role="alertdialog"` with `aria-modal="true"`
+- Title linked via `aria-labelledby`, message via `aria-describedby`
+- Focus is trapped inside the dialog when open
+- Escape key triggers the cancel action
+- Focus is restored to the previously focused element when closed
+
+## Related Components
+
+- **ArdaItemDrawer** &#8212; Uses ArdaConfirmDialog for the cancel-with-confirmation flow in edit mode
