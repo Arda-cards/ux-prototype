@@ -2,7 +2,13 @@ import React from 'react';
 
 import { cn } from '@/lib/utils';
 
-export type ArdaBadgeVariant = 'default' | 'success' | 'warning' | 'info' | 'destructive' | 'outline';
+export type ArdaBadgeVariant =
+  | 'default'
+  | 'success'
+  | 'warning'
+  | 'info'
+  | 'destructive'
+  | 'outline';
 
 /** Design-time configuration — visual properties chosen at composition time. */
 export interface ArdaBadgeStaticConfig {
@@ -13,7 +19,8 @@ export interface ArdaBadgeStaticConfig {
 }
 
 /** Combined props for ArdaBadge. Extends HTML div attributes for passthrough. */
-export interface ArdaBadgeProps extends ArdaBadgeStaticConfig, React.HTMLAttributes<HTMLDivElement> {}
+export interface ArdaBadgeProps
+  extends ArdaBadgeStaticConfig, React.HTMLAttributes<HTMLDivElement> {}
 
 export function ArdaBadge({
   children,
@@ -49,9 +56,7 @@ export function ArdaBadge({
       )}
       {...props}
     >
-      {dot && (
-        <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', dotColors[variant])} />
-      )}
+      {dot && <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', dotColors[variant])} />}
       {children}
     </div>
   );

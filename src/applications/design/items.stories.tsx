@@ -31,20 +31,48 @@ const designOutline: React.CSSProperties = {
 };
 
 const items = [
-  { name: 'Hex Socket Bolt M8x40', sku: 'FST-HSB-M8X40', category: 'Fasteners', qty: 342, status: 'In Stock' },
+  {
+    name: 'Hex Socket Bolt M8x40',
+    sku: 'FST-HSB-M8X40',
+    category: 'Fasteners',
+    qty: 342,
+    status: 'In Stock',
+  },
   { name: 'Safety Goggles Pro', sku: 'SFI-SGP-001', category: 'PPE', qty: 8, status: 'Low Stock' },
-  { name: 'Hydraulic Filter HF-200', sku: 'HTS-HF200-R', category: 'Filters', qty: 0, status: 'Out of Stock' },
-  { name: 'Bearing SKF 6205', sku: 'SKF-6205-2RS', category: 'Bearings', qty: 156, status: 'In Stock' },
+  {
+    name: 'Hydraulic Filter HF-200',
+    sku: 'HTS-HF200-R',
+    category: 'Filters',
+    qty: 0,
+    status: 'Out of Stock',
+  },
+  {
+    name: 'Bearing SKF 6205',
+    sku: 'SKF-6205-2RS',
+    category: 'Bearings',
+    qty: 156,
+    status: 'In Stock',
+  },
   { name: 'V-Belt A68', sku: 'GTS-VBA68', category: 'Drive', qty: 4, status: 'Low Stock' },
-  { name: 'Lubricant Grease EP2', sku: 'SHL-GEP2-400', category: 'Lubricants', qty: 45, status: 'In Stock' },
+  {
+    name: 'Lubricant Grease EP2',
+    sku: 'SHL-GEP2-400',
+    category: 'Lubricants',
+    qty: 45,
+    status: 'In Stock',
+  },
 ];
 
 const statusVariant = (status: string) => {
   switch (status) {
-    case 'In Stock': return 'success' as const;
-    case 'Low Stock': return 'warning' as const;
-    case 'Out of Stock': return 'destructive' as const;
-    default: return 'default' as const;
+    case 'In Stock':
+      return 'success' as const;
+    case 'Low Stock':
+      return 'warning' as const;
+    case 'Out of Stock':
+      return 'destructive' as const;
+    default:
+      return 'default' as const;
   }
 };
 

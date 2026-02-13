@@ -257,9 +257,28 @@ function AddItemWizard(props: WizardProps<ItemFormData>) {
       {/* Step 1 — Item Details */}
       {w.step === 0 && (
         <>
-          <FormField label="Item Name" name="itemName" placeholder="e.g. Hex Socket Bolt M8x40" value={w.formData.itemName} onChange={w.handleChange} />
-          <FormField label="SKU" name="sku" placeholder="e.g. FST-HSB-M8X40" value={w.formData.sku} onChange={w.handleChange} />
-          <FormSelect label="Category" name="category" value={w.formData.category} onChange={w.handleChange} options={CATEGORIES} placeholder="Select a category" />
+          <FormField
+            label="Item Name"
+            name="itemName"
+            placeholder="e.g. Hex Socket Bolt M8x40"
+            value={w.formData.itemName}
+            onChange={w.handleChange}
+          />
+          <FormField
+            label="SKU"
+            name="sku"
+            placeholder="e.g. FST-HSB-M8X40"
+            value={w.formData.sku}
+            onChange={w.handleChange}
+          />
+          <FormSelect
+            label="Category"
+            name="category"
+            value={w.formData.category}
+            onChange={w.handleChange}
+            options={CATEGORIES}
+            placeholder="Select a category"
+          />
         </>
       )}
 
@@ -267,12 +286,49 @@ function AddItemWizard(props: WizardProps<ItemFormData>) {
       {w.step === 1 && (
         <>
           <FormRow>
-            <FormField label="Initial Quantity" name="quantity" type="number" placeholder="0" value={w.formData.quantity} onChange={w.handleChange} min="0" />
-            <FormField label="Unit Price ($)" name="unitPrice" type="number" placeholder="0.00" value={w.formData.unitPrice} onChange={w.handleChange} min="0" step="0.01" />
+            <FormField
+              label="Initial Quantity"
+              name="quantity"
+              type="number"
+              placeholder="0"
+              value={w.formData.quantity}
+              onChange={w.handleChange}
+              min="0"
+            />
+            <FormField
+              label="Unit Price ($)"
+              name="unitPrice"
+              type="number"
+              placeholder="0.00"
+              value={w.formData.unitPrice}
+              onChange={w.handleChange}
+              min="0"
+              step="0.01"
+            />
           </FormRow>
-          <FormField label="Minimum Stock Level" name="minStock" type="number" placeholder="e.g. 10" value={w.formData.minStock} onChange={w.handleChange} min="0" />
-          <FormField label="Supplier" name="supplier" placeholder="e.g. Fastenal Corp." value={w.formData.supplier} onChange={w.handleChange} />
-          <FormField label="Storage Location" name="location" placeholder="e.g. W-03-B2" value={w.formData.location} onChange={w.handleChange} />
+          <FormField
+            label="Minimum Stock Level"
+            name="minStock"
+            type="number"
+            placeholder="e.g. 10"
+            value={w.formData.minStock}
+            onChange={w.handleChange}
+            min="0"
+          />
+          <FormField
+            label="Supplier"
+            name="supplier"
+            placeholder="e.g. Fastenal Corp."
+            value={w.formData.supplier}
+            onChange={w.handleChange}
+          />
+          <FormField
+            label="Storage Location"
+            name="location"
+            placeholder="e.g. W-03-B2"
+            value={w.formData.location}
+            onChange={w.handleChange}
+          />
         </>
       )}
 

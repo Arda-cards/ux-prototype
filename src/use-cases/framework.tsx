@@ -198,9 +198,7 @@ export function FormSelect({
 
 /** Arranges children in a side-by-side grid row. */
 export function FormRow({ children }: { children: React.ReactNode }) {
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>{children}</div>
-  );
+  return <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>{children}</div>;
 }
 
 /* ================================================================
@@ -522,7 +520,7 @@ export function UseCaseShell({
   children,
 }: UseCaseShellProps) {
   const isLastStep = w.step === w.stepNames.length - 1;
-  const stepName = w.stepNames[w.step]!;
+  const stepName = w.stepNames[w.step] ?? '';
 
   return (
     <div style={{ maxWidth: 560, margin: '0 auto' }}>
@@ -616,7 +614,7 @@ export function UseCaseShell({
       {/* guide panel (Interactive mode only) */}
       {w.showGuide && guides[w.phase] && (
         <div style={{ marginTop: 16 }}>
-          <GuidePanel guide={guides[w.phase]!} />
+          <GuidePanel guide={guides[w.phase] as GuideEntry} />
         </div>
       )}
     </div>
@@ -635,7 +633,7 @@ function StepwiseViewer<T extends object>({
   Wizard: React.ComponentType<WizardProps<T>>;
 }) {
   const [sceneIndex, setSceneIndex] = useState(0);
-  const scene = scenes[sceneIndex]!;
+  const scene = scenes[sceneIndex] as Scene<T>;
 
   return (
     <div style={{ maxWidth: 560, margin: '0 auto' }}>
@@ -683,10 +681,14 @@ function AutomatedViewer<T extends object>({
     return () => el.removeEventListener('scene-change', handler);
   }, []);
 
-  const scene = scenes[sceneIndex]!;
+  const scene = scenes[sceneIndex] as Scene<T>;
 
   return (
-    <div ref={containerRef} data-testid="automated-viewer" style={{ maxWidth: 560, margin: '0 auto' }}>
+    <div
+      ref={containerRef}
+      data-testid="automated-viewer"
+      style={{ maxWidth: 560, margin: '0 auto' }}
+    >
       <Wizard />
       <div style={{ marginTop: 16 }}>
         <GuidePanel guide={scene} />

@@ -94,8 +94,14 @@ export const Gallery: Story = {
           { src: '/images/arda/Puddle2.svg', label: 'Puddle2.svg' },
           { src: '/images/arda/Puddle3.svg', label: 'Puddle3.svg' },
           { src: '/images/arda/Puddle4.svg', label: 'Puddle4.svg' },
-          { src: '/images/arda/Addtoorderqueueanimation.svg', label: 'Addtoorderqueueanimation.svg' },
-          { src: '/images/arda/Variant=Overlapping boxes.svg', label: 'Variant=Overlapping boxes.svg' },
+          {
+            src: '/images/arda/Addtoorderqueueanimation.svg',
+            label: 'Addtoorderqueueanimation.svg',
+          },
+          {
+            src: '/images/arda/Variant=Overlapping boxes.svg',
+            label: 'Variant=Overlapping boxes.svg',
+          },
         ]}
       />
     </div>

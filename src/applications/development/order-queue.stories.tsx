@@ -46,7 +46,13 @@ const supplierGroups = [
   {
     supplier: 'Fastenal Corp.',
     items: [
-      { name: 'Hex Socket Bolt M8x40', sku: 'FST-HSB-M8X40', qty: 200, unitPrice: 0.45, total: 90.0 },
+      {
+        name: 'Hex Socket Bolt M8x40',
+        sku: 'FST-HSB-M8X40',
+        qty: 200,
+        unitPrice: 0.45,
+        total: 90.0,
+      },
       { name: 'Flat Washer M8 Zinc', sku: 'FST-FWZ-M8', qty: 500, unitPrice: 0.12, total: 60.0 },
       { name: 'Hex Nut M8 Grade 8', sku: 'FST-HNG8-M8', qty: 200, unitPrice: 0.18, total: 36.0 },
     ],
@@ -64,7 +70,13 @@ const supplierGroups = [
     supplier: 'SafetyFirst Inc.',
     items: [
       { name: 'Safety Goggles Pro', sku: 'SFI-SGP-001', qty: 50, unitPrice: 8.99, total: 449.5 },
-      { name: 'Nitrile Gloves Box (L)', sku: 'SFI-NGL-L', qty: 24, unitPrice: 14.99, total: 359.76 },
+      {
+        name: 'Nitrile Gloves Box (L)',
+        sku: 'SFI-NGL-L',
+        qty: 24,
+        unitPrice: 14.99,
+        total: 359.76,
+      },
       { name: 'Ear Plugs 200-Pack', sku: 'SFI-EP200', qty: 5, unitPrice: 22.0, total: 110.0 },
     ],
     subtotal: 919.26,
@@ -163,7 +175,9 @@ export const Default: Story = {
                     <ArdaTableCell className="font-mono text-sm">{item.sku}</ArdaTableCell>
                     <ArdaTableCell>{item.qty}</ArdaTableCell>
                     <ArdaTableCell>${item.unitPrice.toFixed(2)}</ArdaTableCell>
-                    <ArdaTableCell className="font-semibold">${item.total.toFixed(2)}</ArdaTableCell>
+                    <ArdaTableCell className="font-semibold">
+                      ${item.total.toFixed(2)}
+                    </ArdaTableCell>
                   </ArdaTableRow>
                 ))}
               </ArdaTableBody>

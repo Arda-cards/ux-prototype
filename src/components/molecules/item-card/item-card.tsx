@@ -53,8 +53,7 @@ export function ArdaItemCard({
   cardNotes,
 }: ArdaItemCardProps) {
   const safeImageSrc =
-    image ||
-    'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=300&fit=crop';
+    image || 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=300&fit=crop';
 
   return (
     <div className="relative w-[348px] max-w-full rounded-md border-2 border-[#E5E5E5] shadow-[0px_4px_6px_rgba(0,0,0,0.09)] px-4 py-2.5 flex flex-col gap-2 font-sans bg-white">
@@ -68,9 +67,7 @@ export function ArdaItemCard({
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
-          <h2 className="font-extrabold text-[24px] text-[#0A0A0A] leading-7 truncate">
-            {title}
-          </h2>
+          <h2 className="font-extrabold text-[24px] text-[#0A0A0A] leading-7 truncate">{title}</h2>
         </div>
         <img
           src="/images/arda/QRC.svg"

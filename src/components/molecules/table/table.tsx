@@ -80,12 +80,7 @@ export function ArdaTableBody({ children, className }: ArdaTableBodyProps) {
   return <tbody className={cn('[&_tr:last-child]:border-0', className)}>{children}</tbody>;
 }
 
-export function ArdaTableRow({
-  children,
-  className,
-  onClick,
-  active = false,
-}: ArdaTableRowProps) {
+export function ArdaTableRow({ children, className, onClick, active = false }: ArdaTableRowProps) {
   return (
     <tr
       onClick={onClick}

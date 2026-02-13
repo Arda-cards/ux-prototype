@@ -17,6 +17,7 @@ export default [
   // ── TypeScript strict rules ─────────────────────────────────────────
   {
     files: ['**/*.ts', '**/*.tsx'],
+    ignores: ['.storybook/**', 'middleware.ts'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
@@ -59,6 +60,24 @@ export default [
       'no-var': 'error',
       'prefer-const': 'error',
       eqeqeq: ['error', 'always'],
+    },
+  },
+
+  // ── Config & middleware files (TS parser, no type-aware rules) ──────
+  {
+    files: ['.storybook/**/*.ts', 'middleware.ts'],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        sourceType: 'module',
+        ecmaFeatures: { jsx: true },
+      },
+    },
+    plugins: {
+      prettier,
+    },
+    rules: {
+      'prettier/prettier': 'error',
     },
   },
 

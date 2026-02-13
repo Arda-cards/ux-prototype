@@ -30,19 +30,58 @@ const metrics = [
 ];
 
 const recentOrders = [
-  { id: 'PO-2025-0041', supplier: 'Fastenal Corp.', items: 12, total: '$3,240.00', status: 'Processing', date: '2025-06-10' },
-  { id: 'PO-2025-0040', supplier: 'SKF Distribution', items: 4, total: '$1,890.00', status: 'Shipped', date: '2025-06-09' },
-  { id: 'PO-2025-0039', supplier: 'Gates Industrial', items: 8, total: '$720.00', status: 'Delivered', date: '2025-06-07' },
-  { id: 'PO-2025-0038', supplier: 'SafetyFirst Inc.', items: 20, total: '$2,100.00', status: 'Processing', date: '2025-06-06' },
-  { id: 'PO-2025-0037', supplier: 'HydroTech Systems', items: 3, total: '$5,670.00', status: 'Delivered', date: '2025-06-04' },
+  {
+    id: 'PO-2025-0041',
+    supplier: 'Fastenal Corp.',
+    items: 12,
+    total: '$3,240.00',
+    status: 'Processing',
+    date: '2025-06-10',
+  },
+  {
+    id: 'PO-2025-0040',
+    supplier: 'SKF Distribution',
+    items: 4,
+    total: '$1,890.00',
+    status: 'Shipped',
+    date: '2025-06-09',
+  },
+  {
+    id: 'PO-2025-0039',
+    supplier: 'Gates Industrial',
+    items: 8,
+    total: '$720.00',
+    status: 'Delivered',
+    date: '2025-06-07',
+  },
+  {
+    id: 'PO-2025-0038',
+    supplier: 'SafetyFirst Inc.',
+    items: 20,
+    total: '$2,100.00',
+    status: 'Processing',
+    date: '2025-06-06',
+  },
+  {
+    id: 'PO-2025-0037',
+    supplier: 'HydroTech Systems',
+    items: 3,
+    total: '$5,670.00',
+    status: 'Delivered',
+    date: '2025-06-04',
+  },
 ];
 
 const orderStatus = (status: string) => {
   switch (status) {
-    case 'Processing': return 'info' as const;
-    case 'Shipped': return 'warning' as const;
-    case 'Delivered': return 'success' as const;
-    default: return 'default' as const;
+    case 'Processing':
+      return 'info' as const;
+    case 'Shipped':
+      return 'warning' as const;
+    case 'Delivered':
+      return 'success' as const;
+    default:
+      return 'default' as const;
   }
 };
 
@@ -60,9 +99,7 @@ export const Default: Story = {
             marginBottom: 24,
           }}
         >
-          <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>
-            Good morning, Alex
-          </h1>
+          <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>Good morning, Alex</h1>
           <p style={{ fontSize: 14, opacity: 0.9 }}>
             You have 14 low-stock alerts and 8 pending orders to review today.
           </p>
@@ -87,7 +124,13 @@ export const Default: Story = {
                 border: '1px solid #E5E5E5',
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                }}
+              >
                 <div>
                   <div style={{ fontSize: 13, color: '#737373', marginBottom: 4 }}>{m.label}</div>
                   <div style={{ fontSize: 28, fontWeight: 700, color: '#0A0A0A' }}>{m.value}</div>

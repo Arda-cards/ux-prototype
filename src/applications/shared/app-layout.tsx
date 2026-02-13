@@ -10,8 +10,7 @@ import {
   Bell,
 } from 'lucide-react';
 
-import { ArdaSidebar } from '@/components/organisms/sidebar/sidebar';
-import type { NavItem } from '@/components/organisms/sidebar/sidebar';
+import { ArdaSidebar, type NavItem } from '@/components/organisms/sidebar/sidebar';
 
 const defaultNavItems: NavItem[] = [
   { href: '/', icon: LayoutDashboard, label: 'Dashboard', exact: true },
@@ -57,7 +56,9 @@ export function AppLayout({ children, currentPath = '/', banner }: AppLayoutProp
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, maxWidth: 400 }}>
             <Search size={16} color="#737373" />
-            <span style={{ color: '#737373', fontSize: 14 }}>Search items, orders, suppliers...</span>
+            <span style={{ color: '#737373', fontSize: 14 }}>
+              Search items, orders, suppliers...
+            </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <Bell size={18} color="#737373" />

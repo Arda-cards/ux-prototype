@@ -21,7 +21,11 @@ export interface ArdaButtonRuntimeConfig {
 }
 
 /** Combined props for ArdaButton. Extends HTML button attributes for passthrough. */
-export interface ArdaButtonProps extends ArdaButtonStaticConfig, ArdaButtonRuntimeConfig, React.ButtonHTMLAttributes<HTMLButtonElement> {}
+export interface ArdaButtonProps
+  extends
+    ArdaButtonStaticConfig,
+    ArdaButtonRuntimeConfig,
+    React.ButtonHTMLAttributes<HTMLButtonElement> {}
 
 export function ArdaButton({
   children,

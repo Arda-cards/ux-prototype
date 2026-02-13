@@ -9,10 +9,7 @@ export function ArdaLogo({ size = 28 }: { size?: number }) {
     >
       {/* Simplified Arda logo mark -- orange "A" in a rounded shape */}
       <rect width="40" height="40" rx="8" fill="#FC5A29" />
-      <path
-        d="M20 8L10 32H15L17 27H23L25 32H30L20 8ZM18.5 23L20 18L21.5 23H18.5Z"
-        fill="white"
-      />
+      <path d="M20 8L10 32H15L17 27H23L25 32H30L20 8ZM18.5 23L20 18L21.5 23H18.5Z" fill="white" />
     </svg>
   );
 }

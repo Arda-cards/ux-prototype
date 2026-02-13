@@ -18,17 +18,29 @@ const meta: Meta<typeof ArdaItemCard> = {
   argTypes: {
     title: { description: 'Item display name.', table: { category: 'Static' } },
     minQty: { description: 'Minimum reorder quantity.', table: { category: 'Static' } },
-    minUnit: { description: 'Unit of measure for minimum quantity.', table: { category: 'Static' } },
+    minUnit: {
+      description: 'Unit of measure for minimum quantity.',
+      table: { category: 'Static' },
+    },
     location: { description: 'Physical storage location code.', table: { category: 'Static' } },
     orderQty: { description: 'Standard order quantity.', table: { category: 'Static' } },
-    orderUnit: { description: 'Unit of measure for order quantity.', table: { category: 'Static' } },
+    orderUnit: {
+      description: 'Unit of measure for order quantity.',
+      table: { category: 'Static' },
+    },
     supplier: { description: 'Preferred supplier name.', table: { category: 'Static' } },
     sku: { description: 'Stock keeping unit identifier.', table: { category: 'Static' } },
     image: { description: 'Product image URL.', table: { category: 'Static' } },
     cardIndex: { description: "Card's position in a set.", table: { category: 'Static' } },
     totalCards: { description: 'Total number of cards in the set.', table: { category: 'Static' } },
-    cardNotes: { description: 'Free-text notes displayed below the header.', table: { category: 'Static' } },
-    status: { description: 'Current status displayed as a diagonal sash.', table: { category: 'Runtime' } },
+    cardNotes: {
+      description: 'Free-text notes displayed below the header.',
+      table: { category: 'Static' },
+    },
+    status: {
+      description: 'Current status displayed as a diagonal sash.',
+      table: { category: 'Runtime' },
+    },
   },
 };
 
@@ -88,7 +100,8 @@ export const WithCardNotes: Story = {
     orderUnit: 'ea',
     supplier: 'HydroTech Systems',
     sku: 'HTS-HF200-R',
-    cardNotes: 'Replace every 500 operating hours. Check pressure differential gauge before ordering.',
+    cardNotes:
+      'Replace every 500 operating hours. Check pressure differential gauge before ordering.',
     cardIndex: 1,
     totalCards: 1,
     status: 'Reorder',

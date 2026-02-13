@@ -3,8 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { LayoutDashboard, Package, ShoppingCart } from 'lucide-react';
 import { describe, expect, it, vi } from 'vitest';
 
-import type { NavItem } from './sidebar';
-import { ArdaSidebar } from './sidebar';
+import { ArdaSidebar, type NavItem } from './sidebar';
 
 const navItems: NavItem[] = [
   { href: '/', icon: LayoutDashboard, label: 'Dashboard', exact: true },
@@ -56,13 +55,7 @@ describe('ArdaSidebar', () => {
   it('calls onNavigate when a nav item is clicked', async () => {
     const userSetup = userEvent.setup();
     const handleNavigate = vi.fn();
-    render(
-      <ArdaSidebar
-        navItems={navItems}
-        collapsed={false}
-        onNavigate={handleNavigate}
-      />,
-    );
+    render(<ArdaSidebar navItems={navItems} collapsed={false} onNavigate={handleNavigate} />);
 
     await userSetup.click(screen.getByText('Items'));
     expect(handleNavigate).toHaveBeenCalledWith('/items');
@@ -72,12 +65,7 @@ describe('ArdaSidebar', () => {
     const userSetup = userEvent.setup();
     const handleLogout = vi.fn();
     render(
-      <ArdaSidebar
-        navItems={navItems}
-        collapsed={false}
-        user={user}
-        onLogout={handleLogout}
-      />,
+      <ArdaSidebar navItems={navItems} collapsed={false} user={user} onLogout={handleLogout} />,
     );
 
     await userSetup.click(screen.getByLabelText('Log out'));
@@ -85,17 +73,13 @@ describe('ArdaSidebar', () => {
   });
 
   it('applies collapsed width class', () => {
-    const { container } = render(
-      <ArdaSidebar navItems={navItems} collapsed={true} />,
-    );
+    const { container } = render(<ArdaSidebar navItems={navItems} collapsed={true} />);
     const aside = container.querySelector('aside');
     expect(aside?.className).toContain('w-[56px]');
   });
 
   it('applies expanded width class', () => {
-    const { container } = render(
-      <ArdaSidebar navItems={navItems} collapsed={false} />,
-    );
+    const { container } = render(<ArdaSidebar navItems={navItems} collapsed={false} />);
     const aside = container.querySelector('aside');
     expect(aside?.className).toContain('w-[240px]');
   });

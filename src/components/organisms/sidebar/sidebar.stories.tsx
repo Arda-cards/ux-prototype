@@ -10,8 +10,7 @@ import {
   Settings,
 } from 'lucide-react';
 
-import type { NavItem } from './sidebar';
-import { ArdaSidebar } from './sidebar';
+import { ArdaSidebar, type NavItem } from './sidebar';
 
 const sampleNavItems: NavItem[] = [
   { href: '/', icon: LayoutDashboard, label: 'Dashboard', exact: true },
@@ -40,12 +39,30 @@ const meta: Meta<typeof ArdaSidebar> = {
     },
   },
   argTypes: {
-    navItems: { description: 'Navigation items defining the sidebar menu structure.', table: { category: 'Static' } },
-    user: { description: 'User information displayed in the sidebar footer.', table: { category: 'Static' } },
-    collapsed: { description: 'Whether the sidebar is in collapsed (icon-only) mode.', table: { category: 'Runtime' } },
-    currentPath: { description: 'Current route path used for active item highlighting.', table: { category: 'Runtime' } },
-    onNavigate: { description: 'Called when a navigation item is clicked.', table: { category: 'Events' } },
-    onLogout: { description: 'Called when the logout button is clicked.', table: { category: 'Events' } },
+    navItems: {
+      description: 'Navigation items defining the sidebar menu structure.',
+      table: { category: 'Static' },
+    },
+    user: {
+      description: 'User information displayed in the sidebar footer.',
+      table: { category: 'Static' },
+    },
+    collapsed: {
+      description: 'Whether the sidebar is in collapsed (icon-only) mode.',
+      table: { category: 'Runtime' },
+    },
+    currentPath: {
+      description: 'Current route path used for active item highlighting.',
+      table: { category: 'Runtime' },
+    },
+    onNavigate: {
+      description: 'Called when a navigation item is clicked.',
+      table: { category: 'Events' },
+    },
+    onLogout: {
+      description: 'Called when the logout button is clicked.',
+      table: { category: 'Events' },
+    },
   },
   decorators: [
     (Story) => (
@@ -105,7 +122,6 @@ function ToggleDemo() {
         collapsed={collapsed}
         currentPath="/"
         user={sampleUser}
-
       />
       <div style={{ marginLeft: collapsed ? 56 : 240, padding: 24, transition: 'margin 0.2s' }}>
         <button
