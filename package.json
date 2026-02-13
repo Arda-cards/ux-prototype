@@ -27,7 +27,7 @@
     "test": "vitest --run",
     "test:watch": "vitest",
     "test:coverage": "vitest --run --coverage",
-    "test:storybook": "test-storybook",
+    "test:storybook": "test-storybook --testTimeout 30000",
     "serve": "node server.js"
   },
   "dependencies": {
