@@ -1,0 +1,30 @@
+import { Canvas, Meta, Controls } from '@storybook/blocks';
+import * as FormDialogStories from './item-supply-form-dialog.stories';
+
+<Meta of={FormDialogStories} />
+
+# ArdaItemSupplyFormDialog
+
+A modal dialog for adding or editing an item supply relationship. Features a supplier typeahead (with create-on-the-fly support), form fields for supply details, and dirty-state protection with a confirm dialog on discard.
+
+## Add Mode
+
+<Canvas of={FormDialogStories.AddMode} />
+
+<Controls of={FormDialogStories.AddMode} />
+
+## Edit Mode
+
+Pre-fills form fields from the existing supply data.
+
+<Canvas of={FormDialogStories.EditMode} />
+
+## With Typeahead
+
+Demonstrates interactive supplier search and create-on-the-fly.
+
+<Canvas of={FormDialogStories.WithTypeahead} />
+
+## Interactive
+
+<Canvas of={FormDialogStories.Interactive} />

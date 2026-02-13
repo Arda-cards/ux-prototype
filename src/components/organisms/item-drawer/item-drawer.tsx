@@ -5,6 +5,11 @@ import { X, Pencil, Package, ImageOff, ChevronDown, ChevronRight } from 'lucide-
 
 import { cn } from '@/lib/utils';
 import { ArdaConfirmDialog } from '@/components/atoms/confirm-dialog/confirm-dialog';
+import { ArdaItemSupplySection } from '@/components/organisms/reference/items/item-supply-section/item-supply-section';
+import type {
+  ItemSupply,
+  SupplyDesignation,
+} from '@/types/reference/business-affiliates/item-supply';
 
 /* ------------------------------------------------------------------ */
 /*  Value Types                                                       */
@@ -176,6 +181,20 @@ export interface ArdaItemDrawerRuntimeConfig {
   onSubmit?: (data: ItemData) => void;
   /** Called when the user clicks Edit from view mode. */
   onEdit?: () => void;
+  /** Structured item supplies (replaces flat supply display in view mode). */
+  itemSupplies?: ItemSupply[];
+  /** Designation map for supplies: supplyId -> designations. */
+  supplyDesignations?: Record<string, SupplyDesignation[]>;
+  /** Supplier names map: supplyId -> supplier display name. */
+  supplySupplierNames?: Record<string, string>;
+  /** Called when add supply is clicked. */
+  onAddSupply?: () => void;
+  /** Called when edit supply is clicked. */
+  onEditSupply?: (supplyId: string) => void;
+  /** Called when remove supply is clicked. */
+  onRemoveSupply?: (supplyId: string) => void;
+  /** Called when a supplier name link is clicked in a supply card. */
+  onSupplierClick?: (affiliateId: string) => void;
 }
 
 /** Combined props for ArdaItemDrawer. */
@@ -290,13 +309,29 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function ViewModeContent({
   item,
   mechanismLabels,
+  itemSupplies,
+  supplyDesignations,
+  supplySupplierNames,
+  onAddSupply,
+  onEditSupply,
+  onRemoveSupply,
+  onSupplierClick,
 }: {
   item: ItemData;
   mechanismLabels: Record<OrderMechanism, string>;
+  itemSupplies?: ItemSupply[];
+  supplyDesignations?: Record<string, SupplyDesignation[]>;
+  supplySupplierNames?: Record<string, string>;
+  onAddSupply?: () => void;
+  onEditSupply?: (supplyId: string) => void;
+  onRemoveSupply?: (supplyId: string) => void;
+  onSupplierClick?: (affiliateId: string) => void;
 }) {
   const classification = item.classification;
   const locator = item.locator;
   const supply = item.primarySupply;
+
+  const hasStructuredSupplies = itemSupplies !== undefined && itemSupplies.length > 0;
 
   return (
     <>
@@ -349,18 +384,33 @@ function ViewModeContent({
         />
       </Section>
 
-      {/* Supply section */}
-      {supply && (
-        <Section title="Supply">
-          <FieldRow label="Supplier" value={supply.supplier} />
-          <FieldRow label="Unit Cost" value={formatMoney(supply.unitCost)} />
-          <FieldRow label="Order Qty" value={formatQuantity(supply.orderQuantity)} />
-          <FieldRow label="Lead Time" value={formatDuration(supply.averageLeadTime)} />
-          <FieldRow
-            label="Order Mechanism"
-            value={supply.orderMechanism ? mechanismLabels[supply.orderMechanism] : undefined}
+      {/* Supply section: structured supplies vs. flat display */}
+      {hasStructuredSupplies ? (
+        <>
+          <div className="my-4 border-t border-gray-200" />
+          <ArdaItemSupplySection
+            supplies={itemSupplies}
+            designations={supplyDesignations ?? {}}
+            supplierNames={supplySupplierNames ?? {}}
+            {...(onAddSupply ? { onAdd: onAddSupply } : {})}
+            {...(onEditSupply ? { onEditSupply } : {})}
+            {...(onRemoveSupply ? { onRemoveSupply } : {})}
+            {...(onSupplierClick ? { onSupplierClick } : {})}
           />
-        </Section>
+        </>
+      ) : (
+        supply && (
+          <Section title="Supply">
+            <FieldRow label="Supplier" value={supply.supplier} />
+            <FieldRow label="Unit Cost" value={formatMoney(supply.unitCost)} />
+            <FieldRow label="Order Qty" value={formatQuantity(supply.orderQuantity)} />
+            <FieldRow label="Lead Time" value={formatDuration(supply.averageLeadTime)} />
+            <FieldRow
+              label="Order Mechanism"
+              value={supply.orderMechanism ? mechanismLabels[supply.orderMechanism] : undefined}
+            />
+          </Section>
+        )
       )}
 
       {/* Notes section */}
@@ -958,6 +1008,13 @@ export function ArdaItemDrawer({
   onClose,
   onSubmit,
   onEdit,
+  itemSupplies,
+  supplyDesignations,
+  supplySupplierNames,
+  onAddSupply,
+  onEditSupply,
+  onRemoveSupply,
+  onSupplierClick,
 }: ArdaItemDrawerProps) {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -1119,7 +1176,17 @@ export function ArdaItemDrawer({
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto px-6 py-4">
           {mode === 'view' && item && (
-            <ViewModeContent item={item} mechanismLabels={mechanismLabels} />
+            <ViewModeContent
+              item={item}
+              mechanismLabels={mechanismLabels}
+              {...(itemSupplies ? { itemSupplies } : {})}
+              {...(supplyDesignations ? { supplyDesignations } : {})}
+              {...(supplySupplierNames ? { supplySupplierNames } : {})}
+              {...(onAddSupply ? { onAddSupply } : {})}
+              {...(onEditSupply ? { onEditSupply } : {})}
+              {...(onRemoveSupply ? { onRemoveSupply } : {})}
+              {...(onSupplierClick ? { onSupplierClick } : {})}
+            />
           )}
           {(mode === 'add' || mode === 'edit') && (
             <FormModeContent

@@ -1,0 +1,30 @@
+import { Canvas, Meta, Controls } from '@storybook/blocks';
+import * as SupplyCardStories from './supply-card.stories';
+
+<Meta of={SupplyCardStories} />
+
+# ArdaSupplyCard
+
+A card representing a supply relationship between an item and a business affiliate (supplier). Displays supplier name, cost, lead time, designation badges, and provides actions for editing, removing, and changing designations.
+
+## Default
+
+<Canvas of={SupplyCardStories.Default} />
+
+<Controls of={SupplyCardStories.Default} />
+
+## With Multiple Designations
+
+<Canvas of={SupplyCardStories.WithDesignations} />
+
+## Legacy Supply
+
+Legacy supplies are not linked to a supplier record and display an italic notice instead of the order mechanism.
+
+<Canvas of={SupplyCardStories.LegacySupply} />
+
+## Interactive
+
+Demonstrates live designation changes, default toggling, and action callbacks.
+
+<Canvas of={SupplyCardStories.Interactive} />
