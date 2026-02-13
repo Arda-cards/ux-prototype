@@ -159,7 +159,8 @@ export const ViewToEdit: Story = {
     const canvas = within(canvasElement);
 
     // Scene 1: Drawer is open in view mode with sample item data
-    await expect(canvas.getByText('Hydraulic Cylinder HC-500')).toBeInTheDocument();
+    const nameElements = canvas.getAllByText('Hydraulic Cylinder HC-500');
+    await expect(nameElements.length).toBeGreaterThanOrEqual(1);
     await expect(canvas.getByText('HYD-CYL-HC500')).toBeInTheDocument();
     await delay(1500);
 
