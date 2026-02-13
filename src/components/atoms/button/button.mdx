@@ -1,0 +1,57 @@
+import { Canvas, Meta, ArgTypes } from '@storybook/blocks';
+import * as ButtonStories from './button.stories';
+
+<Meta of={ButtonStories} />
+
+# ArdaButton
+
+A themed button with four visual variants and three sizes. Supports a loading state that displays a spinner and disables interaction.
+
+## Configuration Lifecycle
+
+### Static Configuration (Design Time)
+
+Properties chosen when the button is placed in a layout. These define the button's visual identity and do not change at runtime:
+
+- **variant** — `primary` (filled orange), `secondary` (white with border), `ghost` (transparent), or `destructive` (red). Determines the color scheme and hover behavior.
+- **size** — `sm` (2rem height), `md` (2.5rem, default), or `lg` (3rem). Affects height, padding, and font size.
+
+### Runtime Configuration (Dynamic)
+
+Properties driven by application state that may change during the component's lifetime:
+
+- **loading** — When `true`, shows a CSS spinner animation and disables the button. Use during async operations (save, submit, fetch).
+- **disabled** — Standard HTML disabled attribute (inherited from `ButtonHTMLAttributes`). Reduces opacity and prevents interaction.
+
+## Usage
+
+### Primary Action
+
+<Canvas of={ButtonStories.Primary} />
+
+### Loading State
+
+<Canvas of={ButtonStories.Loading} />
+
+### All Variants
+
+<Canvas of={ButtonStories.AllVariants} />
+
+### All Sizes
+
+<Canvas of={ButtonStories.AllSizes} />
+
+## Props
+
+<ArgTypes of={ButtonStories} />
+
+## Accessibility
+
+- Renders as a native `<button>` element, inheriting keyboard focus and screen reader semantics.
+- The loading spinner is a CSS pseudo-element — add `aria-busy="true"` on the parent form or region during async operations for screen reader context.
+- When `disabled` or `loading`, the button is removed from the tab order via the native `disabled` attribute.
+
+## Related Components
+
+- **ArdaBadge** — For non-interactive status labels.
+- **ArdaSidebar** — Uses buttons for the logout action.

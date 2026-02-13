@@ -1,0 +1,166 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Use Cases/Inventory/Add Item (Sample Only)/Description" />
+
+# Inventory: Add New Inventory Item (Example OnAly)
+
+**Author**: Product Owner
+**Date**: 2025-01-15
+**Priority**: High
+**Feature Version**: MVP1
+**Related Issue**: <a href="https://github.com/Arda-cards/management/issues/620" target="_blank">#620</a>
+
+## User Story
+
+As a **warehouse operator**,
+I want to **add a new item to the inventory system through a guided multi-step form**,
+so that **the item is tracked with correct identification, stock levels, pricing, and supplier information from the moment it enters the warehouse**.
+
+## Context
+
+Warehouse operators receive new stock that does not yet exist in the system. They need a reliable, low-error way to register these items. The process must capture enough information to enable downstream features: reorder alerts (minimum stock level), purchase order generation (supplier + unit price), and physical retrieval (storage location).
+
+The form is intentionally split into multiple steps to reduce cognitive load and allow the operator to focus on one category of information at a time.
+
+**Preconditions:**
+
+- The user is authenticated and has the **Inventory &gt; Write** permission.
+- The Inventory module is accessible from the main sidebar navigation.
+- The item does not already exist in the system (duplicate detection is out of scope for this use case).
+
+## Acceptance Criteria
+
+- [ ] **Given** the user is on Step 1 with empty fields, **when** required fields are incomplete, **then** the "Next Step" button is disabled.
+- [ ] **Given** the user is on Step 1 with all three fields filled (Item Name, SKU, Category), **when** they click "Next Step", **then** the wizard advances to Step 2.
+- [ ] **Given** the user is on Step 2, **when** they click "Back", **then** Step 1 is shown with all previously entered data preserved.
+- [ ] **Given** the user is on Step 2 with all required fields filled (Quantity, Unit Price, Supplier, Location), **when** they click "Next Step", **then** the wizard advances to Step 3 (Review).
+- [ ] **Given** the user is on Step 3 (Review), **when** the summary is displayed, **then** Total Value is calculated as Quantity &#215; Unit Price, formatted as US currency with thousands separator and two decimal places.
+- [ ] **Given** the user is on Step 3, **when** they click "Confirm &amp; Add Item", **then** a success screen displays the item name, SKU, quantity, and total value.
+- [ ] **Given** the success screen is displayed, **when** the user clicks "Start Over", **then** the wizard returns to a completely empty Step 1.
+- [ ] **Given** the user is on any step (1&#8211;3), **when** they click the "Reset" link, **then** all data is cleared and the wizard returns to Step 1.
+- [ ] **Given** the wizard is on any step, **when** viewing the step indicator, **then** it accurately reflects the current step and marks completed steps with a green check.
+
+## Error Scenarios
+
+This use case covers the **happy path only**. Error scenarios (validation failures, duplicate SKUs, network errors) are addressed in separate use cases.
+
+## UI/UX Notes
+
+**Page:** Inventory &gt; Add Item
+
+**Key interactions:**
+
+The workflow is a 3-step wizard plus a success confirmation screen.
+
+### Step 1 — Item Details
+
+The user sees an empty form with three fields:
+
+<table>
+  <thead>
+    <tr><th>Field</th><th>Type</th><th>Required</th><th>Validation</th><th>Example</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Item Name</td><td>Text input</td><td>Yes</td><td>Non-empty, max 120 chars</td><td>Hydraulic Cylinder HC-500</td></tr>
+    <tr><td>SKU</td><td>Text input</td><td>Yes</td><td>Non-empty, max 40 chars, unique</td><td>HYD-CYL-HC500</td></tr>
+    <tr><td>Category</td><td>Dropdown select</td><td>Yes</td><td>Must select a value</td><td>Filters</td></tr>
+  </tbody>
+</table>
+
+**Category options:** Fasteners, Bearings, PPE, Filters, Lubricants, Drive.
+
+- A step indicator at the top shows "Step 1 of 3" as the active step.
+- The "Next Step" button is **disabled** until all three fields are filled.
+- A "Reset" link in the header clears all fields and returns to this step from anywhere in the wizard.
+
+### Step 2 — Stock &amp; Pricing
+
+The step indicator updates to show Step 1 as complete (green check) and Step 2 as active. The user sees five fields:
+
+<table>
+  <thead>
+    <tr><th>Field</th><th>Type</th><th>Required</th><th>Validation</th><th>Example</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Initial Quantity</td><td>Number input</td><td>Yes</td><td>Integer &#8805; 0</td><td>25</td></tr>
+    <tr><td>Unit Price ($)</td><td>Number input</td><td>Yes</td><td>Decimal &#8805; 0, step 0.01</td><td>189.99</td></tr>
+    <tr><td>Minimum Stock Level</td><td>Number input</td><td>No</td><td>Integer &#8805; 0</td><td>5</td></tr>
+    <tr><td>Supplier</td><td>Text input</td><td>Yes</td><td>Non-empty</td><td>Fastenal Corp.</td></tr>
+    <tr><td>Storage Location</td><td>Text input</td><td>Yes</td><td>Non-empty</td><td>W-03-B2</td></tr>
+  </tbody>
+</table>
+
+- "Back" button returns to Step 1 with all previously entered data preserved.
+- "Next Step" button is **disabled** until all required fields (Quantity, Unit Price, Supplier, Location) are filled.
+- Quantity and Unit Price are displayed side-by-side on the same row.
+
+### Step 3 — Review &amp; Confirm
+
+The step indicator shows Steps 1 and 2 as complete and Step 3 as active. The user sees a read-only summary card with all entered data, organized into three sections separated by dividers:
+
+1. **Item identification:** Item Name, SKU, Category
+2. **Stock &amp; pricing:** Initial Quantity, Unit Price (formatted as currency), **Total Value** (calculated: quantity &#215; unit price, formatted as currency, displayed bold), Minimum Stock Level
+3. **Supply chain:** Supplier, Storage Location
+
+- "Back" button returns to Step 2 with data preserved.
+- "Confirm &amp; Add Item" button submits the item.
+- No fields are editable on this screen — the user must go back to make changes.
+
+### Step 4 — Success Confirmation
+
+The wizard is replaced by a centered confirmation screen:
+
+- A green circle with a checkmark icon.
+- Heading: **"Item added successfully"**.
+- Subtext: **"`<Item Name>` (`<SKU>`) has been added to your inventory."**
+- Three status badges in a row: "In Stock" (green, with dot), "`<quantity>` units" (blue), "`<total value>` total" (outline).
+- A summary card showing Category, Supplier, Location, and Min Stock.
+- A "Start Over" button that resets the wizard to Step 1.
+
+**Responsive considerations:** Not addressed in this use case.
+
+## Dependencies
+
+- **Upstream**: None — this is a standalone front-end workflow.
+- **Downstream**: Inventory list view (displays added items), reorder alerts (depends on minimum stock level), purchase order generation (depends on supplier and unit price).
+
+## Out of Scope
+
+- Duplicate SKU detection (separate use case).
+- Image upload for the item.
+- Batch import of multiple items.
+- Integration with backend API (this use case covers the front-end workflow only).
+- Permission checks and authentication guards (covered by the application shell).
+
+## Notes
+
+### Sample Data
+
+For implementation and testing, use the following representative values:
+
+```
+Item Name:           Hydraulic Cylinder HC-500
+SKU:                 HYD-CYL-HC500
+Category:            Filters
+Initial Quantity:    25
+Unit Price:          189.99
+Minimum Stock Level: 5
+Supplier:            Fastenal Corp.
+Storage Location:    W-03-B2
+Expected Total:      $4,749.75
+```
+
+### Story Artifacts
+
+This use case is implemented as three Storybook stories:
+
+<table>
+  <thead>
+    <tr><th>Story</th><th>Purpose</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Interactive</strong></td><td>Hands-on exploration — the user fills in real data and advances through the wizard manually. A guide panel shows contextual help for each step.</td></tr>
+    <tr><td><strong>Stepwise</strong></td><td>Guided demo — the application advances one pre-filled scene at a time using story controls (Next / Previous / Reset). Useful for walkthroughs and design reviews.</td></tr>
+    <tr><td><strong>Automated</strong></td><td>Regression test — a <code>play</code> function exercises the full workflow end-to-end using the sample data above. Executed by <code>@storybook/test-runner</code> via Playwright.</td></tr>
+  </tbody>
+</table>

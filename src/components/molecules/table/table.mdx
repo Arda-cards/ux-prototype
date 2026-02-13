@@ -1,0 +1,64 @@
+import { Canvas, Meta, ArgTypes } from '@storybook/blocks';
+import * as TableStories from './table.stories';
+
+<Meta of={TableStories} />
+
+# ArdaTable
+
+A composite data table built from six sub-components. Renders inventory data with clickable rows, active-row highlighting, and status badges.
+
+## Sub-Components
+
+<table>
+  <thead>
+    <tr><th>Component</th><th>HTML Element</th><th>Purpose</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>ArdaTable</code></td><td><code>&lt;div&gt; + &lt;table&gt;</code></td><td>Outer wrapper with border, rounded corners, and overflow handling.</td></tr>
+    <tr><td><code>ArdaTableHeader</code></td><td><code>&lt;thead&gt;</code></td><td>Header section with gray background.</td></tr>
+    <tr><td><code>ArdaTableBody</code></td><td><code>&lt;tbody&gt;</code></td><td>Body section with last-row border removal.</td></tr>
+    <tr><td><code>ArdaTableRow</code></td><td><code>&lt;tr&gt;</code></td><td>Row with hover effect, optional click handler, and active state.</td></tr>
+    <tr><td><code>ArdaTableHead</code></td><td><code>&lt;th&gt;</code></td><td>Header cell with uppercase styling.</td></tr>
+    <tr><td><code>ArdaTableCell</code></td><td><code>&lt;td&gt;</code></td><td>Data cell.</td></tr>
+  </tbody>
+</table>
+
+## Configuration Lifecycle
+
+### ArdaTableRow — Static vs Runtime
+
+The only sub-component with a meaningful lifecycle split:
+
+- **Static:** `className` — Additional CSS classes set at composition time.
+- **Runtime:** `onClick` — Row selection handler. `active` — Whether the row is in the selected/highlighted state.
+
+All other sub-components accept only `children` and an optional `className` — they are purely structural.
+
+## Usage
+
+### With Data
+
+<Canvas of={TableStories.WithData} />
+
+### Empty State
+
+<Canvas of={TableStories.EmptyState} />
+
+### Active Row Selection
+
+<Canvas of={TableStories.WithActiveRow} />
+
+## Props
+
+<ArgTypes of={TableStories} />
+
+## Accessibility
+
+- Uses semantic HTML table elements (`table`, `thead`, `tbody`, `tr`, `th`, `td`).
+- Clickable rows have `cursor: pointer` but no `role="button"` — consider adding `role="row"` with `aria-selected` for accessible selection patterns.
+- Header cells use uppercase text styling. Screen readers will announce the original text content regardless of CSS text-transform.
+
+## Related Components
+
+- **ArdaBadge** — Commonly used inside table cells for status columns.
+- **ArdaItemCard** — Alternative card-based item display.

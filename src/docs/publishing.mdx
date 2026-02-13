@@ -1,0 +1,88 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Docs/Publishing" />
+
+# Publishing
+
+The `@arda-cards/ui-components` package is published to **GitHub Packages** on every push to `main`.
+
+## GitHub Packages Setup
+
+The publish workflow (`.github/workflows/publish.yml`) uses the built-in `GITHUB_TOKEN` secret, which is automatically available in GitHub Actions. No additional secrets are required for publishing.
+
+The `.npmrc` file at the repo root configures the `@arda-cards` scope to use the GitHub Packages registry:
+
+```
+@arda-cards:registry=https://npm.pkg.github.com
+```
+
+Required repository settings:
+- The `GITHUB_TOKEN` must have `packages:write` permission (configured in the workflow's `permissions` block).
+- The repository must belong to the `@arda-cards` GitHub organization.
+
+## Version Strategy
+
+This project follows [Semantic Versioning](https://semver.org/):
+
+<table>
+  <thead>
+    <tr><th>Change type</th><th>Version bump</th><th>Example</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Breaking change</td><td>Major</td><td>1.0.0 → 2.0.0</td></tr>
+    <tr><td>New feature</td><td>Minor</td><td>1.0.0 → 1.1.0</td></tr>
+    <tr><td>Bug fix / patch</td><td>Patch</td><td>1.0.0 → 1.0.1</td></tr>
+  </tbody>
+</table>
+
+To bump the version before publishing:
+
+```bash
+npm version patch   # or minor / major
+git push && git push --tags
+```
+
+The CI workflow will then build and publish the new version automatically.
+
+## Consuming the Package
+
+In `arda-frontend-app` (or any consuming project), add the package:
+
+1. **Configure the registry** — create or update `.npmrc` in the consuming project:
+
+```
+@arda-cards:registry=https://npm.pkg.github.com
+```
+
+2. **Authenticate** — set a personal access token (PAT) with `read:packages` scope:
+
+```bash
+npm login --scope=@arda-cards --registry=https://npm.pkg.github.com
+```
+
+3. **Install the package**:
+
+```bash
+npm install @arda-cards/ui-components
+```
+
+4. **Import and use components**:
+
+```tsx
+import { Button } from '@arda-cards/ui-components';
+import '@arda-cards/ui-components/styles';
+```
+
+## Secrets Checklist
+
+<table>
+  <thead>
+    <tr><th>Secret / Token</th><th>Scope</th><th>Where</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>GITHUB_TOKEN</code></td><td><code>packages:write</code></td><td>Auto-provided in Actions</td><td>No setup required</td></tr>
+    <tr><td>PAT (consumers)</td><td><code>read:packages</code></td><td>Consumer's <code>.npmrc</code></td><td>Needed to install the package</td></tr>
+    <tr><td><code>STORYBOOK_SECRET</code></td><td>N/A</td><td>Server <code>.env</code></td><td>Basic auth for self-hosted deploy</td></tr>
+    <tr><td><code>VERCEL_TOKEN</code></td><td>Vercel access</td><td>Local <code>.env</code> only</td><td>For manual Vercel CLI deployments</td></tr>
+  </tbody>
+</table>
