@@ -1,0 +1,58 @@
+import { Canvas, Meta } from '@storybook/blocks';
+import * as DateStories from './date.stories';
+
+<Meta of={DateStories} />
+
+# Date Cell
+
+Compact date display and editing components for AG Grid cells. Parses YYYY-MM-DD as local date to avoid timezone shifts.
+
+## Variants
+
+### Display
+
+Read-only date renderer. Shows '&#8212;' for empty/undefined values. Formats ISO date strings in local timezone.
+
+<Canvas of={DateStories.Display} />
+
+### Editor
+
+AG Grid cell editor with date input control, auto-focus, Enter to commit, Escape to cancel. Exposes `getValue()` via ref for AG Grid integration.
+
+<Canvas of={DateStories.Editor} />
+
+### Interactive
+
+Starts in display mode. Double-click to edit, Enter/blur to commit, Escape to cancel.
+
+<Canvas of={DateStories.Interactive} />
+
+## Configuration
+
+### Static Configuration (Design Time)
+
+Properties chosen at composition time:
+
+- **timezone** &#8212; IANA timezone for display formatting (e.g., "America/New_York")
+- **placeholder** &#8212; Placeholder text for the editor input
+
+### Runtime Configuration
+
+Properties that control component state and behavior:
+
+- **value** &#8212; The date value to display or edit (ISO date string: YYYY-MM-DD)
+- **stopEditing** &#8212; AG Grid callback to exit edit mode (editor only)
+- **onValueChange** &#8212; Callback when value changes (interactive only)
+
+## Factory Helper
+
+Use `createDateCellEditor()` to create a pre-configured editor for AG Grid column definitions:
+
+```ts
+import { createDateCellEditor } from '@/components/atoms/grid/date';
+
+const colDef = {
+  field: 'startDate',
+  cellEditor: createDateCellEditor({ timezone: 'America/New_York', placeholder: 'Select date...' }),
+};
+```

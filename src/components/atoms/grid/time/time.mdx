@@ -1,0 +1,57 @@
+import { Canvas, Meta } from '@storybook/blocks';
+import * as TimeStories from './time.stories';
+
+<Meta of={TimeStories} />
+
+# Time Cell
+
+Compact time display and editing components for AG Grid cells. Formats HH:mm to 12-hour AM/PM format.
+
+## Variants
+
+### Display
+
+Read-only time renderer. Shows '&#8212;' for empty/undefined values. Converts 24-hour time to 12-hour format with AM/PM.
+
+<Canvas of={TimeStories.Display} />
+
+### Editor
+
+AG Grid cell editor with time input control, auto-focus, Enter to commit, Escape to cancel. Exposes `getValue()` via ref for AG Grid integration.
+
+<Canvas of={TimeStories.Editor} />
+
+### Interactive
+
+Starts in display mode. Double-click to edit, Enter/blur to commit, Escape to cancel.
+
+<Canvas of={TimeStories.Interactive} />
+
+## Configuration
+
+### Static Configuration (Design Time)
+
+Properties chosen at composition time:
+
+- **placeholder** &#8212; Placeholder text for the editor input
+
+### Runtime Configuration
+
+Properties that control component state and behavior:
+
+- **value** &#8212; The time value to display or edit (HH:mm format)
+- **stopEditing** &#8212; AG Grid callback to exit edit mode (editor only)
+- **onValueChange** &#8212; Callback when value changes (interactive only)
+
+## Factory Helper
+
+Use `createTimeCellEditor()` to create a pre-configured editor for AG Grid column definitions:
+
+```ts
+import { createTimeCellEditor } from '@/components/atoms/grid/time';
+
+const colDef = {
+  field: 'startTime',
+  cellEditor: createTimeCellEditor({ placeholder: 'Select time...' }),
+};
+```

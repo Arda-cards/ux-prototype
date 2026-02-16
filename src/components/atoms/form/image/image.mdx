@@ -1,0 +1,47 @@
+import { Canvas, Meta } from '@storybook/blocks';
+import * as ImageStories from './image.stories';
+
+<Meta of={ImageStories} />
+
+# Image Field
+
+Form field components for displaying and editing image URLs with preview.
+
+## Variants
+
+### Display
+
+Read-only image preview from URL. Shows image with configurable max dimensions and object-fit: cover. Displays URL below the image. Shows placeholder icon with "No image" text for empty or broken URLs.
+
+<Canvas of={ImageStories.Display} />
+
+### Editor
+
+URL input for image with live preview. Validates URL by attempting to load the image. Shows preview below input when URL is valid. Uses `<input type="url">` for browser validation.
+
+<Canvas of={ImageStories.Editor} />
+
+### Interactive
+
+Starts in display mode. Double-click to switch to editing with URL input. Enter/blur commits, Escape cancels.
+
+<Canvas of={ImageStories.Interactive} />
+
+## Configuration
+
+### Static Configuration (Design Time)
+
+- **maxWidth** &#8212; Maximum width in pixels for display
+- **maxHeight** &#8212; Maximum height in pixels (default: 120 for display, 80 for editor preview)
+- **alt** &#8212; Alt text for the image (default: "Image")
+- **placeholder** &#8212; Placeholder text for the URL input (default: "Enter image URL…")
+- **maxPreviewHeight** &#8212; Maximum height for editor preview (default: 80)
+
+### Runtime Configuration
+
+- **value** &#8212; The image URL string
+- **onChange** &#8212; Called when URL changes
+- **onComplete** &#8212; Called on Enter or blur
+- **onCancel** &#8212; Called on Escape
+- **disabled** &#8212; Disables editing
+- **autoFocus** &#8212; Focus the input on mount

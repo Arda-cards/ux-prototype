@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, within } from '@storybook/test';
+import { expect, fn, within } from '@storybook/test';
 import { useState } from 'react';
 
 import type { SupplyDesignation } from '@/types/reference/business-affiliates/item-supply';
@@ -37,6 +37,38 @@ const meta: Meta<typeof ArdaSupplyCard> = {
       description: 'Whether this is the default supply.',
       table: { category: 'Runtime' },
     },
+    onSupplierClick: {
+      action: 'supplierClick',
+      description: 'Called when the supplier name is clicked.',
+      table: { category: 'Events' },
+    },
+    onEdit: {
+      action: 'edit',
+      description: 'Called when the Edit action is triggered.',
+      table: { category: 'Events' },
+    },
+    onRemove: {
+      action: 'remove',
+      description: 'Called when the Remove action is triggered.',
+      table: { category: 'Events' },
+    },
+    onDesignationChange: {
+      action: 'designationChange',
+      description: 'Called when a designation change is requested.',
+      table: { category: 'Events' },
+    },
+    onToggleDefault: {
+      action: 'toggleDefault',
+      description: 'Called when the default toggle star is clicked.',
+      table: { category: 'Events' },
+    },
+  },
+  args: {
+    onSupplierClick: fn(),
+    onEdit: fn(),
+    onRemove: fn(),
+    onDesignationChange: fn(),
+    onToggleDefault: fn(),
   },
   decorators: [
     (Story) => (

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, within } from '@storybook/test';
+import { expect, fn, within } from '@storybook/test';
 import { useState } from 'react';
 
 import type { TypeaheadOption } from '@/components/atoms/typeahead/typeahead';
@@ -28,6 +28,49 @@ const meta: Meta<typeof ArdaItemSupplyFormDialog> = {
       },
     },
   },
+  argTypes: {
+    availableSuppliers: {
+      control: false,
+      description: 'Available supplier options for the typeahead.',
+      table: { category: 'Static' },
+    },
+    open: {
+      control: 'boolean',
+      description: 'Whether the dialog is open.',
+      table: { category: 'Runtime' },
+    },
+    mode: {
+      control: 'select',
+      options: ['add', 'edit'],
+      description: 'Operating mode: add or edit.',
+      table: { category: 'Runtime' },
+    },
+    supply: {
+      control: false,
+      description: 'Supply data to pre-fill in edit mode.',
+      table: { category: 'Runtime' },
+    },
+    onClose: {
+      action: 'closed',
+      description: 'Called when the dialog requests to close.',
+      table: { category: 'Events' },
+    },
+    onSave: {
+      action: 'saved',
+      description: 'Called when the user saves the form.',
+      table: { category: 'Events' },
+    },
+    onCreateSupplier: {
+      action: 'createSupplier',
+      description: 'Called when the user wants to create a new supplier inline.',
+      table: { category: 'Events' },
+    },
+  },
+  args: {
+    onClose: fn(),
+    onSave: fn(),
+    onCreateSupplier: fn(),
+  },
 };
 
 export default meta;
@@ -38,8 +81,6 @@ export const AddMode: Story = {
     open: true,
     mode: 'add',
     availableSuppliers: sampleSuppliers,
-    onClose: () => {},
-    onSave: (data) => alert(`Saved: ${JSON.stringify(data, null, 2)}`),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -53,8 +94,6 @@ export const EditMode: Story = {
     mode: 'edit',
     availableSuppliers: sampleSuppliers,
     supply: editSupply,
-    onClose: () => {},
-    onSave: (data) => alert(`Saved: ${JSON.stringify(data, null, 2)}`),
   },
 };
 

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, fn, within } from '@storybook/test';
 import { useRef, useState } from 'react';
 import { ArdaDataGrid, ArdaDataGridRef, GridImage } from './data-grid';
 import type { ColDef } from 'ag-grid-community';
@@ -45,6 +46,63 @@ const meta: Meta<typeof ArdaDataGrid> = {
       },
     },
   },
+  argTypes: {
+    height: {
+      control: 'number',
+      description: 'Grid container height in pixels.',
+      table: { category: 'Static' },
+    },
+    loading: {
+      control: 'boolean',
+      description: 'Whether to display the loading overlay.',
+      table: { category: 'Runtime' },
+    },
+    error: {
+      control: 'text',
+      description: 'Error message to display instead of the grid.',
+      table: { category: 'Runtime' },
+    },
+    enableRowSelection: {
+      control: 'boolean',
+      description: 'Enable row selection via checkboxes.',
+      table: { category: 'Static' },
+    },
+    enableMultiRowSelection: {
+      control: 'boolean',
+      description: 'Allow selecting multiple rows.',
+      table: { category: 'Static' },
+    },
+    enableCellEditing: {
+      control: 'boolean',
+      description: 'Enable inline cell editing.',
+      table: { category: 'Runtime' },
+    },
+    persistenceKey: {
+      control: 'text',
+      description: 'Key for persisting column state to localStorage.',
+      table: { category: 'Static' },
+    },
+    onSelectionChanged: {
+      action: 'selectionChanged',
+      description: 'Called when row selection changes.',
+      table: { category: 'Events' },
+    },
+    onCellValueChanged: {
+      action: 'cellValueChanged',
+      description: 'Called when a cell value is edited.',
+      table: { category: 'Events' },
+    },
+    onRowClicked: {
+      action: 'rowClicked',
+      description: 'Called when a row is clicked.',
+      table: { category: 'Events' },
+    },
+  },
+  args: {
+    onSelectionChanged: fn(),
+    onCellValueChanged: fn(),
+    onRowClicked: fn(),
+  },
 };
 
 export default meta;
@@ -58,6 +116,10 @@ export const Default: Story = {
     columnDefs,
     rowData: sampleData,
     height: 400,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('Alice Johnson')).toBeInTheDocument();
   },
 };
 

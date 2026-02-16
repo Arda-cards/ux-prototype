@@ -4,8 +4,11 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 
-import { ArdaSelectCellEditor, createSelectCellEditor } from './select-cell-editor';
-import type { SelectCellEditorHandle } from './select-cell-editor';
+import {
+  ArdaSelectCellEditor,
+  createSelectCellEditor,
+  type SelectCellEditorHandle,
+} from './select-cell-editor';
 
 const mockOptions = [
   { value: 'option1', label: 'Option 1' },

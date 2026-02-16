@@ -1,14 +1,4 @@
-import type {
-  Item,
-  CardSize,
-  LabelSize,
-  BreadcrumbSize,
-  ItemColor,
-  OrderMechanism,
-  Quantity,
-  QuantityUnit,
-} from '@/types/reference/items/item-domain';
-import type { Money } from '@/types/model';
+import type { Item } from '@/types/reference/items/item-domain';
 
 const now = Date.now();
 

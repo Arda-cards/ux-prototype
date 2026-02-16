@@ -1,0 +1,55 @@
+import { Canvas, Meta } from '@storybook/blocks';
+import * as NumberStories from './number.stories';
+
+<Meta of={NumberStories} />
+
+# Number Cell
+
+Compact number display and editing components for AG Grid cells. Configurable decimal precision with right-aligned display.
+
+## Variants
+
+### Display
+
+Read-only number renderer. Shows '&#8212;' for empty/undefined values. Formats numbers with specified decimal precision.
+
+<Canvas of={NumberStories.Display} />
+
+### Editor
+
+AG Grid cell editor with numeric input, auto-focus, Enter to commit, Escape to cancel. Exposes `getValue()` via ref for AG Grid integration.
+
+<Canvas of={NumberStories.Editor} />
+
+### Interactive
+
+Starts in display mode. Double-click to edit, Enter/blur to commit, Escape to cancel.
+
+<Canvas of={NumberStories.Interactive} />
+
+## Configuration
+
+### Static Configuration (Design Time)
+
+Properties chosen at composition time:
+
+- **precision** &#8212; Number of decimal places to display (default: 0 for integers)
+- **min** &#8212; Minimum allowed value (editor only)
+- **max** &#8212; Maximum allowed value (editor only)
+- **placeholder** &#8212; Placeholder text for the editor input
+
+### Runtime Configuration
+
+Properties that control component state and behavior:
+
+- **value** &#8212; The numeric value to display or edit
+- **stopEditing** &#8212; AG Grid callback to exit edit mode (editor only)
+- **onValueChange** &#8212; Callback when value changes (interactive only)
+
+## Precision Examples
+
+- **precision: 0** &#8212; Integer display (42)
+- **precision: 2** &#8212; Two decimal places (3.14)
+- **precision: 4** &#8212; Four decimal places (3.1416)
+
+Numbers are right-aligned for proper visual alignment in grid columns.

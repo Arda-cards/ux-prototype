@@ -1,0 +1,303 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Docs/Component Classification" />
+
+# Component Classification Guidelines
+
+A comprehensive guide to classifying components as Atoms, Molecules, or Organisms in the Arda UX prototype, following the Atomic Design methodology with adaptations for our domain architecture.
+
+## Overview
+
+The Arda component library organizes components using Atomic Design principles:
+
+- **Atoms** — Basic building blocks, reusable across the entire application
+- **Molecules** — Compositions of atoms serving specific purposes, often domain-agnostic
+- **Organisms** — Complex components with business logic, often domain-specific
+
+This hierarchy helps maintain clear separation of concerns, promotes reusability, and makes the codebase easier to navigate.
+
+## Atoms
+
+**Definition:** Atoms are the smallest, most fundamental UI building blocks. They are standalone components that do not depend on other custom components and can be used anywhere in the application.
+
+**Criteria:**
+
+- Contains no domain logic or business rules
+- Does not import other Arda atoms, molecules, or organisms
+- Highly reusable across different contexts
+- Generally maps to a single HTML element or simple composition
+- Focuses on presentation and basic interaction patterns
+
+**Subcategories:**
+
+<table>
+  <thead>
+    <tr>
+      <th>Category</th>
+      <th>Purpose</th>
+      <th>Examples</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>General</strong></td>
+      <td>Common UI primitives for user interaction and status display</td>
+      <td>Badge, Button, ConfirmDialog</td>
+    </tr>
+    <tr>
+      <td><strong>Display and Layout</strong></td>
+      <td>Components for structuring and presenting content</td>
+      <td>Card, Separator, Skeleton</td>
+    </tr>
+    <tr>
+      <td><strong>Form</strong></td>
+      <td>Input controls and form primitives</td>
+      <td>Input, Select, Checkbox, Radio</td>
+    </tr>
+    <tr>
+      <td><strong>Grid</strong></td>
+      <td>AG Grid cell editors and renderers</td>
+      <td>SelectCellEditor, TypeaheadCellEditor</td>
+    </tr>
+    <tr>
+      <td><strong>Other</strong></td>
+      <td>Specialized atoms that don't fit other categories</td>
+      <td>Typeahead (autocomplete/combobox)</td>
+    </tr>
+  </tbody>
+</table>
+
+**Examples from this codebase:**
+
+- **Badge** — Status indicator with color variants
+- **Button** — Clickable action trigger with size and variant options
+- **Typeahead** — Autocomplete/combobox input with dropdown
+- **SelectCellEditor** — Dropdown editor for AG Grid cells
+- **TypeaheadCellEditor** — Searchable select editor for AG Grid cells
+- **ConfirmDialog** — Modal confirmation overlay
+
+## Molecules
+
+**Definition:** Molecules are combinations of atoms that work together as a cohesive unit to serve a specific purpose. They are more complex than atoms but remain relatively generic and reusable.
+
+**Criteria:**
+
+- Composed of multiple atoms or native elements
+- May contain some composition logic but minimal domain knowledge
+- Reusable across multiple features or domains
+- Focuses on a specific UI pattern (data grid, table, card layout)
+- Does not directly interact with business APIs or domain entities
+
+**Examples from this codebase:**
+
+- **ArdaDataGrid** — Generic data grid component wrapping AG Grid with Arda-specific configuration
+- **ArdaTable** — Simple table component using @tanstack/react-table
+- **ItemCard** — Card layout for displaying item information (could be domain-specific in some codebases, but here it's generic enough for reuse)
+- **Data grid presets** — Column definitions and cell renderers for items, suppliers (molecules/data-grid/presets/)
+
+## Organisms
+
+**Definition:** Organisms are complex, feature-rich components that often contain business logic and connect directly to domain concepts. They compose multiple molecules and atoms to create complete sections of an interface.
+
+**Criteria:**
+
+- Contains domain-specific logic or data structures
+- Often connects to APIs, state management, or business rules
+- Composed of multiple molecules and/or atoms
+- May be specific to one feature or domain area
+- Represents a complete, functional section of the UI
+
+**Subcategories:**
+
+### Shared Organisms
+
+Reusable organisms that can be applied across multiple domains with configuration.
+
+**Location:** `organisms/shared/`
+
+**Examples:**
+- **entity-data-grid (factory)** — Configurable data grid factory that can be specialized for any entity type
+
+### Reference Organisms
+
+Domain-specific organisms tied to particular business domains. These components understand domain entities, validation rules, and workflows.
+
+**Location:** `organisms/reference/{domain}/`
+
+**Domains:**
+
+<table>
+  <thead>
+    <tr>
+      <th>Domain</th>
+      <th>Path</th>
+      <th>Examples</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Items</strong></td>
+      <td>organisms/reference/items/</td>
+      <td>items-data-grid, item-supply-form-dialog, item-supply-section</td>
+    </tr>
+    <tr>
+      <td><strong>Business Affiliates</strong></td>
+      <td>organisms/reference/business-affiliates/</td>
+      <td>suppliers-data-grid, supplier-drawer, supplier-form</td>
+    </tr>
+  </tbody>
+</table>
+
+**Examples from this codebase:**
+
+- **items-data-grid** — Data grid specialized for items domain with item-specific columns and actions
+- **suppliers-data-grid** — Data grid for suppliers with supplier-specific functionality
+- **supplier-drawer** — Slide-out panel for viewing/editing supplier details
+- **item-supply-form-dialog** — Modal form for managing item supply relationships
+
+## Decision Flowchart
+
+Use this decision tree when classifying a new component:
+
+1. **Does this component import any other Arda custom components (atoms, molecules, organisms)?**
+   - **No** → Likely an **Atom**. Proceed to step 2.
+   - **Yes** → Proceed to step 3.
+
+2. **Is this a fundamental UI primitive with no domain knowledge?**
+   - **Yes** → **Atom**
+   - **No** → Re-evaluate if it truly has no dependencies
+
+3. **Does this component contain domain-specific logic or directly connect to business APIs?**
+   - **Yes** → **Organism**. Proceed to step 6.
+   - **No** → Proceed to step 4.
+
+4. **Is this component reusable across multiple domains or features?**
+   - **Yes** → **Molecule**
+   - **No** → **Organism** (domain-specific, even if it lacks complex logic)
+
+5. **Does this component provide configuration/customization for domain-specific use cases?**
+   - **Yes, and it's configurable** → **Shared Organism**
+   - **No, it's tied to one domain** → **Reference Organism**
+
+6. **Where should this organism live?**
+   - **Configurable across domains** → `organisms/shared/`
+   - **Specific to a business domain** → `organisms/reference/{domain}/`
+
+## Edge Cases
+
+### When a component could be either Atom or Molecule
+
+**Indicators it's an Atom:**
+- Zero imports of other custom components
+- Wraps a single native element or Radix primitive
+- No composition logic, just prop mapping
+
+**Indicators it's a Molecule:**
+- Composes multiple atoms or elements
+- Contains layout or interaction orchestration
+- Provides a reusable pattern (like a card with header/body/footer structure)
+
+**Example:** A `StatusBadge` that only renders a `Badge` with color mapping logic could be an Atom if simple enough, but if it composes multiple elements (icon + badge + tooltip), it becomes a Molecule.
+
+### When a component could be either Molecule or Organism
+
+**Indicators it's a Molecule:**
+- Generic, reusable across features
+- No knowledge of specific entity types
+- Configuration via props, not hardcoded domain logic
+
+**Indicators it's an Organism:**
+- Tied to a specific domain entity (Item, Supplier, Order)
+- Contains business validation rules
+- Connects to domain-specific APIs or state
+
+**Example:** A generic `DataGrid` is a Molecule. An `ItemsDataGrid` that knows about item-specific columns, validation, and actions is an Organism.
+
+### When a preset/configuration could be Molecule or Organism
+
+**Column presets and cell renderers** in `molecules/data-grid/presets/` are technically configurations, not components. However:
+
+- If the preset is **generic and reusable** (common cell renderers like currency or date formatters), it's a **Molecule-level configuration**.
+- If the preset is **domain-specific** (items column definitions, suppliers cell renderers), it could live in `organisms/reference/{domain}/` but is currently co-located in `molecules/` for convenience. This is acceptable as long as it's imported only by organisms.
+
+## Property Separation Convention
+
+Beyond atomic classification, components should separate their props into clear categories to improve readability and maintain a clean API surface.
+
+### Model/Data vs View/Controller Separation
+
+All component prop interfaces should clearly distinguish between:
+
+**Model/Data Binding:**
+- Props that relate to domain data, state values, or data-driven behavior
+- Data callbacks (onChange, onSelect, onSubmit)
+- Current values (value, selectedItems, items)
+- Data sources (options, dataSource)
+
+**View/Layout/Controller:**
+- Props that relate to visual presentation, layout, or interaction behavior
+- Visual variants (variant, size, color)
+- Layout flags (disabled, loading, open)
+- Styling props (className, style)
+- UI event handlers (onClick, onFocus, onBlur)
+- Labels and placeholder text
+
+### Implementation Pattern
+
+For **atoms** (smaller components), use **JSDoc section comments** within a single interface:
+
+```tsx
+export interface ArdaButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  /* --- Model / Data Binding --- */
+  /** Current loading state affecting component behavior */
+  loading?: boolean;
+
+  /* --- View / Layout / Controller --- */
+  /** Visual style variant */
+  variant?: 'primary' | 'secondary' | 'ghost' | 'destructive';
+  /** Button size */
+  size?: 'sm' | 'md' | 'lg';
+  /** Additional CSS classes */
+  className?: string;
+}
+```
+
+For **molecules and organisms** (larger components), use separate interfaces with lifecycle separation (StaticConfig/InitConfig/RuntimeConfig), and include Model vs View comments within each:
+
+```tsx
+export interface ArdaDataGridStaticConfig<T> {
+  /* --- Model / Data Binding --- */
+  columnDefs: ColDef<T>[];
+  defaultColDef?: ColDef<T>;
+
+  /* --- View / Layout / Controller --- */
+  height?: string | number;
+  className?: string;
+  enableRowSelection?: boolean;
+}
+
+export interface ArdaDataGridRuntimeConfig<T> {
+  /* --- Model / Data Binding --- */
+  rowData: T[];
+  selectedItems?: T[];
+  onSelectionChanged?: (selectedRows: T[]) => void;
+  onCellValueChanged?: (event: CellValueChangedEvent<T>) => void;
+
+  /* --- View / Layout / Controller --- */
+  loading?: boolean;
+  error?: string | null;
+  enableCellEditing?: boolean;
+}
+```
+
+### Benefits
+
+- **Clearer API documentation** — Developers immediately understand which props control data vs presentation
+- **Better separation of concerns** — Easier to refactor data handling without touching view logic
+- **Improved maintainability** — Changes to one category rarely affect the other
+- **Consistency across the codebase** — All components follow the same organizational pattern
+
+## Related Documentation
+
+- [Component Guidelines](/docs/component-guidelines) — General component structure and conventions
+- [Use Cases](/docs/use-cases) — How components compose into user-facing features

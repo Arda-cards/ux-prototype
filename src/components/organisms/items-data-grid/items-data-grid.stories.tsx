@@ -3,10 +3,7 @@ import { expect, fn, userEvent, within } from '@storybook/test';
 import { useState } from 'react';
 
 import { ArdaItemsDataGrid } from './items-data-grid';
-import {
-  mockPublishedItems,
-  mockDraftItems,
-} from '@/components/molecules/data-grid/presets/items/items-mock-data';
+import { mockPublishedItems } from '@/components/molecules/data-grid/presets/items/items-mock-data';
 import type { Item } from '@/types/reference/items/item-domain';
 
 const meta: Meta<typeof ArdaItemsDataGrid> = {

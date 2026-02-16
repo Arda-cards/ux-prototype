@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, userEvent, within } from '@storybook/test';
+import { expect, fn, userEvent, within } from '@storybook/test';
 import {
   LayoutDashboard,
   Package,
@@ -56,13 +56,19 @@ const meta: Meta<typeof ArdaSidebar> = {
       table: { category: 'Runtime' },
     },
     onNavigate: {
+      action: 'navigate',
       description: 'Called when a navigation item is clicked.',
       table: { category: 'Events' },
     },
     onLogout: {
+      action: 'logout',
       description: 'Called when the logout button is clicked.',
       table: { category: 'Events' },
     },
+  },
+  args: {
+    onNavigate: fn(),
+    onLogout: fn(),
   },
   decorators: [
     (Story) => (
@@ -82,6 +88,11 @@ export const Expanded: Story = {
     collapsed: false,
     currentPath: '/',
     user: sampleUser,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('Dashboard')).toBeInTheDocument();
+    await expect(canvas.getByText('Alex Rivera')).toBeInTheDocument();
   },
 };
 

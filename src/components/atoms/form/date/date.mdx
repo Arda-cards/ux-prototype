@@ -1,0 +1,44 @@
+import { Canvas, Meta } from '@storybook/blocks';
+import * as DateStories from './date.stories';
+
+<Meta of={DateStories} />
+
+# Date Field
+
+Form field components for displaying and editing date values with optional timezone support.
+
+## Variants
+
+### Display
+
+Read-only date formatted as MM/DD/YYYY. Shows `&#8212;` for empty values. Accepts ISO date strings or ISO datetime strings (extracts date portion). Supports optional IANA timezone for conversion.
+
+<Canvas of={DateStories.Display} />
+
+### Editor
+
+Native date picker input (`<input type="date">`). Uses browser's native date selection UI with keyboard and mouse support.
+
+<Canvas of={DateStories.Editor} />
+
+### Interactive
+
+Starts in display mode. Double-click to switch to editing with native date picker. Enter/blur commits, Escape cancels.
+
+<Canvas of={DateStories.Interactive} />
+
+## Configuration
+
+### Static Configuration (Design Time)
+
+- **timezone** &#8212; Optional IANA timezone (e.g., "America/New_York") for display formatting
+- **placeholder** &#8212; Placeholder text for the input
+
+### Runtime Configuration
+
+- **value** &#8212; ISO date string (YYYY-MM-DD) or ISO datetime string
+- **onChange** &#8212; Called when date value changes
+- **onComplete** &#8212; Called on Enter or blur
+- **onCancel** &#8212; Called on Escape
+- **disabled** &#8212; Disables editing
+- **autoFocus** &#8212; Focus the input on mount

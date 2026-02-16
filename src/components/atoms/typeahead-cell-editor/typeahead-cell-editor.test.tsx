@@ -5,8 +5,11 @@ import { describe, expect, it, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 
 import { TypeaheadOption } from '@/components/atoms/typeahead/typeahead';
-import { ArdaTypeaheadCellEditor, createTypeaheadCellEditor } from './typeahead-cell-editor';
-import type { TypeaheadCellEditorHandle } from './typeahead-cell-editor';
+import {
+  ArdaTypeaheadCellEditor,
+  createTypeaheadCellEditor,
+  type TypeaheadCellEditorHandle,
+} from './typeahead-cell-editor';
 
 const mockOptions: TypeaheadOption[] = [
   { value: 'opt1', label: 'Option One', meta: 'Meta 1' },

@@ -1,0 +1,46 @@
+import { Canvas, Meta } from '@storybook/blocks';
+import * as UrlStories from './url.stories';
+
+<Meta of={UrlStories} />
+
+# URL Field
+
+Form field components for displaying and editing URL values with multiple display formats.
+
+## Variants
+
+### Display
+
+Read-only URL display with two format options. **Link format** shows clickable blue hyperlink with truncation. **Button format** shows styled button with customizable label and external link icon. Both open in new tab by default. Shows `&#8212;` for empty values.
+
+<Canvas of={UrlStories.Display} />
+
+### Editor
+
+URL input with browser validation. Uses `<input type="url">` for native URL validation pattern. Standard text input styling with focus ring.
+
+<Canvas of={UrlStories.Editor} />
+
+### Interactive
+
+Starts in display mode. Double-click to switch to editing with URL input. Enter/blur commits, Escape cancels.
+
+<Canvas of={UrlStories.Interactive} />
+
+## Configuration
+
+### Static Configuration (Design Time)
+
+- **displayFormat** &#8212; Display format: "link" (hyperlink) or "button" (styled button)
+- **buttonLabel** &#8212; Button text for button format (default: "Open")
+- **openInNewTab** &#8212; Whether to open URL in new tab (default: true)
+- **placeholder** &#8212; Placeholder text for the input (default: "Enter URL…")
+
+### Runtime Configuration
+
+- **value** &#8212; The URL string
+- **onChange** &#8212; Called when URL changes
+- **onComplete** &#8212; Called on Enter or blur
+- **onCancel** &#8212; Called on Escape
+- **disabled** &#8212; Disables editing
+- **autoFocus** &#8212; Focus the input on mount

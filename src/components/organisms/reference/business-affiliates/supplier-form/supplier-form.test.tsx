@@ -1,8 +1,10 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import type { BusinessAffiliate } from '@/types/reference/business-affiliates/business-affiliate';
-import { sampleAffiliates } from '@/types/reference/business-affiliates/business-affiliate';
+import {
+  sampleAffiliates,
+  type BusinessAffiliate,
+} from '@/types/reference/business-affiliates/business-affiliate';
 
 import { ArdaSupplierForm } from './supplier-form';
 

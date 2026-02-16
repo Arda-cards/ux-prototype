@@ -1,0 +1,43 @@
+import { Canvas, Meta } from '@storybook/blocks';
+import * as TimeStories from './time.stories';
+
+<Meta of={TimeStories} />
+
+# Time Field
+
+Form field components for displaying and editing time values with 12-hour AM/PM formatting.
+
+## Variants
+
+### Display
+
+Read-only time formatted as 12-hour AM/PM (e.g., "2:30 PM"). Shows `&#8212;` for empty values. Accepts time strings in HH:mm or HH:mm:ss format.
+
+<Canvas of={TimeStories.Display} />
+
+### Editor
+
+Native time picker input (`<input type="time">`). Uses browser's native time selection UI with keyboard and mouse support.
+
+<Canvas of={TimeStories.Editor} />
+
+### Interactive
+
+Starts in display mode. Double-click to switch to editing with native time picker. Enter/blur commits, Escape cancels.
+
+<Canvas of={TimeStories.Interactive} />
+
+## Configuration
+
+### Static Configuration (Design Time)
+
+- **placeholder** &#8212; Placeholder text for the input
+
+### Runtime Configuration
+
+- **value** &#8212; Time string in HH:mm format
+- **onChange** &#8212; Called when time value changes
+- **onComplete** &#8212; Called on Enter or blur
+- **onCancel** &#8212; Called on Escape
+- **disabled** &#8212; Disables editing
+- **autoFocus** &#8212; Focus the input on mount

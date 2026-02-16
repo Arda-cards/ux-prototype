@@ -1,0 +1,57 @@
+import { Canvas, Meta } from '@storybook/blocks';
+import * as DateTimeStories from './date-time.stories';
+
+<Meta of={DateTimeStories} />
+
+# Date Time Cell
+
+Compact date-time display and editing components for AG Grid cells. Combines date and time into a single formatted display.
+
+## Variants
+
+### Display
+
+Read-only date-time renderer. Shows '&#8212;' for empty/undefined values. Formats ISO datetime strings using `Intl.DateTimeFormat`.
+
+<Canvas of={DateTimeStories.Display} />
+
+### Editor
+
+AG Grid cell editor with datetime-local input control, auto-focus, Enter to commit, Escape to cancel. Exposes `getValue()` via ref for AG Grid integration.
+
+<Canvas of={DateTimeStories.Editor} />
+
+### Interactive
+
+Starts in display mode. Double-click to edit, Enter/blur to commit, Escape to cancel.
+
+<Canvas of={DateTimeStories.Interactive} />
+
+## Configuration
+
+### Static Configuration (Design Time)
+
+Properties chosen at composition time:
+
+- **placeholder** &#8212; Placeholder text for the editor input
+
+### Runtime Configuration
+
+Properties that control component state and behavior:
+
+- **value** &#8212; The datetime value to display or edit (ISO datetime string)
+- **stopEditing** &#8212; AG Grid callback to exit edit mode (editor only)
+- **onValueChange** &#8212; Callback when value changes (interactive only)
+
+## Factory Helper
+
+Use `createDateTimeCellEditor()` to create a pre-configured editor for AG Grid column definitions:
+
+```ts
+import { createDateTimeCellEditor } from '@/components/atoms/grid/date-time';
+
+const colDef = {
+  field: 'createdAt',
+  cellEditor: createDateTimeCellEditor({ placeholder: 'Select date and time...' }),
+};
+```

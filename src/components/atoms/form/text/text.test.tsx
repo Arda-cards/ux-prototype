@@ -1,0 +1,101 @@
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
+import '@testing-library/jest-dom/vitest';
+
+import { ArdaTextFieldDisplay } from './text-field-display';
+import { ArdaTextFieldEditor } from './text-field-editor';
+import { ArdaTextFieldInteractive } from './text-field-interactive';
+
+describe('ArdaTextFieldDisplay', () => {
+  it('renders text value', () => {
+    render(<ArdaTextFieldDisplay value="Hello" />);
+    expect(screen.getByText('Hello')).toBeInTheDocument();
+  });
+
+  it('renders dash for undefined', () => {
+    render(<ArdaTextFieldDisplay value={undefined} />);
+    expect(screen.getByText('—')).toBeInTheDocument();
+  });
+
+  it('truncates long text with maxLength', () => {
+    render(<ArdaTextFieldDisplay value="Hello World" maxLength={5} />);
+    expect(screen.getByText('Hello…')).toBeInTheDocument();
+  });
+});
+
+describe('ArdaTextFieldEditor', () => {
+  it('renders with initial value', () => {
+    render(<ArdaTextFieldEditor value="test" />);
+    const input = screen.getByRole('textbox');
+    expect(input).toHaveValue('test');
+  });
+
+  it('calls onChange on input', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<ArdaTextFieldEditor value="" onChange={onChange} />);
+    await user.type(screen.getByRole('textbox'), 'a');
+    expect(onChange).toHaveBeenCalledWith('a');
+  });
+
+  it('calls onComplete on Enter', async () => {
+    const user = userEvent.setup();
+    const onComplete = vi.fn();
+    render(<ArdaTextFieldEditor value="test" onComplete={onComplete} />);
+    await user.type(screen.getByRole('textbox'), '{Enter}');
+    expect(onComplete).toHaveBeenCalledWith('test');
+  });
+
+  it('calls onCancel on Escape', async () => {
+    const user = userEvent.setup();
+    const onCancel = vi.fn();
+    render(<ArdaTextFieldEditor value="test" onCancel={onCancel} />);
+    await user.type(screen.getByRole('textbox'), '{Escape}');
+    expect(onCancel).toHaveBeenCalled();
+  });
+
+  it('auto-focuses when autoFocus is true', () => {
+    render(<ArdaTextFieldEditor value="test" autoFocus />);
+    expect(screen.getByRole('textbox')).toHaveFocus();
+  });
+
+  it('is disabled when disabled prop is set', () => {
+    render(<ArdaTextFieldEditor value="test" disabled />);
+    expect(screen.getByRole('textbox')).toBeDisabled();
+  });
+});
+
+describe('ArdaTextFieldInteractive', () => {
+  it('starts in display mode', () => {
+    render(<ArdaTextFieldInteractive value="Hello" />);
+    expect(screen.getByText('Hello')).toBeInTheDocument();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+  });
+
+  it('switches to edit mode on double-click', async () => {
+    const user = userEvent.setup();
+    render(<ArdaTextFieldInteractive value="Hello" />);
+    await user.dblClick(screen.getByText('Hello'));
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
+  });
+
+  it('commits value on Enter and returns to display', async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    render(<ArdaTextFieldInteractive value="Hello" onValueChange={onValueChange} />);
+    await user.dblClick(screen.getByText('Hello'));
+    const input = screen.getByRole('textbox');
+    await user.clear(input);
+    await user.type(input, 'World{Enter}');
+    expect(onValueChange).toHaveBeenCalledWith('World');
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+  });
+
+  it('does not enter edit mode when disabled', async () => {
+    const user = userEvent.setup();
+    render(<ArdaTextFieldInteractive value="Hello" disabled />);
+    await user.dblClick(screen.getByText('Hello'));
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+  });
+});

@@ -1,0 +1,44 @@
+import { Canvas, Meta } from '@storybook/blocks';
+import * as TextStories from './text.stories';
+
+<Meta of={TextStories} />
+
+# Text Field
+
+Form field components for displaying and editing text values.
+
+## Variants
+
+### Display
+
+Read-only text with form field styling. Shows `&#8212;` for empty values. Supports `maxLength` truncation with ellipsis.
+
+<Canvas of={TextStories.Display} />
+
+### Editor
+
+Standard text input with border, focus ring, and keyboard handlers (Enter to complete, Escape to cancel).
+
+<Canvas of={TextStories.Editor} />
+
+### Interactive
+
+Starts in display mode. Double-click to switch to editing. Enter/blur commits, Escape cancels.
+
+<Canvas of={TextStories.Interactive} />
+
+## Configuration
+
+### Static Configuration (Design Time)
+
+- **maxLength** &#8212; Maximum characters before truncation (display only)
+- **placeholder** &#8212; Placeholder text for the input
+
+### Runtime Configuration
+
+- **value** &#8212; The text string value
+- **onChange** &#8212; Called on every keystroke
+- **onComplete** &#8212; Called on Enter or blur
+- **onCancel** &#8212; Called on Escape
+- **disabled** &#8212; Disables editing
+- **autoFocus** &#8212; Focus the input on mount

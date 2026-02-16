@@ -1,0 +1,55 @@
+import { Canvas, Meta } from '@storybook/blocks';
+import * as ImageStories from './image.stories';
+
+<Meta of={ImageStories} />
+
+# Image Cell
+
+Compact image thumbnail display and editing components for AG Grid cells. Displays images from URLs with configurable sizing.
+
+## Variants
+
+### Display
+
+Read-only image renderer. Shows placeholder icon for empty/undefined values or broken image URLs. Displays image thumbnail with specified dimensions.
+
+<Canvas of={ImageStories.Display} />
+
+### Editor
+
+AG Grid cell editor with URL input control, auto-focus, Enter to commit, Escape to cancel. Exposes `getValue()` via ref for AG Grid integration.
+
+<Canvas of={ImageStories.Editor} />
+
+### Interactive
+
+Starts in display mode. Double-click to edit, Enter/blur to commit, Escape to cancel.
+
+<Canvas of={ImageStories.Interactive} />
+
+## Configuration
+
+### Static Configuration (Design Time)
+
+Properties chosen at composition time:
+
+- **maxWidth** &#8212; Maximum width in pixels for the thumbnail
+- **maxHeight** &#8212; Maximum height in pixels for the thumbnail (default: 24)
+- **alt** &#8212; Alt text for the image (default: "Image")
+- **placeholder** &#8212; Placeholder text for the editor input
+
+### Runtime Configuration
+
+Properties that control component state and behavior:
+
+- **value** &#8212; The image URL to display or edit
+- **stopEditing** &#8212; AG Grid callback to exit edit mode (editor only)
+- **onValueChange** &#8212; Callback when value changes (interactive only)
+
+## Image Handling
+
+The component automatically handles:
+- **Empty values** &#8212; Shows placeholder icon
+- **Broken URLs** &#8212; Falls back to placeholder icon on error
+- **Sizing** &#8212; Uses `object-fit: cover` to maintain aspect ratio
+- **Rounded corners** &#8212; Applies rounded class for visual polish

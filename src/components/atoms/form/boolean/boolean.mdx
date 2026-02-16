@@ -1,0 +1,43 @@
+import { Canvas, Meta } from '@storybook/blocks';
+import * as BooleanStories from './boolean.stories';
+
+<Meta of={BooleanStories} />
+
+# Boolean Field
+
+Form field components for displaying and editing boolean values with multiple display formats.
+
+## Variants
+
+### Display
+
+Read-only boolean display with two format options. **Checkbox format** shows check/X icons. **Yes-No format** shows "Yes", "No", or `&#8212;` text. Shows `&#8212;` for undefined values in both formats.
+
+<Canvas of={BooleanStories.Display} />
+
+### Editor
+
+Interactive boolean input with format-specific controls. **Checkbox format** uses standard checkbox input. **Yes-No format** uses toggle buttons for Yes/No selection.
+
+<Canvas of={BooleanStories.Editor} />
+
+### Interactive
+
+Starts in display mode. Double-click to switch to editing with format-appropriate controls. Enter commits, Escape cancels.
+
+<Canvas of={BooleanStories.Interactive} />
+
+## Configuration
+
+### Static Configuration (Design Time)
+
+- **displayFormat** &#8212; Display format: "checkbox" (icons) or "yes-no" (text)
+
+### Runtime Configuration
+
+- **value** &#8212; The boolean value (true, false, or undefined)
+- **onChange** &#8212; Called when value changes
+- **onComplete** &#8212; Called on Enter or blur (yes-no format auto-commits on click)
+- **onCancel** &#8212; Called on Escape
+- **disabled** &#8212; Disables editing
+- **autoFocus** &#8212; Focus the input on mount

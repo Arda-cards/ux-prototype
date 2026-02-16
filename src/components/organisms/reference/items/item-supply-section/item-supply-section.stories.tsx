@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, within } from '@storybook/test';
+import { expect, fn, within } from '@storybook/test';
 import { useState } from 'react';
 
 import {
@@ -21,6 +21,71 @@ const meta: Meta<typeof ArdaItemSupplySection> = {
           'A section that displays all supply relationships for an item. Composes ArdaSupplyCard molecules into a list with an "Add" button and empty-state handling.',
       },
     },
+  },
+  argTypes: {
+    title: {
+      control: 'text',
+      description: 'Section heading. Defaults to "Supplies".',
+      table: { category: 'Static' },
+    },
+    supplies: {
+      control: false,
+      description: 'List of item supplies to display.',
+      table: { category: 'Runtime' },
+    },
+    designations: {
+      control: false,
+      description: 'Map of supply entityId to its designations.',
+      table: { category: 'Runtime' },
+    },
+    supplierNames: {
+      control: false,
+      description: 'Map of supply entityId to supplier display name.',
+      table: { category: 'Runtime' },
+    },
+    defaultSupplyId: {
+      control: 'text',
+      description: 'The entityId of the default supply.',
+      table: { category: 'Runtime' },
+    },
+    onAdd: {
+      action: 'add',
+      description: 'Called when the Add button is clicked.',
+      table: { category: 'Events' },
+    },
+    onEditSupply: {
+      action: 'editSupply',
+      description: 'Called when a supply Edit action is triggered.',
+      table: { category: 'Events' },
+    },
+    onRemoveSupply: {
+      action: 'removeSupply',
+      description: 'Called when a supply Remove action is triggered.',
+      table: { category: 'Events' },
+    },
+    onSupplierClick: {
+      action: 'supplierClick',
+      description: 'Called when a supplier name is clicked.',
+      table: { category: 'Events' },
+    },
+    onDesignationChange: {
+      action: 'designationChange',
+      description: 'Called when a designation change is requested.',
+      table: { category: 'Events' },
+    },
+    onToggleDefault: {
+      action: 'toggleDefault',
+      description: 'Called when the default toggle is clicked.',
+      table: { category: 'Events' },
+    },
+  },
+  args: {
+    onAdd: fn(),
+    onEditSupply: fn(),
+    onRemoveSupply: fn(),
+    onSupplierClick: fn(),
+    onDesignationChange: fn(),
+    onToggleDefault: fn(),
   },
   decorators: [
     (Story) => (
@@ -66,7 +131,6 @@ export const Empty: Story = {
     supplies: [],
     designations: {},
     supplierNames: {},
-    onAdd: () => alert('Add supply'),
   },
 };
 

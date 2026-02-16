@@ -187,7 +187,7 @@ export const EmptyState: Story = {
 export const CellEditing: Story = {
   render: () => {
     const [activeTab, setActiveTab] = useState<'published' | 'draft'>('published');
-    const [items, setItems] = useState(mockPublishedItems.slice(0, 10));
+    const [items, _setItems] = useState(mockPublishedItems.slice(0, 10));
     const [editedCount, setEditedCount] = useState(0);
 
     return (

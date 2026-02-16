@@ -1,0 +1,46 @@
+import { Canvas, Meta } from '@storybook/blocks';
+import * as NumberStories from './number.stories';
+
+<Meta of={NumberStories} />
+
+# Number Field
+
+Form field components for displaying and editing numeric values with configurable decimal precision.
+
+## Variants
+
+### Display
+
+Read-only number formatted with specified decimal precision. Shows `&#8212;` for empty values. Right-aligned for natural numeric alignment.
+
+<Canvas of={NumberStories.Display} />
+
+### Editor
+
+Numeric input with step controls and precision. Browser's native number input with up/down arrows. Step value is calculated from precision (e.g., precision: 2 sets step: 0.01).
+
+<Canvas of={NumberStories.Editor} />
+
+### Interactive
+
+Starts in display mode. Double-click to switch to editing with number input. Enter/blur commits, Escape cancels.
+
+<Canvas of={NumberStories.Interactive} />
+
+## Configuration
+
+### Static Configuration (Design Time)
+
+- **precision** &#8212; Number of decimal places (default: 0 for integers)
+- **min** &#8212; Minimum allowed value
+- **max** &#8212; Maximum allowed value
+- **placeholder** &#8212; Placeholder text for the input
+
+### Runtime Configuration
+
+- **value** &#8212; The numeric value
+- **onChange** &#8212; Called when value changes (on every keystroke)
+- **onComplete** &#8212; Called on Enter or blur (parses string to number, defaults to 0 if invalid)
+- **onCancel** &#8212; Called on Escape
+- **disabled** &#8212; Disables editing
+- **autoFocus** &#8212; Focus the input on mount

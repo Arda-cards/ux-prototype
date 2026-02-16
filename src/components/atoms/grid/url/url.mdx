@@ -1,0 +1,63 @@
+import { Canvas, Meta } from '@storybook/blocks';
+import * as UrlStories from './url.stories';
+
+<Meta of={UrlStories} />
+
+# URL Cell
+
+Compact URL display and editing components for AG Grid cells. Supports two display formats: text link and styled button.
+
+## Variants
+
+### Display
+
+Read-only URL renderer. Shows '&#8212;' for empty/undefined values. Displays either as clickable link text or as a styled button with external-link icon.
+
+<Canvas of={UrlStories.Display} />
+
+### Editor
+
+AG Grid cell editor with URL input control, auto-focus, Enter to commit, Escape to cancel. Exposes `getValue()` via ref for AG Grid integration.
+
+<Canvas of={UrlStories.Editor} />
+
+### Interactive
+
+Starts in display mode. Double-click to edit, Enter/blur to commit, Escape to cancel.
+
+<Canvas of={UrlStories.Interactive} />
+
+## Configuration
+
+### Static Configuration (Design Time)
+
+Properties chosen at composition time:
+
+- **displayFormat** &#8212; Display format: `'link'` (text hyperlink) or `'button'` (styled button). Default: `'link'`
+- **buttonLabel** &#8212; Button text (for button format). Default: "Open"
+- **openInNewTab** &#8212; Whether to open URL in new tab. Default: `true`
+- **maxLength** &#8212; Maximum characters before truncation (for link format)
+- **placeholder** &#8212; Placeholder text for the editor input
+
+### Runtime Configuration
+
+Properties that control component state and behavior:
+
+- **value** &#8212; The URL value to display or edit
+- **stopEditing** &#8212; AG Grid callback to exit edit mode (editor only)
+- **onValueChange** &#8212; Callback when value changes (interactive only)
+
+## Display Formats
+
+### Link Format
+
+Displays the URL as blue clickable text with hover underline. Supports truncation via `maxLength` for long URLs.
+
+### Button Format
+
+Displays as a styled primary button with customizable label and external-link icon. Ideal for consistent action buttons in grid cells.
+
+## Accessibility
+
+- Links open in new tab by default with `rel="noopener noreferrer"` for security
+- Click events use `stopPropagation()` to prevent grid row selection when clicking links

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, within } from '@storybook/test';
 import { AgGridReact } from 'ag-grid-react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
@@ -13,6 +14,34 @@ const meta = {
   component: ArdaTypeaheadCellEditor,
   parameters: {
     layout: 'padded',
+    docs: {
+      description: {
+        component:
+          'AG Grid cell editor that wraps the ArdaTypeahead component for searchable, filterable selection. Supports both static and async data sources.',
+      },
+    },
+  },
+  argTypes: {
+    dataSource: {
+      control: false,
+      description: 'Data source for typeahead options. Can be a static array or async function.',
+      table: { category: 'Static' },
+    },
+    placeholder: {
+      control: 'text',
+      description: 'Placeholder text for the input field.',
+      table: { category: 'Static' },
+    },
+    value: {
+      control: 'text',
+      description: 'Initial value passed by AG Grid.',
+      table: { category: 'Runtime' },
+    },
+    stopEditing: {
+      action: 'stopEditing',
+      description: 'Callback invoked when editing stops.',
+      table: { category: 'Events' },
+    },
   },
 } satisfies Meta<typeof ArdaTypeaheadCellEditor>;
 
@@ -138,6 +167,10 @@ export const Default: Story = {
       <TypeaheadCellEditorGrid />
     </div>
   ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('Default Typeahead Cell Editor')).toBeInTheDocument();
+  },
 };
 
 export const AsyncDataSource: Story = {

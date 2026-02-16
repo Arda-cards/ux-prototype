@@ -24,21 +24,25 @@ function setNestedValue(affiliate: BusinessAffiliate, path: string, value: unkno
       return true;
     case 'contact.lastName': {
       if (!affiliate.contact) affiliate.contact = {};
-      affiliate.contact.lastName = value == null || value === '' ? undefined : String(value).trim();
+      affiliate.contact.lastName =
+        value === null || value === undefined || value === '' ? undefined : String(value).trim();
       return true;
     }
     case 'contact.email': {
       if (!affiliate.contact) affiliate.contact = {};
-      affiliate.contact.email = value == null || value === '' ? undefined : String(value).trim();
+      affiliate.contact.email =
+        value === null || value === undefined || value === '' ? undefined : String(value).trim();
       return true;
     }
     case 'contact.phone': {
       if (!affiliate.contact) affiliate.contact = {};
-      affiliate.contact.phone = value == null || value === '' ? undefined : String(value).trim();
+      affiliate.contact.phone =
+        value === null || value === undefined || value === '' ? undefined : String(value).trim();
       return true;
     }
     case 'notes':
-      affiliate.notes = value == null || value === '' ? undefined : String(value).trim();
+      affiliate.notes =
+        value === null || value === undefined || value === '' ? undefined : String(value).trim();
       return true;
     default:
       return false;

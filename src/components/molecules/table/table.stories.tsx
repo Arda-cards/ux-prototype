@@ -24,6 +24,13 @@ const meta: Meta<typeof ArdaTable> = {
       },
     },
   },
+  argTypes: {
+    className: {
+      control: 'text',
+      description: 'Additional CSS class for the table element.',
+      table: { category: 'Static' },
+    },
+  },
 };
 
 export default meta;
@@ -115,6 +122,11 @@ export const WithData: Story = {
       </ArdaTableBody>
     </ArdaTable>
   ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('Hex Socket Bolt M8x40')).toBeInTheDocument();
+    await expect(canvas.getByText('In Stock')).toBeInTheDocument();
+  },
 };
 
 export const EmptyState: Story = {

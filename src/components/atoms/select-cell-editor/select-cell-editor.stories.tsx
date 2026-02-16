@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, within } from '@storybook/test';
 import { AgGridReact } from 'ag-grid-react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
@@ -12,6 +13,38 @@ const meta = {
   component: ArdaSelectCellEditor,
   parameters: {
     layout: 'padded',
+    docs: {
+      description: {
+        component:
+          'AG Grid cell editor that renders a native `<select>` dropdown. Used via the `createSelectCellEditor` factory in column definitions.',
+      },
+    },
+  },
+  argTypes: {
+    options: {
+      description: 'Array of options to display in the select dropdown.',
+      table: { category: 'Static' },
+    },
+    placeholder: {
+      control: 'text',
+      description: 'Placeholder text shown when no value is selected.',
+      table: { category: 'Static' },
+    },
+    value: {
+      control: 'text',
+      description: 'Initial value passed by AG Grid.',
+      table: { category: 'Runtime' },
+    },
+    stopEditing: {
+      action: 'stopEditing',
+      description: 'Callback invoked when editing stops.',
+      table: { category: 'Events' },
+    },
+    stopEditingOnCancel: {
+      action: 'stopEditingOnCancel',
+      description: 'Callback invoked when editing is cancelled.',
+      table: { category: 'Events' },
+    },
   },
 } satisfies Meta<typeof ArdaSelectCellEditor>;
 
@@ -143,6 +176,10 @@ export const Default: Story = {
       <SelectCellEditorGrid />
     </div>
   ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('Default Select Cell Editor')).toBeInTheDocument();
+  },
 };
 
 export const WithPlaceholder: Story = {

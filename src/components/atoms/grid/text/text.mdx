@@ -1,0 +1,58 @@
+import { Canvas, Meta } from '@storybook/blocks';
+import * as TextStories from './text.stories';
+
+<Meta of={TextStories} />
+
+# Text Cell
+
+Compact text display and editing components for AG Grid cells.
+
+## Variants
+
+### Display
+
+Read-only text renderer. Shows '&#8212;' for empty/undefined values. Supports truncation via `maxLength`.
+
+<Canvas of={TextStories.Display} />
+
+### Editor
+
+AG Grid cell editor with auto-focus, Enter to commit, Escape to cancel. Exposes `getValue()` via ref for AG Grid integration.
+
+<Canvas of={TextStories.Editor} />
+
+### Interactive
+
+Starts in display mode. Double-click to edit, Enter/blur to commit, Escape to cancel.
+
+<Canvas of={TextStories.Interactive} />
+
+## Configuration
+
+### Static Configuration (Design Time)
+
+Properties chosen at composition time:
+
+- **maxLength** &#8212; Maximum characters before truncation (display only)
+- **placeholder** &#8212; Placeholder text for the editor input
+
+### Runtime Configuration
+
+Properties that control component state and behavior:
+
+- **value** &#8212; The text string to display or edit
+- **stopEditing** &#8212; AG Grid callback to exit edit mode (editor only)
+- **onValueChange** &#8212; Callback when value changes (interactive only)
+
+## Factory Helper
+
+Use `createTextCellEditor()` to create a pre-configured editor for AG Grid column definitions:
+
+```ts
+import { createTextCellEditor } from '@/components/atoms/grid/text';
+
+const colDef = {
+  field: 'name',
+  cellEditor: createTextCellEditor({ maxLength: 50, placeholder: 'Enter name...' }),
+};
+```

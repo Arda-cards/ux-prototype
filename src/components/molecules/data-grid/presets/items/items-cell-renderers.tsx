@@ -142,7 +142,7 @@ export function NotesCell({ item }: { item: Item }) {
  * Card count cell renderer - displays static card count.
  * Full async loading tracked in issue #718.
  */
-export function CardCountCell({ item }: { item: Item }) {
+export function CardCountCell({ item: _item }: { item: Item }) {
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
@@ -161,7 +161,7 @@ export function CardCountCell({ item }: { item: Item }) {
  * Quick actions cell renderer - STATIC PLACEHOLDER.
  * Shows disabled action icons. Full implementation tracked in issue #716.
  */
-export function QuickActionsCell({ item }: { item: Item }) {
+export function QuickActionsCell({ item: _item }: { item: Item }) {
   const handleMouseEvent = (e: React.MouseEvent) => {
     e.stopPropagation();
   };

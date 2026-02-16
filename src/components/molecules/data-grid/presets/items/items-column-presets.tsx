@@ -19,7 +19,6 @@ import {
   colorOptions,
   orderMethodOptions,
   unitOptions,
-  supplierOptions,
 } from './items-options';
 import {
   SelectAllHeaderComponent,
@@ -60,7 +59,8 @@ export function formatQuantity(value?: { amount: number; unit: string }): string
 function setNestedValue(item: Item, path: string, value: unknown): boolean {
   switch (path) {
     case 'internalSKU':
-      item.internalSKU = value == null || value === '' ? undefined : String(value).trim();
+      item.internalSKU =
+        value === null || value === undefined || value === '' ? undefined : String(value).trim();
       return true;
     case 'name':
       item.name = String(value ?? '').trim() || '';

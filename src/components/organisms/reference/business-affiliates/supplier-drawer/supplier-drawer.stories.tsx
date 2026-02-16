@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, within } from '@storybook/test';
+import { expect, fn, within } from '@storybook/test';
 import { useState } from 'react';
 
 import {
@@ -24,6 +24,60 @@ const meta: Meta<typeof ArdaSupplierDrawer> = {
           'A slide-in drawer for viewing, adding, or editing a business affiliate (supplier). Includes tabbed view mode (Details + Items), form mode with collapsible sections, and dirty-state protection.',
       },
     },
+  },
+  argTypes: {
+    title: {
+      control: 'text',
+      description: 'Override the drawer header title.',
+      table: { category: 'Static' },
+    },
+    open: {
+      control: 'boolean',
+      description: 'Whether the drawer is open.',
+      table: { category: 'Runtime' },
+    },
+    mode: {
+      control: 'select',
+      options: ['view', 'add', 'edit'],
+      description: 'Current operating mode.',
+      table: { category: 'Runtime' },
+    },
+    affiliate: {
+      control: false,
+      description: 'Affiliate data for view/edit modes.',
+      table: { category: 'Runtime' },
+    },
+    suppliedItems: {
+      control: false,
+      description: 'List of items supplied by this affiliate.',
+      table: { category: 'Runtime' },
+    },
+    onClose: {
+      action: 'closed',
+      description: 'Called when the drawer requests to close.',
+      table: { category: 'Events' },
+    },
+    onSubmit: {
+      action: 'submitted',
+      description: 'Called when the form is submitted.',
+      table: { category: 'Events' },
+    },
+    onEdit: {
+      action: 'edit-clicked',
+      description: 'Called when the Edit button is clicked.',
+      table: { category: 'Events' },
+    },
+    onItemClick: {
+      action: 'item-clicked',
+      description: 'Called when a supplied item row is clicked.',
+      table: { category: 'Events' },
+    },
+  },
+  args: {
+    onClose: fn(),
+    onSubmit: fn(),
+    onEdit: fn(),
+    onItemClick: fn(),
   },
 };
 
@@ -63,8 +117,6 @@ export const ViewMode: Story = {
     mode: 'view',
     affiliate: sampleAffiliate,
     suppliedItems: sampleSuppliedItems,
-    onClose: () => {},
-    onEdit: () => {},
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -79,7 +131,6 @@ export const ViewModeItemsTab: Story = {
     mode: 'view',
     affiliate: sampleAffiliate,
     suppliedItems: sampleSuppliedItems,
-    onClose: () => {},
   },
 };
 
@@ -87,8 +138,6 @@ export const AddMode: Story = {
   args: {
     open: true,
     mode: 'add',
-    onClose: () => {},
-    onSubmit: (data) => alert(`Submitted: ${JSON.stringify(data, null, 2)}`),
   },
 };
 
@@ -97,9 +146,6 @@ export const EditMode: Story = {
     open: true,
     mode: 'edit',
     affiliate: sampleAffiliate,
-    onClose: () => {},
-    onSubmit: (data) => alert(`Saved: ${JSON.stringify(data, null, 2)}`),
-    onEdit: () => {},
   },
 };
 
@@ -108,7 +154,6 @@ export const Closed: Story = {
     open: false,
     mode: 'view',
     affiliate: sampleAffiliate,
-    onClose: () => {},
   },
 };
 

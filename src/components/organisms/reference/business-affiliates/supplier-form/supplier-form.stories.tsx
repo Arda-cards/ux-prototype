@@ -1,9 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, within } from '@storybook/test';
+import { expect, fn, within } from '@storybook/test';
 import { useState } from 'react';
 
-import type { BusinessAffiliate } from '@/types/reference/business-affiliates/business-affiliate';
-import { sampleAffiliates } from '@/types/reference/business-affiliates/business-affiliate';
+import {
+  sampleAffiliates,
+  type BusinessAffiliate,
+} from '@/types/reference/business-affiliates/business-affiliate';
 
 import { ArdaSupplierForm } from './supplier-form';
 
@@ -25,6 +27,32 @@ const meta: Meta<typeof ArdaSupplierForm> = {
           'Shared supplier form component used by both the supplier drawer (single-scroll) and the create-supplier wizard (stepped). Renders all fields for a BusinessAffiliate.',
       },
     },
+  },
+  argTypes: {
+    mode: {
+      control: 'select',
+      options: ['single-scroll', 'stepped'],
+      description: 'Form layout mode.',
+      table: { category: 'Static' },
+    },
+    value: {
+      control: false,
+      description: 'Current BusinessAffiliate form value.',
+      table: { category: 'Runtime' },
+    },
+    onChange: {
+      action: 'changed',
+      description: 'Called when any form field changes.',
+      table: { category: 'Events' },
+    },
+    currentStep: {
+      control: { type: 'number', min: 0, max: 2 },
+      description: 'Current step index for stepped mode (0-2).',
+      table: { category: 'Runtime' },
+    },
+  },
+  args: {
+    onChange: fn(),
   },
   decorators: [
     (Story) => (

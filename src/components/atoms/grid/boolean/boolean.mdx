@@ -1,0 +1,60 @@
+import { Canvas, Meta } from '@storybook/blocks';
+import * as BooleanStories from './boolean.stories';
+
+<Meta of={BooleanStories} />
+
+# Boolean Cell
+
+Compact boolean display and editing components for AG Grid cells. Supports two display formats: checkbox icons and yes-no text.
+
+## Variants
+
+### Display
+
+Read-only boolean renderer. Shows '&#8212;' for empty/undefined values. Displays either check/x icons (checkbox format) or Yes/No text (yes-no format).
+
+<Canvas of={BooleanStories.Display} />
+
+### Editor
+
+AG Grid cell editor with checkbox or yes-no toggle, auto-focus, Enter to commit, Escape to cancel. Exposes `getValue()` via ref for AG Grid integration.
+
+<Canvas of={BooleanStories.Editor} />
+
+### Interactive
+
+Starts in display mode. Double-click to edit, Enter/blur to commit, Escape to cancel.
+
+<Canvas of={BooleanStories.Interactive} />
+
+## Configuration
+
+### Static Configuration (Design Time)
+
+Properties chosen at composition time:
+
+- **displayFormat** &#8212; Display format: `'checkbox'` (check/x icons) or `'yes-no'` (text). Default: `'checkbox'`
+
+### Runtime Configuration
+
+Properties that control component state and behavior:
+
+- **value** &#8212; The boolean value to display or edit (true, false, or undefined)
+- **stopEditing** &#8212; AG Grid callback to exit edit mode (editor only)
+- **onValueChange** &#8212; Callback when value changes (interactive only)
+
+## Display Formats
+
+### Checkbox Format
+
+Uses Lucide React icons:
+- **true** &#8212; Green check icon
+- **false** &#8212; Red x icon
+- **undefined** &#8212; '&#8212;' (em dash)
+
+### Yes-No Format
+
+Uses text labels:
+- **true** &#8212; "Yes"
+- **false** &#8212; "No"
+- **undefined** &#8212; '&#8212;' (em dash)
