@@ -106,12 +106,12 @@ export function ArdaItemSupplySection({
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-gray-700">{title}</h3>
+        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
         {onAdd && (
           <button
             type="button"
             onClick={onAdd}
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-foreground bg-background border border-border rounded-md hover:bg-secondary transition-colors"
           >
             <Plus size={14} />
             Add
@@ -166,14 +166,14 @@ export function ArdaItemSupplySection({
           })}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-8 text-center border border-dashed border-gray-300 rounded-lg">
-          <Package size={32} className="text-gray-300 mb-2" />
-          <p className="text-sm text-gray-500">No supplies configured</p>
+        <div className="flex flex-col items-center justify-center py-8 text-center border border-dashed border-border rounded-lg">
+          <Package size={32} className="text-muted-foreground/50 mb-2" />
+          <p className="text-sm text-muted-foreground">No supplies configured</p>
           {onAdd && (
             <button
               type="button"
               onClick={onAdd}
-              className="mt-2 text-sm text-blue-600 hover:underline"
+              className="mt-2 text-sm text-accent-blue hover:underline"
             >
               Add a supply
             </button>

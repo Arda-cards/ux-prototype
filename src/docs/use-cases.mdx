@@ -30,26 +30,55 @@ A complete use case consists of four artifacts:
 
 <table>
   <thead>
-    <tr><th>Artifact</th><th>File</th><th>Purpose</th></tr>
+    <tr>
+      <th>Artifact</th>
+      <th>File</th>
+      <th>Purpose</th>
+    </tr>
   </thead>
   <tbody>
     <tr>
-      <td><strong>Description</strong></td>
-      <td><code>*.mdx</code></td>
-      <td>Product-manager-level specification of the use case: user story, workflow steps, field definitions, acceptance criteria, and sample data. Written in plain language — serves as the single source of truth and as input for AI-assisted code generation.</td>
+      <td>
+        <strong>Description</strong>
+      </td>
+      <td>
+        <code>*.mdx</code>
+      </td>
+      <td>
+        Product-manager-level specification of the use case: user story, workflow steps, field
+        definitions, acceptance criteria, and sample data. Written in plain language — serves as the
+        single source of truth and as input for AI-assisted code generation.
+      </td>
     </tr>
     <tr>
-      <td><strong>Interactive story</strong></td>
-      <td rowspan="3"><code>*.stories.tsx</code></td>
-      <td>Hands-on exploration — the user fills in real data and clicks through the workflow. A guide panel shows contextual help.</td>
+      <td>
+        <strong>Interactive story</strong>
+      </td>
+      <td rowspan="3">
+        <code>*.stories.tsx</code>
+      </td>
+      <td>
+        Hands-on exploration — the user fills in real data and clicks through the workflow. A guide
+        panel shows contextual help.
+      </td>
     </tr>
     <tr>
-      <td><strong>Stepwise story</strong></td>
-      <td>Guided demo — the app advances one pre-filled scene at a time via story controls. Useful for walkthroughs and design reviews.</td>
+      <td>
+        <strong>Stepwise story</strong>
+      </td>
+      <td>
+        Guided demo — the app advances one pre-filled scene at a time via story controls. Useful for
+        walkthroughs and design reviews.
+      </td>
     </tr>
     <tr>
-      <td><strong>Automated story</strong></td>
-      <td>Regression test — a <code>play</code> function exercises the full workflow end-to-end. Executed by <code>@storybook/test-runner</code> via Playwright.</td>
+      <td>
+        <strong>Automated story</strong>
+      </td>
+      <td>
+        Regression test — a <code>play</code> function exercises the full workflow end-to-end.
+        Executed by <code>@storybook/test-runner</code> via Playwright.
+      </td>
     </tr>
   </tbody>
 </table>
@@ -66,18 +95,87 @@ The Description follows the standard user story template (`workspace/instruction
 
 <table>
   <thead>
-    <tr><th>Section</th><th>Content</th></tr>
+    <tr>
+      <th>Section</th>
+      <th>Content</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td><strong>Header</strong></td><td><code># Feature Area: Story Title</code> plus metadata (Author, Date, Priority, Feature Version, Related Issue).</td></tr>
-    <tr><td><strong>User Story</strong></td><td><em>As a…, I want to…, so that…</em> format.</td></tr>
-    <tr><td><strong>Context</strong></td><td>Business context — why this workflow exists, what downstream features depend on it, and any preconditions.</td></tr>
-    <tr><td><strong>Acceptance Criteria</strong></td><td><strong>Given / When / Then</strong> checkboxes that map directly to automated story expectations.</td></tr>
-    <tr><td><strong>Error Scenarios</strong></td><td>Given / When / Then for invalid inputs or error states. For happy-path-only stories, note that errors are covered separately.</td></tr>
-    <tr><td><strong>UI/UX Notes</strong></td><td>Page reference, step-by-step field tables, UI behavior notes, responsive considerations.</td></tr>
-    <tr><td><strong>Dependencies</strong></td><td>Upstream (what must exist first) and downstream (what depends on this).</td></tr>
-    <tr><td><strong>Out of Scope</strong></td><td>Explicitly list what this use case does <em>not</em> cover.</td></tr>
-    <tr><td><strong>Notes</strong></td><td>Sample data (matching the <code>SAMPLE</code> constant in stories), story artifacts table, and any additional context.</td></tr>
+    <tr>
+      <td>
+        <strong>Header</strong>
+      </td>
+      <td>
+        <code># Feature Area: Story Title</code> plus metadata (Author, Date, Priority, Feature
+        Version, Related Issue).
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <strong>User Story</strong>
+      </td>
+      <td>
+        <em>As a…, I want to…, so that…</em> format.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Context</strong>
+      </td>
+      <td>
+        Business context — why this workflow exists, what downstream features depend on it, and any
+        preconditions.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Acceptance Criteria</strong>
+      </td>
+      <td>
+        <strong>Given / When / Then</strong> checkboxes that map directly to automated story
+        expectations.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Error Scenarios</strong>
+      </td>
+      <td>
+        Given / When / Then for invalid inputs or error states. For happy-path-only stories, note
+        that errors are covered separately.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <strong>UI/UX Notes</strong>
+      </td>
+      <td>
+        Page reference, step-by-step field tables, UI behavior notes, responsive considerations.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Dependencies</strong>
+      </td>
+      <td>Upstream (what must exist first) and downstream (what depends on this).</td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Out of Scope</strong>
+      </td>
+      <td>
+        Explicitly list what this use case does <em>not</em> cover.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Notes</strong>
+      </td>
+      <td>
+        Sample data (matching the <code>SAMPLE</code> constant in stories), story artifacts table,
+        and any additional context.
+      </td>
+    </tr>
   </tbody>
 </table>
 
@@ -160,23 +258,46 @@ Every use case should provide **three story exports** so that different audience
 
 <table>
   <thead>
-    <tr><th>Story</th><th>Purpose</th><th>User interaction</th></tr>
+    <tr>
+      <th>Story</th>
+      <th>Purpose</th>
+      <th>User interaction</th>
+    </tr>
   </thead>
   <tbody>
     <tr>
-      <td><strong>Interactive</strong></td>
-      <td>Hands-on exploration — the user fills in real data and clicks through the wizard themselves.</td>
+      <td>
+        <strong>Interactive</strong>
+      </td>
+      <td>
+        Hands-on exploration — the user fills in real data and clicks through the wizard themselves.
+      </td>
       <td>Full interaction with application controls (inputs, buttons, dropdowns).</td>
     </tr>
     <tr>
-      <td><strong>Stepwise</strong></td>
-      <td>Guided walkthrough — the application advances one scene at a time with pre-filled data. Ideal for demos and design reviews.</td>
-      <td>Only the story controls (<em>Next</em>, <em>Previous</em>, <em>Reset</em>). Application controls are non-interactive.</td>
+      <td>
+        <strong>Stepwise</strong>
+      </td>
+      <td>
+        Guided walkthrough — the application advances one scene at a time with pre-filled data.
+        Ideal for demos and design reviews.
+      </td>
+      <td>
+        Only the story controls (<em>Next</em>, <em>Previous</em>, <em>Reset</em>). Application
+        controls are non-interactive.
+      </td>
     </tr>
     <tr>
-      <td><strong>Automated</strong></td>
-      <td>End-to-end regression test — a <code>play</code> function exercises the entire workflow programmatically.</td>
-      <td>None — runs automatically. Executed by <code>@storybook/test-runner</code> via Playwright.</td>
+      <td>
+        <strong>Automated</strong>
+      </td>
+      <td>
+        End-to-end regression test — a <code>play</code> function exercises the entire workflow
+        programmatically.
+      </td>
+      <td>
+        None — runs automatically. Executed by <code>@storybook/test-runner</code> via Playwright.
+      </td>
     </tr>
   </tbody>
 </table>
@@ -208,21 +329,109 @@ All story chrome — step indicators, guide panels, story controls, viewers — 
 
 <table>
   <thead>
-    <tr><th>Export</th><th>Kind</th><th>Purpose</th></tr>
+    <tr>
+      <th>Export</th>
+      <th>Kind</th>
+      <th>Purpose</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td><code>createUseCaseStories</code></td><td>Factory</td><td>Generates <code>meta</code>, <code>Interactive</code>, <code>Stepwise</code>, and <code>Automated</code> story objects from a single config.</td></tr>
-    <tr><td><code>useWizard</code></td><td>Hook</td><td>Manages wizard state (step, form data, submitted flag) and returns a control surface for <code>UseCaseShell</code>.</td></tr>
-    <tr><td><code>UseCaseShell</code></td><td>Component</td><td>Renders the heading, step indicator, navigation buttons, guide panel, and reset link. Wraps your step content.</td></tr>
-    <tr><td><code>FormField</code></td><td>Component</td><td>Labeled text/number input with consistent styling.</td></tr>
-    <tr><td><code>FormSelect</code></td><td>Component</td><td>Labeled dropdown select.</td></tr>
-    <tr><td><code>FormRow</code></td><td>Component</td><td>Side-by-side grid for grouping fields on one row.</td></tr>
-    <tr><td><code>SummaryCard</code></td><td>Component</td><td>Bordered card for review-step summaries.</td></tr>
-    <tr><td><code>SummaryRow</code></td><td>Component</td><td>Label/value row inside a summary card.</td></tr>
-    <tr><td><code>Divider</code></td><td>Component</td><td>Horizontal rule for separating summary sections.</td></tr>
-    <tr><td><code>SuccessScreen</code></td><td>Component</td><td>Centered confirmation with check icon, badges, details card, and reset button.</td></tr>
-    <tr><td><code>formatCurrency</code></td><td>Utility</td><td>Formats a number as US currency with thousands separator.</td></tr>
-    <tr><td><code>GuideEntry</code>, <code>Scene</code>, <code>WizardProps</code>, <code>PlayContext</code></td><td>Types</td><td>TypeScript interfaces for guides, scenes, wizard props, and the play callback context.</td></tr>
+    <tr>
+      <td>
+        <code>createUseCaseStories</code>
+      </td>
+      <td>Factory</td>
+      <td>
+        Generates <code>meta</code>, <code>Interactive</code>, <code>Stepwise</code>, and{' '}
+        <code>Automated</code> story objects from a single config.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>useWizard</code>
+      </td>
+      <td>Hook</td>
+      <td>
+        Manages wizard state (step, form data, submitted flag) and returns a control surface for{' '}
+        <code>UseCaseShell</code>.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>UseCaseShell</code>
+      </td>
+      <td>Component</td>
+      <td>
+        Renders the heading, step indicator, navigation buttons, guide panel, and reset link. Wraps
+        your step content.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>FormField</code>
+      </td>
+      <td>Component</td>
+      <td>Labeled text/number input with consistent styling.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>FormSelect</code>
+      </td>
+      <td>Component</td>
+      <td>Labeled dropdown select.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>FormRow</code>
+      </td>
+      <td>Component</td>
+      <td>Side-by-side grid for grouping fields on one row.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>SummaryCard</code>
+      </td>
+      <td>Component</td>
+      <td>Bordered card for review-step summaries.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>SummaryRow</code>
+      </td>
+      <td>Component</td>
+      <td>Label/value row inside a summary card.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>Divider</code>
+      </td>
+      <td>Component</td>
+      <td>Horizontal rule for separating summary sections.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>SuccessScreen</code>
+      </td>
+      <td>Component</td>
+      <td>Centered confirmation with check icon, badges, details card, and reset button.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>formatCurrency</code>
+      </td>
+      <td>Utility</td>
+      <td>Formats a number as US currency with thousands separator.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>GuideEntry</code>, <code>Scene</code>, <code>WizardProps</code>,{' '}
+        <code>PlayContext</code>
+      </td>
+      <td>Types</td>
+      <td>
+        TypeScript interfaces for guides, scenes, wizard props, and the play callback context.
+      </td>
+    </tr>
   </tbody>
 </table>
 
@@ -323,25 +532,41 @@ function MyWizard(props: WizardProps<FormData>) {
       success={
         <SuccessScreen
           title="Account created"
-          subtitle={<>Welcome, <strong>{w.formData.name}</strong>!</>}
+          subtitle={
+            <>
+              Welcome, <strong>{w.formData.name}</strong>!
+            </>
+          }
           onReset={w.handleReset}
         />
       }
     >
       {w.step === 0 && (
         <>
-          <FormField label="Name" name="name" value={w.formData.name}
-            onChange={w.handleChange} />
-          <FormField label="Email" name="email" value={w.formData.email}
-            onChange={w.handleChange} />
-          <FormSelect label="Role" name="role" value={w.formData.role}
-            onChange={w.handleChange} options={['Admin', 'User']}
-            placeholder="Select a role" />
+          <FormField label="Name" name="name" value={w.formData.name} onChange={w.handleChange} />
+          <FormField
+            label="Email"
+            name="email"
+            value={w.formData.email}
+            onChange={w.handleChange}
+          />
+          <FormSelect
+            label="Role"
+            name="role"
+            value={w.formData.role}
+            onChange={w.handleChange}
+            options={['Admin', 'User']}
+            placeholder="Select a role"
+          />
         </>
       )}
       {w.step === 1 && (
-        <FormField label="Preferences" name="preferences"
-          value={w.formData.preferences} onChange={w.handleChange} />
+        <FormField
+          label="Preferences"
+          name="preferences"
+          value={w.formData.preferences}
+          onChange={w.handleChange}
+        />
       )}
       {w.step === 2 && (
         <SummaryCard>
@@ -364,9 +589,17 @@ Define the `meta` object as a plain object literal (required for Storybook's sta
 import type { Meta } from '@storybook/react';
 import { expect, userEvent } from '@storybook/test';
 import {
-  createUseCaseStories, useWizard, UseCaseShell,
-  FormField, FormSelect, SummaryCard, SummaryRow,
-  SuccessScreen, type GuideEntry, type Scene, type WizardProps,
+  createUseCaseStories,
+  useWizard,
+  UseCaseShell,
+  FormField,
+  FormSelect,
+  SummaryCard,
+  SummaryRow,
+  SuccessScreen,
+  type GuideEntry,
+  type Scene,
+  type WizardProps,
 } from '@/use-cases/framework';
 
 // ... FormData, INITIAL, SAMPLE, guides, scenes, MyWizard defined above ...
@@ -380,7 +613,7 @@ const { Interactive, Stepwise, Automated } = createUseCaseStories<FormData>({
   guides,
   scenes,
   Wizard: MyWizard,
-  delayMs: 2000,  // pause between automated steps (ms)
+  delayMs: 2000, // pause between automated steps (ms)
   play: async ({ canvas, goToScene, delay }) => {
     goToScene(0);
     await delay();
@@ -391,8 +624,7 @@ const { Interactive, Stepwise, Automated } = createUseCaseStories<FormData>({
 
     // ... continue through each scene ...
 
-    await expect(canvas.getByTestId('success-message'))
-      .toHaveTextContent('Account created');
+    await expect(canvas.getByTestId('success-message')).toHaveTextContent('Account created');
   },
 });
 
@@ -403,6 +635,7 @@ export { Interactive, Stepwise, Automated };
 > **Note:** The `meta` must be a static object literal — Storybook's CSF indexer uses static analysis and cannot resolve values returned from function calls.
 
 The `play` callback receives:
+
 - **`canvas`** — Testing Library scoped queries for the story element.
 - **`goToScene(index)`** — updates the Automated viewer's guide panel to match the current scene.
 - **`delay()`** — pauses for `delayMs` milliseconds so the viewer can see each step.
@@ -421,6 +654,7 @@ The Description MDX is intentionally structured to be machine-readable. An AI ag
 6. **Write the `play` function** by mapping each User action to a `userEvent` call and each Acceptance Criterion to an `expect` assertion, with `goToScene` calls to synchronize the guide panel.
 
 When asking an AI agent to implement a use case, provide:
+
 - The Description MDX as the specification
 - The framework source (`src/use-cases/framework.tsx`) as the API reference
 - An existing implementation (e.g. `src/use-cases/inventory/add-item/happy-path.stories.tsx`) as a structural example

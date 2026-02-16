@@ -27,7 +27,7 @@ describe('ArdaSupplierDrawer', () => {
   it('renders role badges in view mode', () => {
     render(<ArdaSupplierDrawer open mode="view" affiliate={affiliate} onClose={() => {}} />);
     expect(screen.getByText('Vendor')).toBeInTheDocument();
-    expect(screen.getByText('Distributor')).toBeInTheDocument();
+    expect(screen.getByText('Customer')).toBeInTheDocument();
   });
 
   it('renders contact details in view mode', () => {
@@ -103,7 +103,7 @@ describe('ArdaSupplierDrawer', () => {
   it('renders form fields in add mode', () => {
     render(<ArdaSupplierDrawer open mode="add" onClose={() => {}} />);
     expect(screen.getByLabelText(/Name/)).toBeInTheDocument();
-    expect(screen.getByText('Roles')).toBeInTheDocument();
+    expect(screen.getByText('Business Roles')).toBeInTheDocument();
   });
 
   it('calls onEdit when Edit button is clicked', () => {

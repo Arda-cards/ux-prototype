@@ -128,7 +128,7 @@ function ToggleDemo() {
           onClick={() => setCollapsed(!collapsed)}
           style={{
             padding: '8px 16px',
-            border: '1px solid #E5E5E5',
+            border: '1px solid var(--base-border)',
             borderRadius: 8,
             cursor: 'pointer',
             background: 'white',

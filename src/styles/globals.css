@@ -1,7 +1,7 @@
-@import url("https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap');
 
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -11,7 +11,7 @@
   --background: #ffffff;
   --foreground: #171717;
 
-  --font-geist: "Geist", sans-serif;
+  --font-geist: 'Geist', sans-serif;
 
   /* Spacing */
   --spacing-1: 4px;
@@ -33,24 +33,85 @@
   --base-secondary: #f5f5f5;
   --base-destructive: #dc2626;
 
-  /* shadcn/ui Theme Variables */
+  /* Status Colors */
+  --status-success-bg: #dcfce7;
+  --status-success-text: #166534;
+  --status-success-border: #bbf7d0;
+  --status-warning-bg: #fef3c7;
+  --status-warning-text: #92400e;
+  --status-warning-border: #fde68a;
+  --status-info-bg: #dbeafe;
+  --status-info-text: #1e40af;
+  --status-info-border: #bfdbfe;
+  --status-destructive-bg: #fee2e2;
+  --status-destructive-text: #991b1b;
+  --status-destructive-border: #fecaca;
+  --status-default-bg: #f5f5f5;
+  --status-default-text: #0a0a0a;
+  --status-default-border: #e5e5e5;
+
+  /* Sidebar Chrome */
+  --sidebar-bg: #0a0a0a;
+  --sidebar-tooltip-bg: #1a1a1a;
+  --sidebar-text: rgba(255, 255, 255, 0.7);
+  --sidebar-text-active: #ffffff;
+  --sidebar-text-muted: rgba(255, 255, 255, 0.4);
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-hover: rgba(255, 255, 255, 0.1);
+  --sidebar-active-bg: rgba(255, 255, 255, 0.1);
+  --sidebar-active-indicator: #fc5a29;
+  --sidebar-gradient-start: rgba(252, 90, 41, 0.08);
+  --sidebar-gradient-end: rgba(255, 255, 255, 0.04);
+
+  /* Table Chrome */
+  --table-header-bg: #f9fafb;
+  --table-row-hover: #f3f4f6;
+
+  /* Accent & Utility */
+  --accent-blue: #3b82f6;
+  --accent-amber: #f59e0b;
+  --accent-emerald: #10b981;
+  --accent-slate: #cbd5e1;
+  --focus-ring: #3b82f6;
+  --star-color: #fbbf24;
+
+  /* Extended Palette */
+  --step-complete: #22c55e;
+  --base-muted: #a3a3a3;
+  --base-border-strong: #d4d4d4;
+  --base-primary-dark: #e04d22;
+  --guide-bg: #f0f5ff;
+  --guide-text: #1e3a5f;
+
+  /* Custom Text Sizes — defined in @theme inline below for Tailwind v4 utility generation */
+
+  /* Icon Sizes */
+  --icon-xxs: 14px;
+  --icon-xs: 16px;
+  --icon-s: 18px;
+  --icon-m: 20px;
+  --icon-l: 24px;
+  --icon-xl: 32px;
+  --icon-xxl: 48px;
+
+  /* shadcn/ui Theme Variables — unified under --base-* tokens (D1: Option A) */
   --radius: 0.625rem;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.129 0.042 264.695);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
+  --primary: var(--base-primary);
+  --primary-foreground: var(--base-primary-foreground);
+  --secondary: var(--base-secondary);
+  --secondary-foreground: var(--base-foreground);
   --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
+  --muted-foreground: var(--base-muted-foreground);
   --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
+  --accent-foreground: var(--base-accent-foreground);
+  --destructive: var(--base-destructive);
+  --border: var(--base-border);
+  --input: var(--base-input);
+  --ring: var(--focus-ring);
 }
 
 @theme inline {
@@ -58,22 +119,89 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
+
+  /* Core tokens — now unified under --base-* (D1: Option A) */
   --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
   --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
+  --color-popover-foreground: var(--popover-foreground);
   --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  /* Status color tokens */
+  --color-status-success-bg: var(--status-success-bg);
+  --color-status-success-text: var(--status-success-text);
+  --color-status-success-border: var(--status-success-border);
+  --color-status-warning-bg: var(--status-warning-bg);
+  --color-status-warning-text: var(--status-warning-text);
+  --color-status-warning-border: var(--status-warning-border);
+  --color-status-info-bg: var(--status-info-bg);
+  --color-status-info-text: var(--status-info-text);
+  --color-status-info-border: var(--status-info-border);
+  --color-status-destructive-bg: var(--status-destructive-bg);
+  --color-status-destructive-text: var(--status-destructive-text);
+  --color-status-destructive-border: var(--status-destructive-border);
+  --color-status-default-bg: var(--status-default-bg);
+  --color-status-default-text: var(--status-default-text);
+  --color-status-default-border: var(--status-default-border);
+
+  /* Sidebar tokens */
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-sidebar-tooltip-bg: var(--sidebar-tooltip-bg);
+  --color-sidebar-text: var(--sidebar-text);
+  --color-sidebar-text-active: var(--sidebar-text-active);
+  --color-sidebar-text-muted: var(--sidebar-text-muted);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-hover: var(--sidebar-hover);
+  --color-sidebar-active-bg: var(--sidebar-active-bg);
+  --color-sidebar-active-indicator: var(--sidebar-active-indicator);
+
+  /* Table tokens */
+  --color-table-header-bg: var(--table-header-bg);
+  --color-table-row-hover: var(--table-row-hover);
+
+  /* Accent & utility tokens */
+  --color-accent-blue: var(--accent-blue);
+  --color-accent-amber: var(--accent-amber);
+  --color-accent-emerald: var(--accent-emerald);
+  --color-accent-slate: var(--accent-slate);
+  --color-focus-ring: var(--focus-ring);
+  --color-star: var(--star-color);
+
+  /* Extended palette tokens */
+  --color-step-complete: var(--step-complete);
+  --color-base-muted: var(--base-muted);
+  --color-base-border-strong: var(--base-border-strong);
+  --color-base-primary-dark: var(--base-primary-dark);
+  --color-guide-bg: var(--guide-bg);
+  --color-guide-text: var(--guide-text);
+
+  /* Custom text sizes (D4: Option B) — use --text-* namespace for Tailwind v4 */
+  --text-2xs: 0.675rem;
+  --text-2xs--line-height: calc(1 / 0.675);
+  --text-3xs: 0.5rem;
+  --text-3xs--line-height: calc(1 / 0.5);
+
+  /* Icon sizes — use as w-[var(--icon-m)] h-[var(--icon-m)] or size-icon-m */
+  --size-icon-xxs: var(--icon-xxs);
+  --size-icon-xs: var(--icon-xs);
+  --size-icon-s: var(--icon-s);
+  --size-icon-m: var(--icon-m);
+  --size-icon-l: var(--icon-l);
+  --size-icon-xl: var(--icon-xl);
+  --size-icon-xxl: var(--icon-xxl);
+
+  /* Border radius */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);

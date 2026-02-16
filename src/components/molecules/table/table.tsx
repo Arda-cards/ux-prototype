@@ -60,7 +60,7 @@ export interface ArdaTableCellProps {
 
 export function ArdaTable({ children, className }: ArdaTableProps) {
   return (
-    <div className="w-full overflow-auto rounded-lg border border-[#E5E5E5] bg-white shadow-sm">
+    <div className="w-full overflow-auto rounded-lg border border-border bg-white shadow-sm">
       <table className={cn('w-full border-collapse text-sm text-left', className)}>
         {children}
       </table>
@@ -70,7 +70,7 @@ export function ArdaTable({ children, className }: ArdaTableProps) {
 
 export function ArdaTableHeader({ children, className }: ArdaTableHeaderProps) {
   return (
-    <thead className={cn('bg-[#F9FAFB] border-bottom border-[#E5E5E5]', className)}>
+    <thead className={cn('bg-table-header-bg border-bottom border-border', className)}>
       {children}
     </thead>
   );
@@ -85,8 +85,8 @@ export function ArdaTableRow({ children, className, onClick, active = false }: A
     <tr
       onClick={onClick}
       className={cn(
-        'border-b border-[#E5E5E5] transition-colors hover:bg-[#F3F4F6] cursor-pointer',
-        active && 'bg-[#F3F4F6] font-medium',
+        'border-b border-border transition-colors hover:bg-table-row-hover cursor-pointer',
+        active && 'bg-table-row-hover font-medium',
         className,
       )}
     >
@@ -99,7 +99,7 @@ export function ArdaTableHead({ children, className }: ArdaTableHeadProps) {
   return (
     <th
       className={cn(
-        'h-10 px-4 py-2 align-middle font-semibold text-[#737373] text-[13px] uppercase tracking-wider',
+        'h-10 px-4 py-2 align-middle font-semibold text-muted-foreground text-xs uppercase tracking-wider',
         className,
       )}
     >
@@ -109,5 +109,5 @@ export function ArdaTableHead({ children, className }: ArdaTableHeadProps) {
 }
 
 export function ArdaTableCell({ children, className }: ArdaTableCellProps) {
-  return <td className={cn('p-4 align-middle text-[#0A0A0A]', className)}>{children}</td>;
+  return <td className={cn('p-4 align-middle text-foreground', className)}>{children}</td>;
 }

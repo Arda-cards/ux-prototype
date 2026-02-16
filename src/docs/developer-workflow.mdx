@@ -22,6 +22,7 @@ When using Claude Code to build components, try this order for the best results:
 3. **Tests last** — generate unit and interaction tests based on the finalized component behavior.
 
 Tips:
+
 - Provide the AI with an existing story file as a reference for the project conventions.
 - Ask the AI to run `npm test` after writing tests to catch issues immediately.
 - Use `make check` to run linting and type-checking before committing.
@@ -65,5 +66,6 @@ Every push triggers the CI workflow (`.github/workflows/ci.yml`) which runs:
 6. Storybook test runner — Playwright-based interaction tests against the built Storybook
 
 Pushes to `main` also trigger:
+
 - **Publish** — builds and publishes the library to GitHub Packages
 - **Deploy** — deploys the built Storybook to GitHub Pages

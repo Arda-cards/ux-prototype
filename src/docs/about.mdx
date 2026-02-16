@@ -1,0 +1,187 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Docs/About" />
+
+# Arda User Experience
+
+This Storybook site is the living documentation and prototype gallery for **@arda-cards/ui-components** &#8212; the shared React component library for the Arda platform.
+
+It serves three audiences:
+
+- **Designers** review visual fidelity, interaction patterns, and full-page application mocks.
+- **Developers** discover reusable components, read API documentation, and run interaction tests.
+- **Product owners** walk through end-to-end use cases and validate acceptance criteria.
+
+## Technology Stack
+
+<table>
+  <thead>
+    <tr>
+      <th>Layer</th>
+      <th>Technology</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>UI Framework</td>
+      <td>React 18 + TypeScript</td>
+    </tr>
+    <tr>
+      <td>Build</td>
+      <td>Vite</td>
+    </tr>
+    <tr>
+      <td>Styling</td>
+      <td>Tailwind CSS v4</td>
+    </tr>
+    <tr>
+      <td>Documentation</td>
+      <td>Storybook 8.6</td>
+    </tr>
+    <tr>
+      <td>Unit Tests</td>
+      <td>Vitest + React Testing Library</td>
+    </tr>
+    <tr>
+      <td>Interaction Tests</td>
+      <td>Storybook play functions + Playwright</td>
+    </tr>
+    <tr>
+      <td>Data Grid</td>
+      <td>AG Grid Community v34</td>
+    </tr>
+  </tbody>
+</table>
+
+## How the Sidebar Is Organized
+
+The sidebar groups content into five top-level sections. Each section has a distinct purpose and audience.
+
+### Docs
+
+Reference documentation for contributors and consumers of the library. You are here.
+
+<table>
+  <thead>
+    <tr>
+      <th>Page</th>
+      <th>What it covers</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <strong>About</strong>
+      </td>
+      <td>This overview page.</td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Getting Started</strong>
+      </td>
+      <td>Prerequisites, installation, project structure, and a quick-start tutorial.</td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Component Guidelines</strong>
+      </td>
+      <td>
+        Interface separation pattern (StaticConfig / RuntimeConfig / InitConfig), file layout,
+        naming conventions, Storybook requirements, and anti-patterns.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Applications</strong>
+      </td>
+      <td>
+        How to create full-page application mocks and promote local components to the shared
+        library.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Use Cases</strong>
+      </td>
+      <td>
+        How to define end-to-end user workflows using the use-case framework (Description,
+        Interactive, Stepwise, Automated artifacts).
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Developer Workflow</strong>
+      </td>
+      <td>
+        Development cycle, AI-assisted workflow tips, running tests locally, and the CI pipeline.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Publishing</strong>
+      </td>
+      <td>How the package is versioned, published to GitHub Packages, and consumed downstream.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Components
+
+The component library, organized by **Atomic Design** level:
+
+- **Atoms** &#8212; Smallest building blocks: buttons, badges, inputs, confirm dialogs, cell editors (select, typeahead).
+- **Molecules** &#8212; Compositions of atoms: cards, tables, data grids (with column persistence and items presets).
+- **Organisms** &#8212; Complex compositions: sidebars, item drawers, items data grid.
+
+Each component includes:
+
+- A **documentation page** (MDX) describing purpose, configuration lifecycle, usage, and accessibility.
+- **Stories** demonstrating visual variants, runtime states, and interactive behavior.
+- **Auto-generated props tables** from TypeScript interfaces.
+
+### Visual Elements
+
+Design tokens and foundational styles extracted from the Figma source of truth:
+
+- **Colors** &#8212; The Arda color palette (primary orange, link blue, neutrals).
+- **Icons** &#8212; Icon inventory from Lucide.
+- **Assets** &#8212; Logos and brand assets.
+
+### Applications
+
+Full-page application mocks that simulate how components appear in a real product context. Each mock comes in three variants:
+
+- **Production** &#8212; Mirrors the real application layout and behavior.
+- **Development** &#8212; Adds debug overlays and feature banners.
+- **Design** &#8212; Adds dotted structural borders for design review sessions.
+
+Application mocks compose library components into realistic pages (e.g., items data grid with tab navigation, search, and pagination). See the **Applications** docs page for how to create new mocks and promote local components to the shared library.
+
+### Use Cases
+
+End-to-end user workflow scenarios that validate how the application supports real tasks. Each use case provides:
+
+- A **Description** (MDX) &#8212; the product-level specification with user story, acceptance criteria, and sample data.
+- An **Interactive** story &#8212; hands-on exploration with live form inputs.
+- A **Stepwise** story &#8212; guided demo that advances scene-by-scene for walkthroughs.
+- An **Automated** story &#8212; regression test driven by a play function.
+
+Current use case areas include Inventory (add item) and Reference (items, business affiliates).
+
+## Component Architecture
+
+All components follow the **interface separation pattern** documented in the Component Guidelines page. In brief:
+
+- **StaticConfig** &#8212; properties chosen at design time that never change (labels, variants, structure).
+- **RuntimeConfig** &#8212; properties driven by application state that change during the component lifetime (loading, selection, event handlers).
+- **InitConfig** &#8212; optional mount-time properties for one-time setup (async data fetching).
+
+Component names use the `Arda` prefix (e.g., `ArdaButton`, `ArdaDataGrid`, `ArdaItemsDataGrid`). Files use kebab-case. Directories are organized by atomic level.
+
+## Quick Links
+
+- **New here?** Start with the **Getting Started** page.
+- **Building a component?** Read the **Component Guidelines**.
+- **Creating a full-page mock?** See **Applications**.
+- **Defining a user workflow?** Follow the **Use Cases** guide.
+- **Ready to ship?** Check the **Publishing** page for versioning and release steps.

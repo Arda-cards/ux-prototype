@@ -94,8 +94,8 @@ export function ArdaConfirmDialog({
 
   const confirmButtonStyles =
     confirmVariant === 'destructive'
-      ? 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500'
-      : 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500';
+      ? 'bg-destructive text-white hover:bg-destructive/90 focus:ring-destructive'
+      : 'bg-primary text-primary-foreground hover:bg-primary/90 focus:ring-primary';
 
   return (
     // Backdrop overlay
@@ -120,17 +120,17 @@ export function ArdaConfirmDialog({
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 id={titleId} className="text-lg font-semibold text-gray-900">
+        <h2 id={titleId} className="text-lg font-semibold text-foreground">
           {title}
         </h2>
-        <p id={descId} className="mt-2 text-sm text-gray-600">
+        <p id={descId} className="mt-2 text-sm text-muted-foreground">
           {message}
         </p>
         <div className="mt-6 flex justify-end gap-3">
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+            className="rounded-md border border-border bg-white px-4 py-2 text-sm font-medium text-foreground hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
             {cancelLabel}
           </button>

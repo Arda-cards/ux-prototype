@@ -335,7 +335,7 @@ function AddItemWizard(props: WizardProps<ItemFormData>) {
       {/* Step 3 — Review & Confirm */}
       {w.step === 2 && (
         <>
-          <p style={{ fontSize: 14, color: '#737373', margin: 0 }}>
+          <p style={{ fontSize: 14, color: 'var(--base-muted-foreground)', margin: 0 }}>
             Please review the details below before adding this item to inventory.
           </p>
           <SummaryCard>
@@ -362,7 +362,7 @@ function AddItemWizard(props: WizardProps<ItemFormData>) {
    ================================================================ */
 
 const meta = {
-  title: 'Use Cases/Inventory/Add Item (Sample Only)/Happy Path',
+  title: 'Use Cases/Examples/Add Item (Sample Only)/Happy Path',
   parameters: { layout: 'centered' },
 } satisfies Meta;
 

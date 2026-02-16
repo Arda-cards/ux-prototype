@@ -29,6 +29,21 @@ const config: StorybookConfig = {
       plugins: [(await import('@tailwindcss/postcss')).default],
     };
 
+    config.build = config.build || {};
+    config.build.chunkSizeWarningLimit = 1200;
+    config.build.rollupOptions = config.build.rollupOptions || {};
+    const existingOnwarn = config.build.rollupOptions.onwarn;
+    config.build.rollupOptions.onwarn = (warning, defaultHandler) => {
+      if (warning.code === 'EVAL' && warning.id?.includes('node_modules')) {
+        return;
+      }
+      if (existingOnwarn) {
+        existingOnwarn(warning, defaultHandler);
+      } else {
+        defaultHandler(warning);
+      }
+    };
+
     return config;
   },
 };

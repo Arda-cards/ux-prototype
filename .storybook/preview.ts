@@ -1,6 +1,7 @@
 import type { Preview } from '@storybook/react';
 
 import '../src/styles/globals.css';
+import '../src/styles/ag-theme-arda.css';
 
 const preview: Preview = {
   parameters: {

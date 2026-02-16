@@ -4,6 +4,7 @@ import tsParser from '@typescript-eslint/parser';
 import unicorn from 'eslint-plugin-unicorn';
 import prettier from 'eslint-plugin-prettier';
 import prettierConfig from 'eslint-config-prettier';
+import noHardcodedColors from './eslint-rules/no-hardcoded-colors.js';
 
 export default [
   // ── Global ignores ──────────────────────────────────────────────────
@@ -29,10 +30,14 @@ export default [
     plugins: {
       '@typescript-eslint': tsPlugin,
       prettier,
+      'arda-custom': { rules: { 'no-hardcoded-colors': noHardcodedColors } },
     },
     rules: {
       // ── Prettier integration ─────────────────────────────────────
       'prettier/prettier': 'error',
+
+      // ── Design token enforcement (D5: Option A) ─────────────────
+      'arda-custom/no-hardcoded-colors': 'warn',
 
       // ── Unused code (mirrors tsc strict checks) ──────────────────
       '@typescript-eslint/no-unused-vars': [

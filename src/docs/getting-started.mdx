@@ -109,7 +109,11 @@ const meta: Meta<typeof MyButton> = {
   component: MyButton,
   tags: ['autodocs'],
   argTypes: {
-    variant: { control: 'select', options: ['primary', 'secondary'], table: { category: 'Static' } },
+    variant: {
+      control: 'select',
+      options: ['primary', 'secondary'],
+      table: { category: 'Static' },
+    },
     onClick: { action: 'clicked', table: { category: 'Events' } },
   },
   args: { label: 'Click me' },

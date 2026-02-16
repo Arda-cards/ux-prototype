@@ -113,38 +113,39 @@ export function ArdaSupplyCard({
   const costLeadLine = costLeadParts.join(' \u00B7 ');
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm">
+    <div className="rounded-lg border border-border bg-white px-4 py-3 shadow-sm">
       {/* Row 1: Star + Supplier name + SKU */}
       <div className="flex items-center gap-2">
         <button
           type="button"
           onClick={onToggleDefault}
           aria-label={isDefault ? 'Remove default' : 'Set as default'}
-          className="p-0.5 rounded hover:bg-gray-100 transition-colors shrink-0"
+          className="p-0.5 rounded hover:bg-secondary transition-colors shrink-0"
         >
-          <Star
-            size={16}
-            className={cn(isDefault ? 'fill-amber-400 text-amber-400' : 'text-gray-300')}
-          />
+          <Star size={16} className={cn(isDefault ? 'fill-star text-star' : 'text-gray-300')} />
         </button>
 
         {supplierLinked ? (
           <button
             type="button"
             onClick={onSupplierClick}
-            className="text-sm font-semibold text-blue-600 hover:underline truncate"
+            className="text-sm font-semibold text-accent-blue hover:underline truncate"
           >
             {supplierName}
           </button>
         ) : (
-          <span className="text-sm font-semibold text-gray-900 truncate">{supplierName}</span>
+          <span className="text-sm font-semibold text-foreground truncate">{supplierName}</span>
         )}
 
-        {sku && <span className="ml-auto text-xs text-gray-500 font-mono shrink-0">{sku}</span>}
+        {sku && (
+          <span className="ml-auto text-xs text-muted-foreground font-mono shrink-0">{sku}</span>
+        )}
       </div>
 
       {/* Row 2: Cost / lead time */}
-      {costLeadLine && <div className="mt-1 ml-7 text-xs text-gray-500">{costLeadLine}</div>}
+      {costLeadLine && (
+        <div className="mt-1 ml-7 text-xs text-muted-foreground">{costLeadLine}</div>
+      )}
 
       {/* Row 3: Designation badges */}
       <div className="mt-2 ml-7 flex flex-wrap items-center gap-1.5">
@@ -158,7 +159,7 @@ export function ArdaSupplyCard({
 
       {/* Row 4: Order mechanism + actions */}
       <div className="mt-2 ml-7 flex items-center justify-between">
-        <div className="text-xs text-gray-400">
+        <div className="text-xs text-muted-foreground">
           {legacy ? (
             <em>*Legacy supply — not linked to a supplier record*</em>
           ) : (
@@ -174,13 +175,13 @@ export function ArdaSupplyCard({
                 type="button"
                 onClick={() => setMenuOpen(!menuOpen)}
                 aria-label="Designation options"
-                className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
               >
                 <MoreHorizontal size={16} />
               </button>
 
               {menuOpen && (
-                <div className="absolute right-0 top-full mt-1 w-44 rounded-md border border-gray-200 bg-white shadow-lg z-10 py-1">
+                <div className="absolute right-0 top-full mt-1 w-44 rounded-md border border-border bg-white shadow-lg z-10 py-1">
                   {(['PRIMARY', 'SECONDARY', 'TERTIARY', 'BACKUP'] as SupplyDesignation[]).map(
                     (d) => (
                       <button
@@ -190,7 +191,7 @@ export function ArdaSupplyCard({
                           onDesignationChange(d);
                           setMenuOpen(false);
                         }}
-                        className="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        className="w-full text-left px-3 py-1.5 text-sm text-foreground hover:bg-secondary transition-colors"
                       >
                         Set as {DESIGNATION_LABELS[d]}
                       </button>
@@ -206,7 +207,7 @@ export function ArdaSupplyCard({
               type="button"
               onClick={onEdit}
               aria-label="Edit supply"
-              className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+              className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
             >
               <Pencil size={16} />
             </button>
@@ -217,7 +218,7 @@ export function ArdaSupplyCard({
               type="button"
               onClick={onRemove}
               aria-label="Remove supply"
-              className="p-1 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+              className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
             >
               <Trash2 size={16} />
             </button>

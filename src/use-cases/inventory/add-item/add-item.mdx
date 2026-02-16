@@ -1,6 +1,6 @@
 import { Meta } from '@storybook/blocks';
 
-<Meta title="Use Cases/Inventory/Add Item (Sample Only)/Description" />
+<Meta title="Use Cases/Examples/Add Item (Sample Only)/Description" />
 
 # Inventory: Add New Inventory Item (Example OnAly)
 
@@ -58,12 +58,36 @@ The user sees an empty form with three fields:
 
 <table>
   <thead>
-    <tr><th>Field</th><th>Type</th><th>Required</th><th>Validation</th><th>Example</th></tr>
+    <tr>
+      <th>Field</th>
+      <th>Type</th>
+      <th>Required</th>
+      <th>Validation</th>
+      <th>Example</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td>Item Name</td><td>Text input</td><td>Yes</td><td>Non-empty, max 120 chars</td><td>Hydraulic Cylinder HC-500</td></tr>
-    <tr><td>SKU</td><td>Text input</td><td>Yes</td><td>Non-empty, max 40 chars, unique</td><td>HYD-CYL-HC500</td></tr>
-    <tr><td>Category</td><td>Dropdown select</td><td>Yes</td><td>Must select a value</td><td>Filters</td></tr>
+    <tr>
+      <td>Item Name</td>
+      <td>Text input</td>
+      <td>Yes</td>
+      <td>Non-empty, max 120 chars</td>
+      <td>Hydraulic Cylinder HC-500</td>
+    </tr>
+    <tr>
+      <td>SKU</td>
+      <td>Text input</td>
+      <td>Yes</td>
+      <td>Non-empty, max 40 chars, unique</td>
+      <td>HYD-CYL-HC500</td>
+    </tr>
+    <tr>
+      <td>Category</td>
+      <td>Dropdown select</td>
+      <td>Yes</td>
+      <td>Must select a value</td>
+      <td>Filters</td>
+    </tr>
   </tbody>
 </table>
 
@@ -79,14 +103,50 @@ The step indicator updates to show Step 1 as complete (green check) and Step 2 a
 
 <table>
   <thead>
-    <tr><th>Field</th><th>Type</th><th>Required</th><th>Validation</th><th>Example</th></tr>
+    <tr>
+      <th>Field</th>
+      <th>Type</th>
+      <th>Required</th>
+      <th>Validation</th>
+      <th>Example</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td>Initial Quantity</td><td>Number input</td><td>Yes</td><td>Integer &#8805; 0</td><td>25</td></tr>
-    <tr><td>Unit Price ($)</td><td>Number input</td><td>Yes</td><td>Decimal &#8805; 0, step 0.01</td><td>189.99</td></tr>
-    <tr><td>Minimum Stock Level</td><td>Number input</td><td>No</td><td>Integer &#8805; 0</td><td>5</td></tr>
-    <tr><td>Supplier</td><td>Text input</td><td>Yes</td><td>Non-empty</td><td>Fastenal Corp.</td></tr>
-    <tr><td>Storage Location</td><td>Text input</td><td>Yes</td><td>Non-empty</td><td>W-03-B2</td></tr>
+    <tr>
+      <td>Initial Quantity</td>
+      <td>Number input</td>
+      <td>Yes</td>
+      <td>Integer &#8805; 0</td>
+      <td>25</td>
+    </tr>
+    <tr>
+      <td>Unit Price ($)</td>
+      <td>Number input</td>
+      <td>Yes</td>
+      <td>Decimal &#8805; 0, step 0.01</td>
+      <td>189.99</td>
+    </tr>
+    <tr>
+      <td>Minimum Stock Level</td>
+      <td>Number input</td>
+      <td>No</td>
+      <td>Integer &#8805; 0</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <td>Supplier</td>
+      <td>Text input</td>
+      <td>Yes</td>
+      <td>Non-empty</td>
+      <td>Fastenal Corp.</td>
+    </tr>
+    <tr>
+      <td>Storage Location</td>
+      <td>Text input</td>
+      <td>Yes</td>
+      <td>Non-empty</td>
+      <td>W-03-B2</td>
+    </tr>
   </tbody>
 </table>
 
@@ -156,11 +216,38 @@ This use case is implemented as three Storybook stories:
 
 <table>
   <thead>
-    <tr><th>Story</th><th>Purpose</th></tr>
+    <tr>
+      <th>Story</th>
+      <th>Purpose</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td><strong>Interactive</strong></td><td>Hands-on exploration — the user fills in real data and advances through the wizard manually. A guide panel shows contextual help for each step.</td></tr>
-    <tr><td><strong>Stepwise</strong></td><td>Guided demo — the application advances one pre-filled scene at a time using story controls (Next / Previous / Reset). Useful for walkthroughs and design reviews.</td></tr>
-    <tr><td><strong>Automated</strong></td><td>Regression test — a <code>play</code> function exercises the full workflow end-to-end using the sample data above. Executed by <code>@storybook/test-runner</code> via Playwright.</td></tr>
+    <tr>
+      <td>
+        <strong>Interactive</strong>
+      </td>
+      <td>
+        Hands-on exploration — the user fills in real data and advances through the wizard manually.
+        A guide panel shows contextual help for each step.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Stepwise</strong>
+      </td>
+      <td>
+        Guided demo — the application advances one pre-filled scene at a time using story controls
+        (Next / Previous / Reset). Useful for walkthroughs and design reviews.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Automated</strong>
+      </td>
+      <td>
+        Regression test — a <code>play</code> function exercises the full workflow end-to-end using
+        the sample data above. Executed by <code>@storybook/test-runner</code> via Playwright.
+      </td>
+    </tr>
   </tbody>
 </table>

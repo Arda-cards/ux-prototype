@@ -328,7 +328,7 @@ function AddSupplyWizard(props: WizardProps<SupplyFormData>) {
       {/* Step 3 — Review & Confirm */}
       {w.step === 2 && (
         <>
-          <p style={{ fontSize: 14, color: '#737373', margin: 0 }}>
+          <p style={{ fontSize: 14, color: 'var(--base-muted-foreground)', margin: 0 }}>
             Review the supply details below before saving.
           </p>
           <SummaryCard>

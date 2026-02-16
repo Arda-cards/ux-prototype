@@ -44,7 +44,7 @@
 }
 
 .arda-btn-destructive {
-  background: #ef4444;
+  background: var(--base-destructive);
   color: white;
 }
 
@@ -82,7 +82,7 @@
 }
 
 .arda-btn-loading::after {
-  content: "";
+  content: '';
   position: absolute;
   width: 1rem;
   height: 1rem;

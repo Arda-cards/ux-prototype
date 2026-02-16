@@ -48,7 +48,7 @@ describe('ArdaSidebar', () => {
       <ArdaSidebar navItems={navItems} collapsed={false} currentPath="/items" />,
     );
     // The active indicator is an orange bar
-    const activeIndicator = container.querySelector('.bg-\\[\\#FC5A29\\]');
+    const activeIndicator = container.querySelector('.bg-sidebar-active-indicator');
     expect(activeIndicator).toBeInTheDocument();
   });
 

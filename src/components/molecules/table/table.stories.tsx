@@ -131,7 +131,7 @@ export const EmptyState: Story = {
       </ArdaTableHeader>
       <ArdaTableBody>
         <tr>
-          <td colSpan={5} className="text-center text-[#737373] py-12 px-4">
+          <td colSpan={5} className="text-center text-muted-foreground py-12 px-4">
             No inventory items found. Add your first item to get started.
           </td>
         </tr>

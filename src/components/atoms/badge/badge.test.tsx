@@ -13,25 +13,25 @@ describe('ArdaBadge', () => {
     render(<ArdaBadge variant="success">In Stock</ArdaBadge>);
     const badge = screen.getByText('In Stock');
     expect(badge).toBeInTheDocument();
-    expect(badge.className).toContain('bg-[#DCFCE7]');
+    expect(badge.className).toContain('bg-status-success-bg');
   });
 
   it('renders with warning variant', () => {
     render(<ArdaBadge variant="warning">Low Stock</ArdaBadge>);
     const badge = screen.getByText('Low Stock');
-    expect(badge.className).toContain('bg-[#FEF3C7]');
+    expect(badge.className).toContain('bg-status-warning-bg');
   });
 
   it('renders with info variant', () => {
     render(<ArdaBadge variant="info">Processing</ArdaBadge>);
     const badge = screen.getByText('Processing');
-    expect(badge.className).toContain('bg-[#DBEAFE]');
+    expect(badge.className).toContain('bg-status-info-bg');
   });
 
   it('renders with destructive variant', () => {
     render(<ArdaBadge variant="destructive">Error</ArdaBadge>);
     const badge = screen.getByText('Error');
-    expect(badge.className).toContain('bg-[#FEE2E2]');
+    expect(badge.className).toContain('bg-status-destructive-bg');
   });
 
   it('renders with outline variant', () => {
