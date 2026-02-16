@@ -28,6 +28,17 @@ const meta: Meta<typeof ArdaTextFieldInteractive> = {
       description: 'Whether editing is disabled.',
       table: { category: 'Runtime' },
     },
+    label: {
+      control: 'text',
+      description: 'Static label displayed next to the field.',
+      table: { category: 'Static' },
+    },
+    labelPosition: {
+      control: 'inline-radio',
+      options: ['left', 'top'],
+      description: 'Position of the label relative to the field.',
+      table: { category: 'Static' },
+    },
   },
   args: {
     onValueChange: fn(),
@@ -116,6 +127,26 @@ export const Interactive: Story = {
 };
 
 // ============================================================================
+// With Label
+// ============================================================================
+
+export const WithLabel: Story = {
+  render: () => (
+    <div className="flex flex-col gap-6 p-4" style={{ width: 480 }}>
+      <div className="text-xs font-medium text-muted-foreground">Label left (default)</div>
+      <ArdaTextFieldDisplay value="Widget Alpha" label="Name" labelPosition="left" />
+      <ArdaTextFieldEditor value="Widget Alpha" label="Name" labelPosition="left" />
+      <ArdaTextFieldInteractive value="Widget Alpha" label="Name" labelPosition="left" />
+
+      <div className="text-xs font-medium text-muted-foreground">Label top</div>
+      <ArdaTextFieldDisplay value="Widget Alpha" label="Name" labelPosition="top" />
+      <ArdaTextFieldEditor value="Widget Alpha" label="Name" labelPosition="top" />
+      <ArdaTextFieldInteractive value="Widget Alpha" label="Name" labelPosition="top" />
+    </div>
+  ),
+};
+
+// ============================================================================
 // Playground
 // ============================================================================
 
@@ -123,6 +154,8 @@ export const Playground: Story = {
   args: {
     value: 'Widget Alpha',
     disabled: false,
+    label: 'Name',
+    labelPosition: 'left',
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);

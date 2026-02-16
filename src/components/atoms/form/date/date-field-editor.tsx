@@ -1,15 +1,19 @@
 import { useState, useRef, useEffect } from 'react';
 
 import { cn } from '@/lib/utils';
-import { toDateInputValue } from '@/lib/data-types/formatters';
+import {
+  toDateInputValue,
+  getBrowserTimezone,
+  getTimezoneAbbreviation,
+} from '@/lib/data-types/formatters';
+
+import { FieldLabel, type FieldLabelProps } from '../field-label';
 
 /** Design-time configuration for date field editor. */
-export interface DateFieldEditorStaticConfig {
+export interface DateFieldEditorStaticConfig extends FieldLabelProps {
   /* --- View / Layout / Controller --- */
   /** Placeholder text for the input. */
   placeholder?: string;
-  /** IANA timezone for display formatting (design-time config). */
-  timezone?: string;
 }
 
 /** Runtime configuration for date field editor. */
@@ -29,6 +33,8 @@ export interface DateFieldEditorRuntimeConfig {
   disabled?: boolean;
   /** Auto-focus on mount. */
   autoFocus?: boolean;
+  /** IANA timezone for display formatting. Defaults to browser timezone. */
+  timezone?: string;
 }
 
 export interface ArdaDateFieldEditorProps
@@ -44,9 +50,14 @@ export function ArdaDateFieldEditor({
   disabled = false,
   autoFocus = false,
   timezone,
+  label,
+  labelPosition,
 }: ArdaDateFieldEditorProps) {
   const [localValue, setLocalValue] = useState(toDateInputValue(value));
   const inputRef = useRef<HTMLInputElement>(null);
+  const tz = timezone ?? getBrowserTimezone();
+  const tzLabel = tz.split('/').pop()?.replace(/_/g, ' ');
+  const tzAbbr = getTimezoneAbbreviation(tz);
 
   useEffect(() => {
     if (autoFocus) {
@@ -75,28 +86,28 @@ export function ArdaDateFieldEditor({
   };
 
   return (
-    <div>
-      <input
-        ref={inputRef}
-        type="date"
-        value={localValue}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        disabled={disabled}
-        className={cn(
-          'w-full px-3 py-2 text-sm rounded-lg border border-border bg-white',
-          'focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring',
-          'placeholder:text-muted-foreground',
-          disabled && 'opacity-50 cursor-not-allowed bg-muted/30',
-        )}
-      />
-      {timezone && (
+    <FieldLabel label={label} labelPosition={labelPosition}>
+      <div>
+        <input
+          ref={inputRef}
+          type="date"
+          value={localValue}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          disabled={disabled}
+          className={cn(
+            'w-full px-3 py-2 text-sm rounded-lg border border-border bg-white',
+            'focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring',
+            'placeholder:text-muted-foreground',
+            disabled && 'opacity-50 cursor-not-allowed bg-muted/30',
+          )}
+        />
         <span className="text-xs text-muted-foreground mt-1 block">
-          Timezone: {timezone.split('/').pop()?.replace(/_/g, ' ')}
+          Timezone: {tzAbbr || tzLabel}
         </span>
-      )}
-    </div>
+      </div>
+    </FieldLabel>
   );
 }

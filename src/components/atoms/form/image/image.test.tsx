@@ -31,6 +31,30 @@ describe('ArdaImageFieldDisplay', () => {
     });
   });
 
+  it('renders with label on the left', () => {
+    render(
+      <ArdaImageFieldDisplay
+        value="https://example.com/image.jpg"
+        label="Photo"
+        labelPosition="left"
+      />,
+    );
+    expect(screen.getByText('Photo')).toBeInTheDocument();
+    expect(screen.getByRole('img')).toBeInTheDocument();
+  });
+
+  it('renders with label on top', () => {
+    render(
+      <ArdaImageFieldDisplay
+        value="https://example.com/image.jpg"
+        label="Photo"
+        labelPosition="top"
+      />,
+    );
+    const label = screen.getByText('Photo');
+    expect(label.closest('div')).toHaveClass('flex-col');
+  });
+
   it('displays URL below the image', () => {
     render(<ArdaImageFieldDisplay value="https://example.com/image.jpg" />);
     expect(screen.getByText('https://example.com/image.jpg')).toBeInTheDocument();
@@ -76,6 +100,12 @@ describe('ArdaImageFieldEditor', () => {
   it('is disabled when disabled prop is set', () => {
     render(<ArdaImageFieldEditor value="https://example.com/image.jpg" disabled />);
     expect(screen.getByRole('textbox')).toBeDisabled();
+  });
+
+  it('renders with label', () => {
+    render(<ArdaImageFieldEditor value="https://example.com/image.jpg" label="Photo" />);
+    expect(screen.getByText('Photo')).toBeInTheDocument();
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
   });
 });
 

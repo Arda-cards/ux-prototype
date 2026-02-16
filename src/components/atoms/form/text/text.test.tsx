@@ -22,6 +22,18 @@ describe('ArdaTextFieldDisplay', () => {
     render(<ArdaTextFieldDisplay value="Hello World" maxLength={5} />);
     expect(screen.getByText('Hello…')).toBeInTheDocument();
   });
+
+  it('renders with label on the left', () => {
+    render(<ArdaTextFieldDisplay value="Hello" label="Name" labelPosition="left" />);
+    expect(screen.getByText('Name')).toBeInTheDocument();
+    expect(screen.getByText('Hello')).toBeInTheDocument();
+  });
+
+  it('renders with label on top', () => {
+    render(<ArdaTextFieldDisplay value="Hello" label="Name" labelPosition="top" />);
+    const label = screen.getByText('Name');
+    expect(label.closest('div')).toHaveClass('flex-col');
+  });
 });
 
 describe('ArdaTextFieldEditor', () => {
@@ -63,6 +75,12 @@ describe('ArdaTextFieldEditor', () => {
   it('is disabled when disabled prop is set', () => {
     render(<ArdaTextFieldEditor value="test" disabled />);
     expect(screen.getByRole('textbox')).toBeDisabled();
+  });
+
+  it('renders with label', () => {
+    render(<ArdaTextFieldEditor value="test" label="Name" />);
+    expect(screen.getByText('Name')).toBeInTheDocument();
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
   });
 });
 

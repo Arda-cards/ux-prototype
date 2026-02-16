@@ -23,6 +23,18 @@ describe('ArdaNumberFieldDisplay', () => {
     expect(screen.getByText('—')).toBeInTheDocument();
   });
 
+  it('renders with label on the left', () => {
+    render(<ArdaNumberFieldDisplay value={42} label="Quantity" labelPosition="left" />);
+    expect(screen.getByText('Quantity')).toBeInTheDocument();
+    expect(screen.getByText('42')).toBeInTheDocument();
+  });
+
+  it('renders with label on top', () => {
+    render(<ArdaNumberFieldDisplay value={42} label="Quantity" labelPosition="top" />);
+    const label = screen.getByText('Quantity');
+    expect(label.closest('div')).toHaveClass('flex-col');
+  });
+
   it('formats with different precisions', () => {
     const { rerender } = render(<ArdaNumberFieldDisplay value={3.14159} precision={0} />);
     expect(screen.getByText('3')).toBeInTheDocument();
@@ -87,6 +99,12 @@ describe('ArdaNumberFieldEditor', () => {
 
     rerender(<ArdaNumberFieldEditor value={42} precision={4} />);
     expect(screen.getByRole('spinbutton')).toHaveAttribute('step', '0.0001');
+  });
+
+  it('renders with label', () => {
+    render(<ArdaNumberFieldEditor value={42} label="Quantity" />);
+    expect(screen.getByText('Quantity')).toBeInTheDocument();
+    expect(screen.getByRole('spinbutton')).toBeInTheDocument();
   });
 
   it('respects min and max attributes', () => {

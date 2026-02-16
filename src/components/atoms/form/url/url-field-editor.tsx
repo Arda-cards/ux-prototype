@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 
 import { cn } from '@/lib/utils';
+import { FieldLabel, type FieldLabelProps } from '../field-label';
 
 /** Design-time configuration for URL field editor. */
-export interface UrlFieldEditorStaticConfig {
+export interface UrlFieldEditorStaticConfig extends FieldLabelProps {
   /* --- View / Layout / Controller --- */
   /** Placeholder text for the input. */
   placeholder?: string;
@@ -40,6 +41,8 @@ export function ArdaUrlFieldEditor({
   placeholder = 'Enter URL…',
   disabled = false,
   autoFocus = false,
+  label,
+  labelPosition,
 }: ArdaUrlFieldEditorProps) {
   const [localValue, setLocalValue] = useState(value ?? '');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -72,21 +75,23 @@ export function ArdaUrlFieldEditor({
   };
 
   return (
-    <input
-      ref={inputRef}
-      type="url"
-      value={localValue}
-      onChange={handleChange}
-      onBlur={handleBlur}
-      onKeyDown={handleKeyDown}
-      placeholder={placeholder}
-      disabled={disabled}
-      className={cn(
-        'w-full px-3 py-2 text-sm rounded-lg border border-border bg-white',
-        'focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring',
-        'placeholder:text-muted-foreground',
-        disabled && 'opacity-50 cursor-not-allowed bg-muted/30',
-      )}
-    />
+    <FieldLabel label={label} labelPosition={labelPosition}>
+      <input
+        ref={inputRef}
+        type="url"
+        value={localValue}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder}
+        disabled={disabled}
+        className={cn(
+          'w-full px-3 py-2 text-sm rounded-lg border border-border bg-white',
+          'focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring',
+          'placeholder:text-muted-foreground',
+          disabled && 'opacity-50 cursor-not-allowed bg-muted/30',
+        )}
+      />
+    </FieldLabel>
   );
 }

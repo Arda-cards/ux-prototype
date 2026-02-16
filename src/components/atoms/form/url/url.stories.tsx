@@ -28,6 +28,17 @@ const meta: Meta<typeof ArdaUrlFieldInteractive> = {
       description: 'Whether editing is disabled.',
       table: { category: 'Runtime' },
     },
+    label: {
+      control: 'text',
+      description: 'Static label displayed next to the field.',
+      table: { category: 'Static' },
+    },
+    labelPosition: {
+      control: 'inline-radio',
+      options: ['left', 'top'],
+      description: 'Position of the label relative to the field.',
+      table: { category: 'Static' },
+    },
   },
   args: {
     onValueChange: fn(),
@@ -127,6 +138,26 @@ export const Interactive: Story = {
 };
 
 // ============================================================================
+// With Label
+// ============================================================================
+
+export const WithLabel: Story = {
+  render: () => (
+    <div className="flex flex-col gap-6 p-4" style={{ width: 480 }}>
+      <div className="text-xs font-medium text-muted-foreground">Label left (default)</div>
+      <ArdaUrlFieldDisplay value="https://example.com" label="Website" labelPosition="left" />
+      <ArdaUrlFieldEditor value="https://example.com" label="Website" labelPosition="left" />
+      <ArdaUrlFieldInteractive value="https://example.com" label="Website" labelPosition="left" />
+
+      <div className="text-xs font-medium text-muted-foreground">Label top</div>
+      <ArdaUrlFieldDisplay value="https://example.com" label="Website" labelPosition="top" />
+      <ArdaUrlFieldEditor value="https://example.com" label="Website" labelPosition="top" />
+      <ArdaUrlFieldInteractive value="https://example.com" label="Website" labelPosition="top" />
+    </div>
+  ),
+};
+
+// ============================================================================
 // Playground
 // ============================================================================
 
@@ -134,6 +165,8 @@ export const Playground: Story = {
   args: {
     value: 'https://example.com/page',
     disabled: false,
+    label: 'Website',
+    labelPosition: 'left',
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);

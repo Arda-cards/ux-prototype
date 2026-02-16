@@ -10,7 +10,7 @@ import { ArdaTimeFieldInteractive } from './time-field-interactive';
 describe('ArdaTimeFieldDisplay', () => {
   it('renders time value', () => {
     render(<ArdaTimeFieldDisplay value="14:30" />);
-    expect(screen.getByText('2:30 PM')).toBeInTheDocument();
+    expect(screen.getByText(/2:30 PM/)).toBeInTheDocument();
   });
 
   it('renders dash for undefined', () => {
@@ -20,7 +20,24 @@ describe('ArdaTimeFieldDisplay', () => {
 
   it('formats time with seconds', () => {
     render(<ArdaTimeFieldDisplay value="09:15:30" />);
-    expect(screen.getByText('9:15 AM')).toBeInTheDocument();
+    expect(screen.getByText(/9:15 AM/)).toBeInTheDocument();
+  });
+
+  it('renders with explicit timezone', () => {
+    render(<ArdaTimeFieldDisplay value="14:30" timezone="America/New_York" />);
+    expect(screen.getByText(/2:30 PM (EST|EDT|GMT-[45])/)).toBeInTheDocument();
+  });
+
+  it('renders with label on the left', () => {
+    render(<ArdaTimeFieldDisplay value="14:30" label="Start Time" labelPosition="left" />);
+    expect(screen.getByText('Start Time')).toBeInTheDocument();
+    expect(screen.getByText(/2:30 PM/)).toBeInTheDocument();
+  });
+
+  it('renders with label on top', () => {
+    render(<ArdaTimeFieldDisplay value="14:30" label="Start Time" labelPosition="top" />);
+    const label = screen.getByText('Start Time');
+    expect(label.closest('div')).toHaveClass('flex-col');
   });
 });
 
@@ -66,19 +83,30 @@ describe('ArdaTimeFieldEditor', () => {
     render(<ArdaTimeFieldEditor value="14:30" disabled />);
     expect(screen.getByDisplayValue('14:30')).toBeDisabled();
   });
+
+  it('shows timezone hint', () => {
+    render(<ArdaTimeFieldEditor value="14:30" timezone="Asia/Tokyo" />);
+    expect(screen.getByText(/JST|GMT\+9/)).toBeInTheDocument();
+  });
+
+  it('renders with label', () => {
+    render(<ArdaTimeFieldEditor value="14:30" label="Start Time" />);
+    expect(screen.getByText('Start Time')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('14:30')).toBeInTheDocument();
+  });
 });
 
 describe('ArdaTimeFieldInteractive', () => {
   it('starts in display mode', () => {
     render(<ArdaTimeFieldInteractive value="14:30" />);
-    expect(screen.getByText('2:30 PM')).toBeInTheDocument();
+    expect(screen.getByText(/2:30 PM/)).toBeInTheDocument();
     expect(screen.queryByDisplayValue('14:30')).not.toBeInTheDocument();
   });
 
   it('switches to edit mode on double-click', async () => {
     const user = userEvent.setup();
     render(<ArdaTimeFieldInteractive value="14:30" />);
-    await user.dblClick(screen.getByText('2:30 PM'));
+    await user.dblClick(screen.getByText(/2:30 PM/));
     expect(screen.getByDisplayValue('14:30')).toBeInTheDocument();
   });
 
@@ -86,7 +114,7 @@ describe('ArdaTimeFieldInteractive', () => {
     const user = userEvent.setup();
     const onValueChange = vi.fn();
     render(<ArdaTimeFieldInteractive value="14:30" onValueChange={onValueChange} />);
-    await user.dblClick(screen.getByText('2:30 PM'));
+    await user.dblClick(screen.getByText(/2:30 PM/));
     const input = screen.getByDisplayValue('14:30');
     await user.clear(input);
     await user.type(input, '09:00{Enter}');
@@ -97,7 +125,15 @@ describe('ArdaTimeFieldInteractive', () => {
   it('does not enter edit mode when disabled', async () => {
     const user = userEvent.setup();
     render(<ArdaTimeFieldInteractive value="14:30" disabled />);
-    await user.dblClick(screen.getByText('2:30 PM'));
+    await user.dblClick(screen.getByText(/2:30 PM/));
     expect(screen.queryByDisplayValue('14:30')).not.toBeInTheDocument();
+  });
+
+  it('passes timezone to display and editor', async () => {
+    const user = userEvent.setup();
+    render(<ArdaTimeFieldInteractive value="14:30" timezone="Asia/Tokyo" />);
+    expect(screen.getByText(/2:30 PM (JST|GMT\+9)/)).toBeInTheDocument();
+    await user.dblClick(screen.getByText(/2:30 PM (JST|GMT\+9)/));
+    expect(screen.getByText(/JST|GMT\+9/)).toBeInTheDocument();
   });
 });

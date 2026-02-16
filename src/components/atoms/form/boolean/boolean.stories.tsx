@@ -28,6 +28,17 @@ const meta: Meta<typeof ArdaBooleanFieldInteractive> = {
       description: 'Whether editing is disabled.',
       table: { category: 'Runtime' },
     },
+    label: {
+      control: 'text',
+      description: 'Static label displayed next to the field.',
+      table: { category: 'Static' },
+    },
+    labelPosition: {
+      control: 'inline-radio',
+      options: ['left', 'top'],
+      description: 'Position of the label relative to the field.',
+      table: { category: 'Static' },
+    },
   },
   args: {
     onValueChange: fn(),
@@ -156,6 +167,26 @@ export const Interactive: Story = {
 };
 
 // ============================================================================
+// With Label
+// ============================================================================
+
+export const WithLabel: Story = {
+  render: () => (
+    <div className="flex flex-col gap-6 p-4" style={{ width: 480 }}>
+      <div className="text-xs font-medium text-muted-foreground">Label left (default)</div>
+      <ArdaBooleanFieldDisplay value={true} label="Active" labelPosition="left" />
+      <ArdaBooleanFieldEditor value={true} label="Active" labelPosition="left" />
+      <ArdaBooleanFieldInteractive value={true} label="Active" labelPosition="left" />
+
+      <div className="text-xs font-medium text-muted-foreground">Label top</div>
+      <ArdaBooleanFieldDisplay value={true} label="Active" labelPosition="top" />
+      <ArdaBooleanFieldEditor value={true} label="Active" labelPosition="top" />
+      <ArdaBooleanFieldInteractive value={true} label="Active" labelPosition="top" />
+    </div>
+  ),
+};
+
+// ============================================================================
 // Playground
 // ============================================================================
 
@@ -163,6 +194,8 @@ export const Playground: Story = {
   args: {
     value: true,
     disabled: false,
+    label: 'Active',
+    labelPosition: 'left',
   },
   play: async ({ canvasElement }) => {
     await expect(canvasElement).toBeInTheDocument();

@@ -28,6 +28,17 @@ const meta: Meta<typeof ArdaImageFieldInteractive> = {
       description: 'Whether editing is disabled.',
       table: { category: 'Runtime' },
     },
+    label: {
+      control: 'text',
+      description: 'Static label displayed next to the field.',
+      table: { category: 'Static' },
+    },
+    labelPosition: {
+      control: 'inline-radio',
+      options: ['left', 'top'],
+      description: 'Position of the label relative to the field.',
+      table: { category: 'Static' },
+    },
   },
   args: {
     onValueChange: fn(),
@@ -113,6 +124,50 @@ export const Interactive: Story = {
 };
 
 // ============================================================================
+// With Label
+// ============================================================================
+
+export const WithLabel: Story = {
+  render: () => (
+    <div className="flex flex-col gap-6 p-4" style={{ width: 480 }}>
+      <div className="text-xs font-medium text-muted-foreground">Label left (default)</div>
+      <ArdaImageFieldDisplay
+        value="https://picsum.photos/200/100"
+        label="Photo"
+        labelPosition="left"
+      />
+      <ArdaImageFieldEditor
+        value="https://picsum.photos/200/100"
+        label="Photo"
+        labelPosition="left"
+      />
+      <ArdaImageFieldInteractive
+        value="https://picsum.photos/200/100"
+        label="Photo"
+        labelPosition="left"
+      />
+
+      <div className="text-xs font-medium text-muted-foreground">Label top</div>
+      <ArdaImageFieldDisplay
+        value="https://picsum.photos/200/100"
+        label="Photo"
+        labelPosition="top"
+      />
+      <ArdaImageFieldEditor
+        value="https://picsum.photos/200/100"
+        label="Photo"
+        labelPosition="top"
+      />
+      <ArdaImageFieldInteractive
+        value="https://picsum.photos/200/100"
+        label="Photo"
+        labelPosition="top"
+      />
+    </div>
+  ),
+};
+
+// ============================================================================
 // Playground
 // ============================================================================
 
@@ -120,6 +175,8 @@ export const Playground: Story = {
   args: {
     value: 'https://picsum.photos/200/100',
     disabled: false,
+    label: 'Photo',
+    labelPosition: 'left',
   },
   play: async ({ canvasElement }) => {
     await expect(canvasElement).toBeInTheDocument();

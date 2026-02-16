@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 
 import { cn } from '@/lib/utils';
+import { FieldLabel, type FieldLabelProps } from '../field-label';
 
 /** Design-time configuration for boolean field editor. */
-export interface BooleanFieldEditorStaticConfig {
+export interface BooleanFieldEditorStaticConfig extends FieldLabelProps {
   /* --- View / Layout / Controller --- */
   /** Editor format: checkbox or yes-no toggle buttons. */
   displayFormat?: 'checkbox' | 'yes-no';
@@ -40,6 +41,8 @@ export function ArdaBooleanFieldEditor({
   displayFormat = 'checkbox',
   disabled = false,
   autoFocus = false,
+  label,
+  labelPosition,
 }: ArdaBooleanFieldEditorProps) {
   const [localValue, setLocalValue] = useState(value ?? false);
   const checkboxRef = useRef<HTMLInputElement>(null);
@@ -76,69 +79,73 @@ export function ArdaBooleanFieldEditor({
 
   if (displayFormat === 'checkbox') {
     return (
-      <div className="px-3 py-2 rounded-lg border border-border bg-white flex items-center min-h-[36px]">
-        <input
-          ref={checkboxRef}
-          type="checkbox"
-          checked={localValue}
-          onChange={(e) => handleChange(e.target.checked)}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
-          disabled={disabled}
-          className={cn(
-            'h-4 w-4 rounded border-border text-primary',
-            'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0',
-            disabled && 'opacity-50 cursor-not-allowed',
-          )}
-        />
-      </div>
+      <FieldLabel label={label} labelPosition={labelPosition}>
+        <div className="px-3 py-2 rounded-lg border border-border bg-white flex items-center min-h-[36px]">
+          <input
+            ref={checkboxRef}
+            type="checkbox"
+            checked={localValue}
+            onChange={(e) => handleChange(e.target.checked)}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            disabled={disabled}
+            className={cn(
+              'h-4 w-4 rounded border-border text-primary',
+              'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0',
+              disabled && 'opacity-50 cursor-not-allowed',
+            )}
+          />
+        </div>
+      </FieldLabel>
     );
   }
 
   // yes-no format: toggle buttons
   return (
-    <div className="flex gap-2 px-3 py-2 rounded-lg border border-border bg-white min-h-[36px]">
-      <button
-        ref={yesButtonRef}
-        type="button"
-        onClick={() => {
-          handleChange(true);
-          onComplete?.(true);
-        }}
-        onKeyDown={handleKeyDown}
-        disabled={disabled}
-        className={cn(
-          'px-3 py-1 text-sm font-medium rounded',
-          'border border-border',
-          'focus:outline-none focus:ring-2 focus:ring-ring',
-          localValue
-            ? 'bg-primary text-primary-foreground'
-            : 'bg-white text-foreground hover:bg-muted',
-          disabled && 'opacity-50 cursor-not-allowed',
-        )}
-      >
-        Yes
-      </button>
-      <button
-        type="button"
-        onClick={() => {
-          handleChange(false);
-          onComplete?.(false);
-        }}
-        onKeyDown={handleKeyDown}
-        disabled={disabled}
-        className={cn(
-          'px-3 py-1 text-sm font-medium rounded',
-          'border border-border',
-          'focus:outline-none focus:ring-2 focus:ring-ring',
-          !localValue
-            ? 'bg-primary text-primary-foreground'
-            : 'bg-white text-foreground hover:bg-muted',
-          disabled && 'opacity-50 cursor-not-allowed',
-        )}
-      >
-        No
-      </button>
-    </div>
+    <FieldLabel label={label} labelPosition={labelPosition}>
+      <div className="flex gap-2 px-3 py-2 rounded-lg border border-border bg-white min-h-[36px]">
+        <button
+          ref={yesButtonRef}
+          type="button"
+          onClick={() => {
+            handleChange(true);
+            onComplete?.(true);
+          }}
+          onKeyDown={handleKeyDown}
+          disabled={disabled}
+          className={cn(
+            'px-3 py-1 text-sm font-medium rounded',
+            'border border-border',
+            'focus:outline-none focus:ring-2 focus:ring-ring',
+            localValue
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-white text-foreground hover:bg-muted',
+            disabled && 'opacity-50 cursor-not-allowed',
+          )}
+        >
+          Yes
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            handleChange(false);
+            onComplete?.(false);
+          }}
+          onKeyDown={handleKeyDown}
+          disabled={disabled}
+          className={cn(
+            'px-3 py-1 text-sm font-medium rounded',
+            'border border-border',
+            'focus:outline-none focus:ring-2 focus:ring-ring',
+            !localValue
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-white text-foreground hover:bg-muted',
+            disabled && 'opacity-50 cursor-not-allowed',
+          )}
+        >
+          No
+        </button>
+      </div>
+    </FieldLabel>
   );
 }

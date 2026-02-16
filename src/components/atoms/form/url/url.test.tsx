@@ -52,6 +52,20 @@ describe('ArdaUrlFieldDisplay', () => {
     render(<ArdaUrlFieldDisplay value={undefined} />);
     expect(screen.getByText('—')).toBeInTheDocument();
   });
+
+  it('renders with label on the left', () => {
+    render(
+      <ArdaUrlFieldDisplay value="https://example.com" label="Website" labelPosition="left" />,
+    );
+    expect(screen.getByText('Website')).toBeInTheDocument();
+    expect(screen.getByRole('link')).toBeInTheDocument();
+  });
+
+  it('renders with label on top', () => {
+    render(<ArdaUrlFieldDisplay value="https://example.com" label="Website" labelPosition="top" />);
+    const label = screen.getByText('Website');
+    expect(label.closest('div')).toHaveClass('flex-col');
+  });
 });
 
 describe('ArdaUrlFieldEditor', () => {
@@ -93,6 +107,12 @@ describe('ArdaUrlFieldEditor', () => {
   it('is disabled when disabled prop is set', () => {
     render(<ArdaUrlFieldEditor value="https://example.com" disabled />);
     expect(screen.getByRole('textbox')).toBeDisabled();
+  });
+
+  it('renders with label', () => {
+    render(<ArdaUrlFieldEditor value="https://example.com" label="Website" />);
+    expect(screen.getByText('Website')).toBeInTheDocument();
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
   });
 });
 

@@ -10,7 +10,7 @@ import { ArdaDateFieldInteractive } from './date-field-interactive';
 describe('ArdaDateFieldDisplay', () => {
   it('renders date value', () => {
     render(<ArdaDateFieldDisplay value="2024-03-15" />);
-    expect(screen.getByText('03/15/2024')).toBeInTheDocument();
+    expect(screen.getByText(/03\/15\/2024/)).toBeInTheDocument();
   });
 
   it('renders dash for undefined', () => {
@@ -20,7 +20,24 @@ describe('ArdaDateFieldDisplay', () => {
 
   it('formats ISO datetime to date', () => {
     render(<ArdaDateFieldDisplay value="2024-12-31T23:59:59Z" />);
-    expect(screen.getByText('12/31/2024')).toBeInTheDocument();
+    expect(screen.getByText(/12\/31\/2024/)).toBeInTheDocument();
+  });
+
+  it('renders with explicit timezone', () => {
+    render(<ArdaDateFieldDisplay value="2024-03-15" timezone="America/New_York" />);
+    expect(screen.getByText(/03\/15\/2024/)).toBeInTheDocument();
+  });
+
+  it('renders with label on the left', () => {
+    render(<ArdaDateFieldDisplay value="2024-03-15" label="Start Date" labelPosition="left" />);
+    expect(screen.getByText('Start Date')).toBeInTheDocument();
+    expect(screen.getByText(/03\/15\/2024/)).toBeInTheDocument();
+  });
+
+  it('renders with label on top', () => {
+    render(<ArdaDateFieldDisplay value="2024-03-15" label="Start Date" labelPosition="top" />);
+    const label = screen.getByText('Start Date');
+    expect(label.closest('div')).toHaveClass('flex-col');
   });
 });
 
@@ -66,19 +83,30 @@ describe('ArdaDateFieldEditor', () => {
     render(<ArdaDateFieldEditor value="2024-03-15" disabled />);
     expect(screen.getByDisplayValue('2024-03-15')).toBeDisabled();
   });
+
+  it('shows timezone hint', () => {
+    render(<ArdaDateFieldEditor value="2024-03-15" timezone="America/New_York" />);
+    expect(screen.getByText(/EST|EDT|GMT-[45]/)).toBeInTheDocument();
+  });
+
+  it('renders with label', () => {
+    render(<ArdaDateFieldEditor value="2024-03-15" label="Start Date" />);
+    expect(screen.getByText('Start Date')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('2024-03-15')).toBeInTheDocument();
+  });
 });
 
 describe('ArdaDateFieldInteractive', () => {
   it('starts in display mode', () => {
     render(<ArdaDateFieldInteractive value="2024-03-15" />);
-    expect(screen.getByText('03/15/2024')).toBeInTheDocument();
+    expect(screen.getByText(/03\/15\/2024/)).toBeInTheDocument();
     expect(screen.queryByDisplayValue('2024-03-15')).not.toBeInTheDocument();
   });
 
   it('switches to edit mode on double-click', async () => {
     const user = userEvent.setup();
     render(<ArdaDateFieldInteractive value="2024-03-15" />);
-    await user.dblClick(screen.getByText('03/15/2024'));
+    await user.dblClick(screen.getByText(/03\/15\/2024/));
     expect(screen.getByDisplayValue('2024-03-15')).toBeInTheDocument();
   });
 
@@ -86,7 +114,7 @@ describe('ArdaDateFieldInteractive', () => {
     const user = userEvent.setup();
     const onValueChange = vi.fn();
     render(<ArdaDateFieldInteractive value="2024-03-15" onValueChange={onValueChange} />);
-    await user.dblClick(screen.getByText('03/15/2024'));
+    await user.dblClick(screen.getByText(/03\/15\/2024/));
     const input = screen.getByDisplayValue('2024-03-15');
     await user.clear(input);
     await user.type(input, '2024-12-25{Enter}');
@@ -97,7 +125,15 @@ describe('ArdaDateFieldInteractive', () => {
   it('does not enter edit mode when disabled', async () => {
     const user = userEvent.setup();
     render(<ArdaDateFieldInteractive value="2024-03-15" disabled />);
-    await user.dblClick(screen.getByText('03/15/2024'));
+    await user.dblClick(screen.getByText(/03\/15\/2024/));
     expect(screen.queryByDisplayValue('2024-03-15')).not.toBeInTheDocument();
+  });
+
+  it('passes timezone to display and editor', async () => {
+    const user = userEvent.setup();
+    render(<ArdaDateFieldInteractive value="2024-03-15" timezone="Asia/Tokyo" />);
+    expect(screen.getByText(/03\/15\/2024/)).toBeInTheDocument();
+    await user.dblClick(screen.getByText(/03\/15\/2024/));
+    expect(screen.getByText(/JST|GMT\+9/)).toBeInTheDocument();
   });
 });

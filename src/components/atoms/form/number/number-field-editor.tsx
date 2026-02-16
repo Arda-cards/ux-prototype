@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 
 import { cn } from '@/lib/utils';
+import { FieldLabel, type FieldLabelProps } from '../field-label';
 
 /** Design-time configuration for number field editor. */
-export interface NumberFieldEditorStaticConfig {
+export interface NumberFieldEditorStaticConfig extends FieldLabelProps {
   /* --- View / Layout / Controller --- */
   /** Number of decimal places. */
   precision?: number;
@@ -49,6 +50,8 @@ export function ArdaNumberFieldEditor({
   placeholder,
   disabled = false,
   autoFocus = false,
+  label,
+  labelPosition,
 }: ArdaNumberFieldEditorProps) {
   const [localValue, setLocalValue] = useState(value?.toString() ?? '');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -88,24 +91,26 @@ export function ArdaNumberFieldEditor({
   const step = precision > 0 ? Math.pow(10, -precision).toFixed(precision) : '1';
 
   return (
-    <input
-      ref={inputRef}
-      type="number"
-      value={localValue}
-      onChange={handleChange}
-      onBlur={handleBlur}
-      onKeyDown={handleKeyDown}
-      placeholder={placeholder}
-      step={step}
-      min={min}
-      max={max}
-      disabled={disabled}
-      className={cn(
-        'w-full px-3 py-2 text-sm rounded-lg border border-border bg-white',
-        'focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring',
-        'placeholder:text-muted-foreground',
-        disabled && 'opacity-50 cursor-not-allowed bg-muted/30',
-      )}
-    />
+    <FieldLabel label={label} labelPosition={labelPosition}>
+      <input
+        ref={inputRef}
+        type="number"
+        value={localValue}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder}
+        step={step}
+        min={min}
+        max={max}
+        disabled={disabled}
+        className={cn(
+          'w-full px-3 py-2 text-sm rounded-lg border border-border bg-white',
+          'focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring',
+          'placeholder:text-muted-foreground',
+          disabled && 'opacity-50 cursor-not-allowed bg-muted/30',
+        )}
+      />
+    </FieldLabel>
   );
 }

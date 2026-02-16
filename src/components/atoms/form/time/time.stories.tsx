@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { ArdaTimeFieldDisplay } from './time-field-display';
 import { ArdaTimeFieldEditor } from './time-field-editor';
 import { ArdaTimeFieldInteractive } from './time-field-interactive';
+import { COMMON_TIMEZONES } from '@/types/model/general/time/timezone';
 
 const meta: Meta<typeof ArdaTimeFieldInteractive> = {
   title: 'Components/Atoms/Form/Time',
@@ -28,20 +29,22 @@ const meta: Meta<typeof ArdaTimeFieldInteractive> = {
       description: 'Whether editing is disabled.',
       table: { category: 'Runtime' },
     },
+    label: {
+      control: 'text',
+      description: 'Static label displayed next to the field.',
+      table: { category: 'Static' },
+    },
+    labelPosition: {
+      control: 'inline-radio',
+      options: ['left', 'top'],
+      description: 'Position of the label relative to the field.',
+      table: { category: 'Static' },
+    },
     timezone: {
       control: 'select',
-      options: [
-        'Etc/UTC',
-        'America/New_York',
-        'America/Chicago',
-        'America/Denver',
-        'America/Los_Angeles',
-        'Europe/London',
-        'Europe/Paris',
-        'Asia/Tokyo',
-      ],
-      description: 'IANA timezone for display formatting.',
-      table: { category: 'Static' },
+      options: COMMON_TIMEZONES,
+      description: 'IANA timezone for display formatting. Defaults to browser timezone.',
+      table: { category: 'Runtime' },
     },
   },
   args: {
@@ -172,6 +175,26 @@ export const WithTimezone: Story = {
 };
 
 // ============================================================================
+// With Label
+// ============================================================================
+
+export const WithLabel: Story = {
+  render: () => (
+    <div className="flex flex-col gap-6 p-4" style={{ width: 480 }}>
+      <div className="text-xs font-medium text-muted-foreground">Label left (default)</div>
+      <ArdaTimeFieldDisplay value="14:30" label="Start Time" labelPosition="left" />
+      <ArdaTimeFieldEditor value="14:30" label="Start Time" labelPosition="left" />
+      <ArdaTimeFieldInteractive value="14:30" label="Start Time" labelPosition="left" />
+
+      <div className="text-xs font-medium text-muted-foreground">Label top</div>
+      <ArdaTimeFieldDisplay value="14:30" label="Start Time" labelPosition="top" />
+      <ArdaTimeFieldEditor value="14:30" label="Start Time" labelPosition="top" />
+      <ArdaTimeFieldInteractive value="14:30" label="Start Time" labelPosition="top" />
+    </div>
+  ),
+};
+
+// ============================================================================
 // Playground
 // ============================================================================
 
@@ -179,9 +202,11 @@ export const Playground: Story = {
   args: {
     value: '14:30',
     disabled: false,
+    label: 'Start Time',
+    labelPosition: 'left',
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(canvas.getByText('2:30 PM')).toBeInTheDocument();
+    await expect(canvas.getByText(/2:30 PM/)).toBeInTheDocument();
   },
 };

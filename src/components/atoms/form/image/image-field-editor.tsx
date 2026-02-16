@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 
 import { cn } from '@/lib/utils';
+import { FieldLabel, type FieldLabelProps } from '../field-label';
 
 /** Design-time configuration for image field editor. */
-export interface ImageFieldEditorStaticConfig {
+export interface ImageFieldEditorStaticConfig extends FieldLabelProps {
   /* --- View / Layout / Controller --- */
   /** Placeholder text for the input. */
   placeholder?: string;
@@ -43,6 +44,8 @@ export function ArdaImageFieldEditor({
   maxPreviewHeight = 80,
   disabled = false,
   autoFocus = false,
+  label,
+  labelPosition,
 }: ArdaImageFieldEditorProps) {
   const [localValue, setLocalValue] = useState(value ?? '');
   const [imageValid, setImageValid] = useState(false);
@@ -88,37 +91,39 @@ export function ArdaImageFieldEditor({
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      <input
-        ref={inputRef}
-        type="url"
-        value={localValue}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        disabled={disabled}
-        className={cn(
-          'w-full px-3 py-2 text-sm rounded-lg border border-border bg-white',
-          'focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring',
-          'placeholder:text-muted-foreground',
-          disabled && 'opacity-50 cursor-not-allowed bg-muted/30',
+    <FieldLabel label={label} labelPosition={labelPosition}>
+      <div className="flex flex-col gap-2">
+        <input
+          ref={inputRef}
+          type="url"
+          value={localValue}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          disabled={disabled}
+          className={cn(
+            'w-full px-3 py-2 text-sm rounded-lg border border-border bg-white',
+            'focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring',
+            'placeholder:text-muted-foreground',
+            disabled && 'opacity-50 cursor-not-allowed bg-muted/30',
+          )}
+        />
+        {imageValid && localValue && (
+          <div className="px-2 py-1 bg-muted/30 rounded border border-border">
+            <img
+              src={localValue}
+              alt="Preview"
+              style={{
+                maxWidth: '100%',
+                maxHeight: `${maxPreviewHeight}px`,
+                objectFit: 'contain',
+              }}
+              className="rounded"
+            />
+          </div>
         )}
-      />
-      {imageValid && localValue && (
-        <div className="px-2 py-1 bg-muted/30 rounded border border-border">
-          <img
-            src={localValue}
-            alt="Preview"
-            style={{
-              maxWidth: '100%',
-              maxHeight: `${maxPreviewHeight}px`,
-              objectFit: 'contain',
-            }}
-            className="rounded"
-          />
-        </div>
-      )}
-    </div>
+      </div>
+    </FieldLabel>
   );
 }

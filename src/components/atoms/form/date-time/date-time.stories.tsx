@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { ArdaDateTimeFieldDisplay } from './date-time-field-display';
 import { ArdaDateTimeFieldEditor } from './date-time-field-editor';
 import { ArdaDateTimeFieldInteractive } from './date-time-field-interactive';
+import { COMMON_TIMEZONES } from '@/types/model/general/time/timezone';
 
 const meta: Meta<typeof ArdaDateTimeFieldInteractive> = {
   title: 'Components/Atoms/Form/Date Time',
@@ -28,20 +29,22 @@ const meta: Meta<typeof ArdaDateTimeFieldInteractive> = {
       description: 'Whether editing is disabled.',
       table: { category: 'Runtime' },
     },
+    label: {
+      control: 'text',
+      description: 'Static label displayed next to the field.',
+      table: { category: 'Static' },
+    },
+    labelPosition: {
+      control: 'inline-radio',
+      options: ['left', 'top'],
+      description: 'Position of the label relative to the field.',
+      table: { category: 'Static' },
+    },
     timezone: {
       control: 'select',
-      options: [
-        'Etc/UTC',
-        'America/New_York',
-        'America/Chicago',
-        'America/Denver',
-        'America/Los_Angeles',
-        'Europe/London',
-        'Europe/Paris',
-        'Asia/Tokyo',
-      ],
-      description: 'IANA timezone for display formatting.',
-      table: { category: 'Static' },
+      options: COMMON_TIMEZONES,
+      description: 'IANA timezone for display formatting. Defaults to browser timezone.',
+      table: { category: 'Runtime' },
     },
   },
   args: {
@@ -172,6 +175,50 @@ export const WithTimezone: Story = {
 };
 
 // ============================================================================
+// With Label
+// ============================================================================
+
+export const WithLabel: Story = {
+  render: () => (
+    <div className="flex flex-col gap-6 p-4" style={{ width: 480 }}>
+      <div className="text-xs font-medium text-muted-foreground">Label left (default)</div>
+      <ArdaDateTimeFieldDisplay
+        value="2024-03-15T14:30:00Z"
+        label="Created At"
+        labelPosition="left"
+      />
+      <ArdaDateTimeFieldEditor
+        value="2024-03-15T14:30:00Z"
+        label="Created At"
+        labelPosition="left"
+      />
+      <ArdaDateTimeFieldInteractive
+        value="2024-03-15T14:30:00Z"
+        label="Created At"
+        labelPosition="left"
+      />
+
+      <div className="text-xs font-medium text-muted-foreground">Label top</div>
+      <ArdaDateTimeFieldDisplay
+        value="2024-03-15T14:30:00Z"
+        label="Created At"
+        labelPosition="top"
+      />
+      <ArdaDateTimeFieldEditor
+        value="2024-03-15T14:30:00Z"
+        label="Created At"
+        labelPosition="top"
+      />
+      <ArdaDateTimeFieldInteractive
+        value="2024-03-15T14:30:00Z"
+        label="Created At"
+        labelPosition="top"
+      />
+    </div>
+  ),
+};
+
+// ============================================================================
 // Playground
 // ============================================================================
 
@@ -179,9 +226,11 @@ export const Playground: Story = {
   args: {
     value: '2024-03-15T14:30:00Z',
     disabled: false,
+    label: 'Created At',
+    labelPosition: 'left',
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(canvas.getByText(/Mar 15, 2024/)).toBeInTheDocument();
+    await expect(canvas.getByText(/03\/15\/2024/)).toBeInTheDocument();
   },
 };

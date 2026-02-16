@@ -1,13 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import type { FieldLabelProps } from '../field-label';
 import { ArdaDateFieldDisplay, type ArdaDateFieldDisplayProps } from './date-field-display';
 import { ArdaDateFieldEditor, type ArdaDateFieldEditorProps } from './date-field-editor';
 
-export interface ArdaDateFieldInteractiveProps {
+export interface ArdaDateFieldInteractiveProps extends FieldLabelProps {
   value?: string;
   onValueChange?: (value: string) => void;
   disabled?: boolean;
   className?: string;
-  /** IANA timezone for display formatting (design-time config). */
+  /** IANA timezone for display formatting. Defaults to browser timezone. */
   timezone?: string;
 }
 
@@ -21,6 +22,8 @@ export function ArdaDateFieldInteractive({
   disabled = false,
   className,
   timezone,
+  label,
+  labelPosition,
 }: ArdaDateFieldInteractiveProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [localValue, setLocalValue] = useState(value);
@@ -49,10 +52,15 @@ export function ArdaDateFieldInteractive({
   }, [value]);
 
   // Build props conditionally for exactOptionalPropertyTypes compliance
-  const optionalProps: Pick<ArdaDateFieldEditorProps, 'value' | 'timezone'> &
-    Pick<ArdaDateFieldDisplayProps, 'value' | 'timezone'> = {};
+  const optionalProps: Pick<
+    ArdaDateFieldEditorProps,
+    'value' | 'timezone' | 'label' | 'labelPosition'
+  > &
+    Pick<ArdaDateFieldDisplayProps, 'value' | 'timezone' | 'label' | 'labelPosition'> = {};
   if (localValue !== undefined) optionalProps.value = localValue;
   if (timezone !== undefined) optionalProps.timezone = timezone;
+  if (label !== undefined) optionalProps.label = label;
+  if (labelPosition !== undefined) optionalProps.labelPosition = labelPosition;
 
   if (isEditing) {
     return (

@@ -1,7 +1,8 @@
 import { formatNumber } from '@/lib/data-types/formatters';
+import { FieldLabel, type FieldLabelProps } from '../field-label';
 
 /** Design-time configuration for number field display. */
-export interface NumberFieldDisplayStaticConfig {
+export interface NumberFieldDisplayStaticConfig extends FieldLabelProps {
   /* --- View / Layout / Controller --- */
   /** Number of decimal places to display. */
   precision?: number;
@@ -18,11 +19,18 @@ export interface ArdaNumberFieldDisplayProps
   extends NumberFieldDisplayStaticConfig, NumberFieldDisplayRuntimeConfig {}
 
 /** Read-only number display for form fields. */
-export function ArdaNumberFieldDisplay({ value, precision = 0 }: ArdaNumberFieldDisplayProps) {
+export function ArdaNumberFieldDisplay({
+  value,
+  precision = 0,
+  label,
+  labelPosition,
+}: ArdaNumberFieldDisplayProps) {
   const display = formatNumber(value, precision);
   return (
-    <div className="px-3 py-2 text-sm text-foreground bg-muted/30 rounded-lg border border-transparent min-h-[36px] flex items-center">
-      {display}
-    </div>
+    <FieldLabel label={label} labelPosition={labelPosition}>
+      <div className="px-3 py-2 text-sm text-foreground bg-muted/30 rounded-lg border border-transparent min-h-[36px] flex items-center">
+        {display}
+      </div>
+    </FieldLabel>
   );
 }

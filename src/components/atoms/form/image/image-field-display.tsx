@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { ImageIcon, ImageOff } from 'lucide-react';
 import { formatImageUrl } from '@/lib/data-types/formatters';
+import { FieldLabel, type FieldLabelProps } from '../field-label';
 
 /** Design-time configuration for image field display. */
-export interface ImageFieldDisplayStaticConfig {
+export interface ImageFieldDisplayStaticConfig extends FieldLabelProps {
   /* --- View / Layout / Controller --- */
   /** Maximum width in pixels. */
   maxWidth?: number;
@@ -29,46 +30,54 @@ export function ArdaImageFieldDisplay({
   maxWidth,
   maxHeight = 120,
   alt = 'Image',
+  label,
+  labelPosition,
 }: ArdaImageFieldDisplayProps) {
   const [hasError, setHasError] = useState(false);
   const formatted = formatImageUrl(value);
 
   if (formatted === '—') {
     return (
-      <div className="px-3 py-2 text-sm text-foreground bg-muted/30 rounded-lg border border-transparent min-h-[120px] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-2 text-muted-foreground">
-          <ImageIcon className="w-8 h-8" />
-          <span className="text-xs">No image</span>
+      <FieldLabel label={label} labelPosition={labelPosition}>
+        <div className="px-3 py-2 text-sm text-foreground bg-muted/30 rounded-lg border border-transparent min-h-[120px] flex items-center justify-center">
+          <div className="flex flex-col items-center gap-2 text-muted-foreground">
+            <ImageIcon className="w-8 h-8" />
+            <span className="text-xs">No image</span>
+          </div>
         </div>
-      </div>
+      </FieldLabel>
     );
   }
 
   if (hasError) {
     return (
-      <div className="px-3 py-2 text-sm text-foreground bg-muted/30 rounded-lg border border-transparent min-h-[120px] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-2 text-destructive/60">
-          <ImageOff className="w-8 h-8" />
-          <span className="text-xs">Invalid image</span>
+      <FieldLabel label={label} labelPosition={labelPosition}>
+        <div className="px-3 py-2 text-sm text-foreground bg-muted/30 rounded-lg border border-transparent min-h-[120px] flex items-center justify-center">
+          <div className="flex flex-col items-center gap-2 text-destructive/60">
+            <ImageOff className="w-8 h-8" />
+            <span className="text-xs">Invalid image</span>
+          </div>
         </div>
-      </div>
+      </FieldLabel>
     );
   }
 
   return (
-    <div className="px-3 py-2 bg-muted/30 rounded-lg border border-transparent flex flex-col gap-2">
-      <img
-        src={value}
-        alt={alt}
-        onError={() => setHasError(true)}
-        style={{
-          maxWidth: maxWidth ? `${maxWidth}px` : '100%',
-          maxHeight: `${maxHeight}px`,
-          objectFit: 'cover',
-        }}
-        className="rounded border border-border"
-      />
-      <div className="text-xs text-muted-foreground truncate">{value}</div>
-    </div>
+    <FieldLabel label={label} labelPosition={labelPosition}>
+      <div className="px-3 py-2 bg-muted/30 rounded-lg border border-transparent flex flex-col gap-2">
+        <img
+          src={value}
+          alt={alt}
+          onError={() => setHasError(true)}
+          style={{
+            maxWidth: maxWidth ? `${maxWidth}px` : '100%',
+            maxHeight: `${maxHeight}px`,
+            objectFit: 'cover',
+          }}
+          className="rounded border border-border"
+        />
+        <div className="text-xs text-muted-foreground truncate">{value}</div>
+      </div>
+    </FieldLabel>
   );
 }

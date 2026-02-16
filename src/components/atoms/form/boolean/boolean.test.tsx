@@ -29,6 +29,32 @@ describe('ArdaBooleanFieldDisplay', () => {
     });
   });
 
+  it('renders with label on the left', () => {
+    const { container } = render(
+      <ArdaBooleanFieldDisplay
+        value={true}
+        displayFormat="checkbox"
+        label="Active"
+        labelPosition="left"
+      />,
+    );
+    expect(screen.getByText('Active')).toBeInTheDocument();
+    expect(container.querySelector('svg')).toBeInTheDocument();
+  });
+
+  it('renders with label on top', () => {
+    render(
+      <ArdaBooleanFieldDisplay
+        value={true}
+        displayFormat="checkbox"
+        label="Active"
+        labelPosition="top"
+      />,
+    );
+    const label = screen.getByText('Active');
+    expect(label.closest('div')).toHaveClass('flex-col');
+  });
+
   describe('yes-no format', () => {
     it('renders "Yes" for true', () => {
       render(<ArdaBooleanFieldDisplay value={true} displayFormat="yes-no" />);
@@ -90,6 +116,12 @@ describe('ArdaBooleanFieldEditor', () => {
       render(<ArdaBooleanFieldEditor value={true} displayFormat="checkbox" disabled />);
       expect(screen.getByRole('checkbox')).toBeDisabled();
     });
+  });
+
+  it('renders with label', () => {
+    render(<ArdaBooleanFieldEditor value={true} displayFormat="checkbox" label="Active" />);
+    expect(screen.getByText('Active')).toBeInTheDocument();
+    expect(screen.getByRole('checkbox')).toBeInTheDocument();
   });
 
   describe('yes-no format', () => {
