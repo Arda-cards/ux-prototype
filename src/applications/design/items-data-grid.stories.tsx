@@ -1,10 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, within } from '@storybook/test';
 import { useState, useRef, useMemo } from 'react';
 
 import {
   ArdaItemsDataGrid,
   ArdaItemsDataGridRef,
-} from '@/components/organisms/items-data-grid/items-data-grid';
+} from '@/components/organisms/reference/items/items-data-grid/items-data-grid';
 import { ArdaConfirmDialog } from '@/components/atoms/confirm-dialog/confirm-dialog';
 import {
   mockPublishedItems,
@@ -90,11 +91,17 @@ function SearchInput({
 // ============================================================================
 
 export const PublishedItems: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('Items')).toBeInTheDocument();
+  },
   render: () => {
     const [activeTab, setActiveTab] = useState<'published' | 'draft' | 'recent'>('published');
     const [searchTerm, setSearchTerm] = useState('');
+    const [page, setPage] = useState(1);
+    const pageSize = 10;
 
-    const items = useMemo(() => {
+    const allItems = useMemo(() => {
       let dataset = activeTab === 'draft' ? mockDraftItems : mockPublishedItems;
 
       if (searchTerm) {
@@ -105,6 +112,11 @@ export const PublishedItems: Story = {
 
       return dataset;
     }, [activeTab, searchTerm]);
+
+    const totalItems = allItems.length;
+    const totalPages = Math.ceil(totalItems / pageSize);
+    const startIndex = (page - 1) * pageSize;
+    const items = allItems.slice(startIndex, startIndex + pageSize);
 
     return (
       <div className="flex flex-col h-screen bg-gray-50">
@@ -136,7 +148,21 @@ export const PublishedItems: Story = {
         {/* Grid */}
         <div className="flex-1 px-6 py-4 overflow-hidden">
           <div className="h-full bg-white rounded-lg shadow">
-            <ArdaItemsDataGrid items={items} activeTab={activeTab} />
+            <ArdaItemsDataGrid
+              items={items}
+              activeTab={activeTab}
+              enableCellEditing
+              paginationData={{
+                currentPage: page,
+                currentPageSize: pageSize,
+                totalItems,
+                hasNextPage: page < totalPages,
+                hasPreviousPage: page > 1,
+              }}
+              onNextPage={() => setPage((p) => Math.min(p + 1, totalPages))}
+              onPreviousPage={() => setPage((p) => Math.max(p - 1, 1))}
+              onFirstPage={() => setPage(1)}
+            />
           </div>
         </div>
       </div>
@@ -329,75 +355,25 @@ export const UnsavedChanges: Story = {
   },
 };
 
-export const Paginated: Story = {
-  render: () => {
-    const [page, setPage] = useState(1);
-    const pageSize = 10;
-    const allItems = mockPublishedItems;
-    const totalItems = allItems.length;
-    const totalPages = Math.ceil(totalItems / pageSize);
-
-    const startIndex = (page - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    const currentItems = allItems.slice(startIndex, endIndex);
-
-    return (
-      <div className="flex flex-col h-screen bg-gray-50">
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-semibold text-gray-900">Items</h1>
-            <div className="text-sm text-gray-600">
-              Showing {startIndex + 1}-{Math.min(endIndex, totalItems)} of {totalItems}
-            </div>
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <div className="bg-white border-b border-gray-200 px-6 flex gap-1">
-          <TabButton active={true} onClick={() => {}}>
-            Published ({totalItems})
-          </TabButton>
-          <TabButton active={false} onClick={() => {}}>
-            Draft (0)
-          </TabButton>
-        </div>
-
-        {/* Grid */}
-        <div className="flex-1 px-6 py-4 overflow-hidden">
-          <div className="h-full bg-white rounded-lg shadow">
-            <ArdaItemsDataGrid
-              items={currentItems}
-              activeTab="published"
-              paginationData={{
-                currentPage: page,
-                currentPageSize: pageSize,
-                totalItems,
-                hasNextPage: page < totalPages,
-                hasPreviousPage: page > 1,
-              }}
-              onNextPage={() => setPage((p) => Math.min(p + 1, totalPages))}
-              onPreviousPage={() => setPage((p) => Math.max(p - 1, 1))}
-              onFirstPage={() => setPage(1)}
-            />
-          </div>
-        </div>
-      </div>
-    );
-  },
-};
-
 export const WithSelection: Story = {
   render: () => {
     const [selectedItems, setSelectedItems] = useState<Item[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
 
-    const items = useMemo(() => {
+    const [page, setPage] = useState(1);
+    const pageSize = 10;
+
+    const allItems = useMemo(() => {
       if (!searchTerm) return mockPublishedItems;
       return mockPublishedItems.filter((item) =>
         item.name.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     }, [searchTerm]);
+
+    const totalItems = allItems.length;
+    const totalPages = Math.ceil(totalItems / pageSize);
+    const startIndex = (page - 1) * pageSize;
+    const items = allItems.slice(startIndex, startIndex + pageSize);
 
     return (
       <div className="flex flex-col h-screen bg-gray-50">
@@ -423,7 +399,7 @@ export const WithSelection: Story = {
         {/* Tabs */}
         <div className="bg-white border-b border-gray-200 px-6 flex gap-1">
           <TabButton active={true} onClick={() => {}}>
-            Published ({items.length})
+            Published ({allItems.length})
           </TabButton>
           <TabButton active={false} onClick={() => {}}>
             Draft (0)
@@ -443,7 +419,18 @@ export const WithSelection: Story = {
             <ArdaItemsDataGrid
               items={items}
               activeTab="published"
+              enableCellEditing
               onSelectionChange={setSelectedItems}
+              paginationData={{
+                currentPage: page,
+                currentPageSize: pageSize,
+                totalItems,
+                hasNextPage: page < totalPages,
+                hasPreviousPage: page > 1,
+              }}
+              onNextPage={() => setPage((p) => Math.min(p + 1, totalPages))}
+              onPreviousPage={() => setPage((p) => Math.max(p - 1, 1))}
+              onFirstPage={() => setPage(1)}
             />
           </div>
         </div>

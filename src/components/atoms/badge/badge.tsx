@@ -12,6 +12,10 @@ export type ArdaBadgeVariant =
 
 /** Design-time configuration — visual properties chosen at composition time. */
 export interface ArdaBadgeStaticConfig {
+  /* --- Model / Data Binding --- */
+  // (No model/data props — Badge is purely presentational)
+
+  /* --- View / Layout / Controller --- */
   /** Visual style variant determining colors and border. */
   variant?: ArdaBadgeVariant;
   /** Show a small colored dot indicator before the text. */
@@ -51,7 +55,7 @@ export function ArdaBadge({
   return (
     <div
       className={cn(
-        'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border transition-colors',
+        'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm text-xs font-medium border transition-colors',
         variants[variant],
         className,
       )}

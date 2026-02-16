@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, within } from '@storybook/test';
+import { expect, fn, within } from '@storybook/test';
 import { AgGridReact } from 'ag-grid-react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
@@ -10,7 +10,7 @@ import { TypeaheadOption } from '@/components/atoms/typeahead/typeahead';
 import { ArdaTypeaheadCellEditor, createTypeaheadCellEditor } from './typeahead-cell-editor';
 
 const meta = {
-  title: 'Components/Atoms/TypeaheadCellEditor',
+  title: 'Components/Atoms/Grid/TypeaheadCellEditor',
   component: ArdaTypeaheadCellEditor,
   parameters: {
     layout: 'padded',

@@ -1,9 +1,10 @@
 import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, within } from '@storybook/test';
 
 import { ArdaBadge } from '@/components/atoms/badge/badge';
 import { ArdaButton } from '@/components/atoms/button/button';
-import { ArdaItemsDataGrid } from '@/components/organisms/items-data-grid/items-data-grid';
+import { ArdaItemsDataGrid } from '@/components/organisms/reference/items/items-data-grid/items-data-grid';
 import { mockPublishedItems } from '@/components/molecules/data-grid/presets/items/items-mock-data';
 import { AppLayout } from '@/applications/shared/app-layout';
 
@@ -138,6 +139,7 @@ export const Default: Story = {
                   'classification.subType': false,
                   notes: false,
                 }}
+                enableCellEditing
               />
             </div>
           </div>
@@ -145,4 +147,8 @@ export const Default: Story = {
       </div>
     </AppLayout>
   ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('Order Queue')).toBeInTheDocument();
+  },
 };

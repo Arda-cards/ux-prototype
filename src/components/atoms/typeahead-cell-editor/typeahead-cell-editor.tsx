@@ -3,17 +3,24 @@ import { forwardRef, useCallback, useEffect, useImperativeHandle, useState } fro
 import { ArdaTypeahead, TypeaheadOption } from '@/components/atoms/typeahead/typeahead';
 
 export interface TypeaheadCellEditorStaticConfig {
+  /* --- Model / Data Binding --- */
   /** Data source for typeahead options. Can be a static array or async function. */
   dataSource: TypeaheadOption[] | ((query: string) => Promise<TypeaheadOption[]>);
+
+  /* --- View / Layout / Controller --- */
   /** Placeholder text for the input field. */
   placeholder?: string;
 }
 
 export interface ArdaTypeaheadCellEditorProps extends TypeaheadCellEditorStaticConfig {
+  /* --- Model / Data Binding --- */
   /** Initial value passed by AG Grid. */
   value?: string;
   /** Callback invoked when editing stops. */
   stopEditing?: (cancel?: boolean) => void;
+
+  /* --- View / Layout / Controller --- */
+  // (View props inherited from TypeaheadCellEditorStaticConfig)
 }
 
 export interface TypeaheadCellEditorHandle {

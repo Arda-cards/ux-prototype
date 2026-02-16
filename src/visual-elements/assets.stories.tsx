@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, within } from '@storybook/test';
 
 const meta: Meta = {
   title: 'Visual Elements/Brand Assets',
@@ -47,6 +48,10 @@ function AssetGroup({ title, assets }: { title: string; assets: AssetCardProps[]
 }
 
 export const Gallery: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('Brand Assets')).toBeInTheDocument();
+  },
   render: () => (
     <div className="p-6 max-w-5xl">
       <h2 className="text-2xl font-bold text-foreground mb-6">Brand Assets</h2>

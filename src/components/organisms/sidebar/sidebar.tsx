@@ -85,10 +85,10 @@ export function ArdaSidebar({
                 }
               }}
               className={cn(
-                'relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-150 group',
+                'relative flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all duration-150 group',
                 active
                   ? 'bg-sidebar-active-bg text-sidebar-text-active font-medium'
-                  : 'text-[var(--sidebar-text)] hover:bg-[rgba(255,255,255,0.05)] hover:text-[rgba(255,255,255,0.9)]',
+                  : 'text-[var(--sidebar-text)] hover:bg-[rgba(255,255,255,0.1)] hover:text-[rgba(255,255,255,0.9)]',
               )}
             >
               {active && (

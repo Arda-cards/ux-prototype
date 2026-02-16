@@ -1,5 +1,4 @@
 import { useCallback } from 'react';
-import { MessageSquare } from 'lucide-react';
 
 import { ArdaBadge, type ArdaBadgeVariant } from '@/components/atoms/badge/badge';
 import type {
@@ -8,8 +7,14 @@ import type {
 } from '@/types/reference/business-affiliates/business-affiliate';
 import { getContactDisplayName } from '@/types/model/assets/contact';
 
-// Reuse selection components from items presets
-export { SelectAllHeaderComponent, SelectionCheckboxCell } from '../items/items-cell-renderers';
+import {
+  SelectAllHeaderComponent,
+  SelectionCheckboxCell,
+  NotesIconCell,
+} from '../common/common-cell-renderers';
+
+// Re-export common components
+export { SelectAllHeaderComponent, SelectionCheckboxCell };
 
 /* ------------------------------------------------------------------ */
 /*  Role Helpers                                                       */
@@ -91,32 +96,10 @@ export function LocationCell({ affiliate }: { affiliate: BusinessAffiliate }) {
 
 /**
  * Notes cell renderer for suppliers — MessageSquare icon with tooltip.
+ * Delegates to the generic NotesIconCell.
  */
 export function SupplierNotesCell({ affiliate }: { affiliate: BusinessAffiliate }) {
-  const handleMouseEvent = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-  }, []);
-
-  if (!affiliate.notes) {
-    return <span>{'\u2014'}</span>;
-  }
-
-  return (
-    <div
-      className="flex items-center justify-center w-full h-full"
-      onClick={handleMouseEvent}
-      onMouseDown={handleMouseEvent}
-    >
-      <button
-        className="bg-transparent border-none cursor-pointer p-0 flex items-center justify-center"
-        title={affiliate.notes}
-        onClick={handleMouseEvent}
-        onMouseDown={handleMouseEvent}
-      >
-        <MessageSquare className="w-5 h-5 text-gray-700" />
-      </button>
-    </div>
-  );
+  return <NotesIconCell notes={affiliate.notes} />;
 }
 
 /**

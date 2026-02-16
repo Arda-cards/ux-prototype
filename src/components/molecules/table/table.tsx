@@ -99,7 +99,7 @@ export function ArdaTableHead({ children, className }: ArdaTableHeadProps) {
   return (
     <th
       className={cn(
-        'h-10 px-4 py-2 align-middle font-semibold text-muted-foreground text-xs uppercase tracking-wider',
+        'h-10 px-4 py-2 align-middle font-medium text-muted-foreground text-xs uppercase tracking-wider',
         className,
       )}
     >
@@ -109,5 +109,5 @@ export function ArdaTableHead({ children, className }: ArdaTableHeadProps) {
 }
 
 export function ArdaTableCell({ children, className }: ArdaTableCellProps) {
-  return <td className={cn('p-4 align-middle text-foreground', className)}>{children}</td>;
+  return <td className={cn('px-4 py-3 align-middle text-foreground', className)}>{children}</td>;
 }

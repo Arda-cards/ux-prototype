@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, within } from '@storybook/test';
 
 const meta: Meta = {
   title: 'Visual Elements/Colors',
@@ -47,6 +48,10 @@ function ColorGroup({ title, colors }: { title: string; colors: SwatchProps[] })
 }
 
 export const AllColors: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('Arda Design Tokens')).toBeInTheDocument();
+  },
   render: () => (
     <div className="p-6 max-w-5xl">
       <h2 className="text-2xl font-bold text-foreground mb-2">Arda Design Tokens</h2>

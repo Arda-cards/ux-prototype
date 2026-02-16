@@ -8,7 +8,7 @@ import { ArdaItemDrawer, sampleItem } from './item-drawer';
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const meta: Meta<typeof ArdaItemDrawer> = {
-  title: 'Components/Organisms/ArdaItemDrawer',
+  title: 'Components/Organisms/Reference/Items/Item Drawer',
   component: ArdaItemDrawer,
   decorators: [
     (Story) => (

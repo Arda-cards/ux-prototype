@@ -17,7 +17,7 @@ const sampleSuppliers: TypeaheadOption[] = [
 ];
 
 const meta: Meta<typeof ArdaItemSupplyFormDialog> = {
-  title: 'Components/Organisms/Item Supply Form Dialog',
+  title: 'Components/Organisms/Reference/Items/Item Supply Form Dialog',
   component: ArdaItemSupplyFormDialog,
   parameters: {
     layout: 'fullscreen',

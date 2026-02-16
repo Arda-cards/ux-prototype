@@ -60,14 +60,13 @@
 }
 
 .arda-btn-md {
-  height: 2.5rem;
+  height: 2.25rem;
   padding: 0 1rem;
 }
 
 .arda-btn-lg {
-  height: 3rem;
+  height: 2.5rem;
   padding: 0 1.5rem;
-  font-size: 1rem;
 }
 
 /* States */

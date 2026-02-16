@@ -4,10 +4,13 @@ import { cn } from '@/lib/utils';
 
 /** Design-time configuration. */
 export interface ArdaConfirmDialogStaticConfig {
+  /* --- Model / Data Binding --- */
   /** Dialog title. */
   title: string;
   /** Descriptive message body. */
   message: string;
+
+  /* --- View / Layout / Controller --- */
   /** Label for the confirm (destructive) action. Default: "Confirm". */
   confirmLabel?: string;
   /** Label for the cancel (safe) action. Default: "Cancel". */
@@ -18,12 +21,15 @@ export interface ArdaConfirmDialogStaticConfig {
 
 /** Runtime configuration. */
 export interface ArdaConfirmDialogRuntimeConfig {
-  /** Whether the dialog is open. */
-  open: boolean;
+  /* --- Model / Data Binding --- */
   /** Called when the user confirms. */
   onConfirm: () => void;
   /** Called when the user cancels or closes. */
   onCancel: () => void;
+
+  /* --- View / Layout / Controller --- */
+  /** Whether the dialog is open. */
+  open: boolean;
 }
 
 export interface ArdaConfirmDialogProps
@@ -115,7 +121,7 @@ export function ArdaConfirmDialog({
         aria-labelledby={titleId}
         aria-describedby={descId}
         className={cn(
-          'relative z-10 w-full max-w-md rounded-lg bg-white p-6 shadow-xl',
+          'relative z-10 w-full max-w-md rounded-xl bg-white p-6 shadow-lg',
           'animate-in fade-in duration-200',
         )}
         onClick={(e) => e.stopPropagation()}

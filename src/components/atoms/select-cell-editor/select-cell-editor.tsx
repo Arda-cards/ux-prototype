@@ -3,19 +3,26 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 're
 import { cn } from '@/lib/utils';
 
 export interface SelectCellEditorStaticConfig {
+  /* --- Model / Data Binding --- */
   /** Array of options to display in the select dropdown. */
   options: Array<{ value: string; label: string }>;
+
+  /* --- View / Layout / Controller --- */
   /** Placeholder text shown when no value is selected. */
   placeholder?: string;
 }
 
 export interface ArdaSelectCellEditorProps extends SelectCellEditorStaticConfig {
+  /* --- Model / Data Binding --- */
   /** Initial value passed by AG Grid. */
   value?: string;
   /** Callback invoked when editing stops. */
   stopEditing?: () => void;
   /** Callback invoked when editing is cancelled. */
   stopEditingOnCancel?: () => void;
+
+  /* --- View / Layout / Controller --- */
+  // (View props inherited from SelectCellEditorStaticConfig)
 }
 
 export interface SelectCellEditorHandle {

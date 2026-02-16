@@ -1,8 +1,9 @@
 import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, within } from '@storybook/test';
 import { Package, AlertTriangle, ShoppingCart, DollarSign } from 'lucide-react';
 
-import { ArdaItemsDataGrid } from '@/components/organisms/items-data-grid/items-data-grid';
+import { ArdaItemsDataGrid } from '@/components/organisms/reference/items/items-data-grid/items-data-grid';
 import { mockPublishedItems } from '@/components/molecules/data-grid/presets/items/items-mock-data';
 import { AppLayout } from '@/applications/shared/app-layout';
 
@@ -168,10 +169,15 @@ export const Default: Story = {
                 'classification.subType': false,
                 notes: false,
               }}
+              enableCellEditing
             />
           </div>
         </div>
       </div>
     </AppLayout>
   ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('Good morning, Alex')).toBeInTheDocument();
+  },
 };

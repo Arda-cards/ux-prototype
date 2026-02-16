@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, within } from '@storybook/test';
+import { expect, fn, within } from '@storybook/test';
 import { AgGridReact } from 'ag-grid-react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
@@ -9,7 +9,7 @@ import 'ag-grid-community/styles/ag-theme-quartz.css';
 import { ArdaSelectCellEditor, createSelectCellEditor } from './select-cell-editor';
 
 const meta = {
-  title: 'Components/Atoms/SelectCellEditor',
+  title: 'Components/Atoms/Grid/SelectCellEditor',
   component: ArdaSelectCellEditor,
   parameters: {
     layout: 'padded',

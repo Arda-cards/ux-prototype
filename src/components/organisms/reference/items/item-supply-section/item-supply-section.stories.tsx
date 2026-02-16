@@ -11,7 +11,7 @@ import {
 import { ArdaItemSupplySection } from './item-supply-section';
 
 const meta: Meta<typeof ArdaItemSupplySection> = {
-  title: 'Components/Organisms/Item Supply Section',
+  title: 'Components/Organisms/Reference/Items/Item Supply Section',
   component: ArdaItemSupplySection,
   parameters: {
     layout: 'centered',

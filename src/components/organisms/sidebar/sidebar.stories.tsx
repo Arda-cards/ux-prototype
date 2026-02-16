@@ -27,7 +27,7 @@ const sampleUser = {
 };
 
 const meta: Meta<typeof ArdaSidebar> = {
-  title: 'Components/Organisms/Sidebar',
+  title: 'Components/Organisms/Shared/Sidebar',
   component: ArdaSidebar,
   parameters: {
     layout: 'fullscreen',

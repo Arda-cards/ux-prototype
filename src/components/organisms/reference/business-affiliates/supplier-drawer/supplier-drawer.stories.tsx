@@ -14,7 +14,7 @@ import {
 } from './supplier-drawer';
 
 const meta: Meta<typeof ArdaSupplierDrawer> = {
-  title: 'Components/Organisms/Supplier Drawer',
+  title: 'Components/Organisms/Reference/Business Affiliates/Supplier Drawer',
   component: ArdaSupplierDrawer,
   parameters: {
     layout: 'fullscreen',

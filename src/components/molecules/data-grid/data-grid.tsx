@@ -34,8 +34,11 @@ export interface PaginationData {
 }
 
 export interface ArdaDataGridStaticConfig<T> {
+  /* --- Model / Data Binding --- */
   columnDefs: ColDef<T>[];
   defaultColDef?: ColDef<T>;
+
+  /* --- View / Layout / Controller --- */
   persistenceKey?: string;
   height?: string | number;
   className?: string;
@@ -45,14 +48,16 @@ export interface ArdaDataGridStaticConfig<T> {
 }
 
 export interface ArdaDataGridInitConfig<T> {
+  /* --- Model / Data Binding --- */
   onGridReady?: (params: GridReadyEvent<T>) => void;
+
+  /* --- View / Layout / Controller --- */
+  // (No view props in InitConfig)
 }
 
 export interface ArdaDataGridRuntimeConfig<T> {
+  /* --- Model / Data Binding --- */
   rowData: T[];
-  loading?: boolean;
-  error?: string | null;
-  enableCellEditing?: boolean;
   selectedItems?: T[];
   onSelectionChanged?: (selectedRows: T[]) => void;
   onCellValueChanged?: (event: CellValueChangedEvent<T>) => void;
@@ -61,6 +66,11 @@ export interface ArdaDataGridRuntimeConfig<T> {
   onNextPage?: () => void;
   onPreviousPage?: () => void;
   onFirstPage?: () => void;
+
+  /* --- View / Layout / Controller --- */
+  loading?: boolean;
+  error?: string | null;
+  enableCellEditing?: boolean;
   emptyStateComponent?: React.ReactNode;
 }
 

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, within } from '@storybook/test';
 import {
   Table2,
   ShoppingCart,
@@ -79,6 +80,10 @@ const icons: IconEntry[] = [
 ];
 
 export const IconGrid: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('Icon Library')).toBeInTheDocument();
+  },
   render: () => (
     <div className="p-6 max-w-5xl">
       <h2 className="text-2xl font-bold text-foreground mb-2">Icon Library</h2>

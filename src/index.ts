@@ -103,13 +103,26 @@ export type {
   SuppliedItemRow,
 } from './components/organisms/reference/business-affiliates/supplier-drawer/supplier-drawer';
 
-export { ArdaSupplierDataGrid } from './components/organisms/suppliers-data-grid/suppliers-data-grid';
+export { ArdaItemsDataGrid } from './components/organisms/reference/items/items-data-grid/items-data-grid';
+export type {
+  ArdaItemsDataGridProps,
+  ArdaItemsDataGridRef,
+} from './components/organisms/reference/items/items-data-grid/items-data-grid';
+
+export { ArdaSupplierDataGrid } from './components/organisms/reference/business-affiliates/suppliers-data-grid/suppliers-data-grid';
 export type {
   ArdaSupplierDataGridProps,
-  ArdaSupplierDataGridStaticConfig,
-  ArdaSupplierDataGridRuntimeConfig,
   ArdaSupplierDataGridRef,
-} from './components/organisms/suppliers-data-grid/suppliers-data-grid';
+} from './components/organisms/reference/business-affiliates/suppliers-data-grid/suppliers-data-grid';
+
+export {
+  createArdaEntityDataGrid,
+  type EntityDataGridConfig,
+  type EntityDataGridModelProps,
+  type EntityDataGridViewProps,
+  type EntityDataGridProps,
+  type EntityDataGridRef,
+} from './components/organisms/shared/entity-data-grid';
 
 // Types — Model
 export type { Currency as ModelCurrency, Money as ModelMoney } from './types/model/general/money';

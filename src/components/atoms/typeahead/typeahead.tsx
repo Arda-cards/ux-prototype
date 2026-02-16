@@ -10,16 +10,20 @@ export interface TypeaheadOption {
 
 /** Design-time configuration — properties chosen at composition time. */
 export interface ArdaTypeaheadStaticConfig {
+  /* --- Model / Data Binding --- */
+  /** Whether to allow creating new entries when no matches exist. */
+  allowCreate?: boolean;
+
+  /* --- View / Layout / Controller --- */
   /** Placeholder text for the input field. */
   placeholder?: string;
   /** Label shown in the create-new option (e.g. "Create new"). Default: "Create new". */
   createNewLabel?: string;
-  /** Whether to allow creating new entries when no matches exist. */
-  allowCreate?: boolean;
 }
 
 /** Runtime configuration — dynamic state and callbacks. */
 export interface ArdaTypeaheadRuntimeConfig {
+  /* --- Model / Data Binding --- */
   /** Current input value. */
   value: string;
   /** Options to display in the dropdown. */
@@ -30,6 +34,8 @@ export interface ArdaTypeaheadRuntimeConfig {
   onSelect: (option: TypeaheadOption) => void;
   /** Called when the user chooses to create a new entry. */
   onCreate?: (value: string) => void;
+
+  /* --- View / Layout / Controller --- */
   /** Whether options are currently loading. */
   loading?: boolean;
 }

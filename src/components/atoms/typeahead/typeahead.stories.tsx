@@ -14,7 +14,7 @@ const sampleOptions: TypeaheadOption[] = [
 ];
 
 const meta: Meta<typeof ArdaTypeahead> = {
-  title: 'Components/Atoms/Typeahead',
+  title: 'Components/Atoms/Form/Typeahead',
   component: ArdaTypeahead,
   parameters: {
     docs: {

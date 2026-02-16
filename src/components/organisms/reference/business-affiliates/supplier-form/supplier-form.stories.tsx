@@ -17,7 +17,7 @@ function emptyAffiliate(): BusinessAffiliate {
 }
 
 const meta: Meta<typeof ArdaSupplierForm> = {
-  title: 'Components/Organisms/Supplier Form',
+  title: 'Components/Organisms/Reference/Business Affiliates/Supplier Form',
   component: ArdaSupplierForm,
   parameters: {
     layout: 'centered',
