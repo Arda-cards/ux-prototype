@@ -1,14 +1,13 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
 import { cn } from '@/lib/utils';
+import { getBrowserTimezone, getTimezoneAbbreviation } from '@/lib/data-types/formatters';
 
 /** Design-time configuration for time cell editor. */
 export interface TimeCellEditorStaticConfig {
   /* --- View / Layout / Controller --- */
   /** Placeholder text. */
   placeholder?: string;
-  /** IANA timezone for this field (e.g. "America/New_York"). Shown as hint. */
-  timezone?: string;
 }
 
 /** Props for ArdaTimeCellEditor. */
@@ -18,6 +17,8 @@ export interface ArdaTimeCellEditorProps extends TimeCellEditorStaticConfig {
   value?: string;
   /** AG Grid stopEditing callback. */
   stopEditing?: (cancel?: boolean) => void;
+  /** IANA timezone for this field (e.g. "America/New_York"). Defaults to browser timezone. Shown as hint. */
+  timezone?: string;
 }
 
 /** Ref handle exposing getValue for AG Grid. */
@@ -37,6 +38,9 @@ export const ArdaTimeCellEditor = forwardRef<TimeCellEditorHandle, ArdaTimeCellE
   ({ value: initialValue, stopEditing, placeholder, timezone }, ref) => {
     const [currentValue, setCurrentValue] = useState(initialValue ?? '');
     const inputRef = useRef<HTMLInputElement>(null);
+    const tz = timezone ?? getBrowserTimezone();
+    const tzLabel = tz.split('/').pop()?.replace(/_/g, ' ');
+    const tzAbbr = getTimezoneAbbreviation(tz);
 
     useImperativeHandle(ref, () => ({
       getValue: () => currentValue || undefined,
@@ -71,11 +75,9 @@ export const ArdaTimeCellEditor = forwardRef<TimeCellEditorHandle, ArdaTimeCellE
             'bg-white',
           )}
         />
-        {timezone && (
-          <span className="text-xs text-muted-foreground whitespace-nowrap px-1">
-            {timezone.split('/').pop()?.replace(/_/g, ' ')}
-          </span>
-        )}
+        <span className="text-xs text-muted-foreground whitespace-nowrap px-1">
+          {tzAbbr || tzLabel}
+        </span>
       </div>
     );
   },

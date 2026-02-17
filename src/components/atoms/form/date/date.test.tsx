@@ -14,7 +14,7 @@ describe('ArdaDateFieldDisplay', () => {
   });
 
   it('renders dash for undefined', () => {
-    render(<ArdaDateFieldDisplay value={undefined} />);
+    render(<ArdaDateFieldDisplay />);
     expect(screen.getByText('—')).toBeInTheDocument();
   });
 
@@ -48,7 +48,7 @@ describe('ArdaDateFieldEditor', () => {
     expect(input).toBeInTheDocument();
   });
 
-  it('calls onChange on input', async () => {
+  it('calls onChange with original and current value on input', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(<ArdaDateFieldEditor value="2024-03-15" onChange={onChange} />);
@@ -56,6 +56,8 @@ describe('ArdaDateFieldEditor', () => {
     await user.clear(input);
     await user.type(input, '2024-12-25');
     expect(onChange).toHaveBeenCalled();
+    // First argument should be the original value
+    expect(onChange.mock.calls[0]![0]).toBe('2024-03-15');
   });
 
   it('calls onComplete on Enter', async () => {
@@ -94,46 +96,90 @@ describe('ArdaDateFieldEditor', () => {
     expect(screen.getByText('Start Date')).toBeInTheDocument();
     expect(screen.getByDisplayValue('2024-03-15')).toBeInTheDocument();
   });
+
+  it('shows error messages when showErrors is true', () => {
+    render(
+      <ArdaDateFieldEditor
+        value="2024-03-15"
+        errors={['Date is required', 'Date must be in the future']}
+        showErrors
+      />,
+    );
+    expect(screen.getByText('Date is required')).toBeInTheDocument();
+    expect(screen.getByText('Date must be in the future')).toBeInTheDocument();
+  });
+
+  it('does not show error messages when showErrors is false', () => {
+    render(<ArdaDateFieldEditor value="2024-03-15" errors={['Date is required']} />);
+    expect(screen.queryByText('Date is required')).not.toBeInTheDocument();
+  });
 });
 
 describe('ArdaDateFieldInteractive', () => {
-  it('starts in display mode', () => {
-    render(<ArdaDateFieldInteractive value="2024-03-15" />);
+  const noop = vi.fn();
+
+  it('renders in display mode', () => {
+    render(<ArdaDateFieldInteractive value="2024-03-15" onChange={noop} mode="display" />);
     expect(screen.getByText(/03\/15\/2024/)).toBeInTheDocument();
     expect(screen.queryByDisplayValue('2024-03-15')).not.toBeInTheDocument();
   });
 
-  it('switches to edit mode on double-click', async () => {
-    const user = userEvent.setup();
-    render(<ArdaDateFieldInteractive value="2024-03-15" />);
-    await user.dblClick(screen.getByText(/03\/15\/2024/));
+  it('renders in edit mode with input', () => {
+    render(<ArdaDateFieldInteractive value="2024-03-15" onChange={noop} mode="edit" />);
     expect(screen.getByDisplayValue('2024-03-15')).toBeInTheDocument();
   });
 
-  it('commits value on Enter and returns to display', async () => {
-    const user = userEvent.setup();
-    const onValueChange = vi.fn();
-    render(<ArdaDateFieldInteractive value="2024-03-15" onValueChange={onValueChange} />);
-    await user.dblClick(screen.getByText(/03\/15\/2024/));
-    const input = screen.getByDisplayValue('2024-03-15');
-    await user.clear(input);
-    await user.type(input, '2024-12-25{Enter}');
-    expect(onValueChange).toHaveBeenCalledWith('2024-12-25');
-    expect(screen.queryByDisplayValue('2024-12-25')).not.toBeInTheDocument();
+  it('renders in error mode with error messages', () => {
+    render(
+      <ArdaDateFieldInteractive
+        value="2024-03-15"
+        onChange={noop}
+        mode="error"
+        errors={['Date is required']}
+      />,
+    );
+    expect(screen.getByDisplayValue('2024-03-15')).toBeInTheDocument();
+    expect(screen.getByText('Date is required')).toBeInTheDocument();
   });
 
-  it('does not enter edit mode when disabled', async () => {
-    const user = userEvent.setup();
-    render(<ArdaDateFieldInteractive value="2024-03-15" disabled />);
-    await user.dblClick(screen.getByText(/03\/15\/2024/));
+  it('forces display mode when editable is false', () => {
+    render(
+      <ArdaDateFieldInteractive value="2024-03-15" onChange={noop} mode="edit" editable={false} />,
+    );
+    expect(screen.getByText(/03\/15\/2024/)).toBeInTheDocument();
     expect(screen.queryByDisplayValue('2024-03-15')).not.toBeInTheDocument();
   });
 
-  it('passes timezone to display and editor', async () => {
+  it('calls onChange with original and current value', async () => {
     const user = userEvent.setup();
-    render(<ArdaDateFieldInteractive value="2024-03-15" timezone="Asia/Tokyo" />);
+    const onChange = vi.fn();
+    render(<ArdaDateFieldInteractive value="2024-03-15" onChange={onChange} mode="edit" />);
+    const input = screen.getByDisplayValue('2024-03-15');
+    await user.clear(input);
+    await user.type(input, '2024-12-25');
+    expect(onChange).toHaveBeenCalled();
+    expect(onChange.mock.calls[0]![0]).toBe('2024-03-15');
+  });
+
+  it('passes timezone to display and editor', () => {
+    const { rerender } = render(
+      <ArdaDateFieldInteractive
+        value="2024-03-15"
+        onChange={noop}
+        mode="display"
+        timezone="Asia/Tokyo"
+      />,
+    );
     expect(screen.getByText(/03\/15\/2024/)).toBeInTheDocument();
-    await user.dblClick(screen.getByText(/03\/15\/2024/));
+
+    rerender(
+      <ArdaDateFieldInteractive
+        value="2024-03-15"
+        onChange={noop}
+        mode="edit"
+        timezone="Asia/Tokyo"
+      />,
+    );
     expect(screen.getByText(/JST|GMT\+9/)).toBeInTheDocument();
   });
 });

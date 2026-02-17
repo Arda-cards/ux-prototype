@@ -1,0 +1,387 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Components/Organisms/Shared/Stepped Viewer/Guide" />
+
+# Stepped Viewer (Use Case Wizard Framework)
+
+The Stepped Viewer is a generic multi-step wizard framework for building use case stories with minimal boilerplate. Authors declare data, guides, scenes, and step content &#8212; the framework handles all chrome, navigation, viewers, and story wiring.
+
+## Architecture Overview
+
+The framework separates concerns into three layers:
+
+<table>
+  <thead>
+    <tr>
+      <th>Layer</th>
+      <th>What it provides</th>
+      <th>Key exports</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>State</strong></td>
+      <td>Wizard step management, form data, navigation</td>
+      <td><code>useWizard</code></td>
+    </tr>
+    <tr>
+      <td><strong>Shell</strong></td>
+      <td>Step indicator, heading, navigation buttons (Back / Done / Next / Submit), guide panel</td>
+      <td><code>UseCaseShell</code></td>
+    </tr>
+    <tr>
+      <td><strong>Story Factory</strong></td>
+      <td>Generates Interactive, Stepwise, and Automated stories from a single config</td>
+      <td><code>createUseCaseStories</code></td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Quick Start
+
+```tsx
+import {
+  UseCaseShell,
+  useWizard,
+  FormField,
+  createUseCaseStories,
+  type GuideEntry,
+  type Scene,
+  type WizardProps,
+} from '@/components/organisms/shared/stepped-viewer';
+
+interface MyFormData {
+  name: string;
+  email: string;
+}
+
+function MyWizard(props: WizardProps<MyFormData>) {
+  const w = useWizard(props, {
+    initial: { name: '', email: '' },
+    stepNames: ['Details', 'Review'],
+    canAdvance: (step, data) => step === 0 ? !!(data.name && data.email) : true,
+  });
+
+  return (
+    <UseCaseShell
+      wizard={w}
+      guides={guides}
+      heading="My Wizard"
+      subtitle="A simple two-step wizard."
+      submitLabel="Confirm"
+      success={<div>Done!</div>}
+    >
+      {w.step === 0 && (
+        <FormField label="Name" name="name" value={w.formData.name} onChange={w.handleChange} />
+      )}
+      {w.step === 1 && <p>Review: {w.formData.name}</p>}
+    </UseCaseShell>
+  );
+}
+```
+
+---
+
+## `useWizard<T>(props, config)`
+
+The core hook that manages wizard state. Returns a `WizardState<T>` object.
+
+### Config
+
+<table>
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>initial</code></td>
+      <td><code>T</code></td>
+      <td>Default form data when the wizard starts or resets.</td>
+    </tr>
+    <tr>
+      <td><code>stepNames</code></td>
+      <td><code>readonly string[]</code></td>
+      <td>Labels for each step shown in the step indicator.</td>
+    </tr>
+    <tr>
+      <td><code>canAdvance</code></td>
+      <td><code>(step: number, data: T) =&gt; boolean</code></td>
+      <td>Returns whether the user can move to the next step. Controls the disabled state of the "Next Step" button.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Returned State
+
+<table>
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>step</code></td>
+      <td><code>number</code></td>
+      <td>Current step index (0-based).</td>
+    </tr>
+    <tr>
+      <td><code>formData</code></td>
+      <td><code>T</code></td>
+      <td>Current form data object.</td>
+    </tr>
+    <tr>
+      <td><code>setFormData</code></td>
+      <td><code>Dispatch&lt;SetStateAction&lt;T&gt;&gt;</code></td>
+      <td>Direct setter for form data (for complex updates).</td>
+    </tr>
+    <tr>
+      <td><code>submitted</code></td>
+      <td><code>boolean</code></td>
+      <td>Whether the wizard has been submitted.</td>
+    </tr>
+    <tr>
+      <td><code>canAdvance</code></td>
+      <td><code>boolean</code></td>
+      <td>Whether the current step allows advancing.</td>
+    </tr>
+    <tr>
+      <td><code>handleChange</code></td>
+      <td><code>(e: ChangeEvent) =&gt; void</code></td>
+      <td>Generic change handler for inputs and selects. Updates <code>formData[e.target.name]</code>.</td>
+    </tr>
+    <tr>
+      <td><code>handleReset</code></td>
+      <td><code>() =&gt; void</code></td>
+      <td>Resets the wizard to step 0 with initial data.</td>
+    </tr>
+    <tr>
+      <td><code>handleSubmit</code></td>
+      <td><code>() =&gt; void</code></td>
+      <td>Marks the wizard as submitted (shows success screen).</td>
+    </tr>
+    <tr>
+      <td><code>goToStep</code></td>
+      <td><code>(s: number) =&gt; void</code></td>
+      <td>Jump to a specific step index.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## `UseCaseShell`
+
+The main layout component that renders the step indicator, heading, navigation buttons, and optional guide panel.
+
+### Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>wizard</code></td>
+      <td><code>WizardControl</code></td>
+      <td>The wizard state object from <code>useWizard</code>.</td>
+    </tr>
+    <tr>
+      <td><code>guides</code></td>
+      <td><code>GuideEntry[]</code></td>
+      <td>Guide entries shown in the contextual help panel (one per step + one for success).</td>
+    </tr>
+    <tr>
+      <td><code>heading</code></td>
+      <td><code>string</code></td>
+      <td>Main heading shown at the top of the wizard card.</td>
+    </tr>
+    <tr>
+      <td><code>subtitle</code></td>
+      <td><code>string</code></td>
+      <td>Subtitle shown below the heading.</td>
+    </tr>
+    <tr>
+      <td><code>submitLabel</code></td>
+      <td><code>string</code></td>
+      <td>Label for the submit button on the final step (e.g. "Confirm &amp; Add Item").</td>
+    </tr>
+    <tr>
+      <td><code>success</code></td>
+      <td><code>ReactNode</code></td>
+      <td>Content shown after submission. Typically a <code>SuccessScreen</code> component.</td>
+    </tr>
+    <tr>
+      <td><code>children</code></td>
+      <td><code>ReactNode</code></td>
+      <td>Step content. Use conditional rendering based on <code>wizard.step</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Navigation Buttons
+
+The shell automatically renders navigation buttons:
+
+- **Back** &#8212; shown on steps 1+, goes to the previous step
+- **Done** &#8212; shown on non-final steps, submits the wizard with current data (secondary style)
+- **Next Step** &#8212; shown on non-final steps, advances to the next step (primary style, disabled when `canAdvance` is false)
+- **Submit** &#8212; shown only on the final step, uses the `submitLabel` text
+
+---
+
+## Form Building Blocks
+
+The framework provides pre-styled form components:
+
+<table>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>FormField</code></td>
+      <td>Labeled text/number input with consistent styling.</td>
+    </tr>
+    <tr>
+      <td><code>FormSelect</code></td>
+      <td>Labeled dropdown select with string or object options.</td>
+    </tr>
+    <tr>
+      <td><code>FormRow</code></td>
+      <td>Side-by-side grid layout for placing two fields in one row.</td>
+    </tr>
+    <tr>
+      <td><code>SummaryCard</code></td>
+      <td>Bordered card for review-step summaries.</td>
+    </tr>
+    <tr>
+      <td><code>SummaryRow</code></td>
+      <td>Key-value row inside a summary card.</td>
+    </tr>
+    <tr>
+      <td><code>Divider</code></td>
+      <td>Horizontal rule for separating summary sections.</td>
+    </tr>
+    <tr>
+      <td><code>SuccessScreen</code></td>
+      <td>Centered success confirmation with checkmark, badges, details, and reset button.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## `createUseCaseStories<T>(config)`
+
+Factory function that generates three story objects from a single configuration:
+
+<table>
+  <thead>
+    <tr>
+      <th>Story</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Interactive</strong></td>
+      <td>Hands-on exploration with guide panel. The user fills in real data.</td>
+    </tr>
+    <tr>
+      <td><strong>Stepwise</strong></td>
+      <td>Guided demo with scene controls (Next/Previous/Reset). Pre-filled snapshots.</td>
+    </tr>
+    <tr>
+      <td><strong>Automated</strong></td>
+      <td>Regression test with a <code>play</code> function that exercises the full workflow.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Config
+
+<table>
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>guides</code></td>
+      <td><code>GuideEntry[]</code></td>
+      <td>Guide entries for each step + success.</td>
+    </tr>
+    <tr>
+      <td><code>scenes</code></td>
+      <td><code>Scene&lt;T&gt;[]</code></td>
+      <td>Snapshots for Stepwise and Automated viewers.</td>
+    </tr>
+    <tr>
+      <td><code>Wizard</code></td>
+      <td><code>ComponentType&lt;WizardProps&lt;T&gt;&gt;</code></td>
+      <td>The wizard component to render.</td>
+    </tr>
+    <tr>
+      <td><code>delayMs</code></td>
+      <td><code>number</code></td>
+      <td>Delay between automated scenes (default: 2000ms).</td>
+    </tr>
+    <tr>
+      <td><code>play</code></td>
+      <td><code>(ctx: PlayContext) =&gt; Promise&lt;void&gt;</code></td>
+      <td>Automated test function that drives the wizard through all scenes.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Existing Use Cases
+
+The following use cases are built on this framework:
+
+<table>
+  <thead>
+    <tr>
+      <th>Use Case</th>
+      <th>Steps</th>
+      <th>Location</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Add Item (Sample)</td>
+      <td>3 (Details, Stock &amp; Pricing, Review)</td>
+      <td><code>use-cases/inventory/add-item/</code></td>
+    </tr>
+    <tr>
+      <td>Add Supply</td>
+      <td>3 (Select Supplier, Supply Details, Review)</td>
+      <td><code>use-cases/reference/items/add-supply/</code></td>
+    </tr>
+    <tr>
+      <td>Create Supplier</td>
+      <td>4 (Identity, Contact, Address &amp; Legal, Review)</td>
+      <td><code>use-cases/reference/business-affiliates/create-supplier/</code></td>
+    </tr>
+  </tbody>
+</table>

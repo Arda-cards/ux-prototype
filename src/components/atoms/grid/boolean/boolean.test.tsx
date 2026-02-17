@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
@@ -25,7 +25,7 @@ describe('ArdaBooleanCellDisplay', () => {
     });
 
     it('renders dash for undefined', () => {
-      render(<ArdaBooleanCellDisplay value={undefined} displayFormat="checkbox" />);
+      render(<ArdaBooleanCellDisplay displayFormat="checkbox" />);
       expect(screen.getByText('—')).toBeInTheDocument();
     });
   });
@@ -42,7 +42,7 @@ describe('ArdaBooleanCellDisplay', () => {
     });
 
     it('renders dash for undefined', () => {
-      render(<ArdaBooleanCellDisplay value={undefined} displayFormat="yes-no" />);
+      render(<ArdaBooleanCellDisplay displayFormat="yes-no" />);
       expect(screen.getByText('—')).toBeInTheDocument();
     });
   });
@@ -112,39 +112,80 @@ describe('ArdaBooleanCellEditor', () => {
 });
 
 describe('ArdaBooleanCellInteractive', () => {
-  it('starts in display mode', () => {
-    render(<ArdaBooleanCellInteractive value={true} />);
+  it('renders display when mode is display', () => {
+    const { container } = render(
+      <ArdaBooleanCellInteractive value={true} mode="display" onChange={() => {}} />,
+    );
+    // Should render the display component (check icon), not a checkbox input
+    expect(container.querySelector('svg')).toBeInTheDocument();
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
   });
 
-  it('switches to edit mode on double-click', async () => {
-    const user = userEvent.setup();
-    const { container } = render(<ArdaBooleanCellInteractive value={true} />);
-    const displayWrapper = container.firstChild as HTMLElement;
-    await user.dblClick(displayWrapper);
+  it('renders editor when mode is edit', () => {
+    render(<ArdaBooleanCellInteractive value={true} mode="edit" onChange={() => {}} />);
     expect(screen.getByRole('checkbox')).toBeInTheDocument();
+    expect(screen.getByRole('checkbox')).toBeChecked();
   });
 
-  it('commits value on Enter and returns to display', async () => {
-    const user = userEvent.setup();
-    const onValueChange = vi.fn();
-    const { container } = render(
-      <ArdaBooleanCellInteractive value={true} onValueChange={onValueChange} />,
+  it('renders editor with error styling when mode is error', () => {
+    render(
+      <ArdaBooleanCellInteractive
+        value={false}
+        mode="error"
+        errors={['Required field']}
+        onChange={() => {}}
+      />,
     );
-    const displayWrapper = container.firstChild as HTMLElement;
-    await user.dblClick(displayWrapper);
+    expect(screen.getByRole('checkbox')).toBeInTheDocument();
+    expect(screen.getByText('Required field')).toBeInTheDocument();
+  });
+
+  it('renders display when editable is false regardless of mode', () => {
+    const { container } = render(
+      <ArdaBooleanCellInteractive value={true} mode="edit" editable={false} onChange={() => {}} />,
+    );
+    expect(container.querySelector('svg')).toBeInTheDocument();
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+  });
+
+  it('calls onChange with (original, current) on checkbox change', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<ArdaBooleanCellInteractive value={true} mode="edit" onChange={onChange} />);
     const checkbox = screen.getByRole('checkbox');
     await user.click(checkbox);
-    fireEvent.keyDown(checkbox, { key: 'Enter' });
-    expect(onValueChange).toHaveBeenCalledWith(false);
-    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+    expect(onChange).toHaveBeenCalledWith(true, false);
   });
 
-  it('does not enter edit mode when disabled', async () => {
+  it('calls onComplete on Enter', async () => {
     const user = userEvent.setup();
-    const { container } = render(<ArdaBooleanCellInteractive value={true} disabled />);
-    const displayWrapper = container.firstChild as HTMLElement;
-    await user.dblClick(displayWrapper);
-    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+    const onComplete = vi.fn();
+    render(
+      <ArdaBooleanCellInteractive
+        value={true}
+        mode="edit"
+        onChange={() => {}}
+        onComplete={onComplete}
+      />,
+    );
+    const checkbox = screen.getByRole('checkbox');
+    await user.type(checkbox, '{Enter}');
+    expect(onComplete).toHaveBeenCalledWith(false);
+  });
+
+  it('calls onCancel on Escape', async () => {
+    const user = userEvent.setup();
+    const onCancel = vi.fn();
+    render(
+      <ArdaBooleanCellInteractive
+        value={true}
+        mode="edit"
+        onChange={() => {}}
+        onCancel={onCancel}
+      />,
+    );
+    const checkbox = screen.getByRole('checkbox');
+    await user.type(checkbox, '{Escape}');
+    expect(onCancel).toHaveBeenCalled();
   });
 });

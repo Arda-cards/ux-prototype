@@ -15,8 +15,8 @@ export interface UrlFieldEditorRuntimeConfig {
   /* --- Model / Data Binding --- */
   /** Current value. */
   value?: string;
-  /** Called when value changes. */
-  onChange?: (value: string) => void;
+  /** Called when value changes. Receives both original and current values. */
+  onChange?: (original: string, current: string) => void;
   /** Called when editing completes (blur or Enter). */
   onComplete?: (value: string) => void;
   /** Called when editing is cancelled (Escape). */
@@ -27,6 +27,10 @@ export interface UrlFieldEditorRuntimeConfig {
   disabled?: boolean;
   /** Auto-focus on mount. */
   autoFocus?: boolean;
+  /** Validation error messages. */
+  errors?: string[];
+  /** Whether to show error styling and messages. */
+  showErrors?: boolean;
 }
 
 export interface ArdaUrlFieldEditorProps
@@ -41,9 +45,12 @@ export function ArdaUrlFieldEditor({
   placeholder = 'Enter URL…',
   disabled = false,
   autoFocus = false,
+  errors,
+  showErrors = false,
   label,
   labelPosition,
 }: ArdaUrlFieldEditorProps) {
+  const originalValue = useRef(value ?? '');
   const [localValue, setLocalValue] = useState(value ?? '');
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -57,7 +64,7 @@ export function ArdaUrlFieldEditor({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setLocalValue(newValue);
-    onChange?.(newValue);
+    onChange?.(originalValue.current, newValue);
   };
 
   const handleBlur = () => {
@@ -74,24 +81,38 @@ export function ArdaUrlFieldEditor({
     }
   };
 
+  const hasErrors = showErrors && errors && errors.length > 0;
+
   return (
     <FieldLabel label={label} labelPosition={labelPosition}>
-      <input
-        ref={inputRef}
-        type="url"
-        value={localValue}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        disabled={disabled}
-        className={cn(
-          'w-full px-3 py-2 text-sm rounded-lg border border-border bg-white',
-          'focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring',
-          'placeholder:text-muted-foreground',
-          disabled && 'opacity-50 cursor-not-allowed bg-muted/30',
+      <div>
+        <input
+          ref={inputRef}
+          type="url"
+          value={localValue}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          disabled={disabled}
+          className={cn(
+            'w-full px-3 py-2 text-sm rounded-lg border bg-white',
+            'focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring',
+            'placeholder:text-muted-foreground',
+            hasErrors ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-border',
+            disabled && 'opacity-50 cursor-not-allowed bg-muted/30',
+          )}
+        />
+        {hasErrors && (
+          <div className="mt-1 space-y-0.5">
+            {errors.map((error, i) => (
+              <p key={i} className="text-xs text-red-600">
+                {error}
+              </p>
+            ))}
+          </div>
         )}
-      />
+      </div>
     </FieldLabel>
   );
 }

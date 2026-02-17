@@ -17,7 +17,7 @@ describe('ArdaImageCellDisplay', () => {
   });
 
   it('renders placeholder icon for undefined', () => {
-    const { container } = render(<ArdaImageCellDisplay value={undefined} />);
+    const { container } = render(<ArdaImageCellDisplay />);
     expect(container.querySelector('svg')).toBeInTheDocument();
   });
 
@@ -83,40 +83,119 @@ describe('ArdaImageCellEditor', () => {
 });
 
 describe('ArdaImageCellInteractive', () => {
-  it('starts in display mode', () => {
-    render(<ArdaImageCellInteractive value="https://example.com/image.jpg" />);
+  it('renders display mode with image', () => {
+    render(
+      <ArdaImageCellInteractive
+        value="https://example.com/image.jpg"
+        onChange={() => {}}
+        mode="display"
+      />,
+    );
     expect(screen.getByRole('img')).toBeInTheDocument();
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 
-  it('switches to edit mode on double-click', async () => {
-    const user = userEvent.setup();
-    render(<ArdaImageCellInteractive value="https://example.com/image.jpg" />);
-    await user.dblClick(screen.getByRole('img'));
+  it('renders edit mode with input', () => {
+    render(
+      <ArdaImageCellInteractive
+        value="https://example.com/image.jpg"
+        onChange={() => {}}
+        mode="edit"
+      />,
+    );
     expect(screen.getByRole('textbox')).toBeInTheDocument();
+    expect(screen.getByRole('textbox')).toHaveValue('https://example.com/image.jpg');
   });
 
-  it('commits value on Enter and returns to display', async () => {
+  it('calls onChange with original and current values', async () => {
     const user = userEvent.setup();
-    const onValueChange = vi.fn();
+    const onChange = vi.fn();
     render(
       <ArdaImageCellInteractive
         value="https://example.com/old.jpg"
-        onValueChange={onValueChange}
+        onChange={onChange}
+        mode="edit"
       />,
     );
-    await user.dblClick(screen.getByRole('img'));
     const input = screen.getByRole('textbox');
     await user.clear(input);
-    await user.type(input, 'https://example.com/new.jpg{Enter}');
-    expect(onValueChange).toHaveBeenCalledWith('https://example.com/new.jpg');
-    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    await user.type(input, 'https://example.com/new.jpg');
+    // onChange is called per keystroke; check last call has correct original
+    expect(onChange).toHaveBeenLastCalledWith(
+      'https://example.com/old.jpg',
+      'https://example.com/new.jpg',
+    );
   });
 
-  it('does not enter edit mode when disabled', async () => {
+  it('calls onComplete on Enter', async () => {
     const user = userEvent.setup();
-    render(<ArdaImageCellInteractive value="https://example.com/image.jpg" disabled />);
-    await user.dblClick(screen.getByRole('img'));
+    const onComplete = vi.fn();
+    render(
+      <ArdaImageCellInteractive
+        value="https://example.com/image.jpg"
+        onChange={() => {}}
+        mode="edit"
+        onComplete={onComplete}
+      />,
+    );
+    const input = screen.getByRole('textbox');
+    await user.type(input, '{Enter}');
+    expect(onComplete).toHaveBeenCalledWith('https://example.com/image.jpg');
+  });
+
+  it('calls onCancel on Escape', async () => {
+    const user = userEvent.setup();
+    const onCancel = vi.fn();
+    render(
+      <ArdaImageCellInteractive
+        value="https://example.com/image.jpg"
+        onChange={() => {}}
+        mode="edit"
+        onCancel={onCancel}
+      />,
+    );
+    const input = screen.getByRole('textbox');
+    await user.type(input, '{Escape}');
+    expect(onCancel).toHaveBeenCalled();
+  });
+
+  it('renders error mode with error messages', () => {
+    render(
+      <ArdaImageCellInteractive
+        value="bad-url"
+        onChange={() => {}}
+        mode="error"
+        errors={['Invalid image URL', 'Must point to an image file']}
+      />,
+    );
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
+    expect(screen.getByText('Invalid image URL')).toBeInTheDocument();
+    expect(screen.getByText('Must point to an image file')).toBeInTheDocument();
+  });
+
+  it('does not show errors in edit mode', () => {
+    render(
+      <ArdaImageCellInteractive
+        value="bad-url"
+        onChange={() => {}}
+        mode="edit"
+        errors={['Invalid image URL']}
+      />,
+    );
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
+    expect(screen.queryByText('Invalid image URL')).not.toBeInTheDocument();
+  });
+
+  it('forces display mode when editable is false', () => {
+    render(
+      <ArdaImageCellInteractive
+        value="https://example.com/image.jpg"
+        onChange={() => {}}
+        mode="edit"
+        editable={false}
+      />,
+    );
+    expect(screen.getByRole('img')).toBeInTheDocument();
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 });

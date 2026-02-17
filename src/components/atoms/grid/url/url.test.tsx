@@ -46,7 +46,7 @@ describe('ArdaUrlCellDisplay', () => {
   });
 
   it('renders dash for undefined', () => {
-    render(<ArdaUrlCellDisplay value={undefined} />);
+    render(<ArdaUrlCellDisplay />);
     expect(screen.getByText('—')).toBeInTheDocument();
   });
 
@@ -95,35 +95,100 @@ describe('ArdaUrlCellEditor', () => {
 });
 
 describe('ArdaUrlCellInteractive', () => {
-  it('starts in display mode', () => {
-    render(<ArdaUrlCellInteractive value="https://example.com" />);
+  it('renders display mode', () => {
+    render(
+      <ArdaUrlCellInteractive value="https://example.com" onChange={() => {}} mode="display" />,
+    );
     expect(screen.getByRole('link')).toBeInTheDocument();
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 
-  it('switches to edit mode on double-click', async () => {
-    const user = userEvent.setup();
-    render(<ArdaUrlCellInteractive value="https://example.com" />);
-    await user.dblClick(screen.getByRole('link'));
+  it('renders edit mode with input', () => {
+    render(<ArdaUrlCellInteractive value="https://example.com" onChange={() => {}} mode="edit" />);
     expect(screen.getByRole('textbox')).toBeInTheDocument();
+    expect(screen.getByRole('textbox')).toHaveValue('https://example.com');
   });
 
-  it('commits value on Enter and returns to display', async () => {
+  it('calls onChange with original and current values', async () => {
     const user = userEvent.setup();
-    const onValueChange = vi.fn();
-    render(<ArdaUrlCellInteractive value="https://old.com" onValueChange={onValueChange} />);
-    await user.dblClick(screen.getByRole('link'));
+    const onChange = vi.fn();
+    render(<ArdaUrlCellInteractive value="https://old.com" onChange={onChange} mode="edit" />);
     const input = screen.getByRole('textbox');
     await user.clear(input);
-    await user.type(input, 'https://new.com{Enter}');
-    expect(onValueChange).toHaveBeenCalledWith('https://new.com');
-    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    await user.type(input, 'https://new.com');
+    // onChange is called per keystroke; check last call has correct original
+    expect(onChange).toHaveBeenLastCalledWith('https://old.com', 'https://new.com');
   });
 
-  it('does not enter edit mode when disabled', async () => {
+  it('calls onComplete on Enter', async () => {
     const user = userEvent.setup();
-    render(<ArdaUrlCellInteractive value="https://example.com" disabled />);
-    await user.dblClick(screen.getByRole('link'));
+    const onComplete = vi.fn();
+    render(
+      <ArdaUrlCellInteractive
+        value="https://example.com"
+        onChange={() => {}}
+        mode="edit"
+        onComplete={onComplete}
+      />,
+    );
+    const input = screen.getByRole('textbox');
+    await user.type(input, '{Enter}');
+    expect(onComplete).toHaveBeenCalledWith('https://example.com');
+  });
+
+  it('calls onCancel on Escape', async () => {
+    const user = userEvent.setup();
+    const onCancel = vi.fn();
+    render(
+      <ArdaUrlCellInteractive
+        value="https://example.com"
+        onChange={() => {}}
+        mode="edit"
+        onCancel={onCancel}
+      />,
+    );
+    const input = screen.getByRole('textbox');
+    await user.type(input, '{Escape}');
+    expect(onCancel).toHaveBeenCalled();
+  });
+
+  it('renders error mode with error messages', () => {
+    render(
+      <ArdaUrlCellInteractive
+        value="bad-url"
+        onChange={() => {}}
+        mode="error"
+        errors={['Invalid URL', 'Must start with https://']}
+      />,
+    );
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
+    expect(screen.getByText('Invalid URL')).toBeInTheDocument();
+    expect(screen.getByText('Must start with https://')).toBeInTheDocument();
+  });
+
+  it('does not show errors in edit mode', () => {
+    render(
+      <ArdaUrlCellInteractive
+        value="bad-url"
+        onChange={() => {}}
+        mode="edit"
+        errors={['Invalid URL']}
+      />,
+    );
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
+    expect(screen.queryByText('Invalid URL')).not.toBeInTheDocument();
+  });
+
+  it('forces display mode when editable is false', () => {
+    render(
+      <ArdaUrlCellInteractive
+        value="https://example.com"
+        onChange={() => {}}
+        mode="edit"
+        editable={false}
+      />,
+    );
+    expect(screen.getByRole('link')).toBeInTheDocument();
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 });

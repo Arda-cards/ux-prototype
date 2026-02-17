@@ -5,40 +5,105 @@ import * as TextStories from './text.stories';
 
 # Text Field
 
-Form field components for displaying and editing text values.
+Form field component for displaying and editing text values with optional truncation.
 
-## Variants
+## Modes
 
-### Display
+### Display Mode
 
-Read-only text with form field styling. Shows `&#8212;` for empty values. Supports `maxLength` truncation with ellipsis.
+Read-only text with form field styling. Shows &#8212; for empty values. Supports `maxLength` truncation with ellipsis.
 
 <Canvas of={TextStories.Display} />
 
-### Editor
+### Edit Mode
 
 Standard text input with border, focus ring, and keyboard handlers (Enter to complete, Escape to cancel).
 
 <Canvas of={TextStories.Editor} />
 
-### Interactive
+### Error Mode
 
-Starts in display mode. Double-click to switch to editing. Enter/blur commits, Escape cancels.
+Edit mode with error styling and error messages displayed below the input.
 
-<Canvas of={TextStories.Interactive} />
+<Canvas of={TextStories.InteractiveError} />
 
-## Configuration
+### Editable Override
 
-### Static Configuration (Design Time)
+When `editable` is set to `false`, the component renders in display mode regardless of the `mode` prop.
 
-- **maxLength** &#8212; Maximum characters before truncation (display only)
-- **placeholder** &#8212; Placeholder text for the input
+<Canvas of={TextStories.EditableOverride} />
 
-### Runtime Configuration
+## Props
 
-- **value** &#8212; The text string value
-- **onChange** &#8212; Called on every keystroke
-- **onComplete** &#8212; Called on Enter or blur
-- **onCancel** &#8212; Called on Escape
-- **disabled** &#8212; Disables editing
-- **autoFocus** &#8212; Focus the input on mount
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>value</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>The text value</td>
+    </tr>
+    <tr>
+      <td><code>onChange</code></td>
+      <td><code>(original: string, current: string) =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Called with original and current values when value changes</td>
+    </tr>
+    <tr>
+      <td><code>mode</code></td>
+      <td><code>'display' | 'edit' | 'error'</code></td>
+      <td>&#8212;</td>
+      <td>Rendering mode</td>
+    </tr>
+    <tr>
+      <td><code>errors</code></td>
+      <td><code>string[]</code></td>
+      <td>&#8212;</td>
+      <td>Error messages (shown only in error mode)</td>
+    </tr>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Field label text</td>
+    </tr>
+    <tr>
+      <td><code>labelPosition</code></td>
+      <td><code>'left' | 'top'</code></td>
+      <td><code>'left'</code></td>
+      <td>Label position relative to field</td>
+    </tr>
+    <tr>
+      <td><code>editable</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>When false, forces display mode regardless of mode prop</td>
+    </tr>
+    <tr>
+      <td><code>maxLength</code></td>
+      <td><code>number</code></td>
+      <td>&#8212;</td>
+      <td>Maximum characters before truncation (display only)</td>
+    </tr>
+    <tr>
+      <td><code>onComplete</code></td>
+      <td><code>(value: string) =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Called on Enter or blur</td>
+    </tr>
+    <tr>
+      <td><code>onCancel</code></td>
+      <td><code>() =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Called on Escape</td>
+    </tr>
+  </tbody>
+</table>

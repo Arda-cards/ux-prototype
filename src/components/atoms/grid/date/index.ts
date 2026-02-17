@@ -8,4 +8,6 @@ export type {
   DateCellEditorHandle,
 } from './date-cell-editor';
 
-export { ArdaDateCellInteractive, createDateCellInteractive } from './date-cell-interactive';
+export { ArdaDateCellInteractive } from './date-cell-interactive';
+export type { ArdaDateCellInteractiveProps } from './date-cell-interactive';
+export { ArdaDateCellInteractive as ArdaDateCell } from './date-cell-interactive';

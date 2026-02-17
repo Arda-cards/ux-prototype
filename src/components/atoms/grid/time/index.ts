@@ -8,4 +8,6 @@ export type {
   TimeCellEditorHandle,
 } from './time-cell-editor';
 
-export { ArdaTimeCellInteractive, createTimeCellInteractive } from './time-cell-interactive';
+export { ArdaTimeCellInteractive } from './time-cell-interactive';
+export type { ArdaTimeCellInteractiveProps } from './time-cell-interactive';
+export { ArdaTimeCellInteractive as ArdaTimeCell } from './time-cell-interactive';

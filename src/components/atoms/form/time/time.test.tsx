@@ -14,7 +14,7 @@ describe('ArdaTimeFieldDisplay', () => {
   });
 
   it('renders dash for undefined', () => {
-    render(<ArdaTimeFieldDisplay value={undefined} />);
+    render(<ArdaTimeFieldDisplay />);
     expect(screen.getByText('—')).toBeInTheDocument();
   });
 
@@ -48,7 +48,7 @@ describe('ArdaTimeFieldEditor', () => {
     expect(input).toBeInTheDocument();
   });
 
-  it('calls onChange on input', async () => {
+  it('calls onChange with original and current value on input', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(<ArdaTimeFieldEditor value="14:30" onChange={onChange} />);
@@ -56,6 +56,8 @@ describe('ArdaTimeFieldEditor', () => {
     await user.clear(input);
     await user.type(input, '09:00');
     expect(onChange).toHaveBeenCalled();
+    // First argument should be the original value
+    expect(onChange.mock.calls[0]![0]).toBe('14:30');
   });
 
   it('calls onComplete on Enter', async () => {
@@ -94,46 +96,83 @@ describe('ArdaTimeFieldEditor', () => {
     expect(screen.getByText('Start Time')).toBeInTheDocument();
     expect(screen.getByDisplayValue('14:30')).toBeInTheDocument();
   });
+
+  it('shows error messages when showErrors is true', () => {
+    render(
+      <ArdaTimeFieldEditor
+        value="14:30"
+        errors={['Time is required', 'Time must be during business hours']}
+        showErrors
+      />,
+    );
+    expect(screen.getByText('Time is required')).toBeInTheDocument();
+    expect(screen.getByText('Time must be during business hours')).toBeInTheDocument();
+  });
+
+  it('does not show error messages when showErrors is false', () => {
+    render(<ArdaTimeFieldEditor value="14:30" errors={['Time is required']} />);
+    expect(screen.queryByText('Time is required')).not.toBeInTheDocument();
+  });
 });
 
 describe('ArdaTimeFieldInteractive', () => {
-  it('starts in display mode', () => {
-    render(<ArdaTimeFieldInteractive value="14:30" />);
+  const noop = vi.fn();
+
+  it('renders in display mode', () => {
+    render(<ArdaTimeFieldInteractive value="14:30" onChange={noop} mode="display" />);
     expect(screen.getByText(/2:30 PM/)).toBeInTheDocument();
     expect(screen.queryByDisplayValue('14:30')).not.toBeInTheDocument();
   });
 
-  it('switches to edit mode on double-click', async () => {
-    const user = userEvent.setup();
-    render(<ArdaTimeFieldInteractive value="14:30" />);
-    await user.dblClick(screen.getByText(/2:30 PM/));
+  it('renders in edit mode with input', () => {
+    render(<ArdaTimeFieldInteractive value="14:30" onChange={noop} mode="edit" />);
     expect(screen.getByDisplayValue('14:30')).toBeInTheDocument();
   });
 
-  it('commits value on Enter and returns to display', async () => {
-    const user = userEvent.setup();
-    const onValueChange = vi.fn();
-    render(<ArdaTimeFieldInteractive value="14:30" onValueChange={onValueChange} />);
-    await user.dblClick(screen.getByText(/2:30 PM/));
-    const input = screen.getByDisplayValue('14:30');
-    await user.clear(input);
-    await user.type(input, '09:00{Enter}');
-    expect(onValueChange).toHaveBeenCalledWith('09:00');
-    expect(screen.queryByDisplayValue('09:00')).not.toBeInTheDocument();
+  it('renders in error mode with error messages', () => {
+    render(
+      <ArdaTimeFieldInteractive
+        value="14:30"
+        onChange={noop}
+        mode="error"
+        errors={['Time is required']}
+      />,
+    );
+    expect(screen.getByDisplayValue('14:30')).toBeInTheDocument();
+    expect(screen.getByText('Time is required')).toBeInTheDocument();
   });
 
-  it('does not enter edit mode when disabled', async () => {
-    const user = userEvent.setup();
-    render(<ArdaTimeFieldInteractive value="14:30" disabled />);
-    await user.dblClick(screen.getByText(/2:30 PM/));
+  it('forces display mode when editable is false', () => {
+    render(<ArdaTimeFieldInteractive value="14:30" onChange={noop} mode="edit" editable={false} />);
+    expect(screen.getByText(/2:30 PM/)).toBeInTheDocument();
     expect(screen.queryByDisplayValue('14:30')).not.toBeInTheDocument();
   });
 
-  it('passes timezone to display and editor', async () => {
+  it('calls onChange with original and current value', async () => {
     const user = userEvent.setup();
-    render(<ArdaTimeFieldInteractive value="14:30" timezone="Asia/Tokyo" />);
+    const onChange = vi.fn();
+    render(<ArdaTimeFieldInteractive value="14:30" onChange={onChange} mode="edit" />);
+    const input = screen.getByDisplayValue('14:30');
+    await user.clear(input);
+    await user.type(input, '09:00');
+    expect(onChange).toHaveBeenCalled();
+    expect(onChange.mock.calls[0]![0]).toBe('14:30');
+  });
+
+  it('passes timezone to display and editor', () => {
+    const { rerender } = render(
+      <ArdaTimeFieldInteractive
+        value="14:30"
+        onChange={noop}
+        mode="display"
+        timezone="Asia/Tokyo"
+      />,
+    );
     expect(screen.getByText(/2:30 PM (JST|GMT\+9)/)).toBeInTheDocument();
-    await user.dblClick(screen.getByText(/2:30 PM (JST|GMT\+9)/));
+
+    rerender(
+      <ArdaTimeFieldInteractive value="14:30" onChange={noop} mode="edit" timezone="Asia/Tokyo" />,
+    );
     expect(screen.getByText(/JST|GMT\+9/)).toBeInTheDocument();
   });
 });

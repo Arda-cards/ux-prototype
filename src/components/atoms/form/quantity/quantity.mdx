@@ -1,0 +1,43 @@
+import { Canvas, Meta } from '@storybook/blocks';
+import * as QuantityStories from './quantity.stories';
+
+<Meta of={QuantityStories} />
+
+# Quantity Field
+
+Composite form field for physical quantities&#8212;a number input (amount) paired with a unit selector.
+
+## Variants
+
+### Display
+
+Read-only formatted quantity value showing amount and unit code. Shows `&#8212;` for empty values.
+
+<Canvas of={QuantityStories.Display} />
+
+### Editor
+
+Number input for the amount alongside a `select` dropdown for the unit, laid out in a flex row.
+
+<Canvas of={QuantityStories.Editor} />
+
+### Interactive
+
+Mode-driven rendering: display, edit, or error. Respects `editable` override.
+
+<Canvas of={QuantityStories.InteractiveEdit} />
+
+## Configuration
+
+### Static Configuration (Design Time)
+
+- **unitOptions** &#8212; Record mapping unit codes to display names
+- **precision** &#8212; Number of decimal places (default: 0)
+- **placeholder** &#8212; Placeholder text for the amount input
+
+### Runtime Configuration
+
+- **value** &#8212; Object with `amount` (number) and `unit` (string)
+- **onChange** &#8212; Called on every change with original and current values
+- **onComplete** &#8212; Called on Enter or blur
+- **onCancel** &#8212; Called on Escape

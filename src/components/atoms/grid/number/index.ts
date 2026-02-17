@@ -12,3 +12,5 @@ export type {
 } from './number-cell-editor';
 
 export { ArdaNumberCellInteractive } from './number-cell-interactive';
+export type { ArdaNumberCellInteractiveProps } from './number-cell-interactive';
+export { ArdaNumberCellInteractive as ArdaNumberCell } from './number-cell-interactive';

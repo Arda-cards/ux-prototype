@@ -18,14 +18,15 @@ const meta: Meta<typeof ArdaUrlFieldInteractive> = {
       description: 'URL string value.',
       table: { category: 'Runtime' },
     },
-    onValueChange: {
-      action: 'valueChanged',
-      description: 'Called when value changes via editing.',
-      table: { category: 'Events' },
+    mode: {
+      control: 'inline-radio',
+      options: ['display', 'edit', 'error'],
+      description: 'Rendering mode.',
+      table: { category: 'Runtime' },
     },
-    disabled: {
+    editable: {
       control: 'boolean',
-      description: 'Whether editing is disabled.',
+      description: 'Per-field editability override.',
       table: { category: 'Runtime' },
     },
     label: {
@@ -41,7 +42,9 @@ const meta: Meta<typeof ArdaUrlFieldInteractive> = {
     },
   },
   args: {
-    onValueChange: fn(),
+    onChange: fn(),
+    onComplete: fn(),
+    onCancel: fn(),
   },
 };
 
@@ -77,7 +80,7 @@ export const Display: Story = {
       </div>
       <div>
         <label className="text-xs font-medium text-muted-foreground mb-1 block">Empty</label>
-        <ArdaUrlFieldDisplay value={undefined} />
+        <ArdaUrlFieldDisplay />
       </div>
     </div>
   ),
@@ -99,7 +102,7 @@ export const Editor: Story = {
           </label>
           <ArdaUrlFieldEditor
             value={value}
-            onChange={setValue}
+            onChange={(_original, current) => setValue(current)}
             onComplete={(v) => console.log('Completed:', v)}
             placeholder="Enter URL…"
           />
@@ -113,28 +116,90 @@ export const Editor: Story = {
 };
 
 // ============================================================================
-// Interactive
+// Interactive — Display Mode
 // ============================================================================
 
-export const Interactive: Story = {
+export const InteractiveDisplay: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4 p-4" style={{ width: 320 }}>
+      <ArdaUrlFieldInteractive
+        value="https://example.com/page"
+        mode="display"
+        onChange={fn()}
+        label="Website"
+      />
+    </div>
+  ),
+};
+
+// ============================================================================
+// Interactive — Edit Mode
+// ============================================================================
+
+export const InteractiveEdit: Story = {
   render: () => {
     const [value, setValue] = useState('https://example.com/page');
 
     return (
       <div className="flex flex-col gap-4 p-4" style={{ width: 320 }}>
-        <div className="text-sm text-muted-foreground">
-          Double-click the field to edit. Press Enter to commit, Escape to cancel.
-        </div>
-        <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1 block">Website</label>
-          <ArdaUrlFieldInteractive value={value} onValueChange={setValue} />
-        </div>
+        <ArdaUrlFieldInteractive
+          value={value}
+          mode="edit"
+          onChange={(_original, current) => setValue(current)}
+          onComplete={(v) => console.log('Completed:', v)}
+          label="Website"
+          placeholder="Enter URL…"
+        />
         <div className="text-sm text-muted-foreground">
           Value: <span className="font-medium">{value}</span>
         </div>
       </div>
     );
   },
+};
+
+// ============================================================================
+// Interactive — Error Mode
+// ============================================================================
+
+export const InteractiveError: Story = {
+  render: () => {
+    const [value, setValue] = useState('');
+
+    return (
+      <div className="flex flex-col gap-4 p-4" style={{ width: 320 }}>
+        <ArdaUrlFieldInteractive
+          value={value}
+          mode="error"
+          onChange={(_original, current) => setValue(current)}
+          errors={['URL is required', 'Must be a valid URL']}
+          label="Website"
+          placeholder="Enter URL…"
+        />
+      </div>
+    );
+  },
+};
+
+// ============================================================================
+// Editable Override
+// ============================================================================
+
+export const EditableOverride: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4 p-4" style={{ width: 320 }}>
+      <div className="text-sm text-muted-foreground">
+        Even though mode is &quot;edit&quot;, editable=false forces display mode.
+      </div>
+      <ArdaUrlFieldInteractive
+        value="https://example.com/page"
+        mode="edit"
+        editable={false}
+        onChange={fn()}
+        label="Website"
+      />
+    </div>
+  ),
 };
 
 // ============================================================================
@@ -145,14 +210,44 @@ export const WithLabel: Story = {
   render: () => (
     <div className="flex flex-col gap-6 p-4" style={{ width: 480 }}>
       <div className="text-xs font-medium text-muted-foreground">Label left (default)</div>
-      <ArdaUrlFieldDisplay value="https://example.com" label="Website" labelPosition="left" />
-      <ArdaUrlFieldEditor value="https://example.com" label="Website" labelPosition="left" />
-      <ArdaUrlFieldInteractive value="https://example.com" label="Website" labelPosition="left" />
+      <ArdaUrlFieldInteractive
+        value="https://example.com"
+        mode="display"
+        onChange={fn()}
+        label="Website"
+        labelPosition="left"
+      />
+      <ArdaUrlFieldInteractive
+        value="https://example.com"
+        mode="edit"
+        onChange={fn()}
+        label="Website"
+        labelPosition="left"
+      />
+      <ArdaUrlFieldInteractive
+        value="https://example.com"
+        mode="error"
+        onChange={fn()}
+        errors={['Required']}
+        label="Website"
+        labelPosition="left"
+      />
 
       <div className="text-xs font-medium text-muted-foreground">Label top</div>
-      <ArdaUrlFieldDisplay value="https://example.com" label="Website" labelPosition="top" />
-      <ArdaUrlFieldEditor value="https://example.com" label="Website" labelPosition="top" />
-      <ArdaUrlFieldInteractive value="https://example.com" label="Website" labelPosition="top" />
+      <ArdaUrlFieldInteractive
+        value="https://example.com"
+        mode="display"
+        onChange={fn()}
+        label="Website"
+        labelPosition="top"
+      />
+      <ArdaUrlFieldInteractive
+        value="https://example.com"
+        mode="edit"
+        onChange={fn()}
+        label="Website"
+        labelPosition="top"
+      />
     </div>
   ),
 };
@@ -164,7 +259,8 @@ export const WithLabel: Story = {
 export const Playground: Story = {
   args: {
     value: 'https://example.com/page',
-    disabled: false,
+    mode: 'display',
+    editable: true,
     label: 'Website',
     labelPosition: 'left',
   },

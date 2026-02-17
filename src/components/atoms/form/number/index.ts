@@ -11,3 +11,7 @@ export type {
 } from './number-field-editor';
 
 export { ArdaNumberFieldInteractive } from './number-field-interactive';
+export type { ArdaNumberFieldInteractiveProps } from './number-field-interactive';
+
+/** Main component export. */
+export { ArdaNumberFieldInteractive as ArdaNumberField } from './number-field-interactive';

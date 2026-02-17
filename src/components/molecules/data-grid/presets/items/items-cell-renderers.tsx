@@ -58,4 +58,3 @@ export function QuickActionsCell({ item: _item }: { item: Item }) {
     </div>
   );
 }
-

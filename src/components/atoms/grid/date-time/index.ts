@@ -11,7 +11,6 @@ export type {
   DateTimeCellEditorHandle,
 } from './date-time-cell-editor';
 
-export {
-  ArdaDateTimeCellInteractive,
-  createDateTimeCellInteractive,
-} from './date-time-cell-interactive';
+export { ArdaDateTimeCellInteractive } from './date-time-cell-interactive';
+export type { ArdaDateTimeCellInteractiveProps } from './date-time-cell-interactive';
+export { ArdaDateTimeCellInteractive as ArdaDateTimeCell } from './date-time-cell-interactive';

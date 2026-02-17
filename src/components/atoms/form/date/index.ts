@@ -6,3 +6,5 @@ export type { ArdaDateFieldEditorProps, DateFieldEditorStaticConfig } from './da
 
 export { ArdaDateFieldInteractive } from './date-field-interactive';
 export type { ArdaDateFieldInteractiveProps } from './date-field-interactive';
+
+export { ArdaDateFieldInteractive as ArdaDateField } from './date-field-interactive';

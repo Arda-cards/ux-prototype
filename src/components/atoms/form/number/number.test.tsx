@@ -19,7 +19,7 @@ describe('ArdaNumberFieldDisplay', () => {
   });
 
   it('renders dash for undefined', () => {
-    render(<ArdaNumberFieldDisplay value={undefined} precision={0} />);
+    render(<ArdaNumberFieldDisplay precision={0} />);
     expect(screen.getByText('—')).toBeInTheDocument();
   });
 
@@ -54,14 +54,14 @@ describe('ArdaNumberFieldEditor', () => {
     expect(input).toHaveValue(42);
   });
 
-  it('calls onChange on input', async () => {
+  it('calls onChange with original and current values', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(<ArdaNumberFieldEditor value={0} onChange={onChange} />);
     const input = screen.getByRole('spinbutton');
     await user.clear(input);
     await user.type(input, '42');
-    expect(onChange).toHaveBeenCalledWith(42);
+    expect(onChange).toHaveBeenCalledWith(0, 42);
   });
 
   it('calls onComplete on Enter', async () => {
@@ -96,15 +96,13 @@ describe('ArdaNumberFieldEditor', () => {
 
     rerender(<ArdaNumberFieldEditor value={42} precision={2} />);
     expect(screen.getByRole('spinbutton')).toHaveAttribute('step', '0.01');
-
-    rerender(<ArdaNumberFieldEditor value={42} precision={4} />);
-    expect(screen.getByRole('spinbutton')).toHaveAttribute('step', '0.0001');
   });
 
-  it('renders with label', () => {
-    render(<ArdaNumberFieldEditor value={42} label="Quantity" />);
-    expect(screen.getByText('Quantity')).toBeInTheDocument();
-    expect(screen.getByRole('spinbutton')).toBeInTheDocument();
+  it('renders error styling and messages when showErrors is true', () => {
+    render(<ArdaNumberFieldEditor value={0} showErrors errors={['Must be positive']} />);
+    expect(screen.getByText('Must be positive')).toBeInTheDocument();
+    const input = screen.getByRole('spinbutton');
+    expect(input.className).toContain('border-red-500');
   });
 
   it('respects min and max attributes', () => {
@@ -116,40 +114,40 @@ describe('ArdaNumberFieldEditor', () => {
 });
 
 describe('ArdaNumberFieldInteractive', () => {
-  it('starts in display mode', () => {
-    render(<ArdaNumberFieldInteractive value={42} />);
+  const noop = vi.fn();
+
+  it('renders display mode', () => {
+    render(<ArdaNumberFieldInteractive value={42} mode="display" onChange={noop} />);
     expect(screen.getByText('42')).toBeInTheDocument();
     expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
   });
 
-  it('switches to edit mode on double-click', async () => {
-    const user = userEvent.setup();
-    const { container } = render(<ArdaNumberFieldInteractive value={42} />);
-    const display = container.querySelector('div > div') as HTMLElement;
-    await user.dblClick(display);
+  it('renders edit mode with input', () => {
+    render(<ArdaNumberFieldInteractive value={42} mode="edit" onChange={noop} />);
     expect(screen.getByRole('spinbutton')).toBeInTheDocument();
   });
 
-  it('commits value on Enter and returns to display', async () => {
-    const user = userEvent.setup();
-    const onValueChange = vi.fn();
-    const { container } = render(
-      <ArdaNumberFieldInteractive value={42} onValueChange={onValueChange} />,
+  it('renders error mode with error messages', () => {
+    render(
+      <ArdaNumberFieldInteractive value={0} mode="error" onChange={noop} errors={['Required']} />,
     );
-    const display = container.querySelector('div > div') as HTMLElement;
-    await user.dblClick(display);
-    const input = screen.getByRole('spinbutton');
-    await user.clear(input);
-    await user.type(input, '100{Enter}');
-    expect(onValueChange).toHaveBeenCalledWith(100);
+    expect(screen.getByRole('spinbutton')).toBeInTheDocument();
+    expect(screen.getByText('Required')).toBeInTheDocument();
+  });
+
+  it('forces display mode when editable is false', () => {
+    render(<ArdaNumberFieldInteractive value={42} mode="edit" onChange={noop} editable={false} />);
+    expect(screen.getByText('42')).toBeInTheDocument();
     expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
   });
 
-  it('does not enter edit mode when disabled', async () => {
+  it('passes onChange with original and current to editor', async () => {
     const user = userEvent.setup();
-    const { container } = render(<ArdaNumberFieldInteractive value={42} disabled />);
-    const display = container.querySelector('div > div') as HTMLElement;
-    await user.dblClick(display);
-    expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
+    const onChange = vi.fn();
+    render(<ArdaNumberFieldInteractive value={42} mode="edit" onChange={onChange} />);
+    const input = screen.getByRole('spinbutton');
+    await user.clear(input);
+    await user.type(input, '100');
+    expect(onChange).toHaveBeenCalledWith(42, 1);
   });
 });

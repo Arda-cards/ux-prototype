@@ -43,7 +43,8 @@ test-storybook: ## Run Storybook interaction tests
 serve: build ## Serve built Storybook with basic auth
 	npm run serve
 
-preview: build serve ## Build Storybook then serve with basic auth
+preview: build ## Build, serve with basic auth, and watch src/ for auto-rebuild
+	node tools/watch-rebuild.js
 
 publish: ## Build library and publish to GitHub Packages
 	npm run build:lib

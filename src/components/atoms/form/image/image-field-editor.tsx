@@ -17,8 +17,8 @@ export interface ImageFieldEditorRuntimeConfig {
   /* --- Model / Data Binding --- */
   /** Current value. */
   value?: string;
-  /** Called when value changes. */
-  onChange?: (value: string) => void;
+  /** Called when value changes. Receives both original and current values. */
+  onChange?: (original: string, current: string) => void;
   /** Called when editing completes (blur or Enter). */
   onComplete?: (value: string) => void;
   /** Called when editing is cancelled (Escape). */
@@ -29,6 +29,10 @@ export interface ImageFieldEditorRuntimeConfig {
   disabled?: boolean;
   /** Auto-focus on mount. */
   autoFocus?: boolean;
+  /** Validation error messages. */
+  errors?: string[];
+  /** Whether to show error styling and messages. */
+  showErrors?: boolean;
 }
 
 export interface ArdaImageFieldEditorProps
@@ -44,9 +48,12 @@ export function ArdaImageFieldEditor({
   maxPreviewHeight = 80,
   disabled = false,
   autoFocus = false,
+  errors,
+  showErrors = false,
   label,
   labelPosition,
 }: ArdaImageFieldEditorProps) {
+  const originalValue = useRef(value ?? '');
   const [localValue, setLocalValue] = useState(value ?? '');
   const [imageValid, setImageValid] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -73,7 +80,7 @@ export function ArdaImageFieldEditor({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setLocalValue(newValue);
-    onChange?.(newValue);
+    onChange?.(originalValue.current, newValue);
   };
 
   const handleBlur = () => {
@@ -90,25 +97,41 @@ export function ArdaImageFieldEditor({
     }
   };
 
+  const hasErrors = showErrors && errors && errors.length > 0;
+
   return (
     <FieldLabel label={label} labelPosition={labelPosition}>
       <div className="flex flex-col gap-2">
-        <input
-          ref={inputRef}
-          type="url"
-          value={localValue}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          disabled={disabled}
-          className={cn(
-            'w-full px-3 py-2 text-sm rounded-lg border border-border bg-white',
-            'focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring',
-            'placeholder:text-muted-foreground',
-            disabled && 'opacity-50 cursor-not-allowed bg-muted/30',
+        <div>
+          <input
+            ref={inputRef}
+            type="url"
+            value={localValue}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder}
+            disabled={disabled}
+            className={cn(
+              'w-full px-3 py-2 text-sm rounded-lg border bg-white',
+              'focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring',
+              'placeholder:text-muted-foreground',
+              hasErrors
+                ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
+                : 'border-border',
+              disabled && 'opacity-50 cursor-not-allowed bg-muted/30',
+            )}
+          />
+          {hasErrors && (
+            <div className="mt-1 space-y-0.5">
+              {errors.map((error, i) => (
+                <p key={i} className="text-xs text-red-600">
+                  {error}
+                </p>
+              ))}
+            </div>
           )}
-        />
+        </div>
         {imageValid && localValue && (
           <div className="px-2 py-1 bg-muted/30 rounded border border-border">
             <img

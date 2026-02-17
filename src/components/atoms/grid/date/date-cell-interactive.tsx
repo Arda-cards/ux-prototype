@@ -1,37 +1,87 @@
-import {
-  createInteractive,
-  type InteractiveEditorProps,
-} from '@/lib/data-types/create-interactive';
-import { ArdaDateCellDisplay } from './date-cell-display';
-
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { toDateInputValue } from '@/lib/data-types/formatters';
+import type { AtomMode, AtomProps } from '@/lib/data-types/atom-types';
+import { ArdaDateCellDisplay } from './date-cell-display';
+import {
+  toDateInputValue,
+  getBrowserTimezone,
+  getTimezoneAbbreviation,
+} from '@/lib/data-types/formatters';
 
-/**
- * Inline date editor adapted for the createInteractive pattern.
- * Unlike the AG Grid cell editor, this uses onChange/onComplete/onCancel callbacks.
- */
+export interface DateCellStaticConfig {
+  timezone?: string;
+}
+
+export interface ArdaDateCellInteractiveProps extends AtomProps<string>, DateCellStaticConfig {}
+
+export function ArdaDateCellInteractive({
+  value,
+  onChange,
+  onComplete,
+  onCancel,
+  mode,
+  errors,
+  editable,
+  timezone,
+}: ArdaDateCellInteractiveProps) {
+  const effectiveMode: AtomMode = editable === false ? 'display' : mode;
+
+  if (effectiveMode === 'display') {
+    // Build display props conditionally for exactOptionalPropertyTypes
+    const displayProps: { value: string } & { timezone?: string } = { value };
+    if (timezone !== undefined) displayProps.timezone = timezone;
+    return <ArdaDateCellDisplay {...displayProps} />;
+  }
+
+  return (
+    <DateCellInlineEditor
+      value={value}
+      onChange={onChange}
+      onComplete={onComplete}
+      onCancel={onCancel}
+      timezone={timezone}
+      showErrors={effectiveMode === 'error'}
+      errors={errors}
+      autoFocus
+    />
+  );
+}
+
+// Internal inline editor
 function DateCellInlineEditor({
   value,
   onChange,
   onComplete,
   onCancel,
   autoFocus,
-}: InteractiveEditorProps<string>) {
+  timezone,
+  showErrors,
+  errors,
+}: {
+  value?: string;
+  onChange?: ((original: string, current: string) => void) | undefined;
+  onComplete?: ((value: string) => void) | undefined;
+  onCancel?: (() => void) | undefined;
+  autoFocus?: boolean;
+  timezone?: string | undefined;
+  showErrors?: boolean;
+  errors?: string[] | undefined;
+}) {
+  const originalValue = useRef(value ?? '');
   const [localValue, setLocalValue] = useState(toDateInputValue(value));
   const inputRef = useRef<HTMLInputElement>(null);
+  const tz = timezone ?? getBrowserTimezone();
+  const tzLabel = tz.split('/').pop()?.replace(/_/g, ' ');
+  const tzAbbr = getTimezoneAbbreviation(tz);
 
   useEffect(() => {
-    if (autoFocus) {
-      inputRef.current?.focus();
-    }
+    if (autoFocus) inputRef.current?.focus();
   }, [autoFocus]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setLocalValue(newValue);
-    onChange?.(newValue);
+    onChange?.(originalValue.current, newValue);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -48,52 +98,38 @@ function DateCellInlineEditor({
     onComplete?.(localValue);
   };
 
+  const hasErrors = showErrors && errors && errors.length > 0;
+
   return (
-    <input
-      ref={inputRef}
-      type="date"
-      value={localValue}
-      onChange={handleChange}
-      onKeyDown={handleKeyDown}
-      onBlur={handleBlur}
-      className={cn(
-        'w-full h-full px-2 py-1 text-sm border-0 outline-none',
-        'focus:ring-2 focus:ring-ring',
-        'bg-white',
+    <div>
+      <div className="flex items-center gap-1 w-full h-full">
+        <input
+          ref={inputRef}
+          type="date"
+          value={localValue}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          onBlur={handleBlur}
+          className={cn(
+            'flex-1 h-full px-2 py-1 text-sm border-0 outline-none',
+            'focus:ring-2 focus:ring-ring',
+            'bg-white',
+            hasErrors && 'ring-2 ring-red-500',
+          )}
+        />
+        <span className="text-xs text-muted-foreground whitespace-nowrap px-1">
+          {tzAbbr || tzLabel}
+        </span>
+      </div>
+      {hasErrors && (
+        <div className="px-2 py-0.5">
+          {errors.map((error, i) => (
+            <p key={i} className="text-xs text-red-600">
+              {error}
+            </p>
+          ))}
+        </div>
       )}
-    />
+    </div>
   );
 }
-
-/**
- * Factory to create timezone-aware interactive date component.
- *
- * @example
- * ```ts
- * const DateCellNY = createDateCellInteractive({ timezone: 'America/New_York' });
- * ```
- */
-export function createDateCellInteractive(config: { timezone?: string } = {}) {
-  const WrappedDisplay = ({ value }: { value?: string }) => {
-    const displayProps: { value?: string; timezone?: string } = {};
-    if (value !== undefined) {
-      displayProps.value = value;
-    }
-    if (config.timezone !== undefined) {
-      displayProps.timezone = config.timezone;
-    }
-    return <ArdaDateCellDisplay {...displayProps} />;
-  };
-
-  return createInteractive<string>({
-    DisplayComponent: WrappedDisplay,
-    EditorComponent: DateCellInlineEditor,
-    displayName: 'ArdaDateCellInteractive',
-  });
-}
-
-/**
- * Interactive date cell: displays date by default, switches to inline editor
- * on double-click, commits on blur/Enter, cancels on Escape.
- */
-export const ArdaDateCellInteractive = createDateCellInteractive();

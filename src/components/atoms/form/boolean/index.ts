@@ -11,3 +11,7 @@ export type {
 } from './boolean-field-editor';
 
 export { ArdaBooleanFieldInteractive } from './boolean-field-interactive';
+export type { ArdaBooleanFieldInteractiveProps } from './boolean-field-interactive';
+
+/** Main component export. */
+export { ArdaBooleanFieldInteractive as ArdaBooleanField } from './boolean-field-interactive';

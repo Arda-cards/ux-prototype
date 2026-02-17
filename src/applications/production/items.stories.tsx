@@ -43,7 +43,9 @@ export const Default: Story = {
               marginBottom: 20,
             }}
           >
-            <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--base-foreground)' }}>Items</h1>
+            <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--base-foreground)' }}>
+              Items
+            </h1>
             <ArdaButton variant="primary">
               <Plus size={16} />
               Add Item

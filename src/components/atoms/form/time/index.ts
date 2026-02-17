@@ -6,3 +6,5 @@ export type { ArdaTimeFieldEditorProps, TimeFieldEditorStaticConfig } from './ti
 
 export { ArdaTimeFieldInteractive } from './time-field-interactive';
 export type { ArdaTimeFieldInteractiveProps } from './time-field-interactive';
+
+export { ArdaTimeFieldInteractive as ArdaTimeField } from './time-field-interactive';

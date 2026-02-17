@@ -15,7 +15,7 @@ describe('ArdaTextCellDisplay', () => {
   });
 
   it('renders dash for undefined', () => {
-    render(<ArdaTextCellDisplay value={undefined} />);
+    render(<ArdaTextCellDisplay />);
     expect(screen.getByText('—')).toBeInTheDocument();
   });
 
@@ -69,35 +69,72 @@ describe('ArdaTextCellEditor', () => {
 });
 
 describe('ArdaTextCellInteractive', () => {
-  it('starts in display mode', () => {
-    render(<ArdaTextCellInteractive value="Hello" />);
+  it('renders display when mode is display', () => {
+    render(<ArdaTextCellInteractive value="Hello" mode="display" onChange={() => {}} />);
     expect(screen.getByText('Hello')).toBeInTheDocument();
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 
-  it('switches to edit mode on double-click', async () => {
-    const user = userEvent.setup();
-    render(<ArdaTextCellInteractive value="Hello" />);
-    await user.dblClick(screen.getByText('Hello'));
+  it('renders editor when mode is edit', () => {
+    render(<ArdaTextCellInteractive value="Hello" mode="edit" onChange={() => {}} />);
     expect(screen.getByRole('textbox')).toBeInTheDocument();
+    expect(screen.getByRole('textbox')).toHaveValue('Hello');
   });
 
-  it('commits value on Enter and returns to display', async () => {
+  it('renders editor with error styling when mode is error', () => {
+    render(
+      <ArdaTextCellInteractive
+        value="Hello"
+        mode="error"
+        errors={['Required field']}
+        onChange={() => {}}
+      />,
+    );
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
+    expect(screen.getByText('Required field')).toBeInTheDocument();
+  });
+
+  it('renders display when editable is false regardless of mode', () => {
+    render(
+      <ArdaTextCellInteractive value="Hello" mode="edit" editable={false} onChange={() => {}} />,
+    );
+    expect(screen.getByText('Hello')).toBeInTheDocument();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+  });
+
+  it('calls onChange with (original, current) on input change', async () => {
     const user = userEvent.setup();
-    const onValueChange = vi.fn();
-    render(<ArdaTextCellInteractive value="Hello" onValueChange={onValueChange} />);
-    await user.dblClick(screen.getByText('Hello'));
+    const onChange = vi.fn();
+    render(<ArdaTextCellInteractive value="Hello" mode="edit" onChange={onChange} />);
     const input = screen.getByRole('textbox');
-    await user.clear(input);
-    await user.type(input, 'World{Enter}');
-    expect(onValueChange).toHaveBeenCalledWith('World');
-    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    await user.type(input, 'X');
+    expect(onChange).toHaveBeenCalledWith('Hello', 'HelloX');
   });
 
-  it('does not enter edit mode when disabled', async () => {
+  it('calls onComplete on Enter', async () => {
     const user = userEvent.setup();
-    render(<ArdaTextCellInteractive value="Hello" disabled />);
-    await user.dblClick(screen.getByText('Hello'));
-    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    const onComplete = vi.fn();
+    render(
+      <ArdaTextCellInteractive
+        value="Hello"
+        mode="edit"
+        onChange={() => {}}
+        onComplete={onComplete}
+      />,
+    );
+    const input = screen.getByRole('textbox');
+    await user.type(input, '{Enter}');
+    expect(onComplete).toHaveBeenCalledWith('Hello');
+  });
+
+  it('calls onCancel on Escape', async () => {
+    const user = userEvent.setup();
+    const onCancel = vi.fn();
+    render(
+      <ArdaTextCellInteractive value="Hello" mode="edit" onChange={() => {}} onCancel={onCancel} />,
+    );
+    const input = screen.getByRole('textbox');
+    await user.type(input, '{Escape}');
+    expect(onCancel).toHaveBeenCalled();
   });
 });

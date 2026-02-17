@@ -18,14 +18,15 @@ const meta: Meta<typeof ArdaTextFieldInteractive> = {
       description: 'Current text value.',
       table: { category: 'Runtime' },
     },
-    onValueChange: {
-      action: 'valueChanged',
-      description: 'Called when value changes via editing.',
-      table: { category: 'Events' },
+    mode: {
+      control: 'inline-radio',
+      options: ['display', 'edit', 'error'],
+      description: 'Rendering mode.',
+      table: { category: 'Runtime' },
     },
-    disabled: {
+    editable: {
       control: 'boolean',
-      description: 'Whether editing is disabled.',
+      description: 'Per-field editability override.',
       table: { category: 'Runtime' },
     },
     label: {
@@ -41,7 +42,9 @@ const meta: Meta<typeof ArdaTextFieldInteractive> = {
     },
   },
   args: {
-    onValueChange: fn(),
+    onChange: fn(),
+    onComplete: fn(),
+    onCancel: fn(),
   },
 };
 
@@ -61,7 +64,7 @@ export const Display: Story = {
       </div>
       <div>
         <label className="text-xs font-medium text-muted-foreground mb-1 block">Empty</label>
-        <ArdaTextFieldDisplay value={undefined} />
+        <ArdaTextFieldDisplay />
       </div>
       <div>
         <label className="text-xs font-medium text-muted-foreground mb-1 block">Truncated</label>
@@ -88,7 +91,7 @@ export const Editor: Story = {
           <label className="text-xs font-medium text-muted-foreground mb-1 block">Name</label>
           <ArdaTextFieldEditor
             value={value}
-            onChange={setValue}
+            onChange={(_original, current) => setValue(current)}
             onComplete={(v) => console.log('Completed:', v)}
             placeholder="Enter name…"
           />
@@ -102,28 +105,85 @@ export const Editor: Story = {
 };
 
 // ============================================================================
-// Interactive
+// Interactive — Display Mode
 // ============================================================================
 
-export const Interactive: Story = {
+export const InteractiveDisplay: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4 p-4" style={{ width: 320 }}>
+      <ArdaTextFieldInteractive value="Widget Alpha" mode="display" onChange={fn()} label="Name" />
+    </div>
+  ),
+};
+
+// ============================================================================
+// Interactive — Edit Mode
+// ============================================================================
+
+export const InteractiveEdit: Story = {
   render: () => {
-    const [value, setValue] = useState('Double-click to edit');
+    const [value, setValue] = useState('Widget Alpha');
 
     return (
       <div className="flex flex-col gap-4 p-4" style={{ width: 320 }}>
-        <div className="text-sm text-muted-foreground">
-          Double-click the field to edit. Press Enter to commit, Escape to cancel.
-        </div>
-        <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1 block">Name</label>
-          <ArdaTextFieldInteractive value={value} onValueChange={setValue} />
-        </div>
+        <ArdaTextFieldInteractive
+          value={value}
+          mode="edit"
+          onChange={(_original, current) => setValue(current)}
+          onComplete={(v) => console.log('Completed:', v)}
+          label="Name"
+          placeholder="Enter name…"
+        />
         <div className="text-sm text-muted-foreground">
           Value: <span className="font-medium">{value}</span>
         </div>
       </div>
     );
   },
+};
+
+// ============================================================================
+// Interactive — Error Mode
+// ============================================================================
+
+export const InteractiveError: Story = {
+  render: () => {
+    const [value, setValue] = useState('');
+
+    return (
+      <div className="flex flex-col gap-4 p-4" style={{ width: 320 }}>
+        <ArdaTextFieldInteractive
+          value={value}
+          mode="error"
+          onChange={(_original, current) => setValue(current)}
+          errors={['Name is required', 'Must be at least 3 characters']}
+          label="Name"
+          placeholder="Enter name…"
+        />
+      </div>
+    );
+  },
+};
+
+// ============================================================================
+// Editable Override
+// ============================================================================
+
+export const EditableOverride: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4 p-4" style={{ width: 320 }}>
+      <div className="text-sm text-muted-foreground">
+        Even though mode is &quot;edit&quot;, editable=false forces display mode.
+      </div>
+      <ArdaTextFieldInteractive
+        value="Locked Value"
+        mode="edit"
+        editable={false}
+        onChange={fn()}
+        label="Name"
+      />
+    </div>
+  ),
 };
 
 // ============================================================================
@@ -134,14 +194,44 @@ export const WithLabel: Story = {
   render: () => (
     <div className="flex flex-col gap-6 p-4" style={{ width: 480 }}>
       <div className="text-xs font-medium text-muted-foreground">Label left (default)</div>
-      <ArdaTextFieldDisplay value="Widget Alpha" label="Name" labelPosition="left" />
-      <ArdaTextFieldEditor value="Widget Alpha" label="Name" labelPosition="left" />
-      <ArdaTextFieldInteractive value="Widget Alpha" label="Name" labelPosition="left" />
+      <ArdaTextFieldInteractive
+        value="Widget Alpha"
+        mode="display"
+        onChange={fn()}
+        label="Name"
+        labelPosition="left"
+      />
+      <ArdaTextFieldInteractive
+        value="Widget Alpha"
+        mode="edit"
+        onChange={fn()}
+        label="Name"
+        labelPosition="left"
+      />
+      <ArdaTextFieldInteractive
+        value="Widget Alpha"
+        mode="error"
+        onChange={fn()}
+        errors={['Required']}
+        label="Name"
+        labelPosition="left"
+      />
 
       <div className="text-xs font-medium text-muted-foreground">Label top</div>
-      <ArdaTextFieldDisplay value="Widget Alpha" label="Name" labelPosition="top" />
-      <ArdaTextFieldEditor value="Widget Alpha" label="Name" labelPosition="top" />
-      <ArdaTextFieldInteractive value="Widget Alpha" label="Name" labelPosition="top" />
+      <ArdaTextFieldInteractive
+        value="Widget Alpha"
+        mode="display"
+        onChange={fn()}
+        label="Name"
+        labelPosition="top"
+      />
+      <ArdaTextFieldInteractive
+        value="Widget Alpha"
+        mode="edit"
+        onChange={fn()}
+        label="Name"
+        labelPosition="top"
+      />
     </div>
   ),
 };
@@ -153,7 +243,8 @@ export const WithLabel: Story = {
 export const Playground: Story = {
   args: {
     value: 'Widget Alpha',
-    disabled: false,
+    mode: 'display',
+    editable: true,
     label: 'Name',
     labelPosition: 'left',
   },

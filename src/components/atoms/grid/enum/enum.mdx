@@ -1,0 +1,97 @@
+import { Canvas, Meta } from '@storybook/blocks';
+import * as EnumStories from './enum.stories';
+
+<Meta of={EnumStories} />
+
+# Enum Cell
+
+Compact enum display and editing components for AG Grid cells.
+
+## Variants
+
+### Display
+
+Read-only enum renderer. Shows the human-readable label for the value. Shows &#8212; for empty/undefined values.
+If the value is not found in options, shows the raw value with a console warning.
+
+<Canvas of={EnumStories.Display} />
+
+### Editor
+
+AG Grid cell editor with auto-focus, Enter to commit, Escape to cancel. Exposes `getValue()` via ref for AG Grid integration.
+
+<Canvas of={EnumStories.Editor} />
+
+### Interactive
+
+Renders display or inline select editor based on mode. Enter/blur to commit, Escape to cancel.
+
+<Canvas of={EnumStories.InteractiveEdit} />
+
+## Configuration
+
+### Static Configuration (Design Time)
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>options</strong></td>
+      <td>Record&lt;V, string&gt;</td>
+      <td>Mapping from enum value to display label (required)</td>
+    </tr>
+  </tbody>
+</table>
+
+### Runtime Configuration
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>value</strong></td>
+      <td>V</td>
+      <td>The enum value to display or edit</td>
+    </tr>
+    <tr>
+      <td><strong>stopEditing</strong></td>
+      <td>(cancel?: boolean) =&gt; void</td>
+      <td>AG Grid callback to exit edit mode (editor only)</td>
+    </tr>
+  </tbody>
+</table>
+
+## Factory Helper
+
+Use `createEnumCellEditor()` to create a pre-configured editor for AG Grid column definitions:
+
+```ts
+import { createEnumCellEditor } from '@/components/atoms/grid/enum';
+
+const orderMechanisms = {
+  MARKETPLACE: 'Marketplace',
+  DIRECT: 'Direct Sales',
+};
+
+const colDef = {
+  field: 'mechanism',
+  cellEditor: createEnumCellEditor({ options: orderMechanisms }),
+};
+```
+
+## Limits
+
+When the options object contains more than 100 entries, a console warning is emitted. For large option sets,
+consider using the typeahead cell editor instead.

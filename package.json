@@ -27,7 +27,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest --run --coverage",
     "test:storybook": "test-storybook --testTimeout 30000",
-    "serve": "node server.js"
+    "serve": "node tools/server.js"
   },
   "dependencies": {
     "ag-grid-community": "^34.3.1",

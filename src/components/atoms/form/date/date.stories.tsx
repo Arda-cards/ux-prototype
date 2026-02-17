@@ -19,14 +19,25 @@ const meta: Meta<typeof ArdaDateFieldInteractive> = {
       description: 'ISO date string value.',
       table: { category: 'Runtime' },
     },
-    onValueChange: {
-      action: 'valueChanged',
-      description: 'Called when value changes via editing.',
+    onChange: {
+      action: 'changed',
+      description: 'Called when value changes with (original, current).',
       table: { category: 'Events' },
     },
-    disabled: {
+    mode: {
+      control: 'inline-radio',
+      options: ['display', 'edit', 'error'],
+      description: 'Rendering mode.',
+      table: { category: 'Runtime' },
+    },
+    editable: {
       control: 'boolean',
-      description: 'Whether editing is disabled.',
+      description: 'Per-field editability override.',
+      table: { category: 'Runtime' },
+    },
+    errors: {
+      control: 'object',
+      description: 'Validation error messages (shown only in error mode).',
       table: { category: 'Runtime' },
     },
     label: {
@@ -48,7 +59,7 @@ const meta: Meta<typeof ArdaDateFieldInteractive> = {
     },
   },
   args: {
-    onValueChange: fn(),
+    onChange: fn(),
   },
 };
 
@@ -68,7 +79,7 @@ export const Display: Story = {
       </div>
       <div>
         <label className="text-xs font-medium text-muted-foreground mb-1 block">Empty</label>
-        <ArdaDateFieldDisplay value={undefined} />
+        <ArdaDateFieldDisplay />
       </div>
       <div>
         <label className="text-xs font-medium text-muted-foreground mb-1 block">ISO DateTime</label>
@@ -92,7 +103,7 @@ export const Editor: Story = {
           <label className="text-xs font-medium text-muted-foreground mb-1 block">Start Date</label>
           <ArdaDateFieldEditor
             value={value}
-            onChange={setValue}
+            onChange={(_original, current) => setValue(current)}
             onComplete={(v) => console.log('Completed:', v)}
           />
         </div>
@@ -105,28 +116,70 @@ export const Editor: Story = {
 };
 
 // ============================================================================
-// Interactive
+// Interactive — Mode-based
 // ============================================================================
 
-export const Interactive: Story = {
+export const InteractiveDisplay: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4 p-4" style={{ width: 320 }}>
+      <div className="text-sm text-muted-foreground">Display mode: read-only presentation.</div>
+      <ArdaDateFieldInteractive value="2024-03-15" onChange={fn()} mode="display" />
+    </div>
+  ),
+};
+
+export const InteractiveEdit: Story = {
   render: () => {
     const [value, setValue] = useState('2024-03-15');
 
     return (
       <div className="flex flex-col gap-4 p-4" style={{ width: 320 }}>
-        <div className="text-sm text-muted-foreground">
-          Double-click the field to edit. Press Enter to commit, Escape to cancel.
-        </div>
-        <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1 block">Start Date</label>
-          <ArdaDateFieldInteractive value={value} onValueChange={setValue} />
-        </div>
+        <div className="text-sm text-muted-foreground">Edit mode: editable input.</div>
+        <ArdaDateFieldInteractive
+          value={value}
+          onChange={(_original, current) => setValue(current)}
+          mode="edit"
+        />
         <div className="text-sm text-muted-foreground">
           Value: <span className="font-medium">{value}</span>
         </div>
       </div>
     );
   },
+};
+
+export const InteractiveError: Story = {
+  render: () => {
+    const [value, setValue] = useState('2024-03-15');
+
+    return (
+      <div className="flex flex-col gap-4 p-4" style={{ width: 320 }}>
+        <div className="text-sm text-muted-foreground">
+          Error mode: editable input with error styling.
+        </div>
+        <ArdaDateFieldInteractive
+          value={value}
+          onChange={(_original, current) => setValue(current)}
+          mode="error"
+          errors={['Date must be in the future', 'Date is required']}
+        />
+        <div className="text-sm text-muted-foreground">
+          Value: <span className="font-medium">{value}</span>
+        </div>
+      </div>
+    );
+  },
+};
+
+export const EditableOverride: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4 p-4" style={{ width: 320 }}>
+      <div className="text-sm text-muted-foreground">
+        editable=false forces display mode even when mode=&quot;edit&quot;.
+      </div>
+      <ArdaDateFieldInteractive value="2024-03-15" onChange={fn()} mode="edit" editable={false} />
+    </div>
+  ),
 };
 
 // ============================================================================
@@ -142,30 +195,34 @@ export const WithTimezone: Story = {
       <div className="flex flex-col gap-6 p-4" style={{ width: 320 }}>
         {/* New York */}
         <div className="flex flex-col gap-2">
-          <div className="text-xs font-medium text-muted-foreground">New York (EST) — Display</div>
+          <div className="text-xs font-medium text-muted-foreground">New York (EST) -- Display</div>
           <ArdaDateFieldDisplay value="2024-03-15" timezone="America/New_York" />
-          <div className="text-xs font-medium text-muted-foreground">New York (EST) — Editor</div>
+          <div className="text-xs font-medium text-muted-foreground">New York (EST) -- Editor</div>
           <ArdaDateFieldEditor value="2024-03-15" timezone="America/New_York" />
           <div className="text-xs font-medium text-muted-foreground">
-            New York (EST) — Interactive
+            New York (EST) -- Interactive
           </div>
           <ArdaDateFieldInteractive
             value={nyValue}
-            onValueChange={setNyValue}
+            onChange={(_original, current) => setNyValue(current)}
+            mode="edit"
             timezone="America/New_York"
           />
         </div>
 
         {/* Tokyo */}
         <div className="flex flex-col gap-2">
-          <div className="text-xs font-medium text-muted-foreground">Tokyo (JST) — Display</div>
+          <div className="text-xs font-medium text-muted-foreground">Tokyo (JST) -- Display</div>
           <ArdaDateFieldDisplay value="2024-03-15" timezone="Asia/Tokyo" />
-          <div className="text-xs font-medium text-muted-foreground">Tokyo (JST) — Editor</div>
+          <div className="text-xs font-medium text-muted-foreground">Tokyo (JST) -- Editor</div>
           <ArdaDateFieldEditor value="2024-03-15" timezone="Asia/Tokyo" />
-          <div className="text-xs font-medium text-muted-foreground">Tokyo (JST) — Interactive</div>
+          <div className="text-xs font-medium text-muted-foreground">
+            Tokyo (JST) -- Interactive
+          </div>
           <ArdaDateFieldInteractive
             value={tokyoValue}
-            onValueChange={setTokyoValue}
+            onChange={(_original, current) => setTokyoValue(current)}
+            mode="edit"
             timezone="Asia/Tokyo"
           />
         </div>
@@ -184,12 +241,24 @@ export const WithLabel: Story = {
       <div className="text-xs font-medium text-muted-foreground">Label left (default)</div>
       <ArdaDateFieldDisplay value="2024-03-15" label="Start Date" labelPosition="left" />
       <ArdaDateFieldEditor value="2024-03-15" label="Start Date" labelPosition="left" />
-      <ArdaDateFieldInteractive value="2024-03-15" label="Start Date" labelPosition="left" />
+      <ArdaDateFieldInteractive
+        value="2024-03-15"
+        onChange={fn()}
+        mode="edit"
+        label="Start Date"
+        labelPosition="left"
+      />
 
       <div className="text-xs font-medium text-muted-foreground">Label top</div>
       <ArdaDateFieldDisplay value="2024-03-15" label="Start Date" labelPosition="top" />
       <ArdaDateFieldEditor value="2024-03-15" label="Start Date" labelPosition="top" />
-      <ArdaDateFieldInteractive value="2024-03-15" label="Start Date" labelPosition="top" />
+      <ArdaDateFieldInteractive
+        value="2024-03-15"
+        onChange={fn()}
+        mode="edit"
+        label="Start Date"
+        labelPosition="top"
+      />
     </div>
   ),
 };
@@ -201,7 +270,7 @@ export const WithLabel: Story = {
 export const Playground: Story = {
   args: {
     value: '2024-03-15',
-    disabled: false,
+    mode: 'display',
     label: 'Start Date',
     labelPosition: 'left',
   },

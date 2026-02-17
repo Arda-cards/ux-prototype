@@ -16,7 +16,7 @@ describe('ArdaImageFieldDisplay', () => {
   });
 
   it('renders placeholder for undefined', () => {
-    render(<ArdaImageFieldDisplay value={undefined} />);
+    render(<ArdaImageFieldDisplay />);
     expect(screen.getByText('No image')).toBeInTheDocument();
   });
 
@@ -68,12 +68,12 @@ describe('ArdaImageFieldEditor', () => {
     expect(input).toHaveValue('https://example.com/image.jpg');
   });
 
-  it('calls onChange on input', async () => {
+  it('calls onChange with original and current values', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(<ArdaImageFieldEditor value="" onChange={onChange} />);
     await user.type(screen.getByRole('textbox'), 'a');
-    expect(onChange).toHaveBeenCalledWith('a');
+    expect(onChange).toHaveBeenCalledWith('', 'a');
   });
 
   it('calls onComplete on Enter', async () => {
@@ -107,51 +107,108 @@ describe('ArdaImageFieldEditor', () => {
     expect(screen.getByText('Photo')).toBeInTheDocument();
     expect(screen.getByRole('textbox')).toBeInTheDocument();
   });
+
+  it('renders error styling and messages when showErrors is true', () => {
+    render(
+      <ArdaImageFieldEditor
+        value="test"
+        showErrors
+        errors={['Image URL is required', 'Must be a valid URL']}
+      />,
+    );
+    expect(screen.getByText('Image URL is required')).toBeInTheDocument();
+    expect(screen.getByText('Must be a valid URL')).toBeInTheDocument();
+    const input = screen.getByRole('textbox');
+    expect(input.className).toContain('border-red-500');
+  });
+
+  it('does not render errors when showErrors is false', () => {
+    render(<ArdaImageFieldEditor value="test" errors={['Image URL is required']} />);
+    expect(screen.queryByText('Image URL is required')).not.toBeInTheDocument();
+  });
 });
 
 describe('ArdaImageFieldInteractive', () => {
-  it('starts in display mode', () => {
-    render(<ArdaImageFieldInteractive value="https://example.com/image.jpg" />);
+  const noop = vi.fn();
+
+  it('renders display mode with image', () => {
+    render(
+      <ArdaImageFieldInteractive
+        value="https://example.com/image.jpg"
+        mode="display"
+        onChange={noop}
+      />,
+    );
     expect(screen.getByRole('img')).toBeInTheDocument();
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 
-  it('switches to edit mode on double-click', async () => {
-    const user = userEvent.setup();
-    render(<ArdaImageFieldInteractive value="https://example.com/image.jpg" />);
-    const container = screen.getByRole('img').parentElement?.parentElement;
-    if (container) {
-      await user.dblClick(container);
-      expect(screen.getByRole('textbox')).toBeInTheDocument();
-    }
-  });
-
-  it('commits value on Enter and returns to display', async () => {
-    const user = userEvent.setup();
-    const onValueChange = vi.fn();
+  it('renders edit mode with input', () => {
     render(
       <ArdaImageFieldInteractive
-        value="https://example.com/old.jpg"
-        onValueChange={onValueChange}
+        value="https://example.com/image.jpg"
+        mode="edit"
+        onChange={noop}
       />,
     );
-    const container = screen.getByRole('img').parentElement?.parentElement;
-    if (container) {
-      await user.dblClick(container);
-      const input = screen.getByRole('textbox');
-      await user.clear(input);
-      await user.type(input, 'https://example.com/new.jpg{Enter}');
-      expect(onValueChange).toHaveBeenCalledWith('https://example.com/new.jpg');
-    }
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
+    expect(screen.getByRole('textbox')).toHaveValue('https://example.com/image.jpg');
   });
 
-  it('does not enter edit mode when disabled', async () => {
+  it('renders error mode with input and error messages', () => {
+    render(
+      <ArdaImageFieldInteractive
+        value="https://example.com/image.jpg"
+        mode="error"
+        onChange={noop}
+        errors={['Required field']}
+      />,
+    );
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
+    expect(screen.getByText('Required field')).toBeInTheDocument();
+  });
+
+  it('forces display mode when editable is false', () => {
+    render(
+      <ArdaImageFieldInteractive
+        value="https://example.com/image.jpg"
+        mode="edit"
+        onChange={noop}
+        editable={false}
+      />,
+    );
+    expect(screen.getByRole('img')).toBeInTheDocument();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+  });
+
+  it('forces display mode when editable is false even in error mode', () => {
+    render(
+      <ArdaImageFieldInteractive
+        value="https://example.com/image.jpg"
+        mode="error"
+        onChange={noop}
+        editable={false}
+        errors={['Required']}
+      />,
+    );
+    expect(screen.getByRole('img')).toBeInTheDocument();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.queryByText('Required')).not.toBeInTheDocument();
+  });
+
+  it('passes onChange with original and current to editor', async () => {
     const user = userEvent.setup();
-    render(<ArdaImageFieldInteractive value="https://example.com/image.jpg" disabled />);
-    const container = screen.getByRole('img').parentElement?.parentElement;
-    if (container) {
-      await user.dblClick(container);
-      expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
-    }
+    const onChange = vi.fn();
+    render(
+      <ArdaImageFieldInteractive
+        value="https://example.com/image.jpg"
+        mode="edit"
+        onChange={onChange}
+      />,
+    );
+    const input = screen.getByRole('textbox');
+    await user.clear(input);
+    await user.type(input, 'https://new.com');
+    expect(onChange).toHaveBeenCalledWith('https://example.com/image.jpg', 'h');
   });
 });

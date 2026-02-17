@@ -20,8 +20,8 @@ export interface DateTimeFieldEditorRuntimeConfig {
   /* --- Model / Data Binding --- */
   /** Current value (ISO datetime string). */
   value?: string;
-  /** Called when value changes. */
-  onChange?: (value: string) => void;
+  /** Called when value changes. Receives both the original and current value. */
+  onChange?: (original: string, current: string) => void;
   /** Called when editing completes (blur or Enter). */
   onComplete?: (value: string) => void;
   /** Called when editing is cancelled (Escape). */
@@ -34,6 +34,10 @@ export interface DateTimeFieldEditorRuntimeConfig {
   autoFocus?: boolean;
   /** IANA timezone for display formatting. Defaults to browser timezone. */
   timezone?: string;
+  /** Validation error messages. */
+  errors?: string[];
+  /** Whether to show error styling and messages. */
+  showErrors?: boolean;
 }
 
 export interface ArdaDateTimeFieldEditorProps
@@ -51,12 +55,17 @@ export function ArdaDateTimeFieldEditor({
   timezone,
   label,
   labelPosition,
+  errors,
+  showErrors = false,
 }: ArdaDateTimeFieldEditorProps) {
   const [localValue, setLocalValue] = useState(toDateTimeInputValue(value));
   const inputRef = useRef<HTMLInputElement>(null);
+  const originalValue = useRef(value ?? '');
   const tz = timezone ?? getBrowserTimezone();
   const tzLabel = tz.split('/').pop()?.replace(/_/g, ' ');
   const tzAbbr = getTimezoneAbbreviation(tz);
+
+  const hasErrors = showErrors && errors && errors.length > 0;
 
   useEffect(() => {
     if (autoFocus) {
@@ -67,7 +76,7 @@ export function ArdaDateTimeFieldEditor({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setLocalValue(newValue);
-    onChange?.(newValue);
+    onChange?.(originalValue.current, newValue);
   };
 
   const handleBlur = () => {
@@ -97,7 +106,8 @@ export function ArdaDateTimeFieldEditor({
           placeholder={placeholder}
           disabled={disabled}
           className={cn(
-            'w-full px-3 py-2 text-sm rounded-lg border border-border bg-white',
+            'w-full px-3 py-2 text-sm rounded-lg border bg-white',
+            hasErrors ? 'border-destructive' : 'border-border',
             'focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring',
             'placeholder:text-muted-foreground',
             disabled && 'opacity-50 cursor-not-allowed bg-muted/30',
@@ -106,6 +116,15 @@ export function ArdaDateTimeFieldEditor({
         <span className="text-xs text-muted-foreground mt-1 block">
           Timezone: {tzAbbr || tzLabel}
         </span>
+        {hasErrors && (
+          <div className="mt-1 space-y-0.5">
+            {errors.map((error) => (
+              <p key={error} className="text-xs text-destructive">
+                {error}
+              </p>
+            ))}
+          </div>
+        )}
       </div>
     </FieldLabel>
   );

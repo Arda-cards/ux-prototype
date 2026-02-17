@@ -9,3 +9,7 @@ export type {
 } from './url-cell-editor';
 
 export { ArdaUrlCellInteractive } from './url-cell-interactive';
+export type { ArdaUrlCellInteractiveProps } from './url-cell-interactive';
+
+/** Main export alias for grid URL atom. */
+export { ArdaUrlCellInteractive as ArdaUrlCell } from './url-cell-interactive';

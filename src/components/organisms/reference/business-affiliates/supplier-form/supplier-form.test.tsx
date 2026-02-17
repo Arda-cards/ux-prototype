@@ -12,7 +12,6 @@ function emptyAffiliate(): BusinessAffiliate {
   return { eId: '', name: '', legal: {}, roles: [] };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- sample data guaranteed
 const sampleAffiliate = sampleAffiliates[0]!;
 
 describe('ArdaSupplierForm', () => {
@@ -113,7 +112,7 @@ describe('ArdaSupplierForm', () => {
       const onChange = vi.fn();
       render(<ArdaSupplierForm value={emptyAffiliate()} onChange={onChange} />);
       const checkboxes = screen.getAllByRole('checkbox');
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- test data guaranteed
+
       fireEvent.click(checkboxes[0]!); // Vendor
       expect(onChange).toHaveBeenCalledWith(
         expect.objectContaining({

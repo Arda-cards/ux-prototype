@@ -5,59 +5,105 @@ import * as UrlStories from './url.stories';
 
 # URL Cell
 
-Compact URL display and editing components for AG Grid cells. Supports two display formats: text link and styled button.
+Grid cell component for displaying and editing URL values in AG Grid. Supports two display formats: text link and styled button.
 
-## Variants
+## Modes
 
-### Display
+### Display Mode
 
-Read-only URL renderer. Shows '&#8212;' for empty/undefined values. Displays either as clickable link text or as a styled button with external-link icon.
+Read-only URL renderer. Shows &#8212; for empty/undefined values. Displays either as clickable link text or as a styled button with external-link icon.
 
 <Canvas of={UrlStories.Display} />
 
-### Editor
+### Edit Mode
 
-AG Grid cell editor with URL input control, auto-focus, Enter to commit, Escape to cancel. Exposes `getValue()` via ref for AG Grid integration.
+AG Grid cell editor with URL input control, auto-focus, Enter to commit, Escape to cancel.
 
 <Canvas of={UrlStories.Editor} />
 
-### Interactive
+### Error Mode
 
-Starts in display mode. Double-click to edit, Enter/blur to commit, Escape to cancel.
+Edit mode with error styling and error messages displayed below the input.
 
-<Canvas of={UrlStories.Interactive} />
+<Canvas of={UrlStories.InteractiveError} />
 
-## Configuration
+### Editable Override
 
-### Static Configuration (Design Time)
+When `editable` is set to `false`, the component renders in display mode regardless of the `mode` prop.
 
-Properties chosen at composition time:
+<Canvas of={UrlStories.EditableOverride} />
 
-- **displayFormat** &#8212; Display format: `'link'` (text hyperlink) or `'button'` (styled button). Default: `'link'`
-- **buttonLabel** &#8212; Button text (for button format). Default: "Open"
-- **openInNewTab** &#8212; Whether to open URL in new tab. Default: `true`
-- **maxLength** &#8212; Maximum characters before truncation (for link format)
-- **placeholder** &#8212; Placeholder text for the editor input
+## Props
 
-### Runtime Configuration
-
-Properties that control component state and behavior:
-
-- **value** &#8212; The URL value to display or edit
-- **stopEditing** &#8212; AG Grid callback to exit edit mode (editor only)
-- **onValueChange** &#8212; Callback when value changes (interactive only)
-
-## Display Formats
-
-### Link Format
-
-Displays the URL as blue clickable text with hover underline. Supports truncation via `maxLength` for long URLs.
-
-### Button Format
-
-Displays as a styled primary button with customizable label and external-link icon. Ideal for consistent action buttons in grid cells.
-
-## Accessibility
-
-- Links open in new tab by default with `rel="noopener noreferrer"` for security
-- Click events use `stopPropagation()` to prevent grid row selection when clicking links
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>value</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>The URL value</td>
+    </tr>
+    <tr>
+      <td><code>onChange</code></td>
+      <td><code>(original: string, current: string) =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Called with original and current values when value changes</td>
+    </tr>
+    <tr>
+      <td><code>mode</code></td>
+      <td><code>'display' | 'edit' | 'error'</code></td>
+      <td>&#8212;</td>
+      <td>Rendering mode</td>
+    </tr>
+    <tr>
+      <td><code>errors</code></td>
+      <td><code>string[]</code></td>
+      <td>&#8212;</td>
+      <td>Error messages (shown only in error mode)</td>
+    </tr>
+    <tr>
+      <td><code>editable</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>When false, forces display mode regardless of mode prop</td>
+    </tr>
+    <tr>
+      <td><code>displayFormat</code></td>
+      <td><code>'link' | 'button'</code></td>
+      <td><code>'link'</code></td>
+      <td>Display format for the URL</td>
+    </tr>
+    <tr>
+      <td><code>buttonLabel</code></td>
+      <td><code>string</code></td>
+      <td><code>'Open'</code></td>
+      <td>Button text for button format</td>
+    </tr>
+    <tr>
+      <td><code>openInNewTab</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Whether to open URL in new tab</td>
+    </tr>
+    <tr>
+      <td><code>onComplete</code></td>
+      <td><code>(value: string) =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Called on Enter or blur</td>
+    </tr>
+    <tr>
+      <td><code>onCancel</code></td>
+      <td><code>() =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Called on Escape</td>
+    </tr>
+  </tbody>
+</table>

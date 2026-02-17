@@ -1,15 +1,17 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
 import { cn } from '@/lib/utils';
-import { toDateInputValue } from '@/lib/data-types/formatters';
+import {
+  toDateInputValue,
+  getBrowserTimezone,
+  getTimezoneAbbreviation,
+} from '@/lib/data-types/formatters';
 
 /** Design-time configuration for date cell editor. */
 export interface DateCellEditorStaticConfig {
   /* --- View / Layout / Controller --- */
   /** Placeholder text. */
   placeholder?: string;
-  /** IANA timezone for this field (e.g. "America/New_York"). Shown as hint. */
-  timezone?: string;
 }
 
 /** Props for ArdaDateCellEditor. */
@@ -19,6 +21,8 @@ export interface ArdaDateCellEditorProps extends DateCellEditorStaticConfig {
   value?: string;
   /** AG Grid stopEditing callback. */
   stopEditing?: (cancel?: boolean) => void;
+  /** IANA timezone for this field (e.g. "America/New_York"). Defaults to browser timezone. Shown as hint. */
+  timezone?: string;
 }
 
 /** Ref handle exposing getValue for AG Grid. */
@@ -38,6 +42,9 @@ export const ArdaDateCellEditor = forwardRef<DateCellEditorHandle, ArdaDateCellE
   ({ value: initialValue, stopEditing, placeholder, timezone }, ref) => {
     const [currentValue, setCurrentValue] = useState(toDateInputValue(initialValue));
     const inputRef = useRef<HTMLInputElement>(null);
+    const tz = timezone ?? getBrowserTimezone();
+    const tzLabel = tz.split('/').pop()?.replace(/_/g, ' ');
+    const tzAbbr = getTimezoneAbbreviation(tz);
 
     useImperativeHandle(ref, () => ({
       getValue: () => currentValue || undefined,
@@ -72,11 +79,9 @@ export const ArdaDateCellEditor = forwardRef<DateCellEditorHandle, ArdaDateCellE
             'bg-white',
           )}
         />
-        {timezone && (
-          <span className="text-xs text-muted-foreground whitespace-nowrap px-1">
-            {timezone.split('/').pop()?.replace(/_/g, ' ')}
-          </span>
-        )}
+        <span className="text-xs text-muted-foreground whitespace-nowrap px-1">
+          {tzAbbr || tzLabel}
+        </span>
       </div>
     );
   },

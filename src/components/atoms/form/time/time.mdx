@@ -5,39 +5,99 @@ import * as TimeStories from './time.stories';
 
 # Time Field
 
-Form field components for displaying and editing time values with 12-hour AM/PM formatting.
+Form field component for displaying and editing time values with 12-hour AM/PM formatting.
 
-## Variants
+## Modes
 
-### Display
+### Display Mode
 
-Read-only time formatted as 12-hour AM/PM (e.g., "2:30 PM"). Shows `&#8212;` for empty values. Accepts time strings in HH:mm or HH:mm:ss format.
+Read-only time formatted as 12-hour AM/PM (e.g., "2:30 PM"). Shows &#8212; for empty values. Accepts time strings in HH:mm or HH:mm:ss format.
 
 <Canvas of={TimeStories.Display} />
 
-### Editor
+### Edit Mode
 
-Native time picker input (`<input type="time">`). Uses browser's native time selection UI with keyboard and mouse support.
+Native time picker input. Uses browser's native time selection UI with keyboard and mouse support.
 
 <Canvas of={TimeStories.Editor} />
 
-### Interactive
+### Error Mode
 
-Starts in display mode. Double-click to switch to editing with native time picker. Enter/blur commits, Escape cancels.
+Edit mode with error styling and error messages displayed below the input.
 
-<Canvas of={TimeStories.Interactive} />
+<Canvas of={TimeStories.InteractiveError} />
 
-## Configuration
+### Editable Override
 
-### Static Configuration (Design Time)
+When `editable` is set to `false`, the component renders in display mode regardless of the `mode` prop.
 
-- **placeholder** &#8212; Placeholder text for the input
+<Canvas of={TimeStories.EditableOverride} />
 
-### Runtime Configuration
+## Props
 
-- **value** &#8212; Time string in HH:mm format
-- **onChange** &#8212; Called when time value changes
-- **onComplete** &#8212; Called on Enter or blur
-- **onCancel** &#8212; Called on Escape
-- **disabled** &#8212; Disables editing
-- **autoFocus** &#8212; Focus the input on mount
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>value</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Time string in HH:mm format</td>
+    </tr>
+    <tr>
+      <td><code>onChange</code></td>
+      <td><code>(original: string, current: string) =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Called with original and current values when value changes</td>
+    </tr>
+    <tr>
+      <td><code>mode</code></td>
+      <td><code>'display' | 'edit' | 'error'</code></td>
+      <td>&#8212;</td>
+      <td>Rendering mode</td>
+    </tr>
+    <tr>
+      <td><code>errors</code></td>
+      <td><code>string[]</code></td>
+      <td>&#8212;</td>
+      <td>Error messages (shown only in error mode)</td>
+    </tr>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Field label text</td>
+    </tr>
+    <tr>
+      <td><code>labelPosition</code></td>
+      <td><code>'left' | 'top'</code></td>
+      <td><code>'left'</code></td>
+      <td>Label position relative to field</td>
+    </tr>
+    <tr>
+      <td><code>editable</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>When false, forces display mode regardless of mode prop</td>
+    </tr>
+    <tr>
+      <td><code>onComplete</code></td>
+      <td><code>(value: string) =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Called on Enter or blur</td>
+    </tr>
+    <tr>
+      <td><code>onCancel</code></td>
+      <td><code>() =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Called on Escape</td>
+    </tr>
+  </tbody>
+</table>

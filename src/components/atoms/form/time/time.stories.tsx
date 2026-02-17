@@ -19,14 +19,25 @@ const meta: Meta<typeof ArdaTimeFieldInteractive> = {
       description: 'Time string value (HH:mm or HH:mm:ss).',
       table: { category: 'Runtime' },
     },
-    onValueChange: {
-      action: 'valueChanged',
-      description: 'Called when value changes via editing.',
+    onChange: {
+      action: 'changed',
+      description: 'Called when value changes with (original, current).',
       table: { category: 'Events' },
     },
-    disabled: {
+    mode: {
+      control: 'inline-radio',
+      options: ['display', 'edit', 'error'],
+      description: 'Rendering mode.',
+      table: { category: 'Runtime' },
+    },
+    editable: {
       control: 'boolean',
-      description: 'Whether editing is disabled.',
+      description: 'Per-field editability override.',
+      table: { category: 'Runtime' },
+    },
+    errors: {
+      control: 'object',
+      description: 'Validation error messages (shown only in error mode).',
       table: { category: 'Runtime' },
     },
     label: {
@@ -48,7 +59,7 @@ const meta: Meta<typeof ArdaTimeFieldInteractive> = {
     },
   },
   args: {
-    onValueChange: fn(),
+    onChange: fn(),
   },
 };
 
@@ -68,7 +79,7 @@ export const Display: Story = {
       </div>
       <div>
         <label className="text-xs font-medium text-muted-foreground mb-1 block">Empty</label>
-        <ArdaTimeFieldDisplay value={undefined} />
+        <ArdaTimeFieldDisplay />
       </div>
       <div>
         <label className="text-xs font-medium text-muted-foreground mb-1 block">With seconds</label>
@@ -92,7 +103,7 @@ export const Editor: Story = {
           <label className="text-xs font-medium text-muted-foreground mb-1 block">Start Time</label>
           <ArdaTimeFieldEditor
             value={value}
-            onChange={setValue}
+            onChange={(_original, current) => setValue(current)}
             onComplete={(v) => console.log('Completed:', v)}
           />
         </div>
@@ -105,28 +116,70 @@ export const Editor: Story = {
 };
 
 // ============================================================================
-// Interactive
+// Interactive — Mode-based
 // ============================================================================
 
-export const Interactive: Story = {
+export const InteractiveDisplay: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4 p-4" style={{ width: 320 }}>
+      <div className="text-sm text-muted-foreground">Display mode: read-only presentation.</div>
+      <ArdaTimeFieldInteractive value="14:30" onChange={fn()} mode="display" />
+    </div>
+  ),
+};
+
+export const InteractiveEdit: Story = {
   render: () => {
     const [value, setValue] = useState('14:30');
 
     return (
       <div className="flex flex-col gap-4 p-4" style={{ width: 320 }}>
-        <div className="text-sm text-muted-foreground">
-          Double-click the field to edit. Press Enter to commit, Escape to cancel.
-        </div>
-        <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1 block">Start Time</label>
-          <ArdaTimeFieldInteractive value={value} onValueChange={setValue} />
-        </div>
+        <div className="text-sm text-muted-foreground">Edit mode: editable input.</div>
+        <ArdaTimeFieldInteractive
+          value={value}
+          onChange={(_original, current) => setValue(current)}
+          mode="edit"
+        />
         <div className="text-sm text-muted-foreground">
           Value: <span className="font-medium">{value}</span>
         </div>
       </div>
     );
   },
+};
+
+export const InteractiveError: Story = {
+  render: () => {
+    const [value, setValue] = useState('14:30');
+
+    return (
+      <div className="flex flex-col gap-4 p-4" style={{ width: 320 }}>
+        <div className="text-sm text-muted-foreground">
+          Error mode: editable input with error styling.
+        </div>
+        <ArdaTimeFieldInteractive
+          value={value}
+          onChange={(_original, current) => setValue(current)}
+          mode="error"
+          errors={['Time must be during business hours', 'Time is required']}
+        />
+        <div className="text-sm text-muted-foreground">
+          Value: <span className="font-medium">{value}</span>
+        </div>
+      </div>
+    );
+  },
+};
+
+export const EditableOverride: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4 p-4" style={{ width: 320 }}>
+      <div className="text-sm text-muted-foreground">
+        editable=false forces display mode even when mode=&quot;edit&quot;.
+      </div>
+      <ArdaTimeFieldInteractive value="14:30" onChange={fn()} mode="edit" editable={false} />
+    </div>
+  ),
 };
 
 // ============================================================================
@@ -142,30 +195,34 @@ export const WithTimezone: Story = {
       <div className="flex flex-col gap-6 p-4" style={{ width: 320 }}>
         {/* New York */}
         <div className="flex flex-col gap-2">
-          <div className="text-xs font-medium text-muted-foreground">New York (EST) — Display</div>
+          <div className="text-xs font-medium text-muted-foreground">New York (EST) -- Display</div>
           <ArdaTimeFieldDisplay value="14:30" timezone="America/New_York" />
-          <div className="text-xs font-medium text-muted-foreground">New York (EST) — Editor</div>
+          <div className="text-xs font-medium text-muted-foreground">New York (EST) -- Editor</div>
           <ArdaTimeFieldEditor value="14:30" timezone="America/New_York" />
           <div className="text-xs font-medium text-muted-foreground">
-            New York (EST) — Interactive
+            New York (EST) -- Interactive
           </div>
           <ArdaTimeFieldInteractive
             value={nyValue}
-            onValueChange={setNyValue}
+            onChange={(_original, current) => setNyValue(current)}
+            mode="edit"
             timezone="America/New_York"
           />
         </div>
 
         {/* Tokyo */}
         <div className="flex flex-col gap-2">
-          <div className="text-xs font-medium text-muted-foreground">Tokyo (JST) — Display</div>
+          <div className="text-xs font-medium text-muted-foreground">Tokyo (JST) -- Display</div>
           <ArdaTimeFieldDisplay value="14:30" timezone="Asia/Tokyo" />
-          <div className="text-xs font-medium text-muted-foreground">Tokyo (JST) — Editor</div>
+          <div className="text-xs font-medium text-muted-foreground">Tokyo (JST) -- Editor</div>
           <ArdaTimeFieldEditor value="14:30" timezone="Asia/Tokyo" />
-          <div className="text-xs font-medium text-muted-foreground">Tokyo (JST) — Interactive</div>
+          <div className="text-xs font-medium text-muted-foreground">
+            Tokyo (JST) -- Interactive
+          </div>
           <ArdaTimeFieldInteractive
             value={tokyoValue}
-            onValueChange={setTokyoValue}
+            onChange={(_original, current) => setTokyoValue(current)}
+            mode="edit"
             timezone="Asia/Tokyo"
           />
         </div>
@@ -184,12 +241,24 @@ export const WithLabel: Story = {
       <div className="text-xs font-medium text-muted-foreground">Label left (default)</div>
       <ArdaTimeFieldDisplay value="14:30" label="Start Time" labelPosition="left" />
       <ArdaTimeFieldEditor value="14:30" label="Start Time" labelPosition="left" />
-      <ArdaTimeFieldInteractive value="14:30" label="Start Time" labelPosition="left" />
+      <ArdaTimeFieldInteractive
+        value="14:30"
+        onChange={fn()}
+        mode="edit"
+        label="Start Time"
+        labelPosition="left"
+      />
 
       <div className="text-xs font-medium text-muted-foreground">Label top</div>
       <ArdaTimeFieldDisplay value="14:30" label="Start Time" labelPosition="top" />
       <ArdaTimeFieldEditor value="14:30" label="Start Time" labelPosition="top" />
-      <ArdaTimeFieldInteractive value="14:30" label="Start Time" labelPosition="top" />
+      <ArdaTimeFieldInteractive
+        value="14:30"
+        onChange={fn()}
+        mode="edit"
+        label="Start Time"
+        labelPosition="top"
+      />
     </div>
   ),
 };
@@ -201,7 +270,7 @@ export const WithLabel: Story = {
 export const Playground: Story = {
   args: {
     value: '14:30',
-    disabled: false,
+    mode: 'display',
     label: 'Start Time',
     labelPosition: 'left',
   },

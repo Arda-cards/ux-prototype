@@ -53,7 +53,9 @@ export const Default: Story = {
               padding: 4,
             }}
           >
-            <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--base-foreground)' }}>Items</h1>
+            <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--base-foreground)' }}>
+              Items
+            </h1>
             <ArdaButton variant="primary">
               <Plus size={16} />
               Add Item
@@ -142,7 +144,9 @@ export const WithItemDrawer: Story = {
               padding: 4,
             }}
           >
-            <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--base-foreground)' }}>Items</h1>
+            <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--base-foreground)' }}>
+              Items
+            </h1>
             <ArdaButton variant="primary">
               <Plus size={16} />
               Add Item

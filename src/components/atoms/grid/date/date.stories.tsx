@@ -4,7 +4,8 @@ import { useState } from 'react';
 
 import { ArdaDateCellDisplay } from './date-cell-display';
 import { ArdaDateCellEditor } from './date-cell-editor';
-import { ArdaDateCellInteractive, createDateCellInteractive } from './date-cell-interactive';
+import { ArdaDateCellInteractive } from './date-cell-interactive';
+import { COMMON_TIMEZONES } from '@/types/model/general/time/timezone';
 
 const meta: Meta<typeof ArdaDateCellInteractive> = {
   title: 'Components/Atoms/Grid/Date',
@@ -18,19 +19,28 @@ const meta: Meta<typeof ArdaDateCellInteractive> = {
       description: 'ISO date string value',
       table: { category: 'Runtime' },
     },
-    onValueChange: {
-      action: 'valueChanged',
-      description: 'Called when value changes via editing',
-      table: { category: 'Events' },
+    mode: {
+      control: 'select',
+      options: ['display', 'edit', 'error'],
+      description: 'Rendering mode',
+      table: { category: 'Runtime' },
     },
-    disabled: {
+    editable: {
       control: 'boolean',
-      description: 'Whether editing is disabled',
+      description: 'Per-field editability override',
+      table: { category: 'Runtime' },
+    },
+    timezone: {
+      control: 'select',
+      options: COMMON_TIMEZONES,
+      description: 'IANA timezone for display formatting. Defaults to browser timezone.',
       table: { category: 'Runtime' },
     },
   },
   args: {
-    onValueChange: fn(),
+    onChange: fn(),
+    onComplete: fn(),
+    onCancel: fn(),
   },
 };
 
@@ -48,7 +58,7 @@ export const Display: Story = {
         <ArdaDateCellDisplay value="2024-03-15" />
       </div>
       <div className="border border-border p-2 bg-white">
-        <ArdaDateCellDisplay value={undefined} />
+        <ArdaDateCellDisplay />
       </div>
       <div className="border border-border p-2 bg-white">
         <ArdaDateCellDisplay value="2024-12-31T23:59:59Z" />
@@ -63,7 +73,7 @@ export const Display: Story = {
 
 export const Editor: Story = {
   render: () => {
-    const [value, _setValue] = useState<string | undefined>('2024-03-15');
+    const [value, _setValue] = useState('2024-03-15');
 
     return (
       <div className="flex flex-col gap-4 p-4" style={{ width: 300 }}>
@@ -79,20 +89,41 @@ export const Editor: Story = {
 };
 
 // ============================================================================
-// Interactive
+// Interactive — Display Mode
 // ============================================================================
 
-export const Interactive: Story = {
+export const InteractiveDisplay: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4 p-4" style={{ width: 300 }}>
+      <div className="text-sm text-muted-foreground">Mode: display (read-only presentation)</div>
+      <div className="border border-border p-2 bg-white" style={{ minHeight: 32 }}>
+        <ArdaDateCellInteractive value="2024-03-15" mode="display" onChange={fn()} />
+      </div>
+    </div>
+  ),
+};
+
+// ============================================================================
+// Interactive — Edit Mode
+// ============================================================================
+
+export const InteractiveEdit: Story = {
   render: () => {
     const [value, setValue] = useState('2024-03-15');
 
     return (
       <div className="flex flex-col gap-4 p-4" style={{ width: 300 }}>
         <div className="text-sm text-muted-foreground">
-          Double-click the cell below to edit. Press Enter to commit, Escape to cancel.
+          Mode: edit (inline editor shown immediately)
         </div>
         <div className="border border-border p-2 bg-white" style={{ minHeight: 32 }}>
-          <ArdaDateCellInteractive value={value} onValueChange={setValue} />
+          <ArdaDateCellInteractive
+            value={value}
+            mode="edit"
+            onChange={(_original, current) => setValue(current)}
+            onComplete={(v) => setValue(v)}
+            onCancel={() => {}}
+          />
         </div>
         <div className="text-sm text-muted-foreground">
           Value: <span className="font-medium">{value}</span>
@@ -103,12 +134,53 @@ export const Interactive: Story = {
 };
 
 // ============================================================================
-// With Timezone
+// Interactive — Error Mode
 // ============================================================================
 
-const DateCellUTC = createDateCellInteractive({ timezone: 'Etc/UTC' });
-const DateCellNY = createDateCellInteractive({ timezone: 'America/New_York' });
-const DateCellTokyo = createDateCellInteractive({ timezone: 'Asia/Tokyo' });
+export const InteractiveError: Story = {
+  render: () => {
+    const [value, setValue] = useState('2024-03-15');
+
+    return (
+      <div className="flex flex-col gap-4 p-4" style={{ width: 300 }}>
+        <div className="text-sm text-muted-foreground">
+          Mode: error (inline editor with error styling)
+        </div>
+        <div className="border border-border p-2 bg-white" style={{ minHeight: 32 }}>
+          <ArdaDateCellInteractive
+            value={value}
+            mode="error"
+            errors={['Date must be in the future', 'Date is required']}
+            onChange={(_original, current) => setValue(current)}
+            onComplete={(v) => setValue(v)}
+            onCancel={() => {}}
+          />
+        </div>
+      </div>
+    );
+  },
+};
+
+// ============================================================================
+// Editable Override
+// ============================================================================
+
+export const EditableOverride: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4 p-4" style={{ width: 300 }}>
+      <div className="text-sm text-muted-foreground">
+        Mode is &quot;edit&quot; but editable=false forces display mode
+      </div>
+      <div className="border border-border p-2 bg-white" style={{ minHeight: 32 }}>
+        <ArdaDateCellInteractive value="2024-03-15" mode="edit" editable={false} onChange={fn()} />
+      </div>
+    </div>
+  ),
+};
+
+// ============================================================================
+// With Timezone
+// ============================================================================
 
 export const WithTimezone: Story = {
   render: () => {
@@ -128,9 +200,15 @@ export const WithTimezone: Story = {
           <div className="border border-border bg-white" style={{ height: 32 }}>
             <ArdaDateCellEditor value="2024-03-15" timezone="Etc/UTC" />
           </div>
-          <div className="text-xs font-medium text-muted-foreground">UTC — Interactive</div>
+          <div className="text-xs font-medium text-muted-foreground">UTC — Interactive Edit</div>
           <div className="border border-border p-2 bg-white" style={{ minHeight: 32 }}>
-            <DateCellUTC value={utcValue} onValueChange={setUtcValue} />
+            <ArdaDateCellInteractive
+              value={utcValue}
+              mode="edit"
+              onChange={(_orig, cur) => setUtcValue(cur)}
+              onComplete={(v) => setUtcValue(v)}
+              timezone="Etc/UTC"
+            />
           </div>
         </div>
 
@@ -145,10 +223,16 @@ export const WithTimezone: Story = {
             <ArdaDateCellEditor value="2024-03-15" timezone="America/New_York" />
           </div>
           <div className="text-xs font-medium text-muted-foreground">
-            New York (EST) — Interactive
+            New York (EST) — Interactive Edit
           </div>
           <div className="border border-border p-2 bg-white" style={{ minHeight: 32 }}>
-            <DateCellNY value={nyValue} onValueChange={setNyValue} />
+            <ArdaDateCellInteractive
+              value={nyValue}
+              mode="edit"
+              onChange={(_orig, cur) => setNyValue(cur)}
+              onComplete={(v) => setNyValue(v)}
+              timezone="America/New_York"
+            />
           </div>
         </div>
 
@@ -162,9 +246,17 @@ export const WithTimezone: Story = {
           <div className="border border-border bg-white" style={{ height: 32 }}>
             <ArdaDateCellEditor value="2024-03-15" timezone="Asia/Tokyo" />
           </div>
-          <div className="text-xs font-medium text-muted-foreground">Tokyo (JST) — Interactive</div>
+          <div className="text-xs font-medium text-muted-foreground">
+            Tokyo (JST) — Interactive Edit
+          </div>
           <div className="border border-border p-2 bg-white" style={{ minHeight: 32 }}>
-            <DateCellTokyo value={tokyoValue} onValueChange={setTokyoValue} />
+            <ArdaDateCellInteractive
+              value={tokyoValue}
+              mode="edit"
+              onChange={(_orig, cur) => setTokyoValue(cur)}
+              onComplete={(v) => setTokyoValue(v)}
+              timezone="Asia/Tokyo"
+            />
           </div>
         </div>
       </div>
@@ -179,10 +271,10 @@ export const WithTimezone: Story = {
 export const Playground: Story = {
   args: {
     value: '2024-03-15',
-    disabled: false,
+    mode: 'display',
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(canvas.getByText('Mar 15, 2024')).toBeInTheDocument();
+    await expect(canvas.getByText('03/15/2024')).toBeInTheDocument();
   },
 };

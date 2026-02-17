@@ -5,51 +5,105 @@ import * as NumberStories from './number.stories';
 
 # Number Cell
 
-Compact number display and editing components for AG Grid cells. Configurable decimal precision with right-aligned display.
+Grid cell component for displaying and editing numeric values in AG Grid. Configurable decimal precision with right-aligned display.
 
-## Variants
+## Modes
 
-### Display
+### Display Mode
 
-Read-only number renderer. Shows '&#8212;' for empty/undefined values. Formats numbers with specified decimal precision.
+Read-only number renderer. Shows &#8212; for empty/undefined values. Formats numbers with specified decimal precision.
 
 <Canvas of={NumberStories.Display} />
 
-### Editor
+### Edit Mode
 
-AG Grid cell editor with numeric input, auto-focus, Enter to commit, Escape to cancel. Exposes `getValue()` via ref for AG Grid integration.
+AG Grid cell editor with numeric input, auto-focus, Enter to commit, Escape to cancel.
 
 <Canvas of={NumberStories.Editor} />
 
-### Interactive
+### Error Mode
 
-Starts in display mode. Double-click to edit, Enter/blur to commit, Escape to cancel.
+Edit mode with error styling and error messages displayed below the input.
 
-<Canvas of={NumberStories.Interactive} />
+<Canvas of={NumberStories.InteractiveError} />
 
-## Configuration
+### Editable Override
 
-### Static Configuration (Design Time)
+When `editable` is set to `false`, the component renders in display mode regardless of the `mode` prop.
 
-Properties chosen at composition time:
+<Canvas of={NumberStories.EditableOverride} />
 
-- **precision** &#8212; Number of decimal places to display (default: 0 for integers)
-- **min** &#8212; Minimum allowed value (editor only)
-- **max** &#8212; Maximum allowed value (editor only)
-- **placeholder** &#8212; Placeholder text for the editor input
+## Props
 
-### Runtime Configuration
-
-Properties that control component state and behavior:
-
-- **value** &#8212; The numeric value to display or edit
-- **stopEditing** &#8212; AG Grid callback to exit edit mode (editor only)
-- **onValueChange** &#8212; Callback when value changes (interactive only)
-
-## Precision Examples
-
-- **precision: 0** &#8212; Integer display (42)
-- **precision: 2** &#8212; Two decimal places (3.14)
-- **precision: 4** &#8212; Four decimal places (3.1416)
-
-Numbers are right-aligned for proper visual alignment in grid columns.
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>value</code></td>
+      <td><code>number</code></td>
+      <td>&#8212;</td>
+      <td>The numeric value</td>
+    </tr>
+    <tr>
+      <td><code>onChange</code></td>
+      <td><code>(original: number, current: number) =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Called with original and current values when value changes</td>
+    </tr>
+    <tr>
+      <td><code>mode</code></td>
+      <td><code>'display' | 'edit' | 'error'</code></td>
+      <td>&#8212;</td>
+      <td>Rendering mode</td>
+    </tr>
+    <tr>
+      <td><code>errors</code></td>
+      <td><code>string[]</code></td>
+      <td>&#8212;</td>
+      <td>Error messages (shown only in error mode)</td>
+    </tr>
+    <tr>
+      <td><code>editable</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>When false, forces display mode regardless of mode prop</td>
+    </tr>
+    <tr>
+      <td><code>precision</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Number of decimal places</td>
+    </tr>
+    <tr>
+      <td><code>min</code></td>
+      <td><code>number</code></td>
+      <td>&#8212;</td>
+      <td>Minimum allowed value</td>
+    </tr>
+    <tr>
+      <td><code>max</code></td>
+      <td><code>number</code></td>
+      <td>&#8212;</td>
+      <td>Maximum allowed value</td>
+    </tr>
+    <tr>
+      <td><code>onComplete</code></td>
+      <td><code>(value: number) =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Called on Enter or blur</td>
+    </tr>
+    <tr>
+      <td><code>onCancel</code></td>
+      <td><code>() =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Called on Escape</td>
+    </tr>
+  </tbody>
+</table>

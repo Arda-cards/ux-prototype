@@ -12,3 +12,5 @@ export type {
 
 export { ArdaDateTimeFieldInteractive } from './date-time-field-interactive';
 export type { ArdaDateTimeFieldInteractiveProps } from './date-time-field-interactive';
+
+export { ArdaDateTimeFieldInteractive as ArdaDateTimeField } from './date-time-field-interactive';

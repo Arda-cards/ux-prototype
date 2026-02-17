@@ -18,14 +18,15 @@ const meta: Meta<typeof ArdaNumberFieldInteractive> = {
       description: 'Current numeric value.',
       table: { category: 'Runtime' },
     },
-    onValueChange: {
-      action: 'valueChanged',
-      description: 'Called when value changes via editing.',
-      table: { category: 'Events' },
+    mode: {
+      control: 'inline-radio',
+      options: ['display', 'edit', 'error'],
+      description: 'Rendering mode.',
+      table: { category: 'Runtime' },
     },
-    disabled: {
+    editable: {
       control: 'boolean',
-      description: 'Whether editing is disabled.',
+      description: 'Per-field editability override.',
       table: { category: 'Runtime' },
     },
     label: {
@@ -41,7 +42,9 @@ const meta: Meta<typeof ArdaNumberFieldInteractive> = {
     },
   },
   args: {
-    onValueChange: fn(),
+    onChange: fn(),
+    onComplete: fn(),
+    onCancel: fn(),
   },
 };
 
@@ -63,25 +66,13 @@ export const Display: Story = {
       </div>
       <div>
         <label className="text-xs font-medium text-muted-foreground mb-1 block">Empty</label>
-        <ArdaNumberFieldDisplay value={undefined} precision={0} />
+        <ArdaNumberFieldDisplay precision={0} />
       </div>
       <div>
         <label className="text-xs font-medium text-muted-foreground mb-1 block">
           Decimal (precision: 2)
         </label>
         <ArdaNumberFieldDisplay value={3.14159} precision={2} />
-      </div>
-      <div>
-        <label className="text-xs font-medium text-muted-foreground mb-1 block">
-          Price (precision: 2)
-        </label>
-        <ArdaNumberFieldDisplay value={99.5} precision={2} />
-      </div>
-      <div>
-        <label className="text-xs font-medium text-muted-foreground mb-1 block">
-          High precision (precision: 4)
-        </label>
-        <ArdaNumberFieldDisplay value={3.14159265} precision={4} />
       </div>
     </div>
   ),
@@ -94,7 +85,6 @@ export const Display: Story = {
 export const Editor: Story = {
   render: () => {
     const [intValue, setIntValue] = useState(42);
-    const [priceValue, setPriceValue] = useState(99.99);
 
     return (
       <div className="flex flex-col gap-4 p-4" style={{ width: 320 }}>
@@ -104,7 +94,7 @@ export const Editor: Story = {
           </label>
           <ArdaNumberFieldEditor
             value={intValue}
-            onChange={setIntValue}
+            onChange={(_original, current) => setIntValue(current)}
             onComplete={(v) => console.log('Completed:', v)}
             precision={0}
             min={0}
@@ -114,70 +104,64 @@ export const Editor: Story = {
         <div className="text-sm text-muted-foreground">
           Value: <span className="font-medium">{intValue}</span>
         </div>
-
-        <div className="mt-4">
-          <label className="text-xs font-medium text-muted-foreground mb-1 block">
-            Price (precision: 2)
-          </label>
-          <ArdaNumberFieldEditor
-            value={priceValue}
-            onChange={setPriceValue}
-            onComplete={(v) => console.log('Completed:', v)}
-            precision={2}
-            min={0}
-            max={9999.99}
-            placeholder="0.00"
-          />
-        </div>
-        <div className="text-sm text-muted-foreground">
-          Value: <span className="font-medium">{priceValue.toFixed(2)}</span>
-        </div>
       </div>
     );
   },
 };
 
 // ============================================================================
-// Interactive
+// Interactive — All Modes
 // ============================================================================
 
-export const Interactive: Story = {
-  render: () => {
-    const [value, setValue] = useState(42.5);
+export const InteractiveDisplay: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4 p-4" style={{ width: 320 }}>
+      <ArdaNumberFieldInteractive value={42} mode="display" onChange={fn()} label="Quantity" />
+    </div>
+  ),
+};
 
+export const InteractiveEdit: Story = {
+  render: () => {
+    const [value, setValue] = useState(42);
     return (
       <div className="flex flex-col gap-4 p-4" style={{ width: 320 }}>
-        <div className="text-sm text-muted-foreground">
-          Double-click the field to edit. Press Enter to commit, Escape to cancel.
-        </div>
-        <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1 block">Value</label>
-          <ArdaNumberFieldInteractive value={value} onValueChange={setValue} />
-        </div>
-        <div className="text-sm text-muted-foreground">
-          Value: <span className="font-medium">{value}</span>
-        </div>
+        <ArdaNumberFieldInteractive
+          value={value}
+          mode="edit"
+          onChange={(_original, current) => setValue(current)}
+          label="Quantity"
+          precision={0}
+        />
       </div>
     );
   },
 };
 
-// ============================================================================
-// With Label
-// ============================================================================
-
-export const WithLabel: Story = {
+export const InteractiveError: Story = {
   render: () => (
-    <div className="flex flex-col gap-6 p-4" style={{ width: 480 }}>
-      <div className="text-xs font-medium text-muted-foreground">Label left (default)</div>
-      <ArdaNumberFieldDisplay value={42} label="Quantity" labelPosition="left" />
-      <ArdaNumberFieldEditor value={42} label="Quantity" labelPosition="left" />
-      <ArdaNumberFieldInteractive value={42} label="Quantity" labelPosition="left" />
+    <div className="flex flex-col gap-4 p-4" style={{ width: 320 }}>
+      <ArdaNumberFieldInteractive
+        value={0}
+        mode="error"
+        onChange={fn()}
+        errors={['Value must be greater than zero']}
+        label="Quantity"
+      />
+    </div>
+  ),
+};
 
-      <div className="text-xs font-medium text-muted-foreground">Label top</div>
-      <ArdaNumberFieldDisplay value={42} label="Quantity" labelPosition="top" />
-      <ArdaNumberFieldEditor value={42} label="Quantity" labelPosition="top" />
-      <ArdaNumberFieldInteractive value={42} label="Quantity" labelPosition="top" />
+export const EditableOverride: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4 p-4" style={{ width: 320 }}>
+      <ArdaNumberFieldInteractive
+        value={42}
+        mode="edit"
+        editable={false}
+        onChange={fn()}
+        label="Quantity"
+      />
     </div>
   ),
 };
@@ -189,13 +173,13 @@ export const WithLabel: Story = {
 export const Playground: Story = {
   args: {
     value: 42,
-    disabled: false,
+    mode: 'display',
+    editable: true,
     label: 'Quantity',
     labelPosition: 'left',
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    // Default precision=0 formats 42 as "42"
     await expect(canvas.getByText('42')).toBeInTheDocument();
   },
 };

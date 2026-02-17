@@ -14,7 +14,7 @@ describe('ArdaTextFieldDisplay', () => {
   });
 
   it('renders dash for undefined', () => {
-    render(<ArdaTextFieldDisplay value={undefined} />);
+    render(<ArdaTextFieldDisplay />);
     expect(screen.getByText('—')).toBeInTheDocument();
   });
 
@@ -43,12 +43,12 @@ describe('ArdaTextFieldEditor', () => {
     expect(input).toHaveValue('test');
   });
 
-  it('calls onChange on input', async () => {
+  it('calls onChange with original and current values', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(<ArdaTextFieldEditor value="" onChange={onChange} />);
     await user.type(screen.getByRole('textbox'), 'a');
-    expect(onChange).toHaveBeenCalledWith('a');
+    expect(onChange).toHaveBeenCalledWith('', 'a');
   });
 
   it('calls onComplete on Enter', async () => {
@@ -82,38 +82,79 @@ describe('ArdaTextFieldEditor', () => {
     expect(screen.getByText('Name')).toBeInTheDocument();
     expect(screen.getByRole('textbox')).toBeInTheDocument();
   });
+
+  it('renders error styling and messages when showErrors is true', () => {
+    render(
+      <ArdaTextFieldEditor value="test" showErrors errors={['Name is required', 'Too short']} />,
+    );
+    expect(screen.getByText('Name is required')).toBeInTheDocument();
+    expect(screen.getByText('Too short')).toBeInTheDocument();
+    const input = screen.getByRole('textbox');
+    expect(input.className).toContain('border-red-500');
+  });
+
+  it('does not render errors when showErrors is false', () => {
+    render(<ArdaTextFieldEditor value="test" errors={['Name is required']} />);
+    expect(screen.queryByText('Name is required')).not.toBeInTheDocument();
+  });
 });
 
 describe('ArdaTextFieldInteractive', () => {
-  it('starts in display mode', () => {
-    render(<ArdaTextFieldInteractive value="Hello" />);
+  const noop = vi.fn();
+
+  it('renders display mode', () => {
+    render(<ArdaTextFieldInteractive value="Hello" mode="display" onChange={noop} />);
     expect(screen.getByText('Hello')).toBeInTheDocument();
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 
-  it('switches to edit mode on double-click', async () => {
-    const user = userEvent.setup();
-    render(<ArdaTextFieldInteractive value="Hello" />);
-    await user.dblClick(screen.getByText('Hello'));
+  it('renders edit mode with input', () => {
+    render(<ArdaTextFieldInteractive value="Hello" mode="edit" onChange={noop} />);
     expect(screen.getByRole('textbox')).toBeInTheDocument();
+    expect(screen.getByRole('textbox')).toHaveValue('Hello');
   });
 
-  it('commits value on Enter and returns to display', async () => {
+  it('renders error mode with input and error messages', () => {
+    render(
+      <ArdaTextFieldInteractive
+        value="Hello"
+        mode="error"
+        onChange={noop}
+        errors={['Required field']}
+      />,
+    );
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
+    expect(screen.getByText('Required field')).toBeInTheDocument();
+  });
+
+  it('forces display mode when editable is false', () => {
+    render(<ArdaTextFieldInteractive value="Hello" mode="edit" onChange={noop} editable={false} />);
+    expect(screen.getByText('Hello')).toBeInTheDocument();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+  });
+
+  it('forces display mode when editable is false even in error mode', () => {
+    render(
+      <ArdaTextFieldInteractive
+        value="Hello"
+        mode="error"
+        onChange={noop}
+        editable={false}
+        errors={['Required']}
+      />,
+    );
+    expect(screen.getByText('Hello')).toBeInTheDocument();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.queryByText('Required')).not.toBeInTheDocument();
+  });
+
+  it('passes onChange with original and current to editor', async () => {
     const user = userEvent.setup();
-    const onValueChange = vi.fn();
-    render(<ArdaTextFieldInteractive value="Hello" onValueChange={onValueChange} />);
-    await user.dblClick(screen.getByText('Hello'));
+    const onChange = vi.fn();
+    render(<ArdaTextFieldInteractive value="Hello" mode="edit" onChange={onChange} />);
     const input = screen.getByRole('textbox');
     await user.clear(input);
-    await user.type(input, 'World{Enter}');
-    expect(onValueChange).toHaveBeenCalledWith('World');
-    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
-  });
-
-  it('does not enter edit mode when disabled', async () => {
-    const user = userEvent.setup();
-    render(<ArdaTextFieldInteractive value="Hello" disabled />);
-    await user.dblClick(screen.getByText('Hello'));
-    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    await user.type(input, 'World');
+    expect(onChange).toHaveBeenCalledWith('Hello', 'W');
   });
 });

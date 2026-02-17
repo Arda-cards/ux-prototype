@@ -18,19 +18,25 @@ const meta: Meta<typeof ArdaTextCellInteractive> = {
       description: 'Text string value',
       table: { category: 'Runtime' },
     },
-    onValueChange: {
-      action: 'valueChanged',
-      description: 'Called when value changes via editing',
-      table: { category: 'Events' },
-    },
-    disabled: {
-      control: 'boolean',
-      description: 'Whether editing is disabled',
+    mode: {
+      control: 'select',
+      options: ['display', 'edit', 'error'],
+      description: 'Rendering mode',
       table: { category: 'Runtime' },
+    },
+    editable: {
+      control: 'boolean',
+      description: 'Per-field editability override',
+      table: { category: 'Runtime' },
+    },
+    onChange: {
+      action: 'changed',
+      description: 'Called when value changes (original, current)',
+      table: { category: 'Events' },
     },
   },
   args: {
-    onValueChange: fn(),
+    onChange: fn(),
   },
 };
 
@@ -48,7 +54,7 @@ export const Display: Story = {
         <ArdaTextCellDisplay value="Widget Alpha" />
       </div>
       <div className="border border-border p-2 bg-white">
-        <ArdaTextCellDisplay value={undefined} />
+        <ArdaTextCellDisplay />
       </div>
       <div className="border border-border p-2 bg-white">
         <ArdaTextCellDisplay
@@ -61,12 +67,12 @@ export const Display: Story = {
 };
 
 // ============================================================================
-// Editor
+// Editor (AG Grid)
 // ============================================================================
 
 export const Editor: Story = {
   render: () => {
-    const [value, _setValue] = useState<string | undefined>('Widget Alpha');
+    const [value, _setValue] = useState('Widget Alpha');
 
     return (
       <div className="flex flex-col gap-4 p-4" style={{ width: 300 }}>
@@ -86,27 +92,102 @@ export const Editor: Story = {
 };
 
 // ============================================================================
-// Interactive
+// Interactive - Display Mode
 // ============================================================================
 
-export const Interactive: Story = {
+export const InteractiveDisplay: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4 p-4" style={{ width: 300 }}>
+      <div className="text-sm text-muted-foreground">
+        mode=&quot;display&quot; renders as read-only text.
+      </div>
+      <div className="border border-border p-2 bg-white" style={{ minHeight: 32 }}>
+        <ArdaTextCellInteractive value="Widget Alpha" mode="display" onChange={() => {}} />
+      </div>
+    </div>
+  ),
+};
+
+// ============================================================================
+// Interactive - Edit Mode
+// ============================================================================
+
+export const InteractiveEdit: Story = {
   render: () => {
-    const [value, setValue] = useState('Double-click to edit');
+    const [value, setValue] = useState('Widget Alpha');
+    const [original, setOriginal] = useState('Widget Alpha');
 
     return (
       <div className="flex flex-col gap-4 p-4" style={{ width: 300 }}>
         <div className="text-sm text-muted-foreground">
-          Double-click the cell below to edit. Press Enter to commit, Escape to cancel.
+          mode=&quot;edit&quot; renders the inline editor.
         </div>
         <div className="border border-border p-2 bg-white" style={{ minHeight: 32 }}>
-          <ArdaTextCellInteractive value={value} onValueChange={setValue} />
+          <ArdaTextCellInteractive
+            value={value}
+            mode="edit"
+            onChange={(orig, current) => {
+              setOriginal(orig);
+              setValue(current);
+            }}
+          />
         </div>
         <div className="text-sm text-muted-foreground">
-          Value: <span className="font-medium">{value}</span>
+          Original: <span className="font-medium">{original}</span>
+          {' | '}
+          Current: <span className="font-medium">{value}</span>
         </div>
       </div>
     );
   },
+};
+
+// ============================================================================
+// Interactive - Error Mode
+// ============================================================================
+
+export const InteractiveError: Story = {
+  render: () => {
+    const [value, setValue] = useState('');
+
+    return (
+      <div className="flex flex-col gap-4 p-4" style={{ width: 300 }}>
+        <div className="text-sm text-muted-foreground">
+          mode=&quot;error&quot; renders the inline editor with error styling.
+        </div>
+        <div className="border border-border p-2 bg-white" style={{ minHeight: 32 }}>
+          <ArdaTextCellInteractive
+            value={value}
+            mode="error"
+            errors={['This field is required', 'Must be at least 3 characters']}
+            onChange={(_orig, current) => setValue(current)}
+          />
+        </div>
+      </div>
+    );
+  },
+};
+
+// ============================================================================
+// Interactive - Editable Override
+// ============================================================================
+
+export const EditableOverride: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4 p-4" style={{ width: 300 }}>
+      <div className="text-sm text-muted-foreground">
+        editable=false renders in display mode regardless of mode prop.
+      </div>
+      <div className="border border-border p-2 bg-white" style={{ minHeight: 32 }}>
+        <ArdaTextCellInteractive
+          value="Read-only value"
+          mode="edit"
+          editable={false}
+          onChange={() => {}}
+        />
+      </div>
+    </div>
+  ),
 };
 
 // ============================================================================
@@ -116,7 +197,8 @@ export const Interactive: Story = {
 export const Playground: Story = {
   args: {
     value: 'Hello, World!',
-    disabled: false,
+    mode: 'display',
+    editable: true,
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);

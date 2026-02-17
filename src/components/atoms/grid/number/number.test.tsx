@@ -20,7 +20,7 @@ describe('ArdaNumberCellDisplay', () => {
   });
 
   it('renders dash for undefined', () => {
-    render(<ArdaNumberCellDisplay value={undefined} precision={0} />);
+    render(<ArdaNumberCellDisplay precision={0} />);
     expect(screen.getByText('—')).toBeInTheDocument();
   });
 
@@ -93,35 +93,85 @@ describe('ArdaNumberCellEditor', () => {
 });
 
 describe('ArdaNumberCellInteractive', () => {
-  it('starts in display mode', () => {
-    render(<ArdaNumberCellInteractive value={42} />);
+  it('renders display when mode is display', () => {
+    render(<ArdaNumberCellInteractive value={42} mode="display" onChange={() => {}} />);
     expect(screen.getByText('42')).toBeInTheDocument();
     expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
   });
 
-  it('switches to edit mode on double-click', async () => {
-    const user = userEvent.setup();
-    render(<ArdaNumberCellInteractive value={42} />);
-    await user.dblClick(screen.getByText('42'));
+  it('renders editor when mode is edit', () => {
+    render(<ArdaNumberCellInteractive value={42} mode="edit" onChange={() => {}} />);
     expect(screen.getByRole('spinbutton')).toBeInTheDocument();
+    expect(screen.getByRole('spinbutton')).toHaveValue(42);
   });
 
-  it('commits value on Enter and returns to display', async () => {
+  it('renders editor with error styling when mode is error', () => {
+    render(
+      <ArdaNumberCellInteractive
+        value={0}
+        mode="error"
+        errors={['Value must be greater than 0']}
+        onChange={() => {}}
+      />,
+    );
+    expect(screen.getByRole('spinbutton')).toBeInTheDocument();
+    expect(screen.getByText('Value must be greater than 0')).toBeInTheDocument();
+  });
+
+  it('renders display when editable is false regardless of mode', () => {
+    render(
+      <ArdaNumberCellInteractive value={42} mode="edit" editable={false} onChange={() => {}} />,
+    );
+    expect(screen.getByText('42')).toBeInTheDocument();
+    expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
+  });
+
+  it('calls onChange with (original, current) on input change', async () => {
     const user = userEvent.setup();
-    const onValueChange = vi.fn();
-    render(<ArdaNumberCellInteractive value={42} onValueChange={onValueChange} />);
-    await user.dblClick(screen.getByText('42'));
+    const onChange = vi.fn();
+    render(<ArdaNumberCellInteractive value={42} mode="edit" onChange={onChange} />);
     const input = screen.getByRole('spinbutton');
     await user.clear(input);
-    await user.type(input, '100{Enter}');
-    expect(onValueChange).toHaveBeenCalledWith(100);
-    expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
+    await user.type(input, '100');
+    expect(onChange).toHaveBeenCalledWith(42, 100);
   });
 
-  it('does not enter edit mode when disabled', async () => {
+  it('calls onComplete on Enter', async () => {
     const user = userEvent.setup();
-    render(<ArdaNumberCellInteractive value={42} disabled />);
-    await user.dblClick(screen.getByText('42'));
-    expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
+    const onComplete = vi.fn();
+    render(
+      <ArdaNumberCellInteractive
+        value={42}
+        mode="edit"
+        onChange={() => {}}
+        onComplete={onComplete}
+      />,
+    );
+    const input = screen.getByRole('spinbutton');
+    await user.type(input, '{Enter}');
+    expect(onComplete).toHaveBeenCalledWith(42);
+  });
+
+  it('calls onCancel on Escape', async () => {
+    const user = userEvent.setup();
+    const onCancel = vi.fn();
+    render(
+      <ArdaNumberCellInteractive value={42} mode="edit" onChange={() => {}} onCancel={onCancel} />,
+    );
+    const input = screen.getByRole('spinbutton');
+    await user.type(input, '{Escape}');
+    expect(onCancel).toHaveBeenCalled();
+  });
+
+  it('passes precision to display component', () => {
+    render(
+      <ArdaNumberCellInteractive
+        value={3.14159}
+        mode="display"
+        precision={2}
+        onChange={() => {}}
+      />,
+    );
+    expect(screen.getByText('3.14')).toBeInTheDocument();
   });
 });

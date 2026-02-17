@@ -18,19 +18,20 @@ const meta: Meta<typeof ArdaImageCellInteractive> = {
       description: 'Image URL string',
       table: { category: 'Runtime' },
     },
-    onValueChange: {
-      action: 'valueChanged',
-      description: 'Called when value changes via editing',
-      table: { category: 'Events' },
+    mode: {
+      control: 'select',
+      options: ['display', 'edit', 'error'],
+      description: 'Rendering mode',
+      table: { category: 'Runtime' },
     },
-    disabled: {
+    editable: {
       control: 'boolean',
-      description: 'Whether editing is disabled',
+      description: 'Per-field editability override',
       table: { category: 'Runtime' },
     },
   },
   args: {
-    onValueChange: fn(),
+    onChange: fn(),
   },
 };
 
@@ -48,7 +49,7 @@ export const Display: Story = {
         <ArdaImageCellDisplay value="https://picsum.photos/200/100" />
       </div>
       <div className="border border-border p-2 bg-white">
-        <ArdaImageCellDisplay value={undefined} />
+        <ArdaImageCellDisplay />
       </div>
       <div className="border border-border p-2 bg-white">
         <ArdaImageCellDisplay value="https://invalid-url-that-will-break.test/image.jpg" />
@@ -63,7 +64,7 @@ export const Display: Story = {
 
 export const Editor: Story = {
   render: () => {
-    const [value, _setValue] = useState<string | undefined>('https://picsum.photos/200/100');
+    const [value, _setValue] = useState('https://picsum.photos/200/100');
 
     return (
       <div className="flex flex-col gap-4 p-4" style={{ width: 300 }}>
@@ -83,27 +84,107 @@ export const Editor: Story = {
 };
 
 // ============================================================================
-// Interactive
+// Interactive — Display Mode
 // ============================================================================
 
-export const Interactive: Story = {
+export const InteractiveDisplay: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4 p-4" style={{ width: 300 }}>
+      <div className="text-sm text-muted-foreground">
+        Mode: display — read-only image thumbnail.
+      </div>
+      <div className="border border-border p-2 bg-white" style={{ minHeight: 32 }}>
+        <ArdaImageCellInteractive
+          value="https://picsum.photos/200/100"
+          onChange={() => {}}
+          mode="display"
+        />
+      </div>
+    </div>
+  ),
+};
+
+// ============================================================================
+// Interactive — Edit Mode
+// ============================================================================
+
+export const InteractiveEdit: Story = {
   render: () => {
     const [value, setValue] = useState('https://picsum.photos/200/100');
+    const [original, setOriginal] = useState('https://picsum.photos/200/100');
 
     return (
       <div className="flex flex-col gap-4 p-4" style={{ width: 300 }}>
-        <div className="text-sm text-muted-foreground">
-          Double-click the cell below to edit. Press Enter to commit, Escape to cancel.
-        </div>
+        <div className="text-sm text-muted-foreground">Mode: edit — inline image URL editor.</div>
         <div className="border border-border p-2 bg-white" style={{ minHeight: 32 }}>
-          <ArdaImageCellInteractive value={value} onValueChange={setValue} />
+          <ArdaImageCellInteractive
+            value={value}
+            onChange={(orig, current) => {
+              setOriginal(orig);
+              setValue(current);
+            }}
+            mode="edit"
+          />
         </div>
-        <div className="text-sm text-muted-foreground">
-          Value: <span className="font-medium">{value}</span>
+        <div className="text-xs text-muted-foreground space-y-1">
+          <div>
+            Original: <span className="font-medium">{original}</span>
+          </div>
+          <div>
+            Current: <span className="font-medium">{value}</span>
+          </div>
         </div>
       </div>
     );
   },
+};
+
+// ============================================================================
+// Interactive — Error Mode
+// ============================================================================
+
+export const InteractiveError: Story = {
+  render: () => {
+    const [value, setValue] = useState('not-an-image-url');
+
+    return (
+      <div className="flex flex-col gap-4 p-4" style={{ width: 300 }}>
+        <div className="text-sm text-muted-foreground">
+          Mode: error — inline editor with error styling and messages.
+        </div>
+        <div className="border border-border p-2 bg-white" style={{ minHeight: 32 }}>
+          <ArdaImageCellInteractive
+            value={value}
+            onChange={(_orig, current) => setValue(current)}
+            mode="error"
+            errors={['Please enter a valid image URL', 'URL must point to an image file']}
+          />
+        </div>
+      </div>
+    );
+  },
+};
+
+// ============================================================================
+// Interactive — Editable Override
+// ============================================================================
+
+export const EditableOverride: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4 p-4" style={{ width: 300 }}>
+      <div className="text-sm text-muted-foreground">
+        Mode is &quot;edit&quot; but editable=false forces display mode.
+      </div>
+      <div className="border border-border p-2 bg-white" style={{ minHeight: 32 }}>
+        <ArdaImageCellInteractive
+          value="https://picsum.photos/200/100"
+          onChange={() => {}}
+          mode="edit"
+          editable={false}
+        />
+      </div>
+    </div>
+  ),
 };
 
 // ============================================================================
@@ -113,7 +194,8 @@ export const Interactive: Story = {
 export const Playground: Story = {
   args: {
     value: 'https://picsum.photos/200/100',
-    disabled: false,
+    mode: 'display',
+    onChange: fn(),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);

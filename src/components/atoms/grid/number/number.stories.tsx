@@ -18,19 +18,25 @@ const meta: Meta<typeof ArdaNumberCellInteractive> = {
       description: 'Numeric value',
       table: { category: 'Runtime' },
     },
-    onValueChange: {
-      action: 'valueChanged',
-      description: 'Called when value changes via editing',
-      table: { category: 'Events' },
-    },
-    disabled: {
-      control: 'boolean',
-      description: 'Whether editing is disabled',
+    mode: {
+      control: 'select',
+      options: ['display', 'edit', 'error'],
+      description: 'Rendering mode',
       table: { category: 'Runtime' },
+    },
+    editable: {
+      control: 'boolean',
+      description: 'Per-field editability override',
+      table: { category: 'Runtime' },
+    },
+    onChange: {
+      action: 'changed',
+      description: 'Called when value changes (original, current)',
+      table: { category: 'Events' },
     },
   },
   args: {
-    onValueChange: fn(),
+    onChange: fn(),
   },
 };
 
@@ -49,7 +55,7 @@ export const Display: Story = {
         <ArdaNumberCellDisplay value={42} precision={0} />
       </div>
       <div className="border border-border p-2 bg-white">
-        <ArdaNumberCellDisplay value={undefined} precision={0} />
+        <ArdaNumberCellDisplay precision={0} />
       </div>
 
       <div className="text-xs font-medium text-muted-foreground mb-2 mt-4">
@@ -73,13 +79,13 @@ export const Display: Story = {
 };
 
 // ============================================================================
-// Editor
+// Editor (AG Grid)
 // ============================================================================
 
 export const Editor: Story = {
   render: () => {
-    const [intValue, _setIntValue] = useState<number | undefined>(42);
-    const [decimalValue, _setDecimalValue] = useState<number | undefined>(3.14);
+    const [intValue, _setIntValue] = useState(42);
+    const [decimalValue, _setDecimalValue] = useState(3.14);
 
     return (
       <div className="flex flex-col gap-4 p-4" style={{ width: 300 }}>
@@ -116,27 +122,100 @@ export const Editor: Story = {
 };
 
 // ============================================================================
-// Interactive
+// Interactive - Display Mode
 // ============================================================================
 
-export const Interactive: Story = {
+export const InteractiveDisplay: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4 p-4" style={{ width: 300 }}>
+      <div className="text-sm text-muted-foreground">
+        mode=&quot;display&quot; renders as read-only number.
+      </div>
+      <div className="border border-border p-2 bg-white" style={{ minHeight: 32 }}>
+        <ArdaNumberCellInteractive value={42.5} mode="display" precision={2} onChange={() => {}} />
+      </div>
+    </div>
+  ),
+};
+
+// ============================================================================
+// Interactive - Edit Mode
+// ============================================================================
+
+export const InteractiveEdit: Story = {
   render: () => {
     const [value, setValue] = useState(42.5);
+    const [original, setOriginal] = useState(42.5);
 
     return (
       <div className="flex flex-col gap-4 p-4" style={{ width: 300 }}>
         <div className="text-sm text-muted-foreground">
-          Double-click the cell below to edit. Press Enter to commit, Escape to cancel.
+          mode=&quot;edit&quot; renders the inline number editor.
         </div>
         <div className="border border-border p-2 bg-white" style={{ minHeight: 32 }}>
-          <ArdaNumberCellInteractive value={value} onValueChange={setValue} />
+          <ArdaNumberCellInteractive
+            value={value}
+            mode="edit"
+            precision={2}
+            min={0}
+            max={1000}
+            onChange={(orig, current) => {
+              setOriginal(orig);
+              setValue(current);
+            }}
+          />
         </div>
         <div className="text-sm text-muted-foreground">
-          Value: <span className="font-medium">{value}</span>
+          Original: <span className="font-medium">{original}</span>
+          {' | '}
+          Current: <span className="font-medium">{value}</span>
         </div>
       </div>
     );
   },
+};
+
+// ============================================================================
+// Interactive - Error Mode
+// ============================================================================
+
+export const InteractiveError: Story = {
+  render: () => {
+    const [value, setValue] = useState(0);
+
+    return (
+      <div className="flex flex-col gap-4 p-4" style={{ width: 300 }}>
+        <div className="text-sm text-muted-foreground">
+          mode=&quot;error&quot; renders the inline editor with error styling.
+        </div>
+        <div className="border border-border p-2 bg-white" style={{ minHeight: 32 }}>
+          <ArdaNumberCellInteractive
+            value={value}
+            mode="error"
+            errors={['Value must be greater than 0', 'Required field']}
+            onChange={(_orig, current) => setValue(current)}
+          />
+        </div>
+      </div>
+    );
+  },
+};
+
+// ============================================================================
+// Interactive - Editable Override
+// ============================================================================
+
+export const EditableOverride: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4 p-4" style={{ width: 300 }}>
+      <div className="text-sm text-muted-foreground">
+        editable=false renders in display mode regardless of mode prop.
+      </div>
+      <div className="border border-border p-2 bg-white" style={{ minHeight: 32 }}>
+        <ArdaNumberCellInteractive value={42} mode="edit" editable={false} onChange={() => {}} />
+      </div>
+    </div>
+  ),
 };
 
 // ============================================================================
@@ -146,7 +225,8 @@ export const Interactive: Story = {
 export const Playground: Story = {
   args: {
     value: 42,
-    disabled: false,
+    mode: 'display',
+    editable: true,
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);

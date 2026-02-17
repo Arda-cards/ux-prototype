@@ -49,7 +49,7 @@ describe('ArdaUrlFieldDisplay', () => {
   });
 
   it('renders dash for undefined', () => {
-    render(<ArdaUrlFieldDisplay value={undefined} />);
+    render(<ArdaUrlFieldDisplay />);
     expect(screen.getByText('—')).toBeInTheDocument();
   });
 
@@ -75,12 +75,12 @@ describe('ArdaUrlFieldEditor', () => {
     expect(input).toHaveValue('https://example.com');
   });
 
-  it('calls onChange on input', async () => {
+  it('calls onChange with original and current values', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(<ArdaUrlFieldEditor value="" onChange={onChange} />);
     await user.type(screen.getByRole('textbox'), 'a');
-    expect(onChange).toHaveBeenCalledWith('a');
+    expect(onChange).toHaveBeenCalledWith('', 'a');
   });
 
   it('calls onComplete on Enter', async () => {
@@ -114,46 +114,90 @@ describe('ArdaUrlFieldEditor', () => {
     expect(screen.getByText('Website')).toBeInTheDocument();
     expect(screen.getByRole('textbox')).toBeInTheDocument();
   });
+
+  it('renders error styling and messages when showErrors is true', () => {
+    render(
+      <ArdaUrlFieldEditor
+        value="test"
+        showErrors
+        errors={['URL is required', 'Must be a valid URL']}
+      />,
+    );
+    expect(screen.getByText('URL is required')).toBeInTheDocument();
+    expect(screen.getByText('Must be a valid URL')).toBeInTheDocument();
+    const input = screen.getByRole('textbox');
+    expect(input.className).toContain('border-red-500');
+  });
+
+  it('does not render errors when showErrors is false', () => {
+    render(<ArdaUrlFieldEditor value="test" errors={['URL is required']} />);
+    expect(screen.queryByText('URL is required')).not.toBeInTheDocument();
+  });
 });
 
 describe('ArdaUrlFieldInteractive', () => {
-  it('starts in display mode', () => {
-    render(<ArdaUrlFieldInteractive value="https://example.com" />);
+  const noop = vi.fn();
+
+  it('renders display mode', () => {
+    render(<ArdaUrlFieldInteractive value="https://example.com" mode="display" onChange={noop} />);
     expect(screen.getByRole('link')).toBeInTheDocument();
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 
-  it('switches to edit mode on double-click', async () => {
-    const user = userEvent.setup();
-    render(<ArdaUrlFieldInteractive value="https://example.com" />);
-    const container = screen.getByRole('link').parentElement;
-    if (container) {
-      await user.dblClick(container);
-      expect(screen.getByRole('textbox')).toBeInTheDocument();
-    }
+  it('renders edit mode with input', () => {
+    render(<ArdaUrlFieldInteractive value="https://example.com" mode="edit" onChange={noop} />);
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
+    expect(screen.getByRole('textbox')).toHaveValue('https://example.com');
   });
 
-  it('commits value on Enter and returns to display', async () => {
-    const user = userEvent.setup();
-    const onValueChange = vi.fn();
-    render(<ArdaUrlFieldInteractive value="https://old.com" onValueChange={onValueChange} />);
-    const container = screen.getByRole('link').parentElement;
-    if (container) {
-      await user.dblClick(container);
-      const input = screen.getByRole('textbox');
-      await user.clear(input);
-      await user.type(input, 'https://new.com{Enter}');
-      expect(onValueChange).toHaveBeenCalledWith('https://new.com');
-    }
+  it('renders error mode with input and error messages', () => {
+    render(
+      <ArdaUrlFieldInteractive
+        value="https://example.com"
+        mode="error"
+        onChange={noop}
+        errors={['Required field']}
+      />,
+    );
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
+    expect(screen.getByText('Required field')).toBeInTheDocument();
   });
 
-  it('does not enter edit mode when disabled', async () => {
+  it('forces display mode when editable is false', () => {
+    render(
+      <ArdaUrlFieldInteractive
+        value="https://example.com"
+        mode="edit"
+        onChange={noop}
+        editable={false}
+      />,
+    );
+    expect(screen.getByRole('link')).toBeInTheDocument();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+  });
+
+  it('forces display mode when editable is false even in error mode', () => {
+    render(
+      <ArdaUrlFieldInteractive
+        value="https://example.com"
+        mode="error"
+        onChange={noop}
+        editable={false}
+        errors={['Required']}
+      />,
+    );
+    expect(screen.getByRole('link')).toBeInTheDocument();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.queryByText('Required')).not.toBeInTheDocument();
+  });
+
+  it('passes onChange with original and current to editor', async () => {
     const user = userEvent.setup();
-    render(<ArdaUrlFieldInteractive value="https://example.com" disabled />);
-    const container = screen.getByRole('link').parentElement;
-    if (container) {
-      await user.dblClick(container);
-      expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
-    }
+    const onChange = vi.fn();
+    render(<ArdaUrlFieldInteractive value="https://example.com" mode="edit" onChange={onChange} />);
+    const input = screen.getByRole('textbox');
+    await user.clear(input);
+    await user.type(input, 'https://new.com');
+    expect(onChange).toHaveBeenCalledWith('https://example.com', 'h');
   });
 });

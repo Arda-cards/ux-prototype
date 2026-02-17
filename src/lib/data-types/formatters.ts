@@ -18,12 +18,17 @@ export function formatDate(value: string | undefined | null, timezone?: string):
   // Parse YYYY-MM-DD as local date (avoid UTC→local timezone shift) when no timezone specified
   const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (match) {
+    const [, year, month, day] = match;
     if (timezone) {
       // When timezone is specified, use UTC date and let Intl format in target timezone
-      const date = new Date(`${match[1]}-${match[2]}-${match[3]}T12:00:00Z`);
+      const date = new Date(`${year}-${month}-${day}T12:00:00Z`);
       if (!isNaN(date.getTime())) return date.toLocaleDateString('en-US', opts);
     } else {
-      const date = new Date(parseInt(match[1]!), parseInt(match[2]!) - 1, parseInt(match[3]!));
+      const date = new Date(
+        parseInt(year ?? '0'),
+        parseInt(month ?? '0') - 1,
+        parseInt(day ?? '0'),
+      );
       if (!isNaN(date.getTime())) return date.toLocaleDateString('en-US', opts);
     }
   }
@@ -38,8 +43,8 @@ export function formatTime(value: string | undefined | null, timezone?: string):
   // Parse HH:mm or HH:mm:ss
   const parts = value.split(':');
   if (parts.length < 2) return '—';
-  const hours = parseInt(parts[0]!, 10);
-  const minutes = parseInt(parts[1]!, 10);
+  const hours = parseInt(parts[0] ?? '0', 10);
+  const minutes = parseInt(parts[1] ?? '0', 10);
   if (isNaN(hours) || isNaN(minutes)) return '—';
   const period = hours >= 12 ? 'PM' : 'AM';
   const displayHours = hours % 12 || 12;
@@ -74,12 +79,13 @@ export function formatDateTime(value: string | undefined | null, timezone?: stri
       const date = new Date(`${value}Z`);
       if (!isNaN(date.getTime())) return date.toLocaleString('en-US', opts);
     } else {
+      const [, y, mo, d, h, mi] = localMatch;
       const date = new Date(
-        parseInt(localMatch[1]!),
-        parseInt(localMatch[2]!) - 1,
-        parseInt(localMatch[3]!),
-        parseInt(localMatch[4]!),
-        parseInt(localMatch[5]!),
+        parseInt(y ?? '0'),
+        parseInt(mo ?? '0') - 1,
+        parseInt(d ?? '0'),
+        parseInt(h ?? '0'),
+        parseInt(mi ?? '0'),
       );
       if (!isNaN(date.getTime())) return date.toLocaleString('en-US', opts);
     }
@@ -122,7 +128,7 @@ export function toDateInputValue(value: string | undefined | null): string {
   if (!value) return '';
   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
   const match = value.match(/^(\d{4}-\d{2}-\d{2})/);
-  if (match) return match[1]!;
+  if (match?.[1]) return match[1];
   return value;
 }
 
@@ -132,12 +138,17 @@ export function toDateTimeInputValue(value: string | undefined | null): string {
   // Already in datetime-local format
   if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) return value;
   const match = value.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/);
-  if (match) return match[1]!;
+  if (match?.[1]) return match[1];
   return value;
 }
 
+/** Returns the browser's IANA timezone (e.g. "America/New_York"). */
+export function getBrowserTimezone(): string {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
+
 /** Get the short timezone abbreviation for an IANA timezone name. */
-function getTimezoneAbbreviation(timezone: string): string {
+export function getTimezoneAbbreviation(timezone: string): string {
   try {
     const formatter = new Intl.DateTimeFormat('en-US', {
       timeZone: timezone,

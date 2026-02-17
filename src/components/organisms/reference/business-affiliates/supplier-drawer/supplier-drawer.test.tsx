@@ -5,7 +5,6 @@ import { sampleAffiliates } from '@/types/reference/business-affiliates/business
 
 import { ArdaSupplierDrawer, type SuppliedItemRow } from './supplier-drawer';
 
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- sample data guaranteed
 const affiliate = sampleAffiliates[0]!;
 
 const suppliedItems: SuppliedItemRow[] = [

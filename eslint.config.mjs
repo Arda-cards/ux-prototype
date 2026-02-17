@@ -4,7 +4,7 @@ import tsParser from '@typescript-eslint/parser';
 import unicorn from 'eslint-plugin-unicorn';
 import prettier from 'eslint-plugin-prettier';
 import prettierConfig from 'eslint-config-prettier';
-import noHardcodedColors from './eslint-rules/no-hardcoded-colors.js';
+import noHardcodedColors from './tools/eslint-rules/no-hardcoded-colors.js';
 
 export default [
   // ── Global ignores ──────────────────────────────────────────────────
@@ -83,6 +83,37 @@ export default [
     },
     rules: {
       'prettier/prettier': 'error',
+    },
+  },
+
+  // ── Story files: relax rules for demo callbacks ────────────────────
+  {
+    files: ['**/*.stories.ts', '**/*.stories.tsx'],
+    rules: {
+      'no-console': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+    },
+  },
+
+  // ── Test files: relax rules for test assertions ───────────────────
+  {
+    files: ['**/*.test.ts', '**/*.test.tsx'],
+    rules: {
+      'no-console': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'off',
+    },
+  },
+
+  // ── AG Grid integration: any is unavoidable in AG Grid APIs ────────
+  {
+    files: [
+      'src/components/molecules/data-grid/**/*.ts',
+      'src/components/molecules/data-grid/**/*.tsx',
+      'src/components/organisms/shared/entity-data-grid/**/*.ts',
+      'src/components/organisms/shared/entity-data-grid/**/*.tsx',
+    ],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
     },
   },
 

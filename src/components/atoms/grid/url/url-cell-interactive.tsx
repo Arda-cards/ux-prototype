@@ -1,23 +1,57 @@
-import {
-  createInteractive,
-  type InteractiveEditorProps,
-} from '@/lib/data-types/create-interactive';
-import { ArdaUrlCellDisplay } from './url-cell-display';
-
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import type { AtomMode, AtomProps } from '@/lib/data-types/atom-types';
+import { ArdaUrlCellDisplay } from './url-cell-display';
 
-/**
- * Inline URL editor adapted for the createInteractive pattern.
- * Unlike the AG Grid cell editor, this uses onChange/onComplete/onCancel callbacks.
- */
+export interface ArdaUrlCellInteractiveProps extends AtomProps<string> {}
+
+export function ArdaUrlCellInteractive({
+  value,
+  onChange,
+  onComplete,
+  onCancel,
+  mode,
+  errors,
+  editable,
+}: ArdaUrlCellInteractiveProps) {
+  const effectiveMode: AtomMode = editable === false ? 'display' : mode;
+
+  if (effectiveMode === 'display') {
+    return <ArdaUrlCellDisplay value={value} />;
+  }
+
+  return (
+    <UrlCellInlineEditor
+      value={value}
+      onChange={onChange}
+      onComplete={onComplete}
+      onCancel={onCancel}
+      showErrors={effectiveMode === 'error'}
+      errors={errors}
+      autoFocus
+    />
+  );
+}
+
+// Internal inline editor
 function UrlCellInlineEditor({
   value,
   onChange,
   onComplete,
   onCancel,
   autoFocus,
-}: InteractiveEditorProps<string>) {
+  showErrors,
+  errors,
+}: {
+  value?: string;
+  onChange?: ((original: string, current: string) => void) | undefined;
+  onComplete?: ((value: string) => void) | undefined;
+  onCancel?: (() => void) | undefined;
+  autoFocus?: boolean;
+  showErrors?: boolean;
+  errors?: string[] | undefined;
+}) {
+  const originalValue = useRef(value ?? '');
   const [localValue, setLocalValue] = useState(value ?? '');
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -31,7 +65,7 @@ function UrlCellInlineEditor({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setLocalValue(newValue);
-    onChange?.(newValue);
+    onChange?.(originalValue.current, newValue);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -48,30 +82,34 @@ function UrlCellInlineEditor({
     onComplete?.(localValue);
   };
 
+  const hasErrors = showErrors && errors && errors.length > 0;
+
   return (
-    <input
-      ref={inputRef}
-      type="url"
-      value={localValue}
-      onChange={handleChange}
-      onKeyDown={handleKeyDown}
-      onBlur={handleBlur}
-      placeholder="Enter URL…"
-      className={cn(
-        'w-full h-full px-2 py-1 text-sm border-0 outline-none',
-        'focus:ring-2 focus:ring-ring',
-        'bg-white',
+    <div>
+      <input
+        ref={inputRef}
+        type="url"
+        value={localValue}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+        placeholder="Enter URL…"
+        className={cn(
+          'w-full h-full px-2 py-1 text-sm border-0 outline-none',
+          'focus:ring-2 focus:ring-ring',
+          'bg-white',
+          hasErrors && 'ring-2 ring-red-500',
+        )}
+      />
+      {hasErrors && (
+        <div className="px-2 py-0.5">
+          {errors.map((error, i) => (
+            <p key={i} className="text-xs text-red-600">
+              {error}
+            </p>
+          ))}
+        </div>
       )}
-    />
+    </div>
   );
 }
-
-/**
- * Interactive URL cell: displays URL by default, switches to inline editor
- * on double-click, commits on blur/Enter, cancels on Escape.
- */
-export const ArdaUrlCellInteractive = createInteractive<string>({
-  DisplayComponent: ArdaUrlCellDisplay,
-  EditorComponent: UrlCellInlineEditor,
-  displayName: 'ArdaUrlCellInteractive',
-});

@@ -9,3 +9,5 @@ export type {
 } from './text-cell-editor';
 
 export { ArdaTextCellInteractive } from './text-cell-interactive';
+export type { ArdaTextCellInteractiveProps } from './text-cell-interactive';
+export { ArdaTextCellInteractive as ArdaTextCell } from './text-cell-interactive';

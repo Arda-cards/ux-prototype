@@ -427,14 +427,34 @@ function StoryControlBar({
    COMPONENTS — Step Indicator
    ================================================================ */
 
-function StepIndicator({ steps, current }: { steps: readonly string[]; current: number }) {
+function StepIndicator({
+  steps,
+  current,
+  onStepClick,
+}: {
+  steps: readonly string[];
+  current: number;
+  onStepClick: (step: number) => void;
+}) {
   return (
     <div style={{ display: 'flex', gap: 8, marginBottom: 32 }}>
       {steps.map((label, i) => {
         const isActive = i === current;
         const isComplete = i < current;
         return (
-          <div key={label} style={{ flex: 1, textAlign: 'center' }}>
+          <div
+            key={label}
+            role="button"
+            tabIndex={0}
+            onClick={() => onStepClick(i)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onStepClick(i);
+              }
+            }}
+            style={{ flex: 1, textAlign: 'center', cursor: 'pointer' }}
+          >
             <div
               style={{
                 width: 32,
@@ -586,7 +606,9 @@ export function UseCaseShell({
             {subtitle}
           </p>
         )}
-        {!w.submitted && <StepIndicator steps={w.stepNames} current={w.step} />}
+        {!w.submitted && (
+          <StepIndicator steps={w.stepNames} current={w.step} onStepClick={w.goToStep} />
+        )}
 
         {/* success or step content */}
         {w.submitted && success}
@@ -618,14 +640,19 @@ export function UseCaseShell({
                   {submitLabel}
                 </ArdaButton>
               ) : (
-                <ArdaButton
-                  variant="primary"
-                  type="button"
-                  disabled={!w.canAdvance}
-                  onClick={() => w.goToStep(w.step + 1)}
-                >
-                  Next Step &rarr;
-                </ArdaButton>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <ArdaButton variant="secondary" type="button" onClick={w.handleSubmit}>
+                    Done
+                  </ArdaButton>
+                  <ArdaButton
+                    variant="primary"
+                    type="button"
+                    disabled={!w.canAdvance}
+                    onClick={() => w.goToStep(w.step + 1)}
+                  >
+                    Next Step &rarr;
+                  </ArdaButton>
+                </div>
               )}
             </div>
           </>
