@@ -9,8 +9,8 @@
  *   import { createUseCaseStories, useWizard, UseCaseShell, ... } from '@/use-cases/framework';
  */
 import React, { useState, useEffect, useRef } from 'react';
-import type { StoryObj } from '@storybook/react';
-import { within } from '@storybook/test';
+import type { StoryObj } from '@storybook/react-vite';
+import { within } from 'storybook/test';
 import { ArdaButton } from '@/components/atoms/button/button';
 
 /* ================================================================

@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { expect, fn, within } from '@storybook/test';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, fn, within } from 'storybook/test';
 import { useRef, useState } from 'react';
 import { ArdaDataGrid, ArdaDataGridRef, GridImage } from './data-grid';
 import type { ColDef } from 'ag-grid-community';

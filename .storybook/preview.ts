@@ -1,4 +1,4 @@
-import type { Preview } from '@storybook/react';
+import type { Preview } from '@storybook/react-vite';
 
 import '../src/styles/globals.css';
 import '../src/styles/ag-theme-arda.css';

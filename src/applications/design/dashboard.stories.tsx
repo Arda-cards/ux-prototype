@@ -1,6 +1,6 @@
 import React from 'react';
-import type { Meta, StoryObj } from '@storybook/react';
-import { expect, within } from '@storybook/test';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, within } from 'storybook/test';
 import { Package, AlertTriangle, ShoppingCart, DollarSign } from 'lucide-react';
 
 import { ArdaItemsDataGrid } from '@/components/organisms/reference/items/items-data-grid/items-data-grid';

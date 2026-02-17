@@ -1,4 +1,4 @@
-import { Meta } from '@storybook/blocks';
+import { Meta } from '@storybook/addon-docs/blocks';
 
 <Meta title="Docs/Developer Workflow" />
 
@@ -37,21 +37,10 @@ npm run test:watch    # Watch mode
 npm run test:coverage # With coverage report
 ```
 
-**Storybook interaction tests** (Playwright-based test runner):
-
-```bash
-# Start Storybook in one terminal
-npm run storybook
-
-# Run tests in another terminal
-npm run test:storybook
-```
-
 Or use the Makefile:
 
 ```bash
 make test             # Unit tests
-make test-storybook   # Storybook interaction tests
 ```
 
 ## CI Pipeline
@@ -63,7 +52,6 @@ Every push triggers the CI workflow (`.github/workflows/ci.yml`) which runs:
 3. `npx tsc --noEmit` — TypeScript type checking
 4. `npm run test` — Vitest unit tests
 5. `npm run build-storybook` — build the static Storybook
-6. Storybook test runner — Playwright-based interaction tests against the built Storybook
 
 Pushes to `main` also trigger:
 

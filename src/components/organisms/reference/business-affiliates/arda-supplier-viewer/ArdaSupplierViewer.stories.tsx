@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { userEvent, within, waitFor } from '@storybook/test';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { userEvent, within, waitFor } from 'storybook/test';
 
 import type { DesignConfig } from '@/components/organisms/shared/entity-viewer';
 import { createArdaEntityViewer } from '@/components/organisms/shared/entity-viewer';

@@ -1,7 +1,7 @@
 const SECRET = process.env.STORYBOOK_SECRET || 'ArdaSecretPrototypes';
 const REALM = 'Arda Prototypes';
 
-module.exports = function expressMiddleware(app) {
+export default function expressMiddleware(app) {
   app.use((req, res, next) => {
     const header = req.headers.authorization;
 
@@ -20,4 +20,4 @@ module.exports = function expressMiddleware(app) {
     res.setHeader('WWW-Authenticate', `Basic realm="${REALM}"`);
     res.end('Access denied');
   });
-};
+}

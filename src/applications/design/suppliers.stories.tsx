@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import type { Meta, StoryObj } from '@storybook/react';
-import { expect, within } from '@storybook/test';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, within } from 'storybook/test';
 import { Search, Filter, Plus } from 'lucide-react';
 
 import { ArdaButton } from '@/components/atoms/button/button';

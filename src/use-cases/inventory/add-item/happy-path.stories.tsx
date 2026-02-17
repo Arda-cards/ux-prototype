@@ -1,5 +1,5 @@
-import type { Meta } from '@storybook/react';
-import { expect, userEvent } from '@storybook/test';
+import type { Meta } from '@storybook/react-vite';
+import { expect, userEvent } from 'storybook/test';
 
 import { ArdaBadge } from '@/components/atoms/badge/badge';
 import {

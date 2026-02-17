@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { expect, fn, within } from '@storybook/test';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, fn, within } from 'storybook/test';
 import { useState } from 'react';
 
 import { ArdaDateTimeFieldDisplay } from './date-time-field-display';

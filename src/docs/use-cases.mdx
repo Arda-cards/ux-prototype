@@ -1,4 +1,4 @@
-import { Meta } from '@storybook/blocks';
+import { Meta } from '@storybook/addon-docs/blocks';
 
 <Meta title="Docs/Use Cases" />
 
@@ -77,7 +77,7 @@ A complete use case consists of four artifacts:
       </td>
       <td>
         Regression test — a <code>play</code> function exercises the full workflow end-to-end.
-        Executed by <code>@storybook/test-runner</code> via Playwright.
+        Executed via Storybook play functions.
       </td>
     </tr>
   </tbody>
@@ -182,7 +182,7 @@ The Description follows the standard user story template (`workspace/instruction
 ### Template
 
 ```mdx
-import { Meta } from '@storybook/blocks';
+import { Meta } from '@storybook/addon-docs/blocks';
 
 <Meta title="Use Cases/Feature Area/Workflow/Description" />
 
@@ -296,7 +296,7 @@ Every use case should provide **three story exports** so that different audience
         programmatically.
       </td>
       <td>
-        None — runs automatically. Executed by <code>@storybook/test-runner</code> via Playwright.
+        None — runs automatically. Executed via Storybook play functions.
       </td>
     </tr>
   </tbody>
@@ -586,8 +586,8 @@ The `useWizard` hook manages step navigation, form state, reset, and submission.
 Define the `meta` object as a plain object literal (required for Storybook's static analyzer), then call `createUseCaseStories` to generate all three story variants:
 
 ```tsx
-import type { Meta } from '@storybook/react';
-import { expect, userEvent } from '@storybook/test';
+import type { Meta } from '@storybook/react-vite';
+import { expect, userEvent } from 'storybook/test';
 import {
   createUseCaseStories,
   useWizard,
@@ -676,24 +676,6 @@ The `play` function in a story is an async function that runs after the story re
 - `goToScene(index)` — synchronizes the guide panel with the current automation step
 - `delay()` — pauses between steps for visibility (configurable via `delayMs`)
 
-### How they run via the test runner
+### How they run
 
-The Storybook test runner (`@storybook/test-runner`) uses Playwright to:
-
-1. Start a headless browser.
-2. Navigate to each story in the built Storybook.
-3. Execute any `play` function defined on the story.
-4. Report pass/fail results.
-
-Run locally:
-
-```bash
-# Terminal 1: serve the built Storybook
-npm run build-storybook
-npx http-server storybook-static --port 6006
-
-# Terminal 2: run the tests
-npm run test:storybook
-```
-
-In CI, this runs automatically via the `ci.yml` workflow using `concurrently` and `wait-on` to orchestrate the server and test runner.
+Play functions execute automatically in the Storybook canvas when you view a story. They can also be run headlessly via `@storybook/addon-vitest` (migration pending &#8212; see follow-up specification).
