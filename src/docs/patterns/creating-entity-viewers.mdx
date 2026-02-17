@@ -1,0 +1,219 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Docs/Patterns/Creating Entity Viewers" />
+
+# Creating Entity Viewers
+
+Step-by-step guide for creating an entity viewer using the `createArdaEntityViewer` factory.
+The factory provides built-in state management (display/edit/error modes), validation,
+dual-layout support (stepped tabs and continuous scroll), and dirty-state tracking.
+
+## Step 1: Define Mock Data and Validation
+
+Create a `mocks/` directory alongside your viewer with:
+
+- **Mock entity** &#8212; a fully populated sample instance of your entity type.
+- **Factory function** &#8212; `createInstance()` returning an empty/default entity for the "create" flow.
+- **Validation function** &#8212; implements `(previous: T, updated: T) => ValidationResult`, returning `fieldErrors` (with dot-path field references) and `entityErrors`.
+- **Get/Update mocks** &#8212; async functions matching the `DesignConfig.get` and `DesignConfig.update` signatures.
+
+```tsx
+export const mockEntity: MyEntity = { /* ... */ };
+
+export function createInstance(): MyEntity { return { /* defaults */ }; }
+
+export function validateMyEntity(prev: MyEntity, updated: MyEntity): ValidationResult {
+  const fieldErrors: ViewerError[] = [];
+  const entityErrors: ViewerError[] = [];
+  if (!updated.name) fieldErrors.push({ message: 'Name is required.', fieldPath: 'name' });
+  return { fieldErrors, entityErrors };
+}
+
+export async function getEntity(id: string): Promise<MyEntity> { /* ... */ }
+export async function updateEntity(id: string, orig: MyEntity, updated: MyEntity): Promise<UpdateResult<MyEntity>> { /* ... */ }
+```
+
+## Step 2: Create Sub-Viewers for Nested Types
+
+For each nested object in your entity, create a sub-viewer component that implements
+`AtomProps<V>`:
+
+```tsx
+function AddressSubViewer({ value, onChange, mode, errors, editable }: AtomProps<Address | undefined>) {
+  // Render fields for the nested type
+  // Call onChange(originalValue, updatedValue) on edits
+}
+AddressSubViewer.displayName = 'AddressSubViewer';
+```
+
+Key requirements:
+
+- The `displayName` **must** contain "SubViewer" so the shell can identify nested viewers.
+- Respect the `editable` prop &#8212; when `false`, force display mode regardless of the `mode` prop.
+- Use `withOptional` or similar helpers to comply with `exactOptionalPropertyTypes`.
+
+## Step 3: Create Custom Fields (if needed)
+
+For fields that need non-standard rendering (e.g. checkbox groups, multi-select),
+use `ArdaCustomFieldInteractive` with a `render` function:
+
+```tsx
+import { ArdaCustomFieldInteractive } from '@/components/atoms/form/custom';
+
+const renderRolesField: CustomFieldRenderFn<Role[]> = ({ value, onChange, mode, editable }) => (
+  <div>
+    {/* Custom checkbox UI */}
+  </div>
+);
+```
+
+Wrap the custom field in a component that injects the render function, then use it
+as the field descriptor's `component`.
+
+## Step 4: Define Field Descriptors
+
+Create a `FieldDescriptor` map keyed by entity field name:
+
+```tsx
+const fieldDescriptors: Partial<Record<keyof MyEntity, FieldDescriptor<unknown>>> = {
+  name: {
+    component: ArdaTextFieldInteractive,
+    label: 'Name',
+    editable: true,
+    visible: true,
+    tabName: 'identity',
+    validate: (value: unknown) => {
+      if (!(value as string)?.trim()) return 'Name is required.';
+      return undefined;
+    },
+  },
+  address: {
+    component: AddressSubViewer,
+    label: 'Address',
+    editable: true,
+    visible: true,
+    tabName: 'details',
+  },
+};
+```
+
+Each descriptor specifies:
+
+- `component` &#8212; the atom or sub-viewer to render the field
+- `label` &#8212; human-readable field label
+- `editable` &#8212; whether the field supports editing
+- `visible` &#8212; default visibility
+- `tabName` &#8212; which tab owns this field (stepped layout)
+- `validate` &#8212; optional per-field validation returning an error string or `undefined`
+
+## Step 5: Configure Layouts
+
+### Stepped Layout (Tabs)
+
+Define a `TabConfig` array specifying tab names, labels, field assignments, and order:
+
+```tsx
+import type { TabConfig } from '@/components/organisms/shared/entity-viewer';
+
+export const myTabs: readonly TabConfig[] = [
+  { name: 'identity', label: 'Identity', fieldKeys: ['name', 'roles'], order: 0 },
+  { name: 'details',  label: 'Details',  fieldKeys: ['address'],       order: 1 },
+  { name: 'notes',    label: 'Notes',    fieldKeys: ['notes'],         order: 2 },
+];
+```
+
+### Continuous Scroll
+
+Define a field order array controlling the top-to-bottom sequence:
+
+```tsx
+export const myFieldOrder: (keyof MyEntity)[] = ['name', 'roles', 'address', 'notes'];
+```
+
+## Step 6: Call the Factory
+
+Assemble the `DesignConfig` and call `createArdaEntityViewer`:
+
+```tsx
+import { createArdaEntityViewer } from '@/components/organisms/shared/entity-viewer';
+
+const designConfig: DesignConfig<MyEntity> = {
+  validate: validateMyEntity,
+  get: getEntity,
+  update: updateEntity,
+  newInstance: createInstance,
+};
+
+export const { Component: MyEntityViewer } = createArdaEntityViewer<MyEntity>(
+  designConfig,
+  fieldDescriptors,
+);
+```
+
+The factory validates the design config at creation time and returns `{ Component }`.
+
+## Step 7: Create Stories
+
+Create a `.stories.tsx` file with at least:
+
+- **Stepped Display** &#8212; read-only stepped layout with mock entity
+- **Stepped Edit** &#8212; editable stepped layout
+- **Continuous Display** &#8212; read-only continuous-scroll layout
+- **Continuous Edit** &#8212; editable continuous-scroll layout
+- **Create New** &#8212; no `entityId`, starts with empty instance
+- **Validation Errors** &#8212; demonstrates error states
+
+Each story passes `MountConfig` props (`title`, `layoutMode`, `editable`, `entityId`, `tabs` or `fieldOrder`).
+
+## Checklist
+
+<table>
+  <thead>
+    <tr>
+      <th>Item</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Mock data + validation function created</td>
+      <td>&#9744;</td>
+    </tr>
+    <tr>
+      <td>Sub-viewers for all nested types with <code>displayName</code> containing "SubViewer"</td>
+      <td>&#9744;</td>
+    </tr>
+    <tr>
+      <td>Custom field wrappers (if needed)</td>
+      <td>&#9744;</td>
+    </tr>
+    <tr>
+      <td>Field descriptor map with labels, tab assignments, and validation</td>
+      <td>&#9744;</td>
+    </tr>
+    <tr>
+      <td>Stepped layout <code>TabConfig</code> array</td>
+      <td>&#9744;</td>
+    </tr>
+    <tr>
+      <td>Continuous-scroll field order array</td>
+      <td>&#9744;</td>
+    </tr>
+    <tr>
+      <td>Factory call with <code>createArdaEntityViewer</code></td>
+      <td>&#9744;</td>
+    </tr>
+    <tr>
+      <td>Stories covering both layouts, display/edit modes, and validation</td>
+      <td>&#9744;</td>
+    </tr>
+    <tr>
+      <td>MDX documentation file</td>
+      <td>&#9744;</td>
+    </tr>
+    <tr>
+      <td>Unit tests (Vitest + Testing Library)</td>
+      <td>&#9744;</td>
+    </tr>
+  </tbody>
+</table>

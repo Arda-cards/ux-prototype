@@ -5,7 +5,7 @@ import * as SupplierDrawerStories from './supplier-drawer.stories';
 
 # ArdaSupplierDrawer
 
-A slide-in drawer for viewing, adding, or editing a business affiliate (supplier). Features a tabbed view mode with Details and Items tabs, form mode with collapsible sections for legal and contact information, and dirty-state protection.
+A slide-in drawer for viewing or adding a business affiliate (supplier). Delegates field rendering and the edit/save lifecycle to `ArdaSupplierViewer`.
 
 ## View Mode
 
@@ -13,20 +13,12 @@ A slide-in drawer for viewing, adding, or editing a business affiliate (supplier
 
 <Controls of={SupplierDrawerStories.ViewMode} />
 
-## View Mode — Items Tab
-
-<Canvas of={SupplierDrawerStories.ViewModeItemsTab} />
-
 ## Add Mode
 
 <Canvas of={SupplierDrawerStories.AddMode} />
 
-## Edit Mode
-
-<Canvas of={SupplierDrawerStories.EditMode} />
-
 ## Interactive
 
-Demonstrates the full view-to-edit flow with form submission.
+Demonstrates opening the drawer in view and add modes.
 
 <Canvas of={SupplierDrawerStories.Interactive} />

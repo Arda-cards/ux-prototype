@@ -2,6 +2,11 @@ import { Meta } from '@storybook/blocks';
 
 <Meta title="Components/Organisms/Shared/Stepped Viewer/Guide" />
 
+> **Deprecation Notice:** The `useWizard` and `UseCaseShell` pattern is being superseded by the
+> `createArdaEntityViewer` factory for entity-level forms and viewers. New entity viewers should use
+> the factory pattern documented in [Creating Entity Viewers](?path=/docs/docs-patterns-creating-entity-viewers--docs).
+> The stepped-viewer pattern remains available for non-entity wizard flows.
+
 # Stepped Viewer (Use Case Wizard Framework)
 
 The Stepped Viewer is a generic multi-step wizard framework for building use case stories with minimal boilerplate. Authors declare data, guides, scenes, and step content &#8212; the framework handles all chrome, navigation, viewers, and story wiring.

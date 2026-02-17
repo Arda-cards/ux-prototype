@@ -100,7 +100,6 @@ export type {
   ArdaSupplierDrawerStaticConfig,
   ArdaSupplierDrawerRuntimeConfig,
   SupplierDrawerMode,
-  SuppliedItemRow,
 } from './components/organisms/reference/business-affiliates/supplier-drawer/supplier-drawer';
 
 export { ArdaItemsDataGrid } from './components/organisms/reference/items/items-data-grid/items-data-grid';
