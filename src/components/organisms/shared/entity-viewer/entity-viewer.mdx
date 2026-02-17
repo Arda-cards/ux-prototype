@@ -453,6 +453,36 @@ The `SubViewerProps<V>` interface extends `AtomProps<V>` with viewer-specific ca
 - They are identified by their component's display name containing "Viewer" or "SubViewer".
 - Sub-viewers always use `continuous-scroll` layout regardless of the parent's layout mode.
 
+### Responsive Layout via Container Queries
+
+The shell's `SubViewerContainer` establishes a CSS container query context (`@container`) around its content area. This allows sub-viewer components to use Tailwind v4 container query variants (prefixed with `@`) instead of viewport-based breakpoints for responsive field layout.
+
+**Why container queries?** Sub-viewers render in varying widths depending on context &#8212; a full-page viewer may be 800px wide, but the same sub-viewer inside a 420px side drawer should stack fields vertically. Viewport breakpoints (`sm:`, `md:`) respond to the browser window size, which is the same in both cases. Container queries (`@sm:`, `@md:`) respond to the sub-viewer's actual available width.
+
+**How it works:**
+
+1. The shell adds `@container` to the `SubViewerContainer` content wrapper.
+2. Sub-viewers use `@sm:grid-cols-2` instead of `grid-cols-2` for two-column field grids.
+3. When the container is narrow (e.g., inside a drawer), fields stack into a single column. When the container is wide enough (&#8805;24rem at `@sm`), fields arrange into two columns.
+
+**Convention for sub-viewer authors:** Use `@`-prefixed Tailwind breakpoints for any multi-column layout inside a sub-viewer. The container context is provided automatically by the shell.
+
+```tsx
+// Inside a sub-viewer component:
+return (
+  &lt;div className="space-y-3"&gt;
+    &lt;ArdaTextFieldInteractive ... /&gt;
+    {/* Two-column grid that stacks in narrow containers */}
+    &lt;div className="grid grid-cols-1 @sm:grid-cols-2 gap-3"&gt;
+      &lt;ArdaTextFieldInteractive label="City" ... /&gt;
+      &lt;ArdaTextFieldInteractive label="State" ... /&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+);
+```
+
+This pattern ensures sub-viewers adapt to their rendering context without requiring any prop-based layout configuration from the parent viewer.
+
 ### Nesting Example
 
 ```typescript

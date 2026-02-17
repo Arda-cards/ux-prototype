@@ -82,7 +82,7 @@ function SubViewerContainer({
         <ChevronIcon collapsed={collapsed} />
         <span>{label}</span>
       </button>
-      {!collapsed && <div className="p-4 pt-0">{children}</div>}
+      {!collapsed && <div className="@container p-4 pt-0">{children}</div>}
     </div>
   );
 }

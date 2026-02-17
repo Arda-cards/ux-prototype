@@ -107,7 +107,7 @@ export function PostalAddressSubViewer({
         label="Address Line 2"
         {...ep}
       />
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 @sm:grid-cols-2 gap-3">
         <ArdaTextFieldInteractive
           value={address.city ?? ''}
           onChange={(_o, c) => updateField('city', c)}
@@ -123,7 +123,7 @@ export function PostalAddressSubViewer({
           {...ep}
         />
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 @sm:grid-cols-2 gap-3">
         <ArdaTextFieldInteractive
           value={address.postalCode ?? ''}
           onChange={(_o, c) => updateField('postalCode', c)}
@@ -179,7 +179,7 @@ export function ContactSubViewer({
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 @sm:grid-cols-2 gap-3">
         <ArdaTextFieldInteractive
           value={contact.salutation ?? ''}
           onChange={(_o, c) => updateField('salutation', c)}
@@ -195,7 +195,7 @@ export function ContactSubViewer({
           {...ep}
         />
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 @sm:grid-cols-2 gap-3">
         <ArdaTextFieldInteractive
           value={contact.firstName ?? ''}
           onChange={(_o, c) => updateField('firstName', c)}
@@ -211,7 +211,7 @@ export function ContactSubViewer({
           {...ep}
         />
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 @sm:grid-cols-2 gap-3">
         <ArdaTextFieldInteractive
           value={contact.email ?? ''}
           onChange={(_o, c) => updateField('email', c)}
