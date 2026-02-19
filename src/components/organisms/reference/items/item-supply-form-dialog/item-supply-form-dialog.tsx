@@ -103,7 +103,7 @@ const TIME_UNITS: { value: TimeUnit; label: string }[] = [
 ];
 
 const fieldClasses =
-  'w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500';
+  'w-full rounded-md border border-border px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring';
 
 function formFromSupply(supply: ItemSupply): SupplyFormData {
   return {
@@ -264,14 +264,14 @@ export function ArdaItemSupplyFormDialog({
         className="fixed left-1/2 top-1/2 z-[60] w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white shadow-xl"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 id={titleId} className="text-base font-semibold text-gray-900">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+          <h2 id={titleId} className="text-base font-semibold text-foreground">
             {mode === 'add' ? 'Add Supply' : 'Edit Supply'}
           </h2>
           <button
             onClick={handleClose}
             aria-label="Close"
-            className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
           >
             <X size={20} />
           </button>
@@ -281,8 +281,8 @@ export function ArdaItemSupplyFormDialog({
         <div className="px-6 py-4 max-h-[60vh] overflow-y-auto space-y-4">
           {/* Supplier */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Supplier <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-foreground mb-1">
+              Supplier <span className="text-destructive">*</span>
             </label>
             <ArdaTypeahead
               placeholder="Search suppliers..."
@@ -297,7 +297,7 @@ export function ArdaItemSupplyFormDialog({
               {...(onCreateSupplier ? { allowCreate: true, onCreate: onCreateSupplier } : {})}
             />
             {form.affiliateId && (
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-muted-foreground">
                 Selected: {form.supplierName || form.affiliateId}
               </p>
             )}
@@ -305,7 +305,7 @@ export function ArdaItemSupplyFormDialog({
 
           {/* Supply Name */}
           <div>
-            <label htmlFor="supply-name" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="supply-name" className="block text-sm font-medium text-foreground mb-1">
               Supply Name
             </label>
             <input
@@ -320,7 +320,7 @@ export function ArdaItemSupplyFormDialog({
 
           {/* SKU */}
           <div>
-            <label htmlFor="supply-sku" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="supply-sku" className="block text-sm font-medium text-foreground mb-1">
               SKU
             </label>
             <input
@@ -337,7 +337,7 @@ export function ArdaItemSupplyFormDialog({
           <div>
             <label
               htmlFor="supply-mechanism"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-foreground mb-1"
             >
               Order Method
             </label>
@@ -359,7 +359,10 @@ export function ArdaItemSupplyFormDialog({
           {/* URL (shown when order method is ONLINE) */}
           {form.orderMechanism === 'ONLINE' && (
             <div>
-              <label htmlFor="supply-url" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="supply-url"
+                className="block text-sm font-medium text-foreground mb-1"
+              >
                 URL
               </label>
               <input
@@ -375,7 +378,7 @@ export function ArdaItemSupplyFormDialog({
 
           {/* Order Quantity */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Order Quantity</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Order Quantity</label>
             <div className="grid grid-cols-2 gap-3">
               <input
                 type="number"
@@ -416,7 +419,7 @@ export function ArdaItemSupplyFormDialog({
 
           {/* Unit Cost */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Unit Cost</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Unit Cost</label>
             <div className="grid grid-cols-2 gap-3">
               <input
                 type="number"
@@ -444,7 +447,7 @@ export function ArdaItemSupplyFormDialog({
 
           {/* Average Lead Time */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Average Lead Time
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -473,11 +476,11 @@ export function ArdaItemSupplyFormDialog({
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-200">
+        <div className="flex justify-end gap-3 px-6 py-4 border-t border-border">
           <button
             type="button"
             onClick={handleClose}
-            className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            className="px-4 py-2 rounded-lg border border-border bg-background text-sm font-medium text-foreground hover:bg-secondary transition-colors"
           >
             Cancel
           </button>
@@ -488,8 +491,8 @@ export function ArdaItemSupplyFormDialog({
             className={cn(
               'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
               isValid
-                ? 'bg-gray-900 text-white hover:bg-gray-800'
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed',
+                ? 'bg-foreground text-background hover:bg-foreground/90'
+                : 'bg-secondary text-muted-foreground cursor-not-allowed',
             )}
           >
             {mode === 'add' ? 'Add Supply' : 'Save'}

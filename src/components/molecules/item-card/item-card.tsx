@@ -56,10 +56,10 @@ export function ArdaItemCard({
     image || 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=300&fit=crop';
 
   return (
-    <div className="relative w-[348px] max-w-full rounded-md border-2 border-[#E5E5E5] shadow-[0px_4px_6px_rgba(0,0,0,0.09)] px-4 py-2.5 flex flex-col gap-2 font-sans bg-white">
+    <div className="relative w-[348px] max-w-full rounded-md border-2 border-border shadow-[0px_4px_6px_rgba(0,0,0,0.09)] px-4 py-2.5 flex flex-col gap-2 font-sans bg-white">
       {/* Card State Sash */}
       {status && (
-        <div className="absolute top-8 -right-8 rotate-45 bg-[#FC5A29] text-white text-[10px] font-bold px-10 py-1 shadow-sm z-10 uppercase tracking-wider">
+        <div className="absolute top-8 -right-8 rotate-45 bg-primary text-primary-foreground text-2xs font-bold px-10 py-1 shadow-sm z-10 uppercase tracking-wider">
           {status}
         </div>
       )}
@@ -67,7 +67,7 @@ export function ArdaItemCard({
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
-          <h2 className="font-extrabold text-[24px] text-[#0A0A0A] leading-7 truncate">{title}</h2>
+          <h2 className="font-extrabold text-2xl text-foreground leading-7 truncate">{title}</h2>
         </div>
         <img
           src="/images/arda/QRC.svg"
@@ -78,11 +78,11 @@ export function ArdaItemCard({
 
       {/* Card Notes */}
       {cardNotes && (
-        <div className="text-[13px] text-[#0A0A0A] leading-4 opacity-80 italic">{cardNotes}</div>
+        <div className="text-sm text-foreground leading-4 opacity-80 italic">{cardNotes}</div>
       )}
 
       {/* Accent Divider */}
-      <div className="w-full h-1 bg-[#3B82F6]" />
+      <div className="w-full h-1 bg-accent-blue" />
 
       {/* Attribute Blocks */}
       <div className="space-y-2">
@@ -95,11 +95,11 @@ export function ArdaItemCard({
           <div key={idx} className="flex gap-2.5 items-start">
             <div className="w-9 flex flex-col items-center flex-shrink-0">
               <section.icon className="w-6 h-6 text-black" />
-              <span className="text-[8px] text-black font-bold uppercase tracking-tight mt-0.5">
+              <span className="text-2xs text-black font-bold uppercase tracking-tight mt-0.5">
                 {section.label}
               </span>
             </div>
-            <div className="flex-1 text-[14px] text-[#0A0A0A] leading-5 font-semibold pt-0.5">
+            <div className="flex-1 text-sm text-foreground leading-5 font-semibold pt-0.5">
               {section.value}
             </div>
           </div>
@@ -108,21 +108,21 @@ export function ArdaItemCard({
 
       {/* Product Image Area */}
       <div className="w-full mt-1">
-        <div className="relative w-full aspect-[4/3] overflow-hidden rounded-md flex items-center justify-center bg-[#F8F9FA] border border-[#EEEEEE]">
+        <div className="relative w-full aspect-[4/3] overflow-hidden rounded-md flex items-center justify-center bg-secondary border border-border">
           <img src={safeImageSrc} alt={title} className="w-full h-full object-cover" />
           {/* Card number overlay */}
-          <div className="absolute bottom-0 left-0 bg-white rounded-tr-md px-2 py-0.5 text-xs font-bold text-[#0A0A0A]">
+          <div className="absolute bottom-0 left-0 bg-white rounded-tr-md px-2 py-0.5 text-xs font-bold text-foreground">
             Card {cardIndex} of {totalCards}
           </div>
           {/* Serial Number overlay */}
-          <div className="absolute bottom-0 right-0 bg-white rounded-tl-md px-2 py-0.5 text-xs font-bold text-[#0A0A0A]">
+          <div className="absolute bottom-0 right-0 bg-white rounded-tl-md px-2 py-0.5 text-xs font-bold text-foreground">
             {sku}
           </div>
         </div>
       </div>
 
       {/* Bottom accent */}
-      <div className="w-full h-2 bg-[#3B82F6] rounded-sm" />
+      <div className="w-full h-2 bg-accent-blue rounded-sm" />
 
       {/* Footer Branding */}
       <div className="text-center py-1">

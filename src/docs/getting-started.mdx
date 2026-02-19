@@ -1,4 +1,4 @@
-import { Meta } from '@storybook/blocks';
+import { Meta } from '@storybook/addon-docs/blocks';
 
 <Meta title="Docs/Getting Started" />
 
@@ -101,7 +101,7 @@ export function MyButton({ label, variant = 'primary', onClick }: MyButtonProps)
 2. Create a story at `src/components/atoms/my-button/my-button.stories.tsx`:
 
 ```tsx
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import { MyButton } from './my-button';
 
 const meta: Meta<typeof MyButton> = {
@@ -109,7 +109,11 @@ const meta: Meta<typeof MyButton> = {
   component: MyButton,
   tags: ['autodocs'],
   argTypes: {
-    variant: { control: 'select', options: ['primary', 'secondary'], table: { category: 'Static' } },
+    variant: {
+      control: 'select',
+      options: ['primary', 'secondary'],
+      table: { category: 'Static' },
+    },
     onClick: { action: 'clicked', table: { category: 'Events' } },
   },
   args: { label: 'Click me' },

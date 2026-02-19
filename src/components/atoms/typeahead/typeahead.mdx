@@ -1,4 +1,4 @@
-import { Canvas, Meta, ArgTypes } from '@storybook/blocks';
+import { Canvas, Meta, ArgTypes } from '@storybook/addon-docs/blocks';
 import * as TypeaheadStories from './typeahead.stories';
 
 <Meta of={TypeaheadStories} />
@@ -56,9 +56,9 @@ The `TypeaheadOption` type is exported alongside the component:
 
 ```ts
 interface TypeaheadOption {
-  label: string;   // Display text
-  value: string;   // Unique identifier
-  meta?: string;   // Optional secondary text (e.g. category)
+  label: string; // Display text
+  value: string; // Unique identifier
+  meta?: string; // Optional secondary text (e.g. category)
 }
 ```
 

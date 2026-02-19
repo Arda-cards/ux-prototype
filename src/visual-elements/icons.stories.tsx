@@ -1,4 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, within } from 'storybook/test';
 import {
   Table2,
   ShoppingCart,
@@ -79,21 +80,25 @@ const icons: IconEntry[] = [
 ];
 
 export const IconGrid: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('Icon Library')).toBeInTheDocument();
+  },
   render: () => (
     <div className="p-6 max-w-5xl">
-      <h2 className="text-2xl font-bold text-[#0A0A0A] mb-2">Icon Library</h2>
-      <p className="text-sm text-[#737373] mb-6">
-        Icons from <code className="bg-[#F5F5F5] px-1.5 py-0.5 rounded text-xs">lucide-react</code>.
+      <h2 className="text-2xl font-bold text-foreground mb-2">Icon Library</h2>
+      <p className="text-sm text-muted-foreground mb-6">
+        Icons from <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">lucide-react</code>.
         Import individually as needed.
       </p>
       <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-6 gap-4">
         {icons.map(({ icon: Icon, name }) => (
           <div
             key={name}
-            className="flex flex-col items-center gap-2 p-4 rounded-lg border border-[#E5E5E5] hover:border-[#FC5A29] hover:bg-[#FFF7F5] transition-colors"
+            className="flex flex-col items-center gap-2 p-4 rounded-lg border border-border hover:border-primary hover:bg-primary/5 transition-colors"
           >
-            <Icon size={24} className="text-[#0A0A0A]" />
-            <span className="text-[11px] text-[#737373] font-mono text-center leading-tight">
+            <Icon size={24} className="text-foreground" />
+            <span className="text-xs text-muted-foreground font-mono text-center leading-tight">
               {name}
             </span>
           </div>
@@ -106,12 +111,12 @@ export const IconGrid: Story = {
 export const IconSizes: Story = {
   render: () => (
     <div className="p-6 max-w-3xl">
-      <h2 className="text-2xl font-bold text-[#0A0A0A] mb-6">Icon Sizes</h2>
+      <h2 className="text-2xl font-bold text-foreground mb-6">Icon Sizes</h2>
       <div className="flex items-end gap-8">
         {[14, 16, 18, 20, 24, 32, 48].map((size) => (
           <div key={size} className="flex flex-col items-center gap-2">
-            <Package size={size} className="text-[#0A0A0A]" />
-            <span className="text-xs text-[#737373] font-mono">{size}px</span>
+            <Package size={size} className="text-foreground" />
+            <span className="text-xs text-muted-foreground font-mono">{size}px</span>
           </div>
         ))}
       </div>

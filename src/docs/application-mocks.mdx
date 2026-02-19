@@ -1,8 +1,8 @@
-import { Meta } from '@storybook/blocks';
+import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Docs/Application Mocks" />
+<Meta title="Docs/Applications" />
 
-# Application Mocks
+# Applications
 
 Application mocks are full-page layouts that simulate how components look and behave in a real application context.
 
@@ -12,12 +12,30 @@ Each application mock comes in three versions:
 
 <table>
   <thead>
-    <tr><th>Version</th><th>Purpose</th></tr>
+    <tr>
+      <th>Version</th>
+      <th>Purpose</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td><strong>Production</strong></td><td>Mirrors the real app as closely as possible</td></tr>
-    <tr><td><strong>Development</strong></td><td>Includes debug overlays and in-progress feature banners</td></tr>
-    <tr><td><strong>Design</strong></td><td>Structural dotted borders for design review</td></tr>
+    <tr>
+      <td>
+        <strong>Production</strong>
+      </td>
+      <td>Mirrors the real app as closely as possible</td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Development</strong>
+      </td>
+      <td>Includes debug overlays and in-progress feature banners</td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Design</strong>
+      </td>
+      <td>Structural dotted borders for design review</td>
+    </tr>
   </tbody>
 </table>
 
@@ -55,7 +73,7 @@ export function MyPage() {
 3. **Create the story**:
 
 ```tsx
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import { MyPage } from './MyPage';
 
 const meta = {

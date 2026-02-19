@@ -1,4 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, within } from 'storybook/test';
 
 const meta: Meta = {
   title: 'Visual Elements/Brand Assets',
@@ -15,8 +16,8 @@ interface AssetCardProps {
 function AssetCard({ src, label }: AssetCardProps) {
   const isSvg = src.endsWith('.svg');
   return (
-    <div className="flex flex-col items-center gap-2 p-4 rounded-lg border border-[#E5E5E5] bg-white">
-      <div className="w-full h-32 flex items-center justify-center bg-[#F9FAFB] rounded-md p-3">
+    <div className="flex flex-col items-center gap-2 p-4 rounded-lg border border-border bg-white">
+      <div className="w-full h-32 flex items-center justify-center bg-table-header-bg rounded-md p-3">
         <img
           src={src}
           alt={label}
@@ -24,7 +25,7 @@ function AssetCard({ src, label }: AssetCardProps) {
           style={isSvg ? { minWidth: 40, minHeight: 40 } : undefined}
         />
       </div>
-      <span className="text-[11px] text-[#737373] font-mono text-center break-all leading-tight">
+      <span className="text-xs text-muted-foreground font-mono text-center break-all leading-tight">
         {label}
       </span>
     </div>
@@ -34,7 +35,7 @@ function AssetCard({ src, label }: AssetCardProps) {
 function AssetGroup({ title, assets }: { title: string; assets: AssetCardProps[] }) {
   return (
     <div className="mb-8">
-      <h3 className="text-lg font-bold text-[#0A0A0A] mb-3 border-b border-[#E5E5E5] pb-2">
+      <h3 className="text-lg font-bold text-foreground mb-3 border-b border-border pb-2">
         {title}
       </h3>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -47,9 +48,13 @@ function AssetGroup({ title, assets }: { title: string; assets: AssetCardProps[]
 }
 
 export const Gallery: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('Brand Assets')).toBeInTheDocument();
+  },
   render: () => (
     <div className="p-6 max-w-5xl">
-      <h2 className="text-2xl font-bold text-[#0A0A0A] mb-6">Brand Assets</h2>
+      <h2 className="text-2xl font-bold text-foreground mb-6">Brand Assets</h2>
 
       <AssetGroup
         title="Logos"

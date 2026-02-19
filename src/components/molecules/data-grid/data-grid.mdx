@@ -1,0 +1,576 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import * as DataGridStories from './data-grid.stories';
+
+<Meta of={DataGridStories} />
+
+# ArdaDataGrid
+
+A powerful, feature-rich data grid component built on AG Grid Community v34.3.1 with built-in state persistence, loading states, and pagination support.
+
+## Overview
+
+ArdaDataGrid is a wrapper around AG Grid that provides:
+
+- **Column State Persistence** &#8212; Automatically saves and restores column width, order, visibility, and sort state to localStorage
+- **Loading & Error States** &#8212; Built-in overlays for loading and error conditions
+- **Empty State Support** &#8212; Customizable empty state component
+- **Pagination** &#8212; Cursor-based pagination footer with First/Previous/Next controls
+- **Row Selection** &#8212; Single or multi-row selection
+- **Cell Editing** &#8212; Double-click to edit cells
+- **Ref API** &#8212; Imperative API for CSV export and grid API access
+
+## Basic Usage
+
+<Canvas of={DataGridStories.Default} />
+
+## Props
+
+The component accepts three groups of props:
+
+### Static Configuration (ArdaDataGridStaticConfig)
+
+Configuration that typically doesn't change after mount:
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>columnDefs</code>
+      </td>
+      <td>
+        <code>ColDef&#60;T&#62;[]</code>
+      </td>
+      <td>Required</td>
+      <td>AG Grid column definitions</td>
+    </tr>
+    <tr>
+      <td>
+        <code>defaultColDef</code>
+      </td>
+      <td>
+        <code>ColDef&#60;T&#62;</code>
+      </td>
+      <td>&#8212;</td>
+      <td>Default properties for all columns</td>
+    </tr>
+    <tr>
+      <td>
+        <code>persistenceKey</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>&#8212;</td>
+      <td>localStorage key for persisting column state</td>
+    </tr>
+    <tr>
+      <td>
+        <code>height</code>
+      </td>
+      <td>
+        <code>string | number</code>
+      </td>
+      <td>
+        <code>600</code>
+      </td>
+      <td>Grid height (number = px, string = any CSS unit)</td>
+    </tr>
+    <tr>
+      <td>
+        <code>className</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>
+        <code>''</code>
+      </td>
+      <td>Additional CSS classes for the container</td>
+    </tr>
+    <tr>
+      <td>
+        <code>enableRowSelection</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>
+        <code>true</code>
+      </td>
+      <td>Enable row selection</td>
+    </tr>
+    <tr>
+      <td>
+        <code>enableMultiRowSelection</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>
+        <code>true</code>
+      </td>
+      <td>Enable multi-row selection (checkboxes)</td>
+    </tr>
+    <tr>
+      <td>
+        <code>enableSorting</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>
+        <code>true</code>
+      </td>
+      <td>Enable column sorting</td>
+    </tr>
+  </tbody>
+</table>
+
+### Initialization Configuration (ArdaDataGridInitConfig)
+
+Callbacks that are called during grid initialization:
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>onGridReady</code>
+      </td>
+      <td>
+        <code>(params: GridReadyEvent&#60;T&#62;) =&#62; void</code>
+      </td>
+      <td>Called when grid is fully initialized</td>
+    </tr>
+  </tbody>
+</table>
+
+### Runtime Configuration (ArdaDataGridRuntimeConfig)
+
+Props that can change frequently during the component's lifetime:
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>rowData</code>
+      </td>
+      <td>
+        <code>T[]</code>
+      </td>
+      <td>Required</td>
+      <td>Array of data objects to display</td>
+    </tr>
+    <tr>
+      <td>
+        <code>loading</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>
+        <code>false</code>
+      </td>
+      <td>Show loading overlay</td>
+    </tr>
+    <tr>
+      <td>
+        <code>error</code>
+      </td>
+      <td>
+        <code>string | null</code>
+      </td>
+      <td>
+        <code>null</code>
+      </td>
+      <td>Error message to display</td>
+    </tr>
+    <tr>
+      <td>
+        <code>enableCellEditing</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>
+        <code>false</code>
+      </td>
+      <td>Enable cell editing (double-click)</td>
+    </tr>
+    <tr>
+      <td>
+        <code>selectedItems</code>
+      </td>
+      <td>
+        <code>T[]</code>
+      </td>
+      <td>
+        <code>[]</code>
+      </td>
+      <td>Currently selected rows (controlled)</td>
+    </tr>
+    <tr>
+      <td>
+        <code>onSelectionChanged</code>
+      </td>
+      <td>
+        <code>(selectedRows: T[]) =&#62; void</code>
+      </td>
+      <td>&#8212;</td>
+      <td>Called when row selection changes</td>
+    </tr>
+    <tr>
+      <td>
+        <code>onCellValueChanged</code>
+      </td>
+      <td>
+        <code>(event: CellValueChangedEvent&#60;T&#62;) =&#62; void</code>
+      </td>
+      <td>&#8212;</td>
+      <td>Called when cell value is edited</td>
+    </tr>
+    <tr>
+      <td>
+        <code>onRowClicked</code>
+      </td>
+      <td>
+        <code>(event: RowClickedEvent&#60;T&#62;) =&#62; void</code>
+      </td>
+      <td>&#8212;</td>
+      <td>Called when row is clicked (excludes checkbox clicks)</td>
+    </tr>
+    <tr>
+      <td>
+        <code>paginationData</code>
+      </td>
+      <td>
+        <code>PaginationData</code>
+      </td>
+      <td>&#8212;</td>
+      <td>Pagination state (shows footer when provided)</td>
+    </tr>
+    <tr>
+      <td>
+        <code>onNextPage</code>
+      </td>
+      <td>
+        <code>() =&#62; void</code>
+      </td>
+      <td>&#8212;</td>
+      <td>Callback for next page button</td>
+    </tr>
+    <tr>
+      <td>
+        <code>onPreviousPage</code>
+      </td>
+      <td>
+        <code>() =&#62; void</code>
+      </td>
+      <td>&#8212;</td>
+      <td>Callback for previous page button</td>
+    </tr>
+    <tr>
+      <td>
+        <code>onFirstPage</code>
+      </td>
+      <td>
+        <code>() =&#62; void</code>
+      </td>
+      <td>&#8212;</td>
+      <td>Callback for first page button</td>
+    </tr>
+    <tr>
+      <td>
+        <code>emptyStateComponent</code>
+      </td>
+      <td>
+        <code>React.ReactNode</code>
+      </td>
+      <td>&#8212;</td>
+      <td>Custom component to show when no rows</td>
+    </tr>
+  </tbody>
+</table>
+
+### PaginationData Type
+
+<table>
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>currentPage</code>
+      </td>
+      <td>
+        <code>number</code>
+      </td>
+      <td>Current page number (1-indexed)</td>
+    </tr>
+    <tr>
+      <td>
+        <code>currentPageSize</code>
+      </td>
+      <td>
+        <code>number</code>
+      </td>
+      <td>Number of items per page</td>
+    </tr>
+    <tr>
+      <td>
+        <code>hasNextPage</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>Whether next page is available</td>
+    </tr>
+    <tr>
+      <td>
+        <code>hasPreviousPage</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>Whether previous page is available</td>
+    </tr>
+    <tr>
+      <td>
+        <code>totalItems</code>
+      </td>
+      <td>
+        <code>number</code> (optional)
+      </td>
+      <td>Total number of items across all pages</td>
+    </tr>
+  </tbody>
+</table>
+
+## Ref API
+
+The component exposes an imperative API via `React.forwardRef`. This provides an escape hatch for advanced use cases.
+
+### ArdaDataGridRef&#60;T&#62; Interface
+
+<table>
+  <thead>
+    <tr>
+      <th>Method</th>
+      <th>Signature</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>getGridApi</code>
+      </td>
+      <td>
+        <code>() =&#62; GridApi&#60;T&#62; | null</code>
+      </td>
+      <td>
+        Returns the AG Grid API instance for advanced operations. Use sparingly as this bypasses the
+        component abstraction.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>exportDataAsCsv</code>
+      </td>
+      <td>
+        <code>() =&#62; void</code>
+      </td>
+      <td>Exports the current grid data as a CSV file. Respects current filters and sorting.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Usage Example
+
+```tsx
+import { useRef } from 'react';
+import { ArdaDataGrid, ArdaDataGridRef } from '@/components/molecules/data-grid';
+
+function MyComponent() {
+  const gridRef = useRef<ArdaDataGridRef<MyDataType>>(null);
+
+  const handleExport = () => {
+    gridRef.current?.exportDataAsCsv();
+  };
+
+  const handleGetRowCount = () => {
+    const api = gridRef.current?.getGridApi();
+    if (api) {
+      const count = api.getDisplayedRowCount();
+      console.log(`Grid has count rows`);
+    }
+  };
+
+  return (
+    <>
+      <button onClick={handleExport}>Export CSV</button>
+      <button onClick={handleGetRowCount}>Get Row Count</button>
+      <ArdaDataGrid ref={gridRef} columnDefs={columnDefs} rowData={data} />
+    </>
+  );
+}
+```
+
+### Important Notes on Ref API Usage
+
+- **Escape Hatch**: The ref API is an escape hatch. Prefer using props when possible.
+- **getGridApi()**: Provides direct access to AG Grid API. Use carefully as this bypasses component abstractions. Always check for null before using.
+- **exportDataAsCsv()**: Safe convenience method that wraps AG Grid's CSV export.
+- **Type Safety**: The ref is generic over your data type for full type safety: `ArdaDataGridRef<MyDataType>`.
+
+## Examples
+
+### Loading State
+
+<Canvas of={DataGridStories.Loading} />
+
+### Empty State
+
+<Canvas of={DataGridStories.Empty} />
+
+### Error State
+
+<Canvas of={DataGridStories.Error} />
+
+### With Pagination
+
+<Canvas of={DataGridStories.WithPagination} />
+
+### With Row Selection
+
+<Canvas of={DataGridStories.WithSelection} />
+
+### With Cell Editing
+
+<Canvas of={DataGridStories.WithCellEditing} />
+
+### With Row Click Handler
+
+<Canvas of={DataGridStories.WithRowClick} />
+
+### With Column Persistence
+
+<Canvas of={DataGridStories.WithPersistence} />
+
+### With Ref API
+
+<Canvas of={DataGridStories.WithRefAPI} />
+
+### Interactive Demo
+
+<Canvas of={DataGridStories.Interactive} />
+
+### With Images
+
+<Canvas of={DataGridStories.WithImages} />
+
+## Column Persistence
+
+When you provide a `persistenceKey` prop, the grid automatically saves and restores:
+
+- Column widths
+- Column order (drag to reorder)
+- Column visibility (show/hide columns)
+- Sort state
+
+The state is stored in localStorage and restored when the component mounts with the same `persistenceKey`.
+
+**Example:**
+
+```tsx
+<ArdaDataGrid columnDefs={columnDefs} rowData={data} persistenceKey="my-grid-state" />
+```
+
+**Note:** Conflict resolution and backward compatibility features are deferred to issue #717. The current implementation is simplified for the UX prototype.
+
+## GridImage Component
+
+A helper component for rendering images in grid cells with automatic fallback to a placeholder icon.
+
+```tsx
+import { GridImage } from '@/components/molecules/data-grid';
+
+const columnDefs = [
+  {
+    field: 'thumbnail',
+    headerName: 'Image',
+    cellRenderer: (params) => <GridImage value={params.value} />,
+  },
+];
+```
+
+## Styling
+
+The component uses the custom `ag-theme-arda` CSS theme located at `src/styles/ag-theme-arda.css`. The theme includes:
+
+- Arda brand colors
+- Custom checkbox styling
+- Responsive breakpoints
+- Pagination footer styles
+
+## Accessibility
+
+- Keyboard navigation fully supported (Tab, Enter, Arrow keys)
+- Screen reader support via AG Grid's built-in ARIA attributes
+- Focus indicators on interactive elements
+- Semantic HTML structure
+
+## Performance
+
+- Row virtualization enabled by default (only renders visible rows)
+- Column virtualization enabled by default (only renders visible columns)
+- Efficient state updates via React hooks
+- Debounced persistence saves to avoid excessive localStorage writes
+
+## Best Practices
+
+1. **Always provide a persistenceKey** for grids where users will customize columns
+2. **Use generic types** for full type safety: `ArdaDataGrid<MyDataType>`
+3. **Handle loading and error states** to provide good user feedback
+4. **Provide meaningful empty states** when data might be missing
+5. **Use the ref API sparingly** &#8212; prefer props-based control when possible
+6. **Keep rowData immutable** &#8212; create new arrays when updating data
+
+## Migration from arda-frontend-app
+
+This is a simplified version of the ArdaGrid component from `arda-frontend-app`. Key differences:
+
+- No filtering support (removed to simplify)
+- No row actions column (can be added via custom column defs)
+- Simplified persistence (no conflict resolution)
+- No theme provider integration (uses CSS directly)
+- Cursor-based pagination only (no page numbers)
+
+For the full-featured version with backend integration, see `arda-frontend-app/src/components/table/ArdaGrid.tsx`.

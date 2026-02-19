@@ -1,10 +1,10 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { expect, fn, userEvent, within } from '@storybook/test';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, fn, userEvent, within } from 'storybook/test';
 
 import { ArdaButton } from './button';
 
 const meta: Meta<typeof ArdaButton> = {
-  title: 'Components/Atoms/Button',
+  title: 'Components/Atoms/General/Button',
   component: ArdaButton,
   parameters: {
     docs: {

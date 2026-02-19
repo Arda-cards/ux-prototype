@@ -37,7 +37,7 @@ jobs:
     outputs:
       yes: ${{ steps.gh-query.outputs.validate_in_list }}
     steps:
-      - name: "Check branch protection status"
+      - name: 'Check branch protection status'
         id: gh-query
         env:
           GH_TOKEN: ${{ github.token }}
@@ -59,7 +59,7 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v6
-      - name: "Extract tag from the changelog"
+      - name: 'Extract tag from the changelog'
         uses: denisa/clq-action@v1
         id: clq-extract
         with:

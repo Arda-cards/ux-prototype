@@ -1,4 +1,4 @@
-import { Meta } from '@storybook/blocks';
+import { Meta } from '@storybook/addon-docs/blocks';
 
 <Meta title="Docs/Publishing" />
 
@@ -17,6 +17,7 @@ The `.npmrc` file at the repo root configures the `@arda-cards` scope to use the
 ```
 
 Required repository settings:
+
 - The `GITHUB_TOKEN` must have `packages:write` permission (configured in the workflow's `permissions` block).
 - The repository must belong to the `@arda-cards` GitHub organization.
 
@@ -26,12 +27,28 @@ This project follows [Semantic Versioning](https://semver.org/):
 
 <table>
   <thead>
-    <tr><th>Change type</th><th>Version bump</th><th>Example</th></tr>
+    <tr>
+      <th>Change type</th>
+      <th>Version bump</th>
+      <th>Example</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td>Breaking change</td><td>Major</td><td>1.0.0 → 2.0.0</td></tr>
-    <tr><td>New feature</td><td>Minor</td><td>1.0.0 → 1.1.0</td></tr>
-    <tr><td>Bug fix / patch</td><td>Patch</td><td>1.0.0 → 1.0.1</td></tr>
+    <tr>
+      <td>Breaking change</td>
+      <td>Major</td>
+      <td>1.0.0 → 2.0.0</td>
+    </tr>
+    <tr>
+      <td>New feature</td>
+      <td>Minor</td>
+      <td>1.0.0 → 1.1.0</td>
+    </tr>
+    <tr>
+      <td>Bug fix / patch</td>
+      <td>Patch</td>
+      <td>1.0.0 → 1.0.1</td>
+    </tr>
   </tbody>
 </table>
 
@@ -77,12 +94,53 @@ import '@arda-cards/ui-components/styles';
 
 <table>
   <thead>
-    <tr><th>Secret / Token</th><th>Scope</th><th>Where</th><th>Notes</th></tr>
+    <tr>
+      <th>Secret / Token</th>
+      <th>Scope</th>
+      <th>Where</th>
+      <th>Notes</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td><code>GITHUB_TOKEN</code></td><td><code>packages:write</code></td><td>Auto-provided in Actions</td><td>No setup required</td></tr>
-    <tr><td>PAT (consumers)</td><td><code>read:packages</code></td><td>Consumer's <code>.npmrc</code></td><td>Needed to install the package</td></tr>
-    <tr><td><code>STORYBOOK_SECRET</code></td><td>N/A</td><td>Server <code>.env</code></td><td>Basic auth for self-hosted deploy</td></tr>
-    <tr><td><code>VERCEL_TOKEN</code></td><td>Vercel access</td><td>Local <code>.env</code> only</td><td>For manual Vercel CLI deployments</td></tr>
+    <tr>
+      <td>
+        <code>GITHUB_TOKEN</code>
+      </td>
+      <td>
+        <code>packages:write</code>
+      </td>
+      <td>Auto-provided in Actions</td>
+      <td>No setup required</td>
+    </tr>
+    <tr>
+      <td>PAT (consumers)</td>
+      <td>
+        <code>read:packages</code>
+      </td>
+      <td>
+        Consumer's <code>.npmrc</code>
+      </td>
+      <td>Needed to install the package</td>
+    </tr>
+    <tr>
+      <td>
+        <code>STORYBOOK_SECRET</code>
+      </td>
+      <td>N/A</td>
+      <td>
+        Server <code>.env</code>
+      </td>
+      <td>Basic auth for self-hosted deploy</td>
+    </tr>
+    <tr>
+      <td>
+        <code>VERCEL_TOKEN</code>
+      </td>
+      <td>Vercel access</td>
+      <td>
+        Local <code>.env</code> only
+      </td>
+      <td>For manual Vercel CLI deployments</td>
+    </tr>
   </tbody>
 </table>

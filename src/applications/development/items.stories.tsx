@@ -1,20 +1,15 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, within } from 'storybook/test';
+import { useState } from 'react';
 import { Search, Filter, Plus, AlertTriangle } from 'lucide-react';
 
-import { ArdaBadge } from '@/components/atoms/badge/badge';
 import { ArdaButton } from '@/components/atoms/button/button';
-import {
-  ArdaTable,
-  ArdaTableBody,
-  ArdaTableCell,
-  ArdaTableHead,
-  ArdaTableHeader,
-  ArdaTableRow,
-} from '@/components/molecules/table/table';
+import { ArdaItemsDataGrid } from '@/components/organisms/reference/items/items-data-grid/items-data-grid';
+import { mockPublishedItems } from '@/components/molecules/data-grid/presets/items/items-mock-data';
 import { AppLayout } from '@/applications/shared/app-layout';
 
 const meta: Meta = {
-  title: 'Application Mocks/Development/Items',
+  title: 'Applications/Development/Items',
   parameters: {
     layout: 'fullscreen',
   },
@@ -26,11 +21,11 @@ type Story = StoryObj;
 const DevBanner = () => (
   <div
     style={{
-      background: '#FEF3C7',
-      borderBottom: '1px solid #FDE68A',
+      background: 'var(--status-warning-bg)',
+      borderBottom: '1px solid var(--status-warning-border)',
       padding: '8px 24px',
       fontSize: 13,
-      color: '#92400E',
+      color: 'var(--status-warning-text)',
       fontWeight: 600,
       display: 'flex',
       alignItems: 'center',
@@ -42,132 +37,91 @@ const DevBanner = () => (
   </div>
 );
 
-const items = [
-  {
-    name: 'Hex Socket Bolt M8x40',
-    sku: 'FST-HSB-M8X40',
-    category: 'Fasteners',
-    qty: 342,
-    status: 'In Stock',
-  },
-  { name: 'Safety Goggles Pro', sku: 'SFI-SGP-001', category: 'PPE', qty: 8, status: 'Low Stock' },
-  {
-    name: 'Hydraulic Filter HF-200',
-    sku: 'HTS-HF200-R',
-    category: 'Filters',
-    qty: 0,
-    status: 'Out of Stock',
-  },
-  {
-    name: 'Bearing SKF 6205',
-    sku: 'SKF-6205-2RS',
-    category: 'Bearings',
-    qty: 156,
-    status: 'In Stock',
-  },
-  { name: 'V-Belt A68', sku: 'GTS-VBA68', category: 'Drive', qty: 4, status: 'Low Stock' },
-  {
-    name: 'Lubricant Grease EP2',
-    sku: 'SHL-GEP2-400',
-    category: 'Lubricants',
-    qty: 45,
-    status: 'In Stock',
-  },
-];
-
-const statusVariant = (status: string) => {
-  switch (status) {
-    case 'In Stock':
-      return 'success' as const;
-    case 'Low Stock':
-      return 'warning' as const;
-    case 'Out of Stock':
-      return 'destructive' as const;
-    default:
-      return 'default' as const;
-  }
-};
-
 export const Default: Story = {
-  render: () => (
-    <AppLayout currentPath="/items" banner={<DevBanner />}>
-      <div style={{ maxWidth: 1200 }}>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: 20,
-          }}
-        >
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: '#0A0A0A' }}>Items</h1>
-          <ArdaButton variant="primary">
-            <Plus size={16} />
-            Add Item
-          </ArdaButton>
-        </div>
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const matches = canvas.getAllByText('Items');
+    await expect(matches.length).toBeGreaterThan(0);
+  },
+  render: () => {
+    const [page, setPage] = useState(1);
+    const pageSize = 10;
+    const totalItems = mockPublishedItems.length;
+    const totalPages = Math.ceil(totalItems / pageSize);
+    const startIndex = (page - 1) * pageSize;
+    const currentItems = mockPublishedItems.slice(startIndex, startIndex + pageSize);
 
-        <div
-          style={{
-            display: 'flex',
-            gap: 12,
-            marginBottom: 16,
-            alignItems: 'center',
-          }}
-        >
+    return (
+      <AppLayout currentPath="/items" banner={<DevBanner />}>
+        <div style={{ maxWidth: 1200 }}>
           <div
             style={{
               display: 'flex',
+              justifyContent: 'space-between',
               alignItems: 'center',
-              gap: 8,
-              padding: '8px 12px',
-              border: '1px solid #E5E5E5',
-              borderRadius: 8,
-              background: 'white',
-              flex: 1,
-              maxWidth: 360,
+              marginBottom: 20,
             }}
           >
-            <Search size={16} color="#737373" />
-            <span style={{ color: '#737373', fontSize: 14 }}>Search items...</span>
+            <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--base-foreground)' }}>
+              Items
+            </h1>
+            <ArdaButton variant="primary">
+              <Plus size={16} />
+              Add Item
+            </ArdaButton>
           </div>
-          <ArdaButton variant="secondary">
-            <Filter size={16} />
-            Filter
-          </ArdaButton>
-        </div>
 
-        <ArdaTable>
-          <ArdaTableHeader>
-            <ArdaTableRow>
-              <ArdaTableHead>Name</ArdaTableHead>
-              <ArdaTableHead>SKU</ArdaTableHead>
-              <ArdaTableHead>Category</ArdaTableHead>
-              <ArdaTableHead>Quantity</ArdaTableHead>
-              <ArdaTableHead>Status</ArdaTableHead>
-            </ArdaTableRow>
-          </ArdaTableHeader>
-          <ArdaTableBody>
-            {items.map((item) => (
-              <ArdaTableRow key={item.sku}>
-                <ArdaTableCell className="font-semibold">{item.name}</ArdaTableCell>
-                <ArdaTableCell className="font-mono text-sm">{item.sku}</ArdaTableCell>
-                <ArdaTableCell>{item.category}</ArdaTableCell>
-                <ArdaTableCell>{item.qty}</ArdaTableCell>
-                <ArdaTableCell>
-                  <ArdaBadge variant={statusVariant(item.status)} dot>
-                    {item.status}
-                  </ArdaBadge>
-                </ArdaTableCell>
-              </ArdaTableRow>
-            ))}
-          </ArdaTableBody>
-        </ArdaTable>
+          <div
+            style={{
+              display: 'flex',
+              gap: 12,
+              marginBottom: 16,
+              alignItems: 'center',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '8px 12px',
+                border: '1px solid var(--base-border)',
+                borderRadius: 8,
+                background: 'white',
+                flex: 1,
+                maxWidth: 360,
+              }}
+            >
+              <Search size={16} color="var(--base-muted-foreground)" />
+              <span style={{ color: 'var(--base-muted-foreground)', fontSize: 14 }}>
+                Search items...
+              </span>
+            </div>
+            <ArdaButton variant="secondary">
+              <Filter size={16} />
+              Filter
+            </ArdaButton>
+          </div>
 
-        <div style={{ marginTop: 12, fontSize: 13, color: '#737373' }}>
-          Showing {items.length} of 2,847 items
+          <div style={{ height: 500 }}>
+            <ArdaItemsDataGrid
+              items={currentItems}
+              activeTab="published"
+              enableCellEditing
+              paginationData={{
+                currentPage: page,
+                currentPageSize: pageSize,
+                totalItems,
+                hasNextPage: page < totalPages,
+                hasPreviousPage: page > 1,
+              }}
+              onNextPage={() => setPage((p) => Math.min(p + 1, totalPages))}
+              onPreviousPage={() => setPage((p) => Math.max(p - 1, 1))}
+              onFirstPage={() => setPage(1)}
+            />
+          </div>
         </div>
-      </div>
-    </AppLayout>
-  ),
+      </AppLayout>
+    );
+  },
 };

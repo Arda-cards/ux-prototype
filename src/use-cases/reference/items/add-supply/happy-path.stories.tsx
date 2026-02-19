@@ -1,5 +1,5 @@
-import type { Meta } from '@storybook/react';
-import { expect, userEvent } from '@storybook/test';
+import type { Meta } from '@storybook/react-vite';
+import { expect, userEvent } from 'storybook/test';
 
 import { ArdaBadge } from '@/components/atoms/badge/badge';
 import {
@@ -328,7 +328,7 @@ function AddSupplyWizard(props: WizardProps<SupplyFormData>) {
       {/* Step 3 — Review & Confirm */}
       {w.step === 2 && (
         <>
-          <p style={{ fontSize: 14, color: '#737373', margin: 0 }}>
+          <p style={{ fontSize: 14, color: 'var(--base-muted-foreground)', margin: 0 }}>
             Review the supply details below before saving.
           </p>
           <SummaryCard>
@@ -402,7 +402,7 @@ const { Interactive, Stepwise, Automated } = createUseCaseStories<SupplyFormData
     await expect(canvas.getByText(SAMPLE.supplyName)).toBeInTheDocument();
     await delay();
 
-    await userEvent.click(canvas.getByRole('button', { name: /confirm/i }));
+    await userEvent.click(canvas.getByRole('button', { name: /confirm & add supply/i }));
     goToScene(6);
     await expect(canvas.getByTestId('success-message')).toHaveTextContent(
       'Supply added successfully',

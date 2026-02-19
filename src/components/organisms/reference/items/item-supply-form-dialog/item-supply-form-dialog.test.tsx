@@ -11,7 +11,6 @@ const suppliers: TypeaheadOption[] = [
   { label: 'Parker Hannifin', value: 'ba-002' },
 ];
 
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- sample data guaranteed
 const editSupply = sampleItemSupplies[0]!;
 
 describe('ArdaItemSupplyFormDialog', () => {

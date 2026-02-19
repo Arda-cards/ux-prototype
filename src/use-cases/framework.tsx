@@ -9,8 +9,8 @@
  *   import { createUseCaseStories, useWizard, UseCaseShell, ... } from '@/use-cases/framework';
  */
 import React, { useState, useEffect, useRef } from 'react';
-import type { StoryObj } from '@storybook/react';
-import { within } from '@storybook/test';
+import type { StoryObj } from '@storybook/react-vite';
+import { within } from 'storybook/test';
 import { ArdaButton } from '@/components/atoms/button/button';
 
 /* ================================================================
@@ -71,6 +71,7 @@ interface WizardControl {
 /** Full wizard state returned by `useWizard`. */
 export interface WizardState<T extends object> extends WizardControl {
   formData: T;
+  setFormData: React.Dispatch<React.SetStateAction<T>>;
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
 }
 
@@ -88,18 +89,18 @@ interface WizardConfig<T extends object> {
 const inputStyle: React.CSSProperties = {
   width: '100%',
   padding: '8px 12px',
-  border: '1px solid #E5E5E5',
+  border: '1px solid var(--base-border)',
   borderRadius: 8,
   fontSize: 14,
   outline: 'none',
-  background: 'white',
+  background: 'var(--base-background)',
 };
 
 const labelStyle: React.CSSProperties = {
   display: 'block',
   fontSize: 13,
   fontWeight: 600,
-  color: '#0A0A0A',
+  color: 'var(--base-foreground)',
   marginBottom: 4,
 };
 
@@ -216,14 +217,16 @@ export function SummaryRow({
 }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-      <span style={{ color: '#737373' }}>{label}</span>
-      <span style={{ color: '#0A0A0A', fontWeight: bold ? 700 : 500 }}>{value}</span>
+      <span style={{ color: 'var(--base-muted-foreground)' }}>{label}</span>
+      <span style={{ color: 'var(--base-foreground)', fontWeight: bold ? 700 : 500 }}>{value}</span>
     </div>
   );
 }
 
 export function Divider() {
-  return <hr style={{ border: 'none', borderTop: '1px solid #F5F5F5', margin: '4px 0' }} />;
+  return (
+    <hr style={{ border: 'none', borderTop: '1px solid var(--base-secondary)', margin: '4px 0' }} />
+  );
 }
 
 /** Bordered card for review-step summaries. */
@@ -231,7 +234,7 @@ export function SummaryCard({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={{
-        border: '1px solid #E5E5E5',
+        border: '1px solid var(--base-border)',
         borderRadius: 12,
         padding: 20,
         display: 'flex',
@@ -272,7 +275,7 @@ export function SuccessScreen({
           width: 64,
           height: 64,
           borderRadius: '50%',
-          background: '#DCFCE7',
+          background: 'var(--status-success-bg)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -283,12 +286,14 @@ export function SuccessScreen({
         &#10003;
       </div>
       <h2
-        style={{ fontSize: 20, fontWeight: 700, color: '#0A0A0A', marginBottom: 8 }}
+        style={{ fontSize: 20, fontWeight: 700, color: 'var(--base-foreground)', marginBottom: 8 }}
         data-testid="success-message"
       >
         {title}
       </h2>
-      <p style={{ fontSize: 14, color: '#737373', marginBottom: 24 }}>{subtitle}</p>
+      <p style={{ fontSize: 14, color: 'var(--base-muted-foreground)', marginBottom: 24 }}>
+        {subtitle}
+      </p>
       {badges && (
         <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 24 }}>
           {badges}
@@ -297,7 +302,7 @@ export function SuccessScreen({
       {details && (
         <div
           style={{
-            border: '1px solid #E5E5E5',
+            border: '1px solid var(--base-border)',
             borderRadius: 12,
             padding: 20,
             textAlign: 'left',
@@ -327,18 +332,25 @@ function GuidePanel({ guide }: { guide: GuideEntry }) {
     <div
       data-testid="guide-panel"
       style={{
-        borderLeft: '4px solid #3B82F6',
-        background: '#F0F5FF',
+        borderLeft: '4px solid var(--accent-blue)',
+        background: 'var(--guide-bg)',
         borderRadius: '0 8px 8px 0',
         padding: '16px 20px',
         fontSize: 13,
         lineHeight: 1.6,
-        color: '#1E3A5F',
+        color: 'var(--guide-text)',
       }}
     >
       <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 8 }}>{guide.title}</div>
       <p style={{ margin: '0 0 10px' }}>{guide.description}</p>
-      <div style={{ background: '#DBEAFE', borderRadius: 6, padding: '10px 14px', fontSize: 12 }}>
+      <div
+        style={{
+          background: 'var(--status-info-bg)',
+          borderRadius: 6,
+          padding: '10px 14px',
+          fontSize: 12,
+        }}
+      >
         <span style={{ fontWeight: 700 }}>Expected interaction: </span>
         {guide.interaction}
       </div>
@@ -366,9 +378,9 @@ function StoryControlBar({
   const btn = (disabled: boolean): React.CSSProperties => ({
     padding: '6px 14px',
     borderRadius: 6,
-    border: '1px solid #D4D4D4',
-    background: disabled ? '#F5F5F5' : '#fff',
-    color: disabled ? '#A3A3A3' : '#0A0A0A',
+    border: '1px solid var(--base-border-strong)',
+    background: disabled ? 'var(--base-secondary)' : 'var(--base-background)',
+    color: disabled ? 'var(--base-muted)' : 'var(--base-foreground)',
     cursor: disabled ? 'default' : 'pointer',
     fontWeight: 600,
     fontSize: 13,
@@ -381,8 +393,8 @@ function StoryControlBar({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        background: '#F5F5F5',
-        border: '1px solid #E5E5E5',
+        background: 'var(--base-secondary)',
+        border: '1px solid var(--base-border)',
         borderRadius: 8,
         padding: '10px 16px',
         fontSize: 13,
@@ -401,7 +413,7 @@ function StoryControlBar({
           Next &#9654;
         </button>
       </div>
-      <span style={{ color: '#737373', fontWeight: 500 }}>
+      <span style={{ color: 'var(--base-muted-foreground)', fontWeight: 500 }}>
         Scene {current} of {total}
       </span>
       <button type="button" onClick={onReset} style={btn(false)}>
@@ -415,14 +427,34 @@ function StoryControlBar({
    COMPONENTS — Step Indicator
    ================================================================ */
 
-function StepIndicator({ steps, current }: { steps: readonly string[]; current: number }) {
+function StepIndicator({
+  steps,
+  current,
+  onStepClick,
+}: {
+  steps: readonly string[];
+  current: number;
+  onStepClick: (step: number) => void;
+}) {
   return (
     <div style={{ display: 'flex', gap: 8, marginBottom: 32 }}>
       {steps.map((label, i) => {
         const isActive = i === current;
         const isComplete = i < current;
         return (
-          <div key={label} style={{ flex: 1, textAlign: 'center' }}>
+          <div
+            key={label}
+            role="button"
+            tabIndex={0}
+            onClick={() => onStepClick(i)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onStepClick(i);
+              }
+            }}
+            style={{ flex: 1, textAlign: 'center', cursor: 'pointer' }}
+          >
             <div
               style={{
                 width: 32,
@@ -433,8 +465,12 @@ function StepIndicator({ steps, current }: { steps: readonly string[]; current: 
                 justifyContent: 'center',
                 fontSize: 14,
                 fontWeight: 700,
-                color: isActive || isComplete ? '#fff' : '#A3A3A3',
-                background: isComplete ? '#22C55E' : isActive ? '#FC5A29' : '#E5E5E5',
+                color: isActive || isComplete ? 'var(--base-background)' : 'var(--base-muted)',
+                background: isComplete
+                  ? 'var(--step-complete)'
+                  : isActive
+                    ? 'var(--base-primary)'
+                    : 'var(--base-border)',
                 marginBottom: 4,
               }}
             >
@@ -444,7 +480,7 @@ function StepIndicator({ steps, current }: { steps: readonly string[]; current: 
               style={{
                 fontSize: 12,
                 fontWeight: isActive ? 700 : 400,
-                color: isActive ? '#0A0A0A' : '#737373',
+                color: isActive ? 'var(--base-foreground)' : 'var(--base-muted-foreground)',
               }}
             >
               {label}
@@ -484,6 +520,7 @@ export function useWizard<T extends object>(
   return {
     step,
     formData,
+    setFormData,
     submitted,
     phase: submitted ? config.stepNames.length : step,
     stepNames: config.stepNames,
@@ -526,10 +563,10 @@ export function UseCaseShell({
     <div style={{ maxWidth: 560, margin: '0 auto' }}>
       <div
         style={{
-          border: '1px solid #E5E5E5',
+          border: '1px solid var(--base-border)',
           borderRadius: 12,
           padding: 24,
-          background: '#fff',
+          background: 'var(--base-background)',
         }}
       >
         {/* heading bar */}
@@ -541,7 +578,9 @@ export function UseCaseShell({
             marginBottom: 4,
           }}
         >
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: '#0A0A0A', margin: 0 }}>{heading}</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--base-foreground)', margin: 0 }}>
+            {heading}
+          </h1>
           {!w.submitted && (
             <button
               type="button"
@@ -552,7 +591,7 @@ export function UseCaseShell({
                 border: 'none',
                 cursor: 'pointer',
                 fontSize: 13,
-                color: '#737373',
+                color: 'var(--base-muted-foreground)',
                 textDecoration: 'underline',
                 padding: '4px 0',
               }}
@@ -563,9 +602,13 @@ export function UseCaseShell({
         </div>
 
         {!w.submitted && (
-          <p style={{ fontSize: 14, color: '#737373', marginBottom: 24 }}>{subtitle}</p>
+          <p style={{ fontSize: 14, color: 'var(--base-muted-foreground)', marginBottom: 24 }}>
+            {subtitle}
+          </p>
         )}
-        {!w.submitted && <StepIndicator steps={w.stepNames} current={w.step} />}
+        {!w.submitted && (
+          <StepIndicator steps={w.stepNames} current={w.step} onStepClick={w.goToStep} />
+        )}
 
         {/* success or step content */}
         {w.submitted && success}
@@ -597,14 +640,19 @@ export function UseCaseShell({
                   {submitLabel}
                 </ArdaButton>
               ) : (
-                <ArdaButton
-                  variant="primary"
-                  type="button"
-                  disabled={!w.canAdvance}
-                  onClick={() => w.goToStep(w.step + 1)}
-                >
-                  Next Step &rarr;
-                </ArdaButton>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <ArdaButton variant="secondary" type="button" onClick={w.handleSubmit}>
+                    Done
+                  </ArdaButton>
+                  <ArdaButton
+                    variant="primary"
+                    type="button"
+                    disabled={!w.canAdvance}
+                    onClick={() => w.goToStep(w.step + 1)}
+                  >
+                    Next Step &rarr;
+                  </ArdaButton>
+                </div>
               )}
             </div>
           </>

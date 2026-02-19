@@ -8,6 +8,10 @@ export type ArdaButtonSize = 'sm' | 'md' | 'lg';
 
 /** Design-time configuration — variant and size chosen at composition time. */
 export interface ArdaButtonStaticConfig {
+  /* --- Model / Data Binding --- */
+  // (No model/data props in StaticConfig)
+
+  /* --- View / Layout / Controller --- */
   /** Visual style variant. */
   variant?: ArdaButtonVariant;
   /** Button size affecting height and font size. */
@@ -16,8 +20,12 @@ export interface ArdaButtonStaticConfig {
 
 /** Runtime configuration — properties that change during component lifetime. */
 export interface ArdaButtonRuntimeConfig {
+  /* --- Model / Data Binding --- */
   /** Show a loading spinner and disable the button. */
   loading?: boolean;
+
+  /* --- View / Layout / Controller --- */
+  // (View/layout props handled by HTML button attributes passthrough)
 }
 
 /** Combined props for ArdaButton. Extends HTML button attributes for passthrough. */

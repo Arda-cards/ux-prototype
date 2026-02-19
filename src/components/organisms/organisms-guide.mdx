@@ -1,0 +1,206 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Components/Organisms/Guide" />
+
+# Organisms
+
+Organisms are complex, feature-rich components that contain business logic and connect directly to domain concepts. They compose multiple molecules and atoms to create complete sections of an interface.
+
+## Criteria
+
+- Contains domain-specific logic or data structures
+- Often connects to APIs, state management, or business rules
+- Composed of multiple molecules and/or atoms
+- Represents a complete, functional section of the UI
+
+## Organization
+
+Organisms are organized into two tiers based on their reusability scope:
+
+<table>
+  <thead>
+    <tr>
+      <th>Tier</th>
+      <th>Directory</th>
+      <th>Story title prefix</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Shared</strong></td>
+      <td><code>organisms/shared/&#123;component&#125;/</code></td>
+      <td><code>Components/Organisms/Shared/</code></td>
+      <td>Reusable organisms that work across domains via configuration or generic type parameters.</td>
+    </tr>
+    <tr>
+      <td><strong>Reference</strong></td>
+      <td><code>organisms/reference/&#123;domain&#125;/&#123;component&#125;/</code></td>
+      <td><code>Components/Organisms/Reference/&#123;Domain&#125;/</code></td>
+      <td>Domain-specific organisms tied to particular business entities and workflows.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Shared organisms
+
+Components that can be applied across multiple domains with configuration.
+
+<table>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Path</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Entity Data Grid</strong></td>
+      <td><code>organisms/shared/entity-data-grid/</code></td>
+      <td>Factory function (<code>createArdaEntityDataGrid</code>) that produces typed data grid components for any entity type. See the <a href="?path=/docs/components-organisms-shared-entity-data-grid-guide--docs">Entity Data Grid Guide</a>.</td>
+    </tr>
+    <tr>
+      <td><strong>Sidebar</strong></td>
+      <td><code>organisms/sidebar/</code></td>
+      <td>Application navigation sidebar with collapsible sections.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Reference organisms
+
+Domain-specific organisms grouped by business domain.
+
+**Items** (`organisms/reference/items/`)
+
+<table>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Items Data Grid</strong></td>
+      <td>Data grid specialized for the items domain with item-specific columns and editing.</td>
+    </tr>
+    <tr>
+      <td><strong>Item Drawer</strong></td>
+      <td>Slide-out panel for viewing, adding, and editing item details.</td>
+    </tr>
+    <tr>
+      <td><strong>Item Supply Form Dialog</strong></td>
+      <td>Modal dialog for adding or editing item supply relationships.</td>
+    </tr>
+    <tr>
+      <td><strong>Item Supply Section</strong></td>
+      <td>Section component displaying an item's supply chain with add/edit/remove capabilities.</td>
+    </tr>
+  </tbody>
+</table>
+
+**Business Affiliates** (`organisms/reference/business-affiliates/`)
+
+<table>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Suppliers Data Grid</strong></td>
+      <td>Data grid for suppliers with supplier-specific columns and editing.</td>
+    </tr>
+    <tr>
+      <td><strong>Supplier Drawer</strong></td>
+      <td>Slide-out panel for viewing, adding, and editing supplier details.</td>
+    </tr>
+    <tr>
+      <td><strong>Supplier Form</strong></td>
+      <td>Shared form component for creating and editing business affiliates.</td>
+    </tr>
+  </tbody>
+</table>
+
+## File structure
+
+```
+organisms/
+  shared/
+    entity-data-grid/
+      create-entity-data-grid.tsx    # Factory function
+      create-entity-data-grid.stories.tsx
+      create-entity-data-grid.test.tsx
+      entity-data-grid.mdx           # Factory guide
+      index.ts
+  reference/
+    items/
+      items-data-grid/
+        items-data-grid.tsx
+        items-data-grid.stories.tsx
+        items-data-grid.test.tsx
+        ...
+      item-supply-form-dialog/
+        ...
+      item-supply-section/
+        ...
+    business-affiliates/
+      suppliers-data-grid/
+        ...
+      supplier-drawer/
+        ...
+      supplier-form/
+        ...
+  item-drawer/                       # Items domain (to be moved to reference/items/)
+    item-drawer.tsx
+    item-drawer.stories.tsx
+    ...
+  sidebar/                           # Shared (to be moved to shared/)
+    sidebar.tsx
+    sidebar.stories.tsx
+    ...
+```
+
+## Adding a new organism
+
+### Adding to an existing domain
+
+1. Create the directory at `organisms/reference/{domain}/{component-name}/`.
+2. Implement the component.
+3. Set the story title to `Components/Organisms/Reference/{Domain}/{Component Name}`.
+4. Optionally create docs using `<Meta of={Stories} />`.
+
+### Adding a new domain
+
+1. Create the domain directory at `organisms/reference/{domain-name}/`.
+2. Add components as subdirectories.
+3. Story titles follow `Components/Organisms/Reference/{Domain Name}/{Component Name}`.
+
+### Adding a new entity data grid
+
+Use the `createArdaEntityDataGrid` factory. The complete process is documented in the [Entity Data Grid Guide](?path=/docs/components-organisms-shared-entity-data-grid-guide--docs). In summary:
+
+1. Create column presets at `molecules/data-grid/presets/{entity}/`.
+2. Call the factory at `organisms/reference/{domain}/{entity}-data-grid/`.
+3. Create a thin wrapper component that maps entity-specific prop names to the generic interface.
+
+### Adding a shared organism
+
+1. Create the directory at `organisms/shared/{component-name}/`.
+2. Set the story title to `Components/Organisms/Shared/{Component Name}`.
+
+## Story title conventions
+
+Story titles determine the Storybook sidebar structure. Always use the correct prefix:
+
+```
+Components/Organisms/Shared/{Component Name}
+Components/Organisms/Reference/Items/{Component Name}
+Components/Organisms/Reference/Business Affiliates/{Component Name}
+```
+
+For documentation MDX files, use `<Meta of={Stories} />` to attach docs to the stories page. Do **not** use `<Meta title="..." />` with a standalone path, as this creates a separate folder in the sidebar.

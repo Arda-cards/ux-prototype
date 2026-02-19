@@ -1,0 +1,325 @@
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
+import * as TypeaheadCellEditorStories from './typeahead-cell-editor.stories';
+
+<Meta of={TypeaheadCellEditorStories} />
+
+# Typeahead Cell Editor
+
+An AG Grid cell editor component that wraps the `ArdaTypeahead` component for searchable, filterable selection.
+
+## Overview
+
+The `ArdaTypeaheadCellEditor` provides inline editing with typeahead search functionality. It supports both static and async data sources, making it suitable for small option lists and large datasets loaded from APIs.
+
+## Features
+
+- Wraps the existing `ArdaTypeahead` component
+- Static data source with local filtering
+- Async data source with API integration
+- Loading indicator for async operations
+- Keyboard navigation and accessibility
+- Auto-focus on mount
+- Escape to cancel editing
+- Immediate commit on selection
+- Metadata display for additional context
+
+## Usage
+
+### Basic Usage with Static Data
+
+Use the `createTypeaheadCellEditor` factory to create a cell editor:
+
+```typescript
+import { createTypeaheadCellEditor } from '@/components/atoms/typeahead-cell-editor/typeahead-cell-editor';
+
+const columnDefs = [
+  {
+    field: 'assignee',
+    headerName: 'Assignee',
+    editable: true,
+    cellEditor: createTypeaheadCellEditor({
+      dataSource: [
+        { value: 'user-1', label: 'Alice Anderson', meta: 'Engineering' },
+        { value: 'user-2', label: 'Bob Brown', meta: 'Product' },
+        { value: 'user-3', label: 'Charlie Chen', meta: 'Design' },
+      ],
+      placeholder: 'Search assignee...',
+    }),
+    // Format the displayed value
+    valueFormatter: (params) => {
+      const user = users.find((u) => u.value === params.value);
+      return user ? user.label : params.value;
+    },
+  },
+];
+```
+
+### Async Data Source
+
+For large datasets or API-driven options:
+
+```typescript
+const columnDefs = [
+  {
+    field: 'customer',
+    editable: true,
+    cellEditor: createTypeaheadCellEditor({
+      dataSource: async (query) => {
+        const response = await fetch(`/api/customers?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        return data.map((customer) => ({
+          value: customer.id,
+          label: customer.name,
+          meta: customer.type,
+        }));
+      },
+      placeholder: 'Search customer...',
+    }),
+    valueFormatter: (params) => {
+      // Fetch and display the label from your state or cache
+      return getCustomerName(params.value);
+    },
+  },
+];
+```
+
+### Direct Component Usage
+
+For advanced use cases:
+
+```typescript
+import { ArdaTypeaheadCellEditor } from '@/components/atoms/typeahead-cell-editor/typeahead-cell-editor';
+
+const columnDefs = [
+  {
+    field: 'reviewer',
+    cellEditor: ArdaTypeaheadCellEditor,
+    cellEditorParams: {
+      dataSource: reviewerOptions,
+      placeholder: 'Find reviewer...',
+    },
+  },
+];
+```
+
+## API
+
+### ArdaTypeaheadCellEditor Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>dataSource</td>
+      <td>TypeaheadOption[] | ((query: string) =&#x3E; Promise&#x3C;TypeaheadOption[]&#x3E;)</td>
+      <td>required</td>
+      <td>Static array or async function returning options</td>
+    </tr>
+    <tr>
+      <td>placeholder</td>
+      <td>string</td>
+      <td>"Search..."</td>
+      <td>Placeholder text for the input field</td>
+    </tr>
+    <tr>
+      <td>value</td>
+      <td>string</td>
+      <td>undefined</td>
+      <td>Initial value (passed by AG Grid)</td>
+    </tr>
+    <tr>
+      <td>stopEditing</td>
+      <td>(cancel?: boolean) =&#x3E; void</td>
+      <td>undefined</td>
+      <td>Callback to stop editing (passed by AG Grid)</td>
+    </tr>
+  </tbody>
+</table>
+
+### TypeaheadOption Interface
+
+<table>
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>value</td>
+      <td>string</td>
+      <td>The unique identifier stored in the cell</td>
+    </tr>
+    <tr>
+      <td>label</td>
+      <td>string</td>
+      <td>The display text shown to users</td>
+    </tr>
+    <tr>
+      <td>meta</td>
+      <td>string</td>
+      <td>Optional metadata shown alongside the label</td>
+    </tr>
+  </tbody>
+</table>
+
+### createTypeaheadCellEditor Parameters
+
+<table>
+  <thead>
+    <tr>
+      <th>Parameter</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>dataSource</td>
+      <td>TypeaheadOption[] | ((query: string) =&#x3E; Promise&#x3C;TypeaheadOption[]&#x3E;)</td>
+      <td>Static array or async function for options</td>
+    </tr>
+    <tr>
+      <td>placeholder</td>
+      <td>string</td>
+      <td>Optional placeholder text</td>
+    </tr>
+  </tbody>
+</table>
+
+## Behavior
+
+### Editing Flow
+
+1. User clicks or presses Enter on a cell with this editor
+2. Editor appears and auto-focuses the input field
+3. User types to filter options (static) or trigger API search (async)
+4. User selects an option from the dropdown or presses Escape to cancel
+5. On selection, the value is committed immediately
+6. Editor closes and the grid displays the formatted value
+
+### Keyboard Support
+
+- **Arrow Up/Down**: Navigate filtered options
+- **Enter**: Select the active option
+- **Escape**: Cancel editing without saving changes
+- **Type**: Filter options or trigger async search
+
+### Static vs Async Data Sources
+
+#### Static Data Source (Array)
+
+- Filters options locally as user types
+- No loading indicator
+- Instant results
+- Best for lists under 100 items
+
+#### Async Data Source (Function)
+
+- Calls the function with the current query
+- Shows loading indicator during fetch
+- Debounced input (250ms) inherited from `ArdaTypeahead`
+- Best for large datasets or server-side search
+
+## Examples
+
+<Canvas of={TypeaheadCellEditorStories.Default} />
+
+<Canvas of={TypeaheadCellEditorStories.AsyncDataSource} />
+
+<Canvas of={TypeaheadCellEditorStories.Interactive} />
+
+<Canvas of={TypeaheadCellEditorStories.LargeDataset} />
+
+## Design Rationale
+
+### Why Wrap ArdaTypeahead?
+
+The `ArdaTypeaheadCellEditor` wraps the existing `ArdaTypeahead` component rather than reimplementing typeahead logic. This provides:
+
+- **Consistency**: Same UX as typeahead used elsewhere in the app
+- **Maintainability**: Single source of truth for typeahead behavior
+- **Features**: Inherit all typeahead features like debouncing, loading states, and keyboard navigation
+
+### Value vs Label Storage
+
+AG Grid cells store the `value` (e.g., `user-1`), not the `label` (e.g., "Alice Anderson"). This is correct because:
+
+- Values are stable identifiers that survive label changes
+- Labels can be formatted or localized without changing data
+- Sorting and filtering work on stable values
+
+Use `valueFormatter` in your column definition to display labels:
+
+```typescript
+valueFormatter: (params) => {
+  const option = options.find((o) => o.value === params.value);
+  return option ? option.label : params.value;
+};
+```
+
+### Commit on Selection
+
+Unlike text inputs that wait for Enter or blur, the typeahead editor commits immediately when an option is selected. This provides a faster editing experience since selecting from a list is an intentional action.
+
+### Async Data Handling
+
+For async data sources, the component:
+
+1. Shows a loading spinner during fetch
+2. Handles errors gracefully (logs to console, shows empty results)
+3. Allows the user to type while loading (debounced)
+
+Ensure your async function is properly debounced at the API level to avoid excessive requests.
+
+## Integration Notes
+
+### AG Grid Version Compatibility
+
+This component is designed for AG Grid v28+ using the modern component-based editor API. It uses `forwardRef` and `useImperativeHandle` to expose the `getValue()` method.
+
+### Initial Value Display
+
+When the editor opens with an initial value, it automatically finds the corresponding option and displays its label in the input field. This provides context to the user before they start typing.
+
+### Error Handling
+
+Async data source errors are logged to the console and result in an empty option list. For production use, consider:
+
+```typescript
+const dataSource = async (query: string) => {
+  try {
+    const response = await fetch(`/api/search?q=${query}`);
+    if (!response.ok) throw new Error('Search failed');
+    return await response.json();
+  } catch (error) {
+    // Show user-friendly error
+    console.error('Search error:', error);
+    return [{ value: 'error', label: 'Search failed - please try again', meta: '' }];
+  }
+};
+```
+
+### Performance Tips
+
+For large datasets:
+
+- Use async data source with server-side filtering
+- Implement pagination if needed
+- Consider caching results in your application state
+- Debounce is already built into `ArdaTypeahead` (250ms)
+
+## Related Components
+
+- `ArdaTypeahead` - The underlying typeahead component
+- `ArdaSelectCellEditor` - For simple dropdowns without search
+- Standard AG Grid text editors for free-form input

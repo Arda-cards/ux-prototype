@@ -34,34 +34,24 @@ interface AppLayoutProps {
 
 export function AppLayout({ children, currentPath = '/', banner }: AppLayoutProps) {
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#F8F9FA' }}>
+    <div className="flex min-h-screen bg-secondary">
       <ArdaSidebar
         navItems={defaultNavItems}
         collapsed={false}
         currentPath={currentPath}
         user={defaultUser}
       />
-      <div style={{ marginLeft: 240, flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <div className="ml-[240px] flex flex-1 flex-col">
         {/* Top Header Bar */}
-        <header
-          style={{
-            height: 56,
-            background: '#FFFFFF',
-            borderBottom: '1px solid #E5E5E5',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '0 24px',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, maxWidth: 400 }}>
-            <Search size={16} color="#737373" />
-            <span style={{ color: '#737373', fontSize: 14 }}>
+        <header className="h-14 bg-background border-b border-border flex items-center justify-between px-6">
+          <div className="flex items-center gap-2 flex-1 max-w-[400px]">
+            <Search size={16} className="text-muted-foreground" />
+            <span className="text-muted-foreground text-sm">
               Search items, orders, suppliers...
             </span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <Bell size={18} color="#737373" />
+          <div className="flex items-center gap-4">
+            <Bell size={18} className="text-muted-foreground" />
           </div>
         </header>
 
@@ -69,7 +59,7 @@ export function AppLayout({ children, currentPath = '/', banner }: AppLayoutProp
         {banner}
 
         {/* Page Content */}
-        <main style={{ flex: 1, padding: 24 }}>{children}</main>
+        <main className="flex-1 p-6">{children}</main>
       </div>
     </div>
   );

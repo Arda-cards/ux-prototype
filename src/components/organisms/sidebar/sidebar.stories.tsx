@@ -1,6 +1,6 @@
 import React from 'react';
-import type { Meta, StoryObj } from '@storybook/react';
-import { expect, userEvent, within } from '@storybook/test';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, fn, userEvent, within } from 'storybook/test';
 import {
   LayoutDashboard,
   Package,
@@ -27,7 +27,7 @@ const sampleUser = {
 };
 
 const meta: Meta<typeof ArdaSidebar> = {
-  title: 'Components/Organisms/Sidebar',
+  title: 'Components/Organisms/Shared/Sidebar',
   component: ArdaSidebar,
   parameters: {
     layout: 'fullscreen',
@@ -56,13 +56,19 @@ const meta: Meta<typeof ArdaSidebar> = {
       table: { category: 'Runtime' },
     },
     onNavigate: {
+      action: 'navigate',
       description: 'Called when a navigation item is clicked.',
       table: { category: 'Events' },
     },
     onLogout: {
+      action: 'logout',
       description: 'Called when the logout button is clicked.',
       table: { category: 'Events' },
     },
+  },
+  args: {
+    onNavigate: fn(),
+    onLogout: fn(),
   },
   decorators: [
     (Story) => (
@@ -82,6 +88,11 @@ export const Expanded: Story = {
     collapsed: false,
     currentPath: '/',
     user: sampleUser,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('Dashboard')).toBeInTheDocument();
+    await expect(canvas.getByText('Alex Rivera')).toBeInTheDocument();
   },
 };
 
@@ -128,7 +139,7 @@ function ToggleDemo() {
           onClick={() => setCollapsed(!collapsed)}
           style={{
             padding: '8px 16px',
-            border: '1px solid #E5E5E5',
+            border: '1px solid var(--base-border)',
             borderRadius: 8,
             cursor: 'pointer',
             background: 'white',

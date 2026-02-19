@@ -1,10 +1,10 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { expect, within } from '@storybook/test';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, within } from 'storybook/test';
 
 import { ArdaBadge } from './badge';
 
 const meta: Meta<typeof ArdaBadge> = {
-  title: 'Components/Atoms/Badge',
+  title: 'Components/Atoms/Display and Layout/Badge',
   component: ArdaBadge,
   parameters: {
     docs: {

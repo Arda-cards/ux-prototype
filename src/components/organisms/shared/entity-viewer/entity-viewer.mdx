@@ -1,0 +1,761 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Components/Organisms/Shared/EntityViewer/Documentation" />
+
+# Abstract Entity Viewer
+
+`createArdaEntityViewer<T>()` is a generic factory that produces a fully typed entity viewer component. It encapsulates the display/edit lifecycle, validation, error handling, and layout modes so that domain-specific viewers (Items, Suppliers, etc.) are thin configuration wrappers with no duplicated logic.
+
+## Architecture Overview
+
+The entity viewer system has four core modules:
+
+- **Factory** (`createArdaEntityViewer`) &#8212; Accepts a `DesignConfig` and optional `FieldDescriptor` map at module scope. Returns a `Component` that accepts `MountConfig` props at each render site.
+- **State Machine Hook** (`useEntityViewer`) &#8212; Drives the full entity lifecycle: load/create &#8594; display &#8594; edit &#8594; validate &#8594; update &#8594; display. Exposes `state` and `actions`.
+- **Shell** (`EntityViewerShell`) &#8212; Pure rendering layer. Receives pre-computed state and actions, renders fields, navigation, error panels, and sub-viewer containers.
+- **Types** (`types.ts`) &#8212; All configuration DSL types, state interfaces, and action signatures.
+
+### Two-Phase Configuration
+
+Configuration is split into two temporal phases:
+
+<table>
+  <thead>
+    <tr>
+      <th>Phase</th>
+      <th>When</th>
+      <th>What it controls</th>
+      <th>Interface</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Design</strong></td>
+      <td>Module load (factory call)</td>
+      <td>Entity callbacks: validate, get, update, newInstance, lifecycle hooks</td>
+      <td><code>DesignConfig&lt;T&gt;</code></td>
+    </tr>
+    <tr>
+      <td><strong>Mount</strong></td>
+      <td>Every render site</td>
+      <td>Layout mode, editability, field visibility/order, tabs, title</td>
+      <td><code>MountConfig&lt;T&gt;</code></td>
+    </tr>
+  </tbody>
+</table>
+
+Mount props are merged in priority order: built-in defaults &#8592; `designConfig.defaultMountConfig` &#8592; mount-site props.
+
+---
+
+## Configuration Guide
+
+### DesignConfig (Factory Time)
+
+Provided once when calling `createArdaEntityViewer`. Defines entity-level behavior that never changes per render site.
+
+<table>
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Type</th>
+      <th>Required</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>validate</code></td>
+      <td><code>(previous: T, updated: T) =&gt; ValidationResult</code></td>
+      <td>Yes</td>
+      <td>Compares previous and updated entity states. Returns field-level and entity-level errors.</td>
+    </tr>
+    <tr>
+      <td><code>get</code></td>
+      <td><code>(entityId: string) =&gt; Promise&lt;T&gt;</code></td>
+      <td>Yes</td>
+      <td>Fetches an entity by ID. Called on mount when <code>entityId</code> is provided.</td>
+    </tr>
+    <tr>
+      <td><code>update</code></td>
+      <td><code>(entityId: string, original: T, updated: T) =&gt; Promise&lt;UpdateResult&lt;T&gt;&gt;</code></td>
+      <td>Yes</td>
+      <td>Persists changes. Returns the saved entity and any server-side errors.</td>
+    </tr>
+    <tr>
+      <td><code>newInstance</code></td>
+      <td><code>() =&gt; T</code></td>
+      <td>Yes</td>
+      <td>Creates a default entity for the "create" flow (no <code>entityId</code>).</td>
+    </tr>
+    <tr>
+      <td><code>onEnterEdit</code></td>
+      <td><code>(entity: T) =&gt; void</code></td>
+      <td>No</td>
+      <td>Called when the viewer transitions from display to edit mode.</td>
+    </tr>
+    <tr>
+      <td><code>onExitWithErrors</code></td>
+      <td><code>(errors: ViewerError[]) =&gt; void</code></td>
+      <td>No</td>
+      <td>Called when submit fails with validation or server errors.</td>
+    </tr>
+    <tr>
+      <td><code>onExitWithSuccess</code></td>
+      <td><code>(entity: T) =&gt; void</code></td>
+      <td>No</td>
+      <td>Called after a successful save.</td>
+    </tr>
+    <tr>
+      <td><code>defaultMountConfig</code></td>
+      <td><code>Partial&lt;MountConfig&lt;T&gt;&gt;</code></td>
+      <td>No</td>
+      <td>Defaults merged into every MountConfig for this viewer type.</td>
+    </tr>
+  </tbody>
+</table>
+
+### MountConfig (Render Site)
+
+Provided as props at each render site. Controls layout, editability, and field presentation.
+
+<table>
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>layoutMode</code></td>
+      <td><code>'continuous-scroll' | 'stepped'</code></td>
+      <td><code>'continuous-scroll'</code></td>
+      <td>Layout strategy. Stepped requires <code>tabs</code> to be defined.</td>
+    </tr>
+    <tr>
+      <td><code>editable</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Whether the Edit button appears in display mode.</td>
+    </tr>
+    <tr>
+      <td><code>entityId</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>ID of an existing entity to load. Omit for the "create" flow.</td>
+    </tr>
+    <tr>
+      <td><code>title</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Title displayed at the top of the viewer. Required.</td>
+    </tr>
+    <tr>
+      <td><code>tabs</code></td>
+      <td><code>readonly TabConfig[]</code></td>
+      <td>&#8212;</td>
+      <td>Tab definitions for stepped layout. Each tab has <code>name</code>, <code>label</code>, <code>fieldKeys</code>, and <code>order</code>.</td>
+    </tr>
+    <tr>
+      <td><code>fieldVisibility</code></td>
+      <td><code>Partial&lt;Record&lt;keyof T, boolean&gt;&gt;</code></td>
+      <td>&#8212;</td>
+      <td>Per-field visibility overrides.</td>
+    </tr>
+    <tr>
+      <td><code>fieldOrder</code></td>
+      <td><code>(keyof T)[]</code></td>
+      <td>&#8212;</td>
+      <td>Ordered list of field keys controlling display order.</td>
+    </tr>
+    <tr>
+      <td><code>fieldEditability</code></td>
+      <td><code>Partial&lt;Record&lt;keyof T, boolean&gt;&gt;</code></td>
+      <td>&#8212;</td>
+      <td>Per-field editability overrides.</td>
+    </tr>
+    <tr>
+      <td><code>viewerSelection</code></td>
+      <td><code>Partial&lt;Record&lt;keyof T, ComponentType&gt;&gt;</code></td>
+      <td>&#8212;</td>
+      <td>Per-field component overrides for heterogeneous field types.</td>
+    </tr>
+    <tr>
+      <td><code>submitLabel</code></td>
+      <td><code>string</code></td>
+      <td><code>'Submit'</code></td>
+      <td>Label for the submit/save button (continuous-scroll layout).</td>
+    </tr>
+    <tr>
+      <td><code>onDirtyNavigate</code></td>
+      <td><code>(discard, cancel) =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Called when the user attempts to navigate away with unsaved changes.</td>
+    </tr>
+  </tbody>
+</table>
+
+### FieldDescriptor
+
+Per-field configuration provided alongside the `DesignConfig` at factory time.
+
+<table>
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>component</code></td>
+      <td><code>ComponentType&lt;AtomProps&lt;V&gt;&gt;</code></td>
+      <td>The atom component used to render this field.</td>
+    </tr>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>Human-readable field label.</td>
+    </tr>
+    <tr>
+      <td><code>placeholder</code></td>
+      <td><code>string</code></td>
+      <td>Placeholder text shown when the field value is empty.</td>
+    </tr>
+    <tr>
+      <td><code>editable</code></td>
+      <td><code>boolean</code></td>
+      <td>Whether this field is editable when the viewer is in edit mode.</td>
+    </tr>
+    <tr>
+      <td><code>visible</code></td>
+      <td><code>boolean</code></td>
+      <td>Whether this field is visible.</td>
+    </tr>
+    <tr>
+      <td><code>tabName</code></td>
+      <td><code>string</code></td>
+      <td>Tab name this field belongs to (stepped layout only).</td>
+    </tr>
+    <tr>
+      <td><code>validate</code></td>
+      <td><code>(value: V) =&gt; string | undefined</code></td>
+      <td>Per-field validation. Return an error message string or undefined if valid.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## State Machine
+
+The viewer operates as a state machine with three modes: `display`, `edit`, and `errored`.
+
+### Transition Diagram
+
+```
+Display ──[Edit button]──► Edit ──[Submit]──► Validate ──[pass]──► Update ──[success]──► Display
+                            │                    │                    │
+                            │                    ▼                    ▼
+                            │               [fail] ──► Errored   [server error] ──► Errored
+                            │                           │   │
+                            ▼                           │   ▼
+                       [Cancel] ──► Display         [Fix + Submit] ──► Validate
+                                                        │
+                                                   [Cancel] ──► Display
+                                                        │
+                                                   [Dismiss] ──► Edit
+```
+
+### Edit Flow vs Create Flow
+
+The state machine supports two flows based on whether `entityId` is provided:
+
+- **Edit flow** (`entityId` present): `get()` &#8594; Display &#8594; Edit &#8594; Validate &#8594; `update()` &#8594; re-`get()` &#8594; Display
+- **Create flow** (`entityId` absent): `newInstance()` &#8594; Edit &#8594; Validate &#8594; `update()` &#8594; `onExitWithSuccess()` &#8594; Display
+
+### State Shape
+
+The `EntityViewerState<T>` interface exposes:
+
+<table>
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>mode</code></td>
+      <td><code>'display' | 'edit' | 'errored'</code></td>
+      <td>Current viewer mode.</td>
+    </tr>
+    <tr>
+      <td><code>original</code></td>
+      <td><code>T | null</code></td>
+      <td>Immutable reference copy as loaded/saved.</td>
+    </tr>
+    <tr>
+      <td><code>current</code></td>
+      <td><code>T | null</code></td>
+      <td>Working copy that accumulates edits.</td>
+    </tr>
+    <tr>
+      <td><code>fieldErrors</code></td>
+      <td><code>readonly ViewerError[]</code></td>
+      <td>Field-level validation errors.</td>
+    </tr>
+    <tr>
+      <td><code>entityErrors</code></td>
+      <td><code>readonly ViewerError[]</code></td>
+      <td>Entity-level validation errors.</td>
+    </tr>
+    <tr>
+      <td><code>isDirty</code></td>
+      <td><code>boolean</code></td>
+      <td>Whether the working copy differs from the original.</td>
+    </tr>
+    <tr>
+      <td><code>isLoading</code></td>
+      <td><code>boolean</code></td>
+      <td>Whether an async operation is in progress.</td>
+    </tr>
+    <tr>
+      <td><code>currentTabIndex</code></td>
+      <td><code>number</code></td>
+      <td>Active tab index (stepped layout).</td>
+    </tr>
+  </tbody>
+</table>
+
+### Actions
+
+The `EntityViewerActions<T>` interface provides:
+
+<table>
+  <thead>
+    <tr>
+      <th>Action</th>
+      <th>Signature</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enterEditMode</code></td>
+      <td><code>() =&gt; void</code></td>
+      <td>Transition from display to edit. Deep-copies the original as the working copy.</td>
+    </tr>
+    <tr>
+      <td><code>cancelEdit</code></td>
+      <td><code>() =&gt; void</code></td>
+      <td>Discard edits and return to display mode.</td>
+    </tr>
+    <tr>
+      <td><code>validateAndSubmit</code></td>
+      <td><code>() =&gt; Promise&lt;void&gt;</code></td>
+      <td>Run validation pipeline and, if clean, persist changes.</td>
+    </tr>
+    <tr>
+      <td><code>handleFieldChange</code></td>
+      <td><code>(fieldKey: K, value: T[K]) =&gt; void</code></td>
+      <td>Update a single field value on the working copy.</td>
+    </tr>
+    <tr>
+      <td><code>navigateToTab</code></td>
+      <td><code>(tabIndex: number) =&gt; Promise&lt;boolean&gt;</code></td>
+      <td>Navigate to a tab by index. Validates the current tab first; returns false if blocked.</td>
+    </tr>
+    <tr>
+      <td><code>dismissErrors</code></td>
+      <td><code>() =&gt; void</code></td>
+      <td>Clear errors and return to edit mode.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Validation Flow
+
+Validation runs at three levels, in order:
+
+### 1. Field-Level Validation
+
+Each `FieldDescriptor` can define a `validate` function. When `validateAndSubmit` is called, the hook iterates over all visible, editable field descriptors and calls their `validate(value)` function. If any return an error message, the viewer transitions to `errored` mode with the accumulated `fieldErrors`.
+
+### 2. Entity-Level Validation
+
+If field validation passes, the `DesignConfig.validate(previous, updated)` callback runs. This function receives both the original and working copies and returns a `ValidationResult` containing both `fieldErrors` and `entityErrors`. Any errors transition the viewer to `errored` mode.
+
+### 3. Server-Side Validation
+
+If entity validation passes, `DesignConfig.update()` is called. The server may return errors in the `UpdateResult.errors` array. These are split into field-specific errors (those with a `fieldPath`) and entity-level errors, and the viewer transitions to `errored` mode.
+
+### Tab Validation (Stepped Layout)
+
+In stepped layout, navigating away from a tab triggers field validation for that tab's fields only. If any field on the current tab fails validation, navigation is blocked and errors are displayed inline.
+
+### Error Recovery
+
+From the `errored` state, the user has three options:
+
+- **Fix and resubmit** &#8212; Correct the fields, then submit again to re-run validation.
+- **Cancel** &#8212; Discard all edits and return to display mode.
+- **Dismiss** &#8212; Clear the error indicators and return to edit mode to continue editing.
+
+---
+
+## Sub-Viewer Composition
+
+Sub-viewers allow nesting entity viewers within a parent viewer for related or child entities.
+
+### SubViewerProps
+
+The `SubViewerProps<V>` interface extends `AtomProps<V>` with viewer-specific capabilities:
+
+<table>
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>defaultCollapsed</code></td>
+      <td><code>boolean</code></td>
+      <td>Whether the sub-viewer section starts collapsed.</td>
+    </tr>
+    <tr>
+      <td><code>triggerValidation</code></td>
+      <td><code>() =&gt; void</code></td>
+      <td>Programmatically trigger validation on this sub-viewer.</td>
+    </tr>
+    <tr>
+      <td><code>onValidationResult</code></td>
+      <td><code>(errors: ViewerError[]) =&gt; void</code></td>
+      <td>Report validation results back to the parent viewer.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Visual Treatment
+
+- Sub-viewers render inside a collapsible container with an indented border.
+- They are identified by their component's display name containing "Viewer" or "SubViewer".
+- Sub-viewers always use `continuous-scroll` layout regardless of the parent's layout mode.
+
+### Responsive Layout via Container Queries
+
+The shell's `SubViewerContainer` establishes a CSS container query context (`@container`) around its content area. This allows sub-viewer components to use Tailwind v4 container query variants (prefixed with `@`) instead of viewport-based breakpoints for responsive field layout.
+
+**Why container queries?** Sub-viewers render in varying widths depending on context &#8212; a full-page viewer may be 800px wide, but the same sub-viewer inside a 420px side drawer should stack fields vertically. Viewport breakpoints (`sm:`, `md:`) respond to the browser window size, which is the same in both cases. Container queries (`@sm:`, `@md:`) respond to the sub-viewer's actual available width.
+
+**How it works:**
+
+1. The shell adds `@container` to the `SubViewerContainer` content wrapper.
+2. Sub-viewers use `@sm:grid-cols-2` instead of `grid-cols-2` for two-column field grids.
+3. When the container is narrow (e.g., inside a drawer), fields stack into a single column. When the container is wide enough (&#8805;24rem at `@sm`), fields arrange into two columns.
+
+**Convention for sub-viewer authors:** Use `@`-prefixed Tailwind breakpoints for any multi-column layout inside a sub-viewer. The container context is provided automatically by the shell.
+
+```tsx
+// Inside a sub-viewer component:
+return (
+  &lt;div className="space-y-3"&gt;
+    &lt;ArdaTextFieldInteractive ... /&gt;
+    {/* Two-column grid that stacks in narrow containers */}
+    &lt;div className="grid grid-cols-1 @sm:grid-cols-2 gap-3"&gt;
+      &lt;ArdaTextFieldInteractive label="City" ... /&gt;
+      &lt;ArdaTextFieldInteractive label="State" ... /&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+);
+```
+
+This pattern ensures sub-viewers adapt to their rendering context without requiring any prop-based layout configuration from the parent viewer.
+
+### Nesting Example
+
+```typescript
+// Define a sub-viewer field descriptor
+const fieldDescriptors = {
+  name: {
+    component: ArdaTextFieldInteractive,
+    label: 'Item Name',
+    editable: true,
+    visible: true,
+  },
+  supplier: {
+    component: SupplierSubViewer, // displayName includes "Viewer"
+    label: 'Supplier Details',
+    editable: true,
+    visible: true,
+  },
+};
+```
+
+The shell automatically detects sub-viewer descriptors and wraps them in a `SubViewerContainer` with collapse/expand behavior.
+
+---
+
+## Code Examples
+
+### Creating a Basic Entity Viewer
+
+```typescript
+import { createArdaEntityViewer } from '@/components/organisms/shared/entity-viewer';
+import { ArdaTextFieldInteractive } from '@/components/atoms/form/text';
+import { ArdaNumberFieldInteractive } from '@/components/atoms/form/number';
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+}
+
+const { Component: ProductViewer } = createArdaEntityViewer<Product>(
+  {
+    validate: (prev, updated) => ({
+      fieldErrors: updated.name ? [] : [{ message: 'Name is required', fieldPath: 'name' }],
+      entityErrors: [],
+    }),
+    get: async (id) => fetchProduct(id),
+    update: async (id, original, updated) => {
+      const saved = await saveProduct(id, updated);
+      return { entity: saved };
+    },
+    newInstance: () => ({ id: '', name: '', price: 0 }),
+  },
+  {
+    name: {
+      component: ArdaTextFieldInteractive,
+      label: 'Product Name',
+      editable: true,
+      visible: true,
+    },
+    price: {
+      component: ArdaNumberFieldInteractive,
+      label: 'Price',
+      editable: true,
+      visible: true,
+    },
+  },
+);
+
+// Usage at a render site:
+function ProductPage({ id }: { id: string }) {
+  return (
+    <ProductViewer
+      title="Product Details"
+      layoutMode="continuous-scroll"
+      editable
+      entityId={id}
+    />
+  );
+}
+```
+
+### Stepped Layout with Tabs
+
+```typescript
+const { Component: ProductViewer } = createArdaEntityViewer<Product>(designConfig, fieldDescriptors);
+
+function ProductWizard({ id }: { id: string }) {
+  return (
+    <ProductViewer
+      title="Edit Product"
+      layoutMode="stepped"
+      editable
+      entityId={id}
+      tabs={[
+        { name: 'basic', label: 'Basic Info', fieldKeys: ['name', 'sku'], order: 0 },
+        { name: 'pricing', label: 'Pricing', fieldKeys: ['price', 'currency'], order: 1 },
+        { name: 'details', label: 'Details', fieldKeys: ['description', 'weight'], order: 2 },
+      ]}
+    />
+  );
+}
+```
+
+In stepped mode, the shell renders a step indicator with numbered tabs and provides Back/Next/Done navigation buttons.
+
+### Custom Field Validation
+
+```typescript
+const fieldDescriptors = {
+  email: {
+    component: ArdaTextFieldInteractive,
+    label: 'Email',
+    editable: true,
+    visible: true,
+    validate: (value: string) => {
+      if (!value) return 'Email is required';
+      if (!value.includes('@')) return 'Invalid email format';
+      return undefined;
+    },
+  },
+  age: {
+    component: ArdaNumberFieldInteractive,
+    label: 'Age',
+    editable: true,
+    visible: true,
+    validate: (value: number) => {
+      if (value < 0 || value > 150) return 'Age must be between 0 and 150';
+      return undefined;
+    },
+  },
+};
+```
+
+### Sub-Viewer Nesting
+
+```typescript
+// Create a sub-viewer component
+function AddressSubViewer(props: SubViewerProps<Address>) {
+  // Render address fields using the sub-viewer protocol
+  return (
+    <div>
+      <input value={props.value?.street} readOnly={props.mode === 'display'} />
+      <input value={props.value?.city} readOnly={props.mode === 'display'} />
+    </div>
+  );
+}
+AddressSubViewer.displayName = 'AddressSubViewer';
+
+// Register it as a field descriptor
+const fieldDescriptors = {
+  name: {
+    component: ArdaTextFieldInteractive,
+    label: 'Name',
+    editable: true,
+    visible: true,
+  },
+  address: {
+    component: AddressSubViewer,
+    label: 'Shipping Address',
+    editable: true,
+    visible: true,
+  },
+};
+```
+
+The shell detects "Viewer" in the display name and wraps the field in a collapsible `SubViewerContainer`.
+
+---
+
+## Migration Guide
+
+### Moving from Custom Entity Forms
+
+If you have a custom entity form with manual state management, follow these steps:
+
+**Step 1: Extract entity callbacks**
+
+Move your fetch, save, and validation logic into a `DesignConfig`:
+
+```typescript
+// Before: scattered across component
+const handleSave = async () => { await api.save(entity); };
+
+// After: centralized in DesignConfig
+const designConfig: DesignConfig<MyEntity> = {
+  get: (id) => api.fetch(id),
+  update: (id, original, updated) => api.save(id, updated).then(entity => ({ entity })),
+  validate: (prev, updated) => myValidation(updated),
+  newInstance: () => defaultEntity(),
+};
+```
+
+**Step 2: Map form fields to FieldDescriptors**
+
+Replace individual form field JSX with a descriptor map:
+
+```typescript
+// Before: manual JSX
+<TextInput label="Name" value={entity.name} onChange={...} />
+
+// After: descriptor-driven
+const fieldDescriptors = {
+  name: {
+    component: ArdaTextFieldInteractive,
+    label: 'Name',
+    editable: true,
+    visible: true,
+  },
+};
+```
+
+**Step 3: Replace the component**
+
+```typescript
+// Before
+export function MyEntityForm({ id }) {
+  const [entity, setEntity] = useState(null);
+  const [errors, setErrors] = useState([]);
+  // ... 100+ lines of state management
+}
+
+// After
+const { Component: MyEntityViewer } = createArdaEntityViewer<MyEntity>(
+  designConfig,
+  fieldDescriptors,
+);
+
+export function MyEntityPage({ id }: { id: string }) {
+  return <MyEntityViewer title="My Entity" layoutMode="continuous-scroll" editable entityId={id} />;
+}
+```
+
+**Step 4: Handle lifecycle callbacks**
+
+Move side effects (analytics, notifications) into the design config hooks:
+
+```typescript
+const designConfig: DesignConfig<MyEntity> = {
+  // ...required callbacks
+  onEnterEdit: (entity) => analytics.track('edit_started', entity.id),
+  onExitWithSuccess: (entity) => toast.success('Saved successfully'),
+  onExitWithErrors: (errors) => logger.warn('Save failed', errors),
+};
+```
+
+---
+
+## Troubleshooting
+
+### Entity does not load on mount
+
+Verify that the `entityId` prop is being passed correctly. An empty string or `undefined` value triggers the "create" flow instead of loading an existing entity. Check that `DesignConfig.get()` returns a resolved promise with the entity object.
+
+### Validation errors not displaying
+
+Ensure field descriptors have `visible: true` and `editable: true`. Field-level validation only runs on visible, editable fields. Also verify that your `validate` function returns a `string` (not `true`/`false`) for error messages.
+
+### Stepped layout shows no tabs
+
+The `tabs` prop is required when `layoutMode` is `'stepped'`. Each tab must include a `fieldKeys` array referencing keys that exist in your field descriptors. Check the browser console for configuration warnings.
+
+### Tab navigation is blocked
+
+In edit mode, navigating away from a tab validates all fields on the current tab. If validation fails, navigation returns `false`. Check for field-level validation errors on the current tab's fields.
+
+### Fields not updating on edit
+
+Verify that `handleFieldChange` is being called with the correct `fieldKey`. The key must match a property name on the entity type `T`. The working copy (`state.current`) is immutable between changes &#8212; each field change creates a new shallow copy.
+
+### beforeunload warning fires unexpectedly
+
+The viewer registers a `beforeunload` handler when `isDirty` is `true`. This is cleared when edits are saved or cancelled. If you see unexpected warnings, check that `cancelEdit` or `validateAndSubmit` completed successfully.
+
+### Sub-viewer not rendering in collapsible container
+
+The shell identifies sub-viewers by checking if the component's `displayName` or `name` includes "viewer" or "subviewer" (case-insensitive). Ensure your sub-viewer component has the appropriate display name set.

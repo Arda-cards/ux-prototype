@@ -1,0 +1,247 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Use Cases/Reference/Items/Add Supply/Description" />
+
+# Items: Add Item Supply
+
+**Author**: Product Owner
+**Date**: 2025-01-20
+**Priority**: High
+**Feature Version**: MVP1
+
+## User Story
+
+As a **procurement specialist**,
+I want to **link an inventory item to a supplier with pricing, ordering method, and lead time**,
+so that **the system can generate purchase orders and track supplier terms for each item**.
+
+## Context
+
+When a new supplier relationship is established for an existing inventory item, the operator needs to record how that item is sourced: which supplier provides it, at what cost, through which ordering channel, and with what expected delivery lead time. This supply record enables downstream procurement workflows such as automated reorder suggestions and purchase order generation.
+
+The form is split into three steps to separate supplier selection from supply-specific details and final review.
+
+**Preconditions:**
+
+- The user is authenticated and has the **Items &gt; Write** permission.
+- The inventory item already exists in the system.
+- At least one business affiliate (supplier) is registered.
+
+## Acceptance Criteria
+
+- [ ] **Given** the user is on Step 1 with no supplier selected, **when** the supplier field is empty, **then** the "Next Step" button is disabled.
+- [ ] **Given** the user is on Step 1 with a supplier name entered, **when** they click "Next Step", **then** the wizard advances to Step 2 (Supply Details).
+- [ ] **Given** the user is on Step 2, **when** they click "Back", **then** Step 1 is shown with the previously selected supplier preserved.
+- [ ] **Given** the user is on Step 2 with Supply Name and Unit Cost filled, **when** they click "Next Step", **then** the wizard advances to Step 3 (Review).
+- [ ] **Given** the user is on Step 3 (Review), **when** the summary is displayed, **then** it shows supplier, supply name, SKU, order method, unit cost (formatted as currency), order quantity with unit, and lead time with unit.
+- [ ] **Given** the user is on Step 3, **when** they click "Confirm &amp; Add Supply", **then** a success screen displays the supply name, supplier, cost per unit, and lead time.
+- [ ] **Given** the success screen is displayed, **when** the user clicks "Start Over", **then** the wizard returns to a completely empty Step 1.
+- [ ] **Given** the user is on any step, **when** they click the "Reset" link, **then** all data is cleared and the wizard returns to Step 1.
+- [ ] **Given** the user is on a non-final step, **when** they click "Done", **then** the wizard submits with current/default values and shows the success screen.
+
+## Error Scenarios
+
+This use case covers the **happy path only**. Error scenarios (invalid pricing, unknown supplier, network errors) are addressed in separate use cases.
+
+## UI/UX Notes
+
+**Page:** Items &gt; Add Supply
+
+**Key interactions:**
+
+The workflow is a 3-step wizard plus a success confirmation screen.
+
+### Step 1 &#8212; Select Supplier
+
+The user selects the supplier for this supply relationship:
+
+<table>
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Type</th>
+      <th>Required</th>
+      <th>Validation</th>
+      <th>Example</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Supplier</td>
+      <td>Text input</td>
+      <td>Yes</td>
+      <td>Non-empty</td>
+      <td>Fastenal Corp.</td>
+    </tr>
+  </tbody>
+</table>
+
+- The "Next Step" button is **disabled** until a supplier name is entered.
+- A "Reset" link in the header clears all fields and returns to this step from anywhere.
+
+### Step 2 &#8212; Supply Details
+
+The step indicator shows Step 1 as complete and Step 2 as active. The user enters supply-specific details:
+
+<table>
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Type</th>
+      <th>Required</th>
+      <th>Validation</th>
+      <th>Example</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Supply Name</td>
+      <td>Text input</td>
+      <td>Yes</td>
+      <td>Non-empty</td>
+      <td>HC-500 Hydraulic Cylinder</td>
+    </tr>
+    <tr>
+      <td>Supplier SKU</td>
+      <td>Text input</td>
+      <td>No</td>
+      <td>Max 40 chars</td>
+      <td>FAS-HC500-A</td>
+    </tr>
+    <tr>
+      <td>Order Method</td>
+      <td>Dropdown select</td>
+      <td>No</td>
+      <td>Must select a value if set</td>
+      <td>Online</td>
+    </tr>
+    <tr>
+      <td>Unit Cost ($)</td>
+      <td>Number input</td>
+      <td>Yes</td>
+      <td>Decimal &#8805; 0, step 0.01</td>
+      <td>189.99</td>
+    </tr>
+    <tr>
+      <td>Order Qty</td>
+      <td>Number input</td>
+      <td>No</td>
+      <td>Integer &#8805; 0</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <td>Lead Time</td>
+      <td>Number input</td>
+      <td>No</td>
+      <td>Integer &#8805; 0</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <td>Lead Time Unit</td>
+      <td>Dropdown select</td>
+      <td>No</td>
+      <td>Hours, Days, Weeks, or Months</td>
+      <td>Days</td>
+    </tr>
+  </tbody>
+</table>
+
+**Order method options:** Purchase Order, Email, Phone, In Store, Online, RFQ.
+
+- "Back" returns to Step 1 with data preserved.
+- "Next Step" is **disabled** until Supply Name and Unit Cost are filled.
+- Unit Cost and Order Qty are displayed side-by-side. Lead Time and Lead Time Unit are displayed side-by-side.
+
+### Step 3 &#8212; Review &amp; Confirm
+
+The step indicator shows Steps 1 and 2 as complete and Step 3 as active. A read-only summary card shows:
+
+1. **Supplier** and **Supply Name**
+2. **SKU** and **Order Method**
+3. **Unit Cost** (formatted as currency, bold), **Order Qty** with unit
+4. **Lead Time** with unit
+
+- "Back" returns to Step 2 with data preserved.
+- "Confirm &amp; Add Supply" submits the record.
+
+### Step 4 &#8212; Success Confirmation
+
+The wizard is replaced by a centered confirmation screen:
+
+- A green circle with a checkmark icon.
+- Heading: **"Supply added successfully"**.
+- Subtext: **"`<Supply Name>` from `<Supplier>` has been linked."**
+- Three badges: "Primary" (blue), "`<unit cost>`/unit" (outline), "`<lead time>` `<unit>`s" (default).
+- A summary card showing Supplier, SKU, Order Method, and Order Qty.
+- A "Start Over" button that resets the wizard.
+
+## Dependencies
+
+- **Upstream**: Business Affiliates module (supplier must exist), Inventory Items module (item must exist).
+- **Downstream**: Purchase order generation (uses supplier terms), reorder suggestions (uses lead time and cost).
+
+## Out of Scope
+
+- Editing or deleting existing supply relationships.
+- Bulk import of supply records.
+- Supplier search with auto-complete from the affiliate registry.
+- Integration with backend API (this use case covers the front-end workflow only).
+
+## Notes
+
+### Sample Data
+
+For implementation and testing, use the following representative values:
+
+```
+Supplier:        Fastenal Corp.
+Supply Name:     HC-500 Hydraulic Cylinder
+SKU:             FAS-HC500-A
+Order Method:    Online
+Unit Cost:       189.99
+Order Qty:       5 EACH
+Lead Time:       5 Days
+Currency:        USD
+```
+
+### Story Artifacts
+
+This use case is implemented as three Storybook stories:
+
+<table>
+  <thead>
+    <tr>
+      <th>Story</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <strong>Interactive</strong>
+      </td>
+      <td>
+        Hands-on exploration &#8212; the user fills in real data and advances through the wizard manually.
+        A guide panel shows contextual help for each step.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Stepwise</strong>
+      </td>
+      <td>
+        Guided demo &#8212; the application advances one pre-filled scene at a time using story controls
+        (Next / Previous / Reset). Useful for walkthroughs and design reviews.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Automated</strong>
+      </td>
+      <td>
+        Regression test &#8212; a <code>play</code> function exercises the full workflow end-to-end using
+        the sample data above. Executed via Storybook play functions.
+      </td>
+    </tr>
+  </tbody>
+</table>

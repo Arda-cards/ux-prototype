@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { expect, fn, userEvent, within } from '@storybook/test';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, fn, userEvent, within } from 'storybook/test';
 
 import { sampleItemSupplies } from '@/types/reference/business-affiliates/item-supply';
 
@@ -8,7 +8,7 @@ import { ArdaItemDrawer, sampleItem } from './item-drawer';
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const meta: Meta<typeof ArdaItemDrawer> = {
-  title: 'Components/Organisms/ArdaItemDrawer',
+  title: 'Components/Organisms/Reference/Items/Item Drawer',
   component: ArdaItemDrawer,
   decorators: [
     (Story) => (

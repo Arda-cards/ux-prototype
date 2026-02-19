@@ -1,0 +1,109 @@
+import { Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as ImageStories from './image.stories';
+
+<Meta of={ImageStories} />
+
+# Image Cell
+
+Grid cell component for displaying and editing image URLs in AG Grid. Displays images from URLs with configurable sizing.
+
+## Modes
+
+### Display Mode
+
+Read-only image renderer. Shows placeholder icon for empty/undefined values or broken image URLs. Displays image thumbnail with specified dimensions.
+
+<Canvas of={ImageStories.Display} />
+
+### Edit Mode
+
+AG Grid cell editor with URL input control, auto-focus, Enter to commit, Escape to cancel.
+
+<Canvas of={ImageStories.Editor} />
+
+### Error Mode
+
+Edit mode with error styling and error messages displayed below the input.
+
+<Canvas of={ImageStories.InteractiveError} />
+
+### Editable Override
+
+When `editable` is set to `false`, the component renders in display mode regardless of the `mode` prop.
+
+<Canvas of={ImageStories.EditableOverride} />
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>value</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>The image URL</td>
+    </tr>
+    <tr>
+      <td><code>onChange</code></td>
+      <td><code>(original: string, current: string) =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Called with original and current values when value changes</td>
+    </tr>
+    <tr>
+      <td><code>mode</code></td>
+      <td><code>'display' | 'edit' | 'error'</code></td>
+      <td>&#8212;</td>
+      <td>Rendering mode</td>
+    </tr>
+    <tr>
+      <td><code>errors</code></td>
+      <td><code>string[]</code></td>
+      <td>&#8212;</td>
+      <td>Error messages (shown only in error mode)</td>
+    </tr>
+    <tr>
+      <td><code>editable</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>When false, forces display mode regardless of mode prop</td>
+    </tr>
+    <tr>
+      <td><code>maxWidth</code></td>
+      <td><code>number</code></td>
+      <td>&#8212;</td>
+      <td>Maximum width in pixels for the thumbnail</td>
+    </tr>
+    <tr>
+      <td><code>maxHeight</code></td>
+      <td><code>number</code></td>
+      <td><code>24</code></td>
+      <td>Maximum height in pixels for the thumbnail</td>
+    </tr>
+    <tr>
+      <td><code>alt</code></td>
+      <td><code>string</code></td>
+      <td><code>'Image'</code></td>
+      <td>Alt text for the image</td>
+    </tr>
+    <tr>
+      <td><code>onComplete</code></td>
+      <td><code>(value: string) =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Called on Enter or blur</td>
+    </tr>
+    <tr>
+      <td><code>onCancel</code></td>
+      <td><code>() =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Called on Escape</td>
+    </tr>
+  </tbody>
+</table>

@@ -1,0 +1,90 @@
+import { Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as CustomStories from './custom.stories';
+
+<Meta of={CustomStories} />
+
+# Custom Field
+
+Form field component that delegates ALL rendering to a parent-provided `render` prop. The atom itself has no display logic.
+
+## Render Prop Contract
+
+The `render` function receives only field-level context (R1.09 isolation). It does NOT receive the full entity object.
+
+```tsx
+render(
+  value: unknown,        // Current field value
+  mode: AtomMode,        // 'display' | 'edit' | 'error'
+  onChange: (original, current) => void,  // Change callback
+  errors?: string[]      // Validation errors (error mode only)
+) => ReactNode
+```
+
+The render function must handle all three modes:
+
+<table>
+  <thead>
+    <tr>
+      <th>Mode</th>
+      <th>Behaviour</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>display</code></td>
+      <td>Read-only presentation. No inputs, no errors.</td>
+    </tr>
+    <tr>
+      <td><code>edit</code></td>
+      <td>Editable inputs. The <code>errors</code> parameter is undefined.</td>
+    </tr>
+    <tr>
+      <td><code>error</code></td>
+      <td>Editable inputs with error messages. The <code>errors</code> array is provided.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Variants
+
+### Display
+
+Read-only rendering via the render prop, wrapped in form field styling.
+
+<Canvas of={CustomStories.Display} />
+
+### Editor
+
+Editable rendering via the render prop.
+
+<Canvas of={CustomStories.Editor} />
+
+### Interactive
+
+Switches between display and edit/error modes based on the `mode` prop.
+
+<Canvas of={CustomStories.InteractiveEdit} />
+
+### Error Mode
+
+Passes validation errors to the render function for custom error presentation.
+
+<Canvas of={CustomStories.InteractiveError} />
+
+## Isolation Requirement
+
+The `render` function receives ONLY field-level context: value, mode, onChange, and errors. It does not have access to entity-level data. This is enforced by the TypeScript signature and ensures that custom renderers remain reusable across different entity types.
+
+## Configuration
+
+### Static Configuration (Design Time)
+
+- **render** &#8212; The render function that produces the field UI
+
+### Runtime Configuration
+
+- **value** &#8212; The field value (type unknown, cast within render)
+- **onChange** &#8212; Called when value changes with (original, current)
+- **mode** &#8212; The rendering mode
+- **errors** &#8212; Validation error messages (error mode only)
+- **editable** &#8212; When false, forces display mode regardless of mode prop

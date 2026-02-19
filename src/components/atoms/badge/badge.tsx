@@ -12,6 +12,10 @@ export type ArdaBadgeVariant =
 
 /** Design-time configuration — visual properties chosen at composition time. */
 export interface ArdaBadgeStaticConfig {
+  /* --- Model / Data Binding --- */
+  // (No model/data props — Badge is purely presentational)
+
+  /* --- View / Layout / Controller --- */
   /** Visual style variant determining colors and border. */
   variant?: ArdaBadgeVariant;
   /** Show a small colored dot indicator before the text. */
@@ -30,27 +34,28 @@ export function ArdaBadge({
   ...props
 }: ArdaBadgeProps) {
   const variants = {
-    default: 'bg-[#F5F5F5] text-[#0A0A0A] border-[#E5E5E5]',
-    success: 'bg-[#DCFCE7] text-[#166534] border-[#BBF7D0]',
-    warning: 'bg-[#FEF3C7] text-[#92400E] border-[#FDE68A]',
-    info: 'bg-[#DBEAFE] text-[#1E40AF] border-[#BFDBFE]',
-    destructive: 'bg-[#FEE2E2] text-[#991B1B] border-[#FECACA]',
-    outline: 'bg-transparent text-[#737373] border-[#E5E5E5]',
+    default: 'bg-status-default-bg text-status-default-text border-status-default-border',
+    success: 'bg-status-success-bg text-status-success-text border-status-success-border',
+    warning: 'bg-status-warning-bg text-status-warning-text border-status-warning-border',
+    info: 'bg-status-info-bg text-status-info-text border-status-info-border',
+    destructive:
+      'bg-status-destructive-bg text-status-destructive-text border-status-destructive-border',
+    outline: 'bg-transparent text-muted-foreground border-border',
   };
 
   const dotColors = {
-    default: 'bg-[#0A0A0A]',
-    success: 'bg-[#166534]',
-    warning: 'bg-[#D97706]',
-    info: 'bg-[#2563EB]',
-    destructive: 'bg-[#DC2626]',
-    outline: 'bg-[#737373]',
+    default: 'bg-status-default-text',
+    success: 'bg-status-success-text',
+    warning: 'bg-status-warning-text',
+    info: 'bg-status-info-text',
+    destructive: 'bg-destructive',
+    outline: 'bg-muted-foreground',
   };
 
   return (
     <div
       className={cn(
-        'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border transition-colors',
+        'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm text-xs font-medium border transition-colors',
         variants[variant],
         className,
       )}

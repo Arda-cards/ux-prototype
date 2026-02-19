@@ -10,16 +10,20 @@ export interface TypeaheadOption {
 
 /** Design-time configuration — properties chosen at composition time. */
 export interface ArdaTypeaheadStaticConfig {
+  /* --- Model / Data Binding --- */
+  /** Whether to allow creating new entries when no matches exist. */
+  allowCreate?: boolean;
+
+  /* --- View / Layout / Controller --- */
   /** Placeholder text for the input field. */
   placeholder?: string;
   /** Label shown in the create-new option (e.g. "Create new"). Default: "Create new". */
   createNewLabel?: string;
-  /** Whether to allow creating new entries when no matches exist. */
-  allowCreate?: boolean;
 }
 
 /** Runtime configuration — dynamic state and callbacks. */
 export interface ArdaTypeaheadRuntimeConfig {
+  /* --- Model / Data Binding --- */
   /** Current input value. */
   value: string;
   /** Options to display in the dropdown. */
@@ -30,6 +34,8 @@ export interface ArdaTypeaheadRuntimeConfig {
   onSelect: (option: TypeaheadOption) => void;
   /** Called when the user chooses to create a new entry. */
   onCreate?: (value: string) => void;
+
+  /* --- View / Layout / Controller --- */
   /** Whether options are currently loading. */
   loading?: boolean;
 }
@@ -185,8 +191,8 @@ export function ArdaTypeahead({
         aria-activedescendant={activeDescendantId}
         aria-autocomplete="list"
         className={cn(
-          'w-full px-3 py-2 text-sm border border-[#E5E5E5] rounded-lg',
-          'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+          'w-full px-3 py-2 text-sm border border-border rounded-lg',
+          'focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring',
         )}
         placeholder={placeholder}
         value={internalValue}
@@ -201,7 +207,11 @@ export function ArdaTypeahead({
           role="status"
           aria-label="Loading"
         >
-          <svg className="h-4 w-4 animate-spin text-gray-400" viewBox="0 0 24 24" fill="none">
+          <svg
+            className="h-4 w-4 animate-spin text-muted-foreground"
+            viewBox="0 0 24 24"
+            fill="none"
+          >
             <circle
               className="opacity-25"
               cx="12"
@@ -226,7 +236,7 @@ export function ArdaTypeahead({
           role="listbox"
           aria-label="Options"
           className={cn(
-            'absolute z-10 mt-1 w-full overflow-auto rounded-lg border border-[#E5E5E5] bg-white shadow-lg',
+            'absolute z-10 mt-1 w-full overflow-auto rounded-lg border border-border bg-white shadow-lg',
             'max-h-[320px]',
           )}
         >
@@ -238,7 +248,7 @@ export function ArdaTypeahead({
               aria-selected={index === activeIndex}
               className={cn(
                 'cursor-pointer px-3 py-2 text-sm',
-                index === activeIndex ? 'bg-[#F5F5F5]' : 'hover:bg-[#F5F5F5]',
+                index === activeIndex ? 'bg-secondary' : 'hover:bg-secondary',
               )}
               onMouseDown={(e) => {
                 e.preventDefault();
@@ -247,7 +257,9 @@ export function ArdaTypeahead({
               onMouseEnter={() => setActiveIndex(index)}
             >
               <span>{option.label}</span>
-              {option.meta && <span className="ml-2 text-xs text-gray-400">{option.meta}</span>}
+              {option.meta && (
+                <span className="ml-2 text-xs text-muted-foreground">{option.meta}</span>
+              )}
             </li>
           ))}
 
@@ -258,7 +270,7 @@ export function ArdaTypeahead({
               aria-selected={activeIndex === options.length}
               className={cn(
                 'cursor-pointer px-3 py-2 text-sm',
-                activeIndex === options.length ? 'bg-[#F5F5F5]' : 'hover:bg-[#F5F5F5]',
+                activeIndex === options.length ? 'bg-secondary' : 'hover:bg-secondary',
               )}
               onMouseDown={(e) => {
                 e.preventDefault();

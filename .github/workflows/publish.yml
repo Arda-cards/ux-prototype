@@ -13,7 +13,7 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v6
-      - name: "Extract version from changelog"
+      - name: 'Extract version from changelog'
         uses: denisa/clq-action@v1
         id: clq-extract
         with:
@@ -24,7 +24,7 @@ jobs:
           registry-url: https://npm.pkg.github.com
           scope: '@arda-cards'
       - run: npm ci
-      - name: "Set package version from changelog"
+      - name: 'Set package version from changelog'
         run: npm version "${TAG#v}" --no-git-tag-version
         env:
           TAG: ${{ steps.clq-extract.outputs.tag }}

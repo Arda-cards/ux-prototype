@@ -1,0 +1,89 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import * as SupplierFormStories from './supplier-form.stories';
+
+<Meta of={SupplierFormStories} />
+
+# ArdaSupplierForm
+
+Shared form component for creating and editing business affiliates (suppliers, customers, carriers, etc.).
+
+## Two Presentation Modes
+
+**Single-scroll** &#8212; all three sections render vertically with collapsible panels for Contact and Address/Legal.
+Used inside the `ArdaSupplierDrawer` for add/edit operations.
+
+**Stepped** &#8212; only the section matching `currentStep` renders.
+Used inside the Create Supplier wizard where each section maps to a wizard step.
+
+## Field Sections
+
+<table>
+  <thead>
+    <tr>
+      <th>Step</th>
+      <th>Section</th>
+      <th>Fields</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>Identity &#38; Roles</td>
+      <td>Company Name, role checkboxes with per-role notes, general notes</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>Contact</td>
+      <td>Salutation, First Name, Middle Name, Last Name, Job Title, Email, Phone</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Address &#38; Legal</td>
+      <td>
+        Address Line 1/2, City, State, Postal Code, Country, Legal Name, Tax ID, Registration ID,
+        NAICS Code
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+Step 3 (Review &#38; Confirm) is **not** part of this component &#8212; the parent renders its own review UI.
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>`value`</td>
+      <td>`BusinessAffiliate`</td>
+      <td>&#8212;</td>
+      <td>Current form data (controlled)</td>
+    </tr>
+    <tr>
+      <td>`onChange`</td>
+      <td>`(value: BusinessAffiliate) =&#62; void`</td>
+      <td>&#8212;</td>
+      <td>Called with updated affiliate on every field change</td>
+    </tr>
+    <tr>
+      <td>`mode`</td>
+      <td>`'single-scroll' | 'stepped'`</td>
+      <td>`'single-scroll'`</td>
+      <td>Presentation mode</td>
+    </tr>
+    <tr>
+      <td>`currentStep`</td>
+      <td>`0 | 1 | 2`</td>
+      <td>`0`</td>
+      <td>Active step in stepped mode</td>
+    </tr>
+  </tbody>
+</table>

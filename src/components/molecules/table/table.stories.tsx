@@ -1,6 +1,6 @@
 import React from 'react';
-import type { Meta, StoryObj } from '@storybook/react';
-import { expect, userEvent, within } from '@storybook/test';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, userEvent, within } from 'storybook/test';
 
 import { ArdaBadge } from '@/components/atoms/badge/badge';
 
@@ -22,6 +22,13 @@ const meta: Meta<typeof ArdaTable> = {
         component:
           'A composite data table built from six sub-components: ArdaTable, ArdaTableHeader, ArdaTableBody, ArdaTableRow, ArdaTableHead, and ArdaTableCell. Supports clickable rows with an active/selected state. Use ArdaBadge inside cells for status indicators.',
       },
+    },
+  },
+  argTypes: {
+    className: {
+      control: 'text',
+      description: 'Additional CSS class for the table element.',
+      table: { category: 'Static' },
     },
   },
 };
@@ -115,6 +122,12 @@ export const WithData: Story = {
       </ArdaTableBody>
     </ArdaTable>
   ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('Hex Socket Bolt M8x40')).toBeInTheDocument();
+    const inStockCells = canvas.getAllByText('In Stock');
+    await expect(inStockCells.length).toBeGreaterThan(0);
+  },
 };
 
 export const EmptyState: Story = {
@@ -131,7 +144,7 @@ export const EmptyState: Story = {
       </ArdaTableHeader>
       <ArdaTableBody>
         <tr>
-          <td colSpan={5} className="text-center text-[#737373] py-12 px-4">
+          <td colSpan={5} className="text-center text-muted-foreground py-12 px-4">
             No inventory items found. Add your first item to get started.
           </td>
         </tr>

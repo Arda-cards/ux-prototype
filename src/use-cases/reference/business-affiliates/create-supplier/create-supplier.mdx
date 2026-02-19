@@ -1,0 +1,345 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Use Cases/Reference/Business Affiliates/Create Supplier/Description" />
+
+# Business Affiliates: Create New Supplier
+
+**Author**: Product Owner
+**Date**: 2025-01-20
+**Priority**: High
+**Feature Version**: MVP1
+
+## User Story
+
+As a **procurement manager**,
+I want to **register a new business affiliate with roles, contact information, address, and legal details**,
+so that **the affiliate can be linked to item supply records and used in purchasing workflows**.
+
+## Context
+
+Before an item can be sourced from a supplier, that supplier must exist in the Business Affiliates registry. This use case covers creating a new affiliate record with full details: identity and roles, a primary contact person, postal address, and legal/compliance information.
+
+The form is split into four steps to manage the volume of fields and allow the operator to focus on one category at a time. Only the company name is strictly required &#8212; all other fields are optional but recommended for compliance and operational efficiency.
+
+**Preconditions:**
+
+- The user is authenticated and has the **Business Affiliates &gt; Write** permission.
+- The Business Affiliates module is accessible from the main sidebar navigation.
+- The affiliate does not already exist (duplicate detection is out of scope).
+
+## Acceptance Criteria
+
+- [ ] **Given** the user is on Step 1 with an empty name, **when** the name field is blank, **then** the "Next Step" button is disabled.
+- [ ] **Given** the user is on Step 1 with a company name entered, **when** they check one or more role boxes and click "Next Step", **then** the wizard advances to Step 2 (Primary Contact).
+- [ ] **Given** the user is on Step 2, **when** they click "Back", **then** Step 1 is shown with all previously entered data preserved.
+- [ ] **Given** the user is on Step 2 with contact details entered, **when** they click "Next Step", **then** the wizard advances to Step 3 (Address &amp; Legal).
+- [ ] **Given** the user is on Step 3 with address and legal info entered, **when** they click "Next Step", **then** the wizard advances to Step 4 (Review).
+- [ ] **Given** the user is on Step 4 (Review), **when** the summary is displayed, **then** it shows company name, roles with notes, contact name and details, full address, and all legal fields.
+- [ ] **Given** the user is on Step 4, **when** they click "Create Supplier", **then** a success screen displays the affiliate name, role badges, and key details.
+- [ ] **Given** the success screen is displayed, **when** the user clicks "Start Over", **then** the wizard returns to a completely empty Step 1.
+- [ ] **Given** the user is on any step, **when** they click the "Reset" link, **then** all data is cleared and the wizard returns to Step 1.
+- [ ] **Given** the user is on a non-final step, **when** they click "Done", **then** the wizard submits with current/default values and shows the success screen.
+
+## Error Scenarios
+
+This use case covers the **happy path only**. Error scenarios (duplicate names, invalid tax IDs, network errors) are addressed in separate use cases.
+
+## UI/UX Notes
+
+**Page:** Business Affiliates &gt; Create Supplier
+
+**Key interactions:**
+
+The workflow is a 4-step wizard plus a success confirmation screen.
+
+### Step 1 &#8212; Affiliate Identity
+
+The user enters the company name and assigns business roles:
+
+<table>
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Type</th>
+      <th>Required</th>
+      <th>Validation</th>
+      <th>Example</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Company Name</td>
+      <td>Text input</td>
+      <td>Yes</td>
+      <td>Non-empty</td>
+      <td>Fastenal Corp.</td>
+    </tr>
+    <tr>
+      <td>Business Roles</td>
+      <td>Checkboxes</td>
+      <td>No</td>
+      <td>One or more recommended</td>
+      <td>Vendor, Customer</td>
+    </tr>
+    <tr>
+      <td>Role Notes</td>
+      <td>Text input (per role)</td>
+      <td>No</td>
+      <td>Free text</td>
+      <td>Primary MRO supplier</td>
+    </tr>
+  </tbody>
+</table>
+
+**Role options:** Vendor, Customer, Carrier, Operator, Other. Each role has an optional notes field.
+
+- The "Next Step" button is **disabled** until the company name is entered.
+- A "Reset" link in the header clears all fields and returns to this step from anywhere.
+
+### Step 2 &#8212; Primary Contact
+
+The step indicator shows Step 1 as complete and Step 2 as active. All fields are optional:
+
+<table>
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Type</th>
+      <th>Required</th>
+      <th>Example</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Salutation</td>
+      <td>Text input</td>
+      <td>No</td>
+      <td>Ms.</td>
+    </tr>
+    <tr>
+      <td>First Name</td>
+      <td>Text input</td>
+      <td>No</td>
+      <td>Sarah</td>
+    </tr>
+    <tr>
+      <td>Middle Name</td>
+      <td>Text input</td>
+      <td>No</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Last Name</td>
+      <td>Text input</td>
+      <td>No</td>
+      <td>Chen</td>
+    </tr>
+    <tr>
+      <td>Job Title</td>
+      <td>Text input</td>
+      <td>No</td>
+      <td>Account Manager</td>
+    </tr>
+    <tr>
+      <td>Email</td>
+      <td>Text input</td>
+      <td>No</td>
+      <td>sarah.chen@fastenal.com</td>
+    </tr>
+    <tr>
+      <td>Phone</td>
+      <td>Text input</td>
+      <td>No</td>
+      <td>+1-507-454-5374</td>
+    </tr>
+  </tbody>
+</table>
+
+- "Back" returns to Step 1 with data preserved.
+- "Next Step" is always enabled (all contact fields are optional).
+
+### Step 3 &#8212; Address &amp; Legal
+
+The step indicator shows Steps 1&#8211;2 as complete and Step 3 as active. All fields are optional:
+
+<table>
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Type</th>
+      <th>Required</th>
+      <th>Example</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Address Line 1</td>
+      <td>Text input</td>
+      <td>No</td>
+      <td>2001 Theurer Blvd</td>
+    </tr>
+    <tr>
+      <td>Address Line 2</td>
+      <td>Text input</td>
+      <td>No</td>
+      <td>Suite 100</td>
+    </tr>
+    <tr>
+      <td>City</td>
+      <td>Text input</td>
+      <td>No</td>
+      <td>Winona</td>
+    </tr>
+    <tr>
+      <td>State</td>
+      <td>Text input</td>
+      <td>No</td>
+      <td>MN</td>
+    </tr>
+    <tr>
+      <td>Postal Code</td>
+      <td>Text input</td>
+      <td>No</td>
+      <td>55987</td>
+    </tr>
+    <tr>
+      <td>Country</td>
+      <td>Text input</td>
+      <td>No</td>
+      <td>US</td>
+    </tr>
+    <tr>
+      <td>Legal Name</td>
+      <td>Text input</td>
+      <td>No</td>
+      <td>Fastenal Company</td>
+    </tr>
+    <tr>
+      <td>Tax ID</td>
+      <td>Text input</td>
+      <td>No</td>
+      <td>41-0948415</td>
+    </tr>
+    <tr>
+      <td>Registration ID</td>
+      <td>Text input</td>
+      <td>No</td>
+      <td>MN-12345678</td>
+    </tr>
+    <tr>
+      <td>NAICS Code</td>
+      <td>Text input</td>
+      <td>No</td>
+      <td>423710</td>
+    </tr>
+  </tbody>
+</table>
+
+- "Back" returns to Step 2 with data preserved.
+- "Next Step" is always enabled (all fields are optional).
+
+### Step 4 &#8212; Review &amp; Confirm
+
+The step indicator shows Steps 1&#8211;3 as complete and Step 4 as active. A read-only summary card displays all entered data organized into sections:
+
+1. **Identity:** Company Name (bold), Roles, Role Notes (if any), General Notes (if any)
+2. **Contact:** Full name, Job Title, Email, Phone
+3. **Address:** Full formatted address
+4. **Legal:** Legal Name, Tax ID, Registration ID, NAICS Code
+
+- "Back" returns to Step 3 with data preserved.
+- "Create Supplier" submits the record.
+
+### Step 5 &#8212; Success Confirmation
+
+The wizard is replaced by a centered confirmation screen:
+
+- A green circle with a checkmark icon.
+- Heading: **"Business affiliate created successfully"**.
+- Subtext: **"`<Company Name>` has been added to your affiliate registry."**
+- Role badges: one per selected role (Vendor in blue, Customer in green, Carrier in yellow, Operator in default, Other in outline).
+- A summary card showing Contact, Job Title, Email, Legal Name, Tax ID, and NAICS Code.
+- A "Start Over" button that resets the wizard.
+
+## Dependencies
+
+- **Upstream**: None &#8212; this is a standalone front-end workflow.
+- **Downstream**: Item Supply records (link items to this affiliate), Purchase Order generation (uses affiliate contact and address).
+
+## Out of Scope
+
+- Editing or deleting existing business affiliates.
+- Duplicate name detection.
+- Affiliate search or listing views.
+- Integration with backend API (this use case covers the front-end workflow only).
+- Permission checks and authentication guards (covered by the application shell).
+
+## Notes
+
+### Sample Data
+
+For implementation and testing, use the following representative values:
+
+```
+Company Name:    Fastenal Corp.
+Roles:           Vendor (notes: Primary MRO supplier), Customer
+Salutation:      Ms.
+First Name:      Sarah
+Last Name:       Chen
+Job Title:       Account Manager
+Email:           sarah.chen@fastenal.com
+Phone:           +1-507-454-5374
+Address Line 1:  2001 Theurer Blvd
+Address Line 2:  Suite 100
+City:            Winona
+State:           MN
+Postal Code:     55987
+Country:         US
+Legal Name:      Fastenal Company
+Tax ID:          41-0948415
+Registration ID: MN-12345678
+NAICS Code:      423710
+Notes:           Preferred vendor for fasteners and MRO supplies.
+```
+
+### Story Artifacts
+
+This use case is implemented as three Storybook stories:
+
+<table>
+  <thead>
+    <tr>
+      <th>Story</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <strong>Interactive</strong>
+      </td>
+      <td>
+        Hands-on exploration &#8212; the user fills in real data and advances through the wizard manually.
+        A guide panel shows contextual help for each step.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Stepwise</strong>
+      </td>
+      <td>
+        Guided demo &#8212; the application advances one pre-filled scene at a time using story controls
+        (Next / Previous / Reset). Useful for walkthroughs and design reviews.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Automated</strong>
+      </td>
+      <td>
+        Regression test &#8212; a <code>play</code> function exercises the full workflow end-to-end using
+        the sample data above. Executed via Storybook play functions.
+      </td>
+    </tr>
+  </tbody>
+</table>

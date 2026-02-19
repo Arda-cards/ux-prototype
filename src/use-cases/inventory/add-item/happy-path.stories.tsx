@@ -1,5 +1,5 @@
-import type { Meta } from '@storybook/react';
-import { expect, userEvent } from '@storybook/test';
+import type { Meta } from '@storybook/react-vite';
+import { expect, userEvent } from 'storybook/test';
 
 import { ArdaBadge } from '@/components/atoms/badge/badge';
 import {
@@ -335,7 +335,7 @@ function AddItemWizard(props: WizardProps<ItemFormData>) {
       {/* Step 3 — Review & Confirm */}
       {w.step === 2 && (
         <>
-          <p style={{ fontSize: 14, color: '#737373', margin: 0 }}>
+          <p style={{ fontSize: 14, color: 'var(--base-muted-foreground)', margin: 0 }}>
             Please review the details below before adding this item to inventory.
           </p>
           <SummaryCard>
@@ -362,7 +362,7 @@ function AddItemWizard(props: WizardProps<ItemFormData>) {
    ================================================================ */
 
 const meta = {
-  title: 'Use Cases/Inventory/Add Item (Sample Only)/Happy Path',
+  title: 'Use Cases/Examples/Add Item (Sample Only)/Happy Path',
   parameters: { layout: 'centered' },
 } satisfies Meta;
 
@@ -409,7 +409,7 @@ const { Interactive, Stepwise, Automated } = createUseCaseStories<ItemFormData>(
     await expect(canvas.getByText('$4,749.75', { exact: false })).toBeInTheDocument();
     await delay();
 
-    await userEvent.click(canvas.getByRole('button', { name: /confirm/i }));
+    await userEvent.click(canvas.getByRole('button', { name: /confirm & add item/i }));
     goToScene(8);
     await expect(canvas.getByTestId('success-message')).toHaveTextContent(
       'Item added successfully',

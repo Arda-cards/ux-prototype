@@ -284,9 +284,9 @@ function ensureQuantity(qty: Quantity | undefined): Quantity {
 
 function FieldRow({ label, value }: { label: string; value: string | undefined }) {
   return (
-    <div className="flex justify-between py-2 border-b border-gray-100 last:border-b-0">
-      <span className="text-sm text-gray-500">{label}</span>
-      <span className="text-sm text-gray-900 text-right max-w-[60%] break-words">
+    <div className="flex justify-between py-2 border-b border-border/50 last:border-b-0">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="text-sm text-foreground text-right max-w-[60%] break-words">
         {value || '-'}
       </span>
     </div>
@@ -296,7 +296,9 @@ function FieldRow({ label, value }: { label: string; value: string | undefined }
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mb-6">
-      <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{title}</h3>
+      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+        {title}
+      </h3>
       <div>{children}</div>
     </div>
   );
@@ -344,14 +346,14 @@ function ViewModeContent({
             className="w-full h-48 object-cover rounded-lg"
           />
         ) : (
-          <div className="w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center">
-            <ImageOff size={48} className="text-gray-300" />
+          <div className="w-full h-48 bg-secondary rounded-lg flex items-center justify-center">
+            <ImageOff size={48} className="text-muted-foreground/50" />
           </div>
         )}
       </div>
 
       {/* Item name */}
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">{item.name}</h2>
+      <h2 className="text-lg font-semibold text-foreground mb-4">{item.name}</h2>
 
       {/* Item section */}
       <Section title="Item">
@@ -387,7 +389,7 @@ function ViewModeContent({
       {/* Supply section: structured supplies vs. flat display */}
       {hasStructuredSupplies ? (
         <>
-          <div className="my-4 border-t border-gray-200" />
+          <div className="my-4 border-t border-border" />
           <ArdaItemSupplySection
             supplies={itemSupplies}
             designations={supplyDesignations ?? {}}
@@ -429,7 +431,7 @@ function ViewModeContent({
 /* ------------------------------------------------------------------ */
 
 const fieldClasses =
-  'w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500';
+  'w-full rounded-md border border-border px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring';
 
 function FormField({
   label,
@@ -442,7 +444,7 @@ function FormField({
 }) {
   return (
     <div className="mb-3">
-      <label htmlFor={htmlFor} className="block text-sm font-medium text-gray-700 mb-1">
+      <label htmlFor={htmlFor} className="block text-sm font-medium text-foreground mb-1">
         {label}
       </label>
       {children}
@@ -516,11 +518,11 @@ function CollapsibleSection({
 }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   return (
-    <div className="mb-4 border border-gray-200 rounded-lg">
+    <div className="mb-4 border border-border rounded-lg">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 w-full px-4 py-3 text-left text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors rounded-t-lg"
+        className="flex items-center gap-2 w-full px-4 py-3 text-left text-sm font-semibold text-foreground hover:bg-secondary transition-colors rounded-t-lg"
       >
         {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
         {title}
@@ -938,9 +940,9 @@ function FormModeContent({
             type="checkbox"
             checked={formData.taxable ?? false}
             onChange={(e) => updateField('taxable', e.target.checked)}
-            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            className="h-4 w-4 rounded border-border text-primary focus:ring-ring"
           />
-          <label htmlFor="item-taxable" className="text-sm font-medium text-gray-700">
+          <label htmlFor="item-taxable" className="text-sm font-medium text-foreground">
             Taxable
           </label>
         </div>
@@ -1157,17 +1159,17 @@ export function ArdaItemDrawer({
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
           <div className="flex items-center gap-2 min-w-0">
-            <Package size={20} className="text-gray-400 shrink-0" />
-            <h2 id={titleId} className="text-base font-semibold text-gray-900 truncate">
+            <Package size={20} className="text-muted-foreground shrink-0" />
+            <h2 id={titleId} className="text-base font-semibold text-foreground truncate">
               {resolvedTitle}
             </h2>
           </div>
           <button
             onClick={handleCloseRequest}
             aria-label="Close drawer"
-            className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
           >
             <X size={20} />
           </button>
@@ -1199,11 +1201,11 @@ export function ArdaItemDrawer({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-200">
+        <div className="px-6 py-4 border-t border-border">
           {mode === 'view' && (
             <button
               onClick={onEdit}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-foreground text-background text-sm font-medium rounded-lg hover:bg-foreground/90 transition-colors"
             >
               <Pencil size={16} />
               Edit
@@ -1214,14 +1216,14 @@ export function ArdaItemDrawer({
               <button
                 type="button"
                 onClick={handleCancel}
-                className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 rounded-lg border border-border bg-background text-sm font-medium text-foreground hover:bg-secondary transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleSubmit}
-                className="px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 transition-colors"
+                className="px-4 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
               >
                 {mode === 'add' ? 'Add Item' : 'Save'}
               </button>

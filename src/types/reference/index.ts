@@ -4,6 +4,7 @@ export type {
   BusinessRoleType,
   BusinessRole,
   BusinessAffiliate,
+  BusinessAffiliateRoleDetails,
 } from './business-affiliates/business-affiliate';
 export { sampleAffiliates } from './business-affiliates/business-affiliate';
 

@@ -1,0 +1,230 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Agentation" />
+
+# Agentation
+
+[Agentation](https://agentation.dev/) is a visual annotation tool for AI coding agents. It renders an interactive overlay on top of any React UI, letting reviewers click elements, write structured feedback, and export annotations that an AI agent can parse and act on.
+
+> **Desktop only &#8212; React 18+.** Agentation requires a desktop browser. It is not supported on mobile or touch-only devices.
+
+## What Agentation Does
+
+When the overlay is active, reviewers can:
+
+- Click any element to select it
+- Write a comment with an **intent** (`fix`, `change`, `question`, `approve`) and a **severity** (`blocking`, `important`, `suggestion`)
+- Export the full annotation batch as JSON for the Claude Code skill
+
+Each annotation captures:
+
+- `elementPath` &#8212; CSS selector identifying the annotated DOM element
+- `reactComponents` &#8212; React component hierarchy for source file lookup (e.g. `App > Layout > Sidebar > NavItem`)
+- `comment` &#8212; the reviewer&#8217;s written feedback
+- `intent` and `severity` &#8212; classification for task prioritization
+- `selectedText` &#8212; any text the reviewer highlighted (optional)
+- `computedStyles` &#8212; CSS property values on the element at annotation time (optional)
+
+## Toggling the Overlay
+
+The overlay is **hidden by default** and adds zero DOM overhead when disabled.
+
+- **Toolbar button** &#8212; click the chat bubble icon (`MessageSquare`) in the Storybook toolbar. Visible in story canvas view only (not docs view).
+- **Keyboard shortcut** &#8212; press `Ctrl+Shift+A` from anywhere in the canvas.
+
+## The Copy-Paste Workflow
+
+1. **Enable** the overlay via the toolbar button or `Ctrl+Shift+A`.
+2. **Click** any element to create an annotation.
+3. **Set intent and severity**, then write a comment.
+4. **Repeat** for all elements you want to annotate in this session.
+5. **Click "Copy JSON"** in the overlay panel. This copies the full annotation batch as a JSON string to your clipboard.
+6. **Open Claude Code** in the repository root.
+7. **Run the skill** by typing `/agentation-feedback` and pasting the copied JSON.
+
+Claude Code will parse the annotations, create a prioritized task list, and file GitHub issues in `Arda-cards/management`.
+
+## The `agentation-feedback` Claude Code Skill
+
+The skill lives at `tools/agentation-feedback/SKILL.md`. It is the **reference copy** &#8212; users can copy it into their own agentic environment under `.claude/skills/agentation-feedback/SKILL.md`.
+
+### Usage
+
+```
+/agentation-feedback [paste JSON from Agentation "Copy JSON" button]
+```
+
+### What the Skill Does
+
+When invoked with pasted Agentation JSON, the skill runs these steps:
+
+1. **Parse annotations** &#8212; extracts all fields from each annotation in the payload.
+2. **Locate source files** &#8212; runs `Grep` on `reactComponents` to find component definitions in the codebase. Unresolved components are noted in the task but do not block processing.
+3. **Group and sort** &#8212; orders by severity (`blocking` first, then `important`, then `suggestion`), then by file path within each tier.
+4. **Create a task list** &#8212; calls `TaskCreate` for each annotation with subject, description (including verbatim reviewer comment, file path, CSS selector, and suggested approach), and `activeForm`.
+5. **File GitHub issues** &#8212; creates one issue per annotation in `Arda-cards/management` via the GitHub MCP tool. Classification metadata (`intent`, `severity`, category tags) is included in the issue body. No labels are attached.
+6. **Output a summary table** &#8212; lists all annotations with component, severity, intent, and issue number. Includes counts by severity tier.
+
+If the GitHub MCP tool is unavailable, the skill falls back to displaying the task list so issues can be created manually.
+
+### Intent Handling
+
+<table>
+  <thead>
+    <tr>
+      <th>Intent</th>
+      <th>Skill behavior</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fix</code></td>
+      <td>Describes the likely bug and suggests a concrete code change</td>
+    </tr>
+    <tr>
+      <td><code>change</code></td>
+      <td>Describes the requested modification and suggests an implementation approach</td>
+    </tr>
+    <tr>
+      <td><code>question</code></td>
+      <td>Flagged for human response &#8212; no fix is suggested; task is marked <strong>NEEDS HUMAN RESPONSE</strong></td>
+    </tr>
+    <tr>
+      <td><code>approve</code></td>
+      <td>Informational only &#8212; task is created but no fix is needed</td>
+    </tr>
+  </tbody>
+</table>
+
+## Storybook Integration Architecture
+
+### File Structure
+
+<table>
+  <thead>
+    <tr>
+      <th>File</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>.storybook/addons/agentation-toggle/constants.ts</code></td>
+      <td>Defines <code>ADDON_ID</code>, <code>TOOL_ID</code>, and <code>PARAM_KEY</code> identifiers</td>
+    </tr>
+    <tr>
+      <td><code>.storybook/addons/agentation-toggle/Tool.tsx</code></td>
+      <td>Toolbar button; reads/writes <code>agentationEnabled</code> global via <code>useGlobals()</code>; registers the <code>Ctrl+Shift+A</code> shortcut</td>
+    </tr>
+    <tr>
+      <td><code>.storybook/addons/agentation-toggle/manager.ts</code></td>
+      <td>Registers the addon and toolbar tool in the Storybook manager frame</td>
+    </tr>
+    <tr>
+      <td><code>.storybook/addons/agentation-toggle/withAgentation.tsx</code></td>
+      <td>Decorator that conditionally renders <code>&lt;Agentation /&gt;</code> based on the global</td>
+    </tr>
+    <tr>
+      <td><code>.storybook/preview.ts</code></td>
+      <td>Registers the decorator and sets <code>agentationEnabled: false</code> in <code>initialGlobals</code></td>
+    </tr>
+    <tr>
+      <td><code>.storybook/main.ts</code></td>
+      <td>Registers the local addon path in the <code>addons</code> array</td>
+    </tr>
+  </tbody>
+</table>
+
+### `useGlobals` Toggle Pattern
+
+The addon uses [`useGlobals`](https://storybook.js.org/docs/essentials/toolbars-and-globals) &#8212; not `useState` &#8212; to share toggle state between the Manager frame and the Preview iframe. This is the recommended Storybook pattern for cross-frame addon state.
+
+- **Manager frame** (`Tool.tsx`): reads and writes `globals.agentationEnabled` via `useGlobals()` from `storybook/manager-api`.
+- **Preview iframe** (`withAgentation.tsx`): reads `context.globals.agentationEnabled` and mounts `<Agentation />` only when `true`. When `false`, the decorator is a no-op with zero render overhead.
+
+### Hidden by Default via `initialGlobals`
+
+`preview.ts` sets:
+
+```ts
+initialGlobals: {
+  agentationEnabled: false,
+}
+```
+
+This ensures the overlay never renders during automated test runs (Playwright, Storybook play functions) unless a story explicitly sets `globals: { agentationEnabled: true }`.
+
+### Toolbar Visibility
+
+The toolbar button uses a `match` function to appear only in story canvas view:
+
+```ts
+match: ({ tabId, viewMode }) => !tabId && viewMode === 'story'
+```
+
+It does not appear in docs view (`viewMode === 'docs'`).
+
+### Clipboard Integration
+
+`<Agentation />` is wired with two callbacks:
+
+- **`onSubmit`** (button labeled "Copy JSON") &#8212; copies the full annotation batch as JSON via `navigator.clipboard`. This is the primary input for the Claude Code skill.
+- **`onCopy`** &#8212; copies individual annotation markdown when the per-annotation copy button is clicked.
+
+```tsx
+<Agentation
+  theme="light"
+  submitLabel="Copy JSON"
+  onSubmit={(json) => navigator.clipboard.writeText(json)}
+  onCopy={(markdown) => navigator.clipboard.writeText(markdown)}
+/>
+```
+
+## Test Stories
+
+Test stories live at `src/docs/agentation/agentation.stories.tsx` and are excluded from the published `@arda-cards/ui-components` npm package.
+
+<table>
+  <thead>
+    <tr>
+      <th>Story</th>
+      <th>What it verifies</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Default</code></td>
+      <td>Sample component renders correctly with the overlay disabled</td>
+    </tr>
+    <tr>
+      <td><code>OverlayEnabled</code></td>
+      <td>Story canvas is accessible when <code>agentationEnabled: true</code></td>
+    </tr>
+    <tr>
+      <td><code>OverlayDisabled</code></td>
+      <td>Standard elements are present when <code>agentationEnabled: false</code></td>
+    </tr>
+    <tr>
+      <td><code>NonInterference</code></td>
+      <td>Click, focus, and input interactions work correctly when the overlay is disabled</td>
+    </tr>
+  </tbody>
+</table>
+
+Play functions use `within(canvasElement)` scoped queries to avoid selecting Agentation toolbar elements in non-Agentation stories.
+
+## Playwright VRT Guard
+
+The `initialGlobals` default (`agentationEnabled: false`) prevents overlay artifacts in automated screenshots. When Playwright VRT tests are introduced, add a `beforeEach` guard that asserts the global is off before taking screenshots:
+
+```ts
+test.beforeEach(async ({ page }) => {
+  await page.evaluate(() => {
+    window.__STORYBOOK_ADDONS_CHANNEL__?.emit('updateGlobals', {
+      globals: { agentationEnabled: false },
+    });
+  });
+});
+```
+
+See `tools/agentation-feedback/vrt-guard-pattern.md` for the full guard pattern documentation.

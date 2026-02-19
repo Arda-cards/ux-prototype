@@ -1,4 +1,4 @@
-import { Meta } from '@storybook/blocks';
+import { Meta } from '@storybook/addon-docs/blocks';
 
 <Meta title="Docs/Developer Workflow" />
 
@@ -22,6 +22,7 @@ When using Claude Code to build components, try this order for the best results:
 3. **Tests last** — generate unit and interaction tests based on the finalized component behavior.
 
 Tips:
+
 - Provide the AI with an existing story file as a reference for the project conventions.
 - Ask the AI to run `npm test` after writing tests to catch issues immediately.
 - Use `make check` to run linting and type-checking before committing.
@@ -36,21 +37,10 @@ npm run test:watch    # Watch mode
 npm run test:coverage # With coverage report
 ```
 
-**Storybook interaction tests** (Playwright-based test runner):
-
-```bash
-# Start Storybook in one terminal
-npm run storybook
-
-# Run tests in another terminal
-npm run test:storybook
-```
-
 Or use the Makefile:
 
 ```bash
 make test             # Unit tests
-make test-storybook   # Storybook interaction tests
 ```
 
 ## CI Pipeline
@@ -62,8 +52,8 @@ Every push triggers the CI workflow (`.github/workflows/ci.yml`) which runs:
 3. `npx tsc --noEmit` — TypeScript type checking
 4. `npm run test` — Vitest unit tests
 5. `npm run build-storybook` — build the static Storybook
-6. Storybook test runner — Playwright-based interaction tests against the built Storybook
 
 Pushes to `main` also trigger:
+
 - **Publish** — builds and publishes the library to GitHub Packages
 - **Deploy** — deploys the built Storybook to GitHub Pages

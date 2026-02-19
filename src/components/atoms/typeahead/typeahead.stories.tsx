@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-import type { Meta, StoryObj } from '@storybook/react';
-import { fn } from '@storybook/test';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { fn } from 'storybook/test';
 
 import { ArdaTypeahead, type TypeaheadOption } from './typeahead';
 
@@ -14,7 +14,7 @@ const sampleOptions: TypeaheadOption[] = [
 ];
 
 const meta: Meta<typeof ArdaTypeahead> = {
-  title: 'Components/Atoms/Typeahead',
+  title: 'Components/Atoms/Form/Typeahead',
   component: ArdaTypeahead,
   parameters: {
     docs: {

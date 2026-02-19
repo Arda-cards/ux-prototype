@@ -10,10 +10,10 @@ A shared React component library and interactive prototype gallery for Arda, bui
 
 The Storybook gallery is deployed to two environments:
 
-| Environment | URL | Access | Deploys on |
-|---|---|---|---|
-| **Vercel** (external) | https://ux-prototype-tau.vercel.app/ | Password-protected (HTTP Basic Auth) | CLI deploy (`vercel --prod`) |
-| **GitHub Pages** (internal) | https://arda-cards.github.io/ux-prototype/ | Repo collaborators via GitHub login | Push to `main` |
+| Environment                 | URL                                        | Access                               | Deploys on                   |
+| --------------------------- | ------------------------------------------ | ------------------------------------ | ---------------------------- |
+| **Vercel** (external)       | https://ux-prototype-tau.vercel.app/       | Password-protected (HTTP Basic Auth) | CLI deploy (`vercel --prod`) |
+| **GitHub Pages** (internal) | https://arda-cards.github.io/ux-prototype/ | Repo collaborators via GitHub login  | Push to `main`               |
 
 **Vercel** is the primary site for sharing with stakeholders. Credentials are stored in **1Password** under the **Arda-SystemsOAM** vault.
 
@@ -86,16 +86,17 @@ This project uses [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) with 
 1. Before opening a PR, add a new entry at the **top** of [`CHANGELOG.md`](CHANGELOG.md).
 2. Use one of the six categories defined in [`.github/clq/changemap.json`](.github/clq/changemap.json):
 
-   | Category | Version bump | When to use |
-   |---|---|---|
-   | **Added** | minor | New features |
-   | **Changed** | major | Changes to existing functionality |
-   | **Deprecated** | minor | Soon-to-be removed features |
-   | **Fixed** | patch | Bug fixes |
-   | **Removed** | major | Removed features |
-   | **Security** | patch | Vulnerability fixes |
+   | Category       | Version bump | When to use                       |
+   | -------------- | ------------ | --------------------------------- |
+   | **Added**      | minor        | New features                      |
+   | **Changed**    | major        | Changes to existing functionality |
+   | **Deprecated** | minor        | Soon-to-be removed features       |
+   | **Fixed**      | patch        | Bug fixes                         |
+   | **Removed**    | major        | Removed features                  |
+   | **Security**   | patch        | Vulnerability fixes               |
 
 3. Format the entry as:
+
    ```markdown
    ## [x.y.z] - YYYY-MM-DD
 
@@ -103,6 +104,7 @@ This project uses [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) with 
 
    - Description of the change
    ```
+
 4. CI validates the changelog entry and semantic version on PRs to protected branches.
 5. On merge to `main`:
    - A **GitHub Release** is created with the version tag and changelog body.

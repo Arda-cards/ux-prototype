@@ -19,7 +19,7 @@ app.use(
   }),
 );
 
-app.use(express.static(path.join(__dirname, 'storybook-static')));
+app.use(express.static(path.join(__dirname, '..', 'storybook-static')));
 
 // Fallback to index.html for SPA routing
 app.get('*', (_req, res) => {

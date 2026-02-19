@@ -1,4 +1,4 @@
-import { Meta } from '@storybook/blocks';
+import { Meta } from '@storybook/addon-docs/blocks';
 
 <Meta title="Docs/Component Guidelines" />
 
@@ -74,9 +74,7 @@ export interface ArdaWidgetRuntimeConfig {
 
 /** Combined props. Extends HTML attributes for passthrough. */
 export interface ArdaWidgetProps
-  extends ArdaWidgetStaticConfig,
-    ArdaWidgetRuntimeConfig,
-    React.HTMLAttributes<HTMLDivElement> {}
+  extends ArdaWidgetStaticConfig, ArdaWidgetRuntimeConfig, React.HTMLAttributes<HTMLDivElement> {}
 ```
 
 **Guidelines:**
@@ -135,14 +133,47 @@ const meta: Meta<typeof ArdaWidget> = {
 
 <table>
   <thead>
-    <tr><th>Story Type</th><th>Purpose</th></tr>
+    <tr>
+      <th>Story Type</th>
+      <th>Purpose</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td><strong>Default</strong></td><td>Minimal required props showing default behavior. Include a <code>play</code> function that verifies initial render.</td></tr>
-    <tr><td><strong>Static Variations</strong></td><td>One story per visual variant (e.g. Primary, Secondary, Ghost, Destructive).</td></tr>
-    <tr><td><strong>Runtime States</strong></td><td>Stories demonstrating dynamic states: loading, disabled, active, error, etc.</td></tr>
-    <tr><td><strong>Composition</strong></td><td>A render story showing multiple instances together (e.g. AllVariants, AllSizes).</td></tr>
-    <tr><td><strong>Interactive</strong></td><td>At least one story with a <code>play</code> function exercising user interaction.</td></tr>
+    <tr>
+      <td>
+        <strong>Default</strong>
+      </td>
+      <td>
+        Minimal required props showing default behavior. Include a <code>play</code> function that
+        verifies initial render.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Static Variations</strong>
+      </td>
+      <td>One story per visual variant (e.g. Primary, Secondary, Ghost, Destructive).</td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Runtime States</strong>
+      </td>
+      <td>Stories demonstrating dynamic states: loading, disabled, active, error, etc.</td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Composition</strong>
+      </td>
+      <td>A render story showing multiple instances together (e.g. AllVariants, AllSizes).</td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Interactive</strong>
+      </td>
+      <td>
+        At least one story with a <code>play</code> function exercising user interaction.
+      </td>
+    </tr>
   </tbody>
 </table>
 
@@ -182,6 +213,128 @@ const isControlled = controlledValue !== undefined;
 - Accept a `className` prop for consumer overrides.
 - Use CSS files (BEM naming) only when Tailwind alone is insufficient (e.g. keyframe animations).
 
+### Color Tokens &#8212; No Hardcoded Colors
+
+**Never use hardcoded hex color values** in component code. All colors must reference design tokens defined in `globals.css`.
+
+**Correct patterns:**
+
+```tsx
+// Semantic Tailwind classes (preferred)
+className="bg-primary text-foreground border-border"
+className="bg-status-success-bg text-status-success-text"
+className="bg-sidebar-bg text-sidebar-text-active"
+className="bg-table-header-bg hover:bg-table-row-hover"
+
+// CSS variable references (when no Tailwind class exists)
+className="bg-[var(--accent-blue)]"
+style={{ borderColor: 'var(--base-border)' }}
+```
+
+**Incorrect patterns (will trigger lint errors):**
+
+```tsx
+// Hardcoded hex values
+className="bg-[#3B82F6] text-[#0A0A0A]"
+style={{ color: '#737373' }}
+
+// Tailwind palette colors (use semantic tokens instead)
+className="text-gray-500 bg-red-600 border-blue-500"
+```
+
+**Token categories:**
+
+- **Brand:** `bg-primary`, `text-foreground`, `bg-secondary`, `bg-destructive`
+- **Status:** `bg-status-success-bg`, `text-status-warning-text`, `border-status-info-border`
+- **Sidebar:** `bg-sidebar-bg`, `text-sidebar-text`, `border-sidebar-border`
+- **Table:** `bg-table-header-bg`, `hover:bg-table-row-hover`
+- **Accent:** `bg-accent-blue`, `ring-ring`, `text-star`
+- **Neutral:** `text-muted-foreground`, `border-border`, `bg-background`
+
+See the **Visual Elements/Colors** story in Storybook for a live reference of all tokens.
+
+### Typography Scale
+
+Use only the standard Tailwind type scale. The default body text size is `text-sm` (14px).
+
+<table>
+  <thead>
+    <tr>
+      <th>Class</th>
+      <th>Size</th>
+      <th>Usage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>text-3xs</code>
+      </td>
+      <td>8px</td>
+      <td>QR labels, decorative micro-text only</td>
+    </tr>
+    <tr>
+      <td>
+        <code>text-2xs</code>
+      </td>
+      <td>10px</td>
+      <td>Secondary metadata, compact indicators</td>
+    </tr>
+    <tr>
+      <td>
+        <code>text-xs</code>
+      </td>
+      <td>12px</td>
+      <td>Captions, badges, helper text</td>
+    </tr>
+    <tr>
+      <td>
+        <code>text-sm</code>
+      </td>
+      <td>14px</td>
+      <td>Default body text, form labels</td>
+    </tr>
+    <tr>
+      <td>
+        <code>text-base</code>
+      </td>
+      <td>16px</td>
+      <td>Emphasized body text</td>
+    </tr>
+    <tr>
+      <td>
+        <code>text-lg</code>
+      </td>
+      <td>18px</td>
+      <td>Card titles, section sub-headers</td>
+    </tr>
+    <tr>
+      <td>
+        <code>text-xl</code>
+      </td>
+      <td>20px</td>
+      <td>Section headers</td>
+    </tr>
+    <tr>
+      <td>
+        <code>text-2xl</code>
+      </td>
+      <td>24px</td>
+      <td>Page titles, hero numbers</td>
+    </tr>
+  </tbody>
+</table>
+
+**Do not use arbitrary pixel sizes** like `text-[13px]` or `text-[17px]`. Map to the nearest standard size.
+
+**Font weight conventions:**
+
+- Section headers: `font-extrabold` (800)
+- Card titles: `font-semibold` (600)
+- Body text: `font-normal` (400)
+- Labels/badges: `font-semibold` (600)
+- Muted/secondary: `font-normal` (400)
+
 ## Anti-Patterns
 
 - **Don't** mix lifecycle concerns in a single interface without clear separation.
@@ -190,6 +343,8 @@ const isControlled = controlledValue !== undefined;
 - **Don't** skip accessibility attributes.
 - **Don't** create stories without play functions for interactive behaviors.
 - **Don't** force empty `InitConfig` or `RuntimeConfig` interfaces when a component doesn't need them.
+- **Don't** use hardcoded hex color values &#8212; always use design tokens.
+- **Don't** use arbitrary pixel font sizes &#8212; use the standard Tailwind type scale.
 
 ## Checklist
 
@@ -200,3 +355,12 @@ When creating or updating a component, deliver:
 - MDX documentation file
 - Unit tests (Vitest + Testing Library)
 - Proper TypeScript types throughout
+- Zero hardcoded hex colors (use design tokens from globals.css)
+- Typography using only the standard type scale
+
+## Entity Viewers
+
+For building entity-level viewers and editors, see the
+[Creating Entity Viewers](?path=/docs/docs-patterns-creating-entity-viewers--docs) pattern guide.
+The `createArdaEntityViewer` factory provides a standardized approach with built-in state management,
+validation, and dual-layout support.
