@@ -52,7 +52,7 @@ describe('ArdaBooleanFieldDisplay', () => {
       />,
     );
     const label = screen.getByText('Active');
-    expect(label.closest('div')).toHaveClass('flex-col');
+    expect(label.closest('label')).toHaveClass('flex-col');
   });
 
   describe('yes-no format', () => {

@@ -12,7 +12,7 @@ describe('FieldLabel', () => {
       </FieldLabel>,
     );
     expect(screen.getByTestId('child')).toBeInTheDocument();
-    // No wrapping div or label element
+    // No wrapping label element
     expect(container.querySelector('label')).not.toBeInTheDocument();
   });
 
@@ -24,8 +24,8 @@ describe('FieldLabel', () => {
     );
     expect(screen.getByText('Name')).toBeInTheDocument();
     expect(screen.getByTestId('child')).toBeInTheDocument();
-    // The wrapper should use flex-col for top layout
-    const wrapper = screen.getByText('Name').closest('div');
+    // The wrapper <label> should use flex-col for top layout
+    const wrapper = screen.getByText('Name').closest('label');
     expect(wrapper).toHaveClass('flex-col');
   });
 
@@ -37,8 +37,8 @@ describe('FieldLabel', () => {
     );
     expect(screen.getByText('Name')).toBeInTheDocument();
     expect(screen.getByTestId('child')).toBeInTheDocument();
-    // The wrapper should use items-start for left layout
-    const wrapper = screen.getByText('Name').closest('div');
+    // The wrapper <label> should use items-start for left layout
+    const wrapper = screen.getByText('Name').closest('label');
     expect(wrapper).toHaveClass('items-start');
   });
 
@@ -48,9 +48,9 @@ describe('FieldLabel', () => {
         <span data-testid="child">Content</span>
       </FieldLabel>,
     );
-    const label = screen.getByText('Name');
-    expect(label).toBeInTheDocument();
-    expect(label.tagName).toBe('LABEL');
-    expect(label).toHaveClass('w-[120px]');
+    const labelText = screen.getByText('Name');
+    expect(labelText).toBeInTheDocument();
+    expect(labelText.tagName).toBe('SPAN');
+    expect(labelText).toHaveClass('w-[120px]');
   });
 });

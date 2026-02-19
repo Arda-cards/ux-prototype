@@ -64,7 +64,7 @@ describe('ArdaUrlFieldDisplay', () => {
   it('renders with label on top', () => {
     render(<ArdaUrlFieldDisplay value="https://example.com" label="Website" labelPosition="top" />);
     const label = screen.getByText('Website');
-    expect(label.closest('div')).toHaveClass('flex-col');
+    expect(label.closest('label')).toHaveClass('flex-col');
   });
 });
 

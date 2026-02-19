@@ -18,20 +18,20 @@ export function FieldLabel({
 
   if (labelPosition === 'top') {
     return (
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-foreground">{label}</label>
+      <label className="flex flex-col gap-1">
+        <span className="text-sm font-medium text-foreground">{label}</span>
         {children}
-      </div>
+      </label>
     );
   }
 
   // left (default)
   return (
-    <div className="flex items-start gap-2">
-      <label className="w-[120px] shrink-0 pt-2 text-sm font-medium text-foreground truncate">
+    <label className="flex items-start gap-2">
+      <span className="w-[120px] shrink-0 pt-2 text-sm font-medium text-foreground truncate">
         {label}
-      </label>
+      </span>
       <div className="flex-1 min-w-0">{children}</div>
-    </div>
+    </label>
   );
 }

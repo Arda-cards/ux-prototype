@@ -102,12 +102,12 @@ export const ErrorStates: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    // Enter edit mode
-    const editButton = await canvas.findByRole('button', { name: /edit/i });
+    // Enter edit mode (entity loads async — wait for Edit button)
+    const editButton = await canvas.findByRole('button', { name: /edit/i }, { timeout: 5000 });
     await userEvent.click(editButton);
 
-    // Submit to trigger validation errors
-    const submitButton = await canvas.findByRole('button', { name: /submit/i });
+    // Wait for Submit button to appear after mode transitions to 'edit'
+    const submitButton = await canvas.findByRole('button', { name: /submit/i }, { timeout: 5000 });
     await userEvent.click(submitButton);
   },
 };

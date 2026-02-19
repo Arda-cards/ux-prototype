@@ -32,7 +32,7 @@ describe('ArdaNumberFieldDisplay', () => {
   it('renders with label on top', () => {
     render(<ArdaNumberFieldDisplay value={42} label="Quantity" labelPosition="top" />);
     const label = screen.getByText('Quantity');
-    expect(label.closest('div')).toHaveClass('flex-col');
+    expect(label.closest('label')).toHaveClass('flex-col');
   });
 
   it('formats with different precisions', () => {

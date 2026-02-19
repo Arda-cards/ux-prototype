@@ -37,7 +37,7 @@ describe('ArdaTimeFieldDisplay', () => {
   it('renders with label on top', () => {
     render(<ArdaTimeFieldDisplay value="14:30" label="Start Time" labelPosition="top" />);
     const label = screen.getByText('Start Time');
-    expect(label.closest('div')).toHaveClass('flex-col');
+    expect(label.closest('label')).toHaveClass('flex-col');
   });
 });
 

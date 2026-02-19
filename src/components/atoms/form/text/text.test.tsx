@@ -32,7 +32,7 @@ describe('ArdaTextFieldDisplay', () => {
   it('renders with label on top', () => {
     render(<ArdaTextFieldDisplay value="Hello" label="Name" labelPosition="top" />);
     const label = screen.getByText('Name');
-    expect(label.closest('div')).toHaveClass('flex-col');
+    expect(label.closest('label')).toHaveClass('flex-col');
   });
 });
 

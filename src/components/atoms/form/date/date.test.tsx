@@ -37,7 +37,7 @@ describe('ArdaDateFieldDisplay', () => {
   it('renders with label on top', () => {
     render(<ArdaDateFieldDisplay value="2024-03-15" label="Start Date" labelPosition="top" />);
     const label = screen.getByText('Start Date');
-    expect(label.closest('div')).toHaveClass('flex-col');
+    expect(label.closest('label')).toHaveClass('flex-col');
   });
 });
 

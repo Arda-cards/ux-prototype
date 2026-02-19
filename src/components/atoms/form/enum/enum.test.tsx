@@ -58,7 +58,7 @@ describe('ArdaEnumFieldDisplay', () => {
       />,
     );
     const label = screen.getByText('Mechanism');
-    expect(label.closest('div')).toHaveClass('flex-col');
+    expect(label.closest('label')).toHaveClass('flex-col');
   });
 });
 

@@ -41,7 +41,7 @@ describe('ArdaDateTimeFieldDisplay', () => {
       <ArdaDateTimeFieldDisplay value="2024-03-15T14:30" label="Created At" labelPosition="top" />,
     );
     const label = screen.getByText('Created At');
-    expect(label.closest('div')).toHaveClass('flex-col');
+    expect(label.closest('label')).toHaveClass('flex-col');
   });
 });
 

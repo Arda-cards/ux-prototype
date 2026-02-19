@@ -58,7 +58,7 @@ describe('ArdaCustomFieldDisplay', () => {
       />,
     );
     const label = screen.getByText('Field');
-    expect(label.closest('div')).toHaveClass('flex-col');
+    expect(label.closest('label')).toHaveClass('flex-col');
   });
 });
 

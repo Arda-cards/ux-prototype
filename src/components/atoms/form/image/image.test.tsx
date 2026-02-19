@@ -52,7 +52,7 @@ describe('ArdaImageFieldDisplay', () => {
       />,
     );
     const label = screen.getByText('Photo');
-    expect(label.closest('div')).toHaveClass('flex-col');
+    expect(label.closest('label')).toHaveClass('flex-col');
   });
 
   it('displays URL below the image', () => {
