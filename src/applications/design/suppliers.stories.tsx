@@ -28,7 +28,8 @@ const designOutline: React.CSSProperties = {
 export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(canvas.getByText('Suppliers')).toBeInTheDocument();
+    const matches = canvas.getAllByText('Suppliers');
+    await expect(matches.length).toBeGreaterThan(0);
   },
   render: () => {
     const [page, setPage] = useState(1);

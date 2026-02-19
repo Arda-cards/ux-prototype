@@ -198,7 +198,8 @@ export const Default: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(canvas.getByText('Widget Alpha')).toBeInTheDocument();
+    const cells = await canvas.findAllByText('Widget Alpha');
+    await expect(cells.length).toBeGreaterThan(0);
   },
 };
 

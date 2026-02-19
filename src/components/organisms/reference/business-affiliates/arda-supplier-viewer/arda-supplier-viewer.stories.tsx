@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { userEvent, within, waitFor } from 'storybook/test';
+import { userEvent, within } from 'storybook/test';
 
 import {
   createArdaEntityViewer,
@@ -107,10 +107,8 @@ export const ErrorStates: Story = {
     await userEvent.click(editButton);
 
     // Submit to trigger validation errors
-    await waitFor(async () => {
-      const submitButton = canvas.getByRole('button', { name: /save|submit/i });
-      await userEvent.click(submitButton);
-    });
+    const submitButton = await canvas.findByRole('button', { name: /submit/i });
+    await userEvent.click(submitButton);
   },
 };
 

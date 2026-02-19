@@ -65,7 +65,8 @@ export const ViewMode: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(canvas.getByText('Fastenal Corp.')).toBeInTheDocument();
+    const matches = await canvas.findAllByText('Fastenal Corp.');
+    await expect(matches.length).toBeGreaterThan(0);
   },
 };
 

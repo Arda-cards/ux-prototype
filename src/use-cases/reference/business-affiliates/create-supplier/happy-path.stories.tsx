@@ -574,7 +574,7 @@ const { Interactive, Stepwise, Automated } = createUseCaseStories<SupplierFormDa
     await delay();
 
     /* Scene 2 — type company name */
-    await userEvent.type(canvas.getByLabelText('Company Name'), SAMPLE.name);
+    await userEvent.type(canvas.getByLabelText('Name'), SAMPLE.name);
     goToScene(1);
     await delay();
 

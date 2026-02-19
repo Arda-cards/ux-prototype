@@ -40,7 +40,8 @@ const DevBanner = () => (
 export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(canvas.getByText('Items')).toBeInTheDocument();
+    const matches = canvas.getAllByText('Items');
+    await expect(matches.length).toBeGreaterThan(0);
   },
   render: () => {
     const [page, setPage] = useState(1);

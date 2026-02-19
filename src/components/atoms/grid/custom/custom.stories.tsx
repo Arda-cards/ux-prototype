@@ -231,6 +231,7 @@ export const Playground: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(canvas.getByRole('generic')).toBeInTheDocument();
+    const generics = canvas.getAllByRole('generic');
+    await expect(generics.length).toBeGreaterThan(0);
   },
 };

@@ -402,7 +402,7 @@ const { Interactive, Stepwise, Automated } = createUseCaseStories<SupplyFormData
     await expect(canvas.getByText(SAMPLE.supplyName)).toBeInTheDocument();
     await delay();
 
-    await userEvent.click(canvas.getByRole('button', { name: /confirm/i }));
+    await userEvent.click(canvas.getByRole('button', { name: /confirm & add supply/i }));
     goToScene(6);
     await expect(canvas.getByTestId('success-message')).toHaveTextContent(
       'Supply added successfully',

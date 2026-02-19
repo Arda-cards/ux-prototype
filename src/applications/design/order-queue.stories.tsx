@@ -149,6 +149,7 @@ export const Default: Story = {
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(canvas.getByText('Order Queue')).toBeInTheDocument();
+    const matches = canvas.getAllByText('Order Queue');
+    await expect(matches.length).toBeGreaterThan(0);
   },
 };

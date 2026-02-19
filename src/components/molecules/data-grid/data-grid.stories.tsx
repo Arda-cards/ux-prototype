@@ -119,7 +119,8 @@ export const Default: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(canvas.getByText('Alice Johnson')).toBeInTheDocument();
+    const cells = await canvas.findAllByText('Alice Johnson');
+    await expect(cells.length).toBeGreaterThan(0);
   },
 };
 

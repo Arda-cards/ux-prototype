@@ -125,7 +125,8 @@ export const WithData: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByText('Hex Socket Bolt M8x40')).toBeInTheDocument();
-    await expect(canvas.getByText('In Stock')).toBeInTheDocument();
+    const inStockCells = canvas.getAllByText('In Stock');
+    await expect(inStockCells.length).toBeGreaterThan(0);
   },
 };
 

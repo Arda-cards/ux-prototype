@@ -409,7 +409,7 @@ const { Interactive, Stepwise, Automated } = createUseCaseStories<ItemFormData>(
     await expect(canvas.getByText('$4,749.75', { exact: false })).toBeInTheDocument();
     await delay();
 
-    await userEvent.click(canvas.getByRole('button', { name: /confirm/i }));
+    await userEvent.click(canvas.getByRole('button', { name: /confirm & add item/i }));
     goToScene(8);
     await expect(canvas.getByTestId('success-message')).toHaveTextContent(
       'Item added successfully',
