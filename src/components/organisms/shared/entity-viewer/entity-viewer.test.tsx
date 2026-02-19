@@ -315,7 +315,7 @@ describe('useEntityViewer', () => {
         await result.current.actions.validateAndSubmit();
       });
 
-      expect(result.current.state.mode).toBe('errored');
+      await waitFor(() => expect(result.current.state.mode).toBe('errored'));
       expect(result.current.state.fieldErrors).toHaveLength(1);
       expect(result.current.state.fieldErrors[0]!.message).toBe('Name is required');
       expect(designConfig.update).not.toHaveBeenCalled();
@@ -340,7 +340,7 @@ describe('useEntityViewer', () => {
         await result.current.actions.validateAndSubmit();
       });
 
-      expect(result.current.state.mode).toBe('errored');
+      await waitFor(() => expect(result.current.state.mode).toBe('errored'));
       expect(result.current.state.entityErrors).toHaveLength(1);
       expect(result.current.state.entityErrors[0]!.message).toBe('Entity is invalid');
     });
@@ -364,7 +364,7 @@ describe('useEntityViewer', () => {
         await result.current.actions.validateAndSubmit();
       });
 
-      expect(result.current.state.mode).toBe('errored');
+      await waitFor(() => expect(result.current.state.mode).toBe('errored'));
       expect(result.current.state.fieldErrors).toHaveLength(1);
       expect(result.current.state.fieldErrors[0]!.fieldPath).toBe('name');
       expect(result.current.state.entityErrors).toHaveLength(1);
@@ -390,7 +390,7 @@ describe('useEntityViewer', () => {
         await result.current.actions.validateAndSubmit();
       });
 
-      expect(result.current.state.mode).toBe('errored');
+      await waitFor(() => expect(result.current.state.mode).toBe('errored'));
 
       act(() => result.current.actions.dismissErrors());
 
@@ -756,7 +756,7 @@ describe('server-side errors', () => {
       await result.current.actions.validateAndSubmit();
     });
 
-    expect(result.current.state.mode).toBe('errored');
+    await waitFor(() => expect(result.current.state.mode).toBe('errored'));
     expect(result.current.state.fieldErrors).toEqual([fieldError]);
     expect(result.current.state.entityErrors).toHaveLength(0);
   });
@@ -781,7 +781,7 @@ describe('server-side errors', () => {
       await result.current.actions.validateAndSubmit();
     });
 
-    expect(result.current.state.mode).toBe('errored');
+    await waitFor(() => expect(result.current.state.mode).toBe('errored'));
     expect(result.current.state.entityErrors).toEqual([entityError]);
     expect(result.current.state.fieldErrors).toHaveLength(0);
   });
