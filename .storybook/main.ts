@@ -17,7 +17,7 @@ const config: StorybookConfig = {
     '../src/use-cases/**/*.mdx',
     '../src/use-cases/**/*.stories.@(ts|tsx)',
   ],
-  addons: ['@storybook/addon-docs', './addons/agentation-toggle/manager'],
+  addons: ['@storybook/addon-docs'],
   framework: {
     name: '@storybook/react-vite',
     options: {},
