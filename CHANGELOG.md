@@ -18,6 +18,52 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [1.2.0] - 2026-02-18
+
+### Added
+
+- Molecule component: ArdaDataGrid with AG Grid integration, column persistence, and preset system
+  - Items data grid preset with domain-specific column definitions and cell renderers
+  - Suppliers data grid preset with business affiliate column definitions
+  - Common cell renderers (badge, image, money, quantity) and column utilities
+- Organism component: Entity Viewer (`createArdaEntityViewer`) with tabbed sub-viewers, continuous-scroll and stepped layouts, and container query responsive breakpoints
+- Organism component: Entity Data Grid (`createArdaEntityDataGrid`) factory for domain-specific data grids
+- Organism component: Stepped Viewer for multi-section vertical layouts
+- Reference organism: ArdaSupplierViewer (Phase 3 entity-viewer reference usage) with custom fields, sub-viewer configs, and mock data
+- Reference organism: Suppliers Data Grid with suppliers preset
+- Reference organism: Supplier Form with form field atoms
+- Atom components: 13 form field types (boolean, custom, date, date-time, duration, enum, image, money, number, quantity, text, time, url) each with Display, Editor, and Interactive variants
+- Atom components: 10 grid cell types (boolean, custom, date, date-time, enum, image, number, text, time, url) each with Display, Editor, and Interactive variants
+- Atom components: SelectCellEditor and TypeaheadCellEditor for AG Grid inline editing
+- Atom component: FieldLabel with static label support for all form atoms
+- Shared data type library (`src/lib/data-types/`) with formatters, atom type registry, and `createInteractive` factory
+- Custom AG Grid theme (`ag-theme-arda.css`) with Arda brand colors and styling
+- Agentation visual annotation tool integration:
+  - Custom Storybook toolbar addon (`.storybook/addons/agentation-toggle/`) with ChatIcon toggle and Ctrl+Shift+A shortcut
+  - Conditional decorator rendering Agentation overlay only when enabled via globals
+  - Clipboard integration: "Copy JSON" for full annotation batch, per-annotation markdown copy
+  - Claude Code skill (`tools/agentation-feedback/SKILL.md`) for parsing annotations into GitHub issues
+  - Test stories and MDX documentation under `src/docs/agentation/`
+- Documentation: About page, Component Classification guide, Atoms/Molecules/Organisms guide pages
+- Documentation: Creating Entity Viewers pattern guide
+- Documentation: expanded Use Cases documentation with framework DSL reference
+- ESLint custom rule: `no-hardcoded-colors` for enforcing CSS variable usage
+- Items data grid stories and documentation
+- Use case: Create Supplier (happy path) with interactive and stepwise stories
+- Exported additional public types: PostalAddress, Contact, BusinessAffiliate, ItemDomain, Locator, Pagination, Timezone
+
+### Fixed
+
+- Upgraded Storybook from 8.6 to 10.2.8 (ESM-only, updated addon APIs)
+- Refactored SupplierDrawer to use ArdaSupplierViewer (entity-viewer pattern)
+- Improved sidebar with updated navigation items and styling
+- Updated application mock stories to use new DataGrid and entity viewer components
+- Enhanced component documentation with lifecycle phase examples
+- Moved server tools to `tools/` directory (`server.js`, `watch-rebuild.js`)
+- Updated CI workflows for Node.js 22
+- Removed reference to non-existent WithPagination story in items-data-grid MDX
+- Fixed dependencies and imports for Storybook 10 compatibility
+
 ## [1.1.0] - 2026-02-13
 
 ### Added
