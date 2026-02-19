@@ -1,9 +1,14 @@
 import type { Preview } from '@storybook/react-vite';
+import { withAgentation } from './addons/agentation-toggle/withAgentation';
 
 import '../src/styles/globals.css';
 import '../src/styles/ag-theme-arda.css';
 
 const preview: Preview = {
+  decorators: [withAgentation],
+  initialGlobals: {
+    agentationEnabled: false,
+  },
   parameters: {
     options: {
       storySort: {

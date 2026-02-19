@@ -9,6 +9,7 @@ const __dirname = dirname(__filename);
 const config: StorybookConfig = {
   stories: [
     '../src/docs/**/*.mdx',
+    '../src/docs/**/*.stories.@(ts|tsx)',
     '../src/components/**/*.mdx',
     '../src/components/**/*.stories.@(ts|tsx)',
     '../src/visual-elements/**/*.stories.@(ts|tsx|mdx)',
@@ -16,7 +17,7 @@ const config: StorybookConfig = {
     '../src/use-cases/**/*.mdx',
     '../src/use-cases/**/*.stories.@(ts|tsx)',
   ],
-  addons: ['@storybook/addon-docs'],
+  addons: ['@storybook/addon-docs', './addons/agentation-toggle/manager'],
   framework: {
     name: '@storybook/react-vite',
     options: {},
