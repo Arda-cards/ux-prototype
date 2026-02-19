@@ -155,6 +155,7 @@ function TypeaheadCellEditorGrid() {
 }
 
 export const Default: Story = {
+  args: {} as any,
   render: () => (
     <div className="space-y-4">
       <div>
@@ -174,6 +175,7 @@ export const Default: Story = {
 };
 
 export const AsyncDataSource: Story = {
+  args: {} as any,
   render: () => {
     // Simulate async data fetching
     const fetchCustomers = async (query: string): Promise<TypeaheadOption[]> => {
@@ -227,7 +229,7 @@ export const AsyncDataSource: Story = {
           </p>
         </div>
         <div className="ag-theme-quartz" style={{ height: 250, width: '100%' }}>
-          <AgGridReact rowData={rowData} columnDefs={columnDefs} />
+          <AgGridReact rowData={rowData} columnDefs={columnDefs as any} />
         </div>
       </div>
     );
@@ -235,6 +237,7 @@ export const AsyncDataSource: Story = {
 };
 
 export const Interactive: Story = {
+  args: {} as any,
   render: () => {
     const [selectedUser, setSelectedUser] = useState<string>('');
     const [searchHistory, setSearchHistory] = useState<string[]>([]);
@@ -285,7 +288,7 @@ export const Interactive: Story = {
         <div className="ag-theme-quartz" style={{ height: 250, width: '100%' }}>
           <AgGridReact
             rowData={rowData}
-            columnDefs={columnDefs}
+            columnDefs={columnDefs as any}
             onCellValueChanged={onCellValueChanged}
           />
         </div>
@@ -313,12 +316,13 @@ export const Interactive: Story = {
 };
 
 export const LargeDataset: Story = {
+  args: {} as any,
   render: () => {
     // Generate 100 user options
     const largeUserList: TypeaheadOption[] = Array.from({ length: 100 }, (_, i) => ({
       value: `user-${i + 1}`,
       label: `User ${String(i + 1).padStart(3, '0')}`,
-      meta: ['Engineering', 'Product', 'Design', 'Marketing', 'Sales'][i % 5],
+      meta: ['Engineering', 'Product', 'Design', 'Marketing', 'Sales'][i % 5]!,
     }));
 
     const [rowData] = useState([
@@ -358,7 +362,7 @@ export const LargeDataset: Story = {
           </p>
         </div>
         <div className="ag-theme-quartz" style={{ height: 250, width: '100%' }}>
-          <AgGridReact rowData={rowData} columnDefs={columnDefs} />
+          <AgGridReact rowData={rowData} columnDefs={columnDefs as any} />
         </div>
       </div>
     );

@@ -299,19 +299,19 @@ export function createArdaEntityDataGrid<T extends Record<string, any>>(
         loading={loading}
         enableCellEditing={enableCellEditing}
         onCellValueChanged={handleCellValueChanged}
-        onRowClicked={
-          onRowClick
-            ? (event) => {
+        {...(onRowClick !== undefined
+          ? {
+              onRowClicked: (event: any) => {
                 if (event.data) onRowClick(event.data);
-              }
-            : undefined
-        }
-        onSelectionChanged={onSelectionChange}
-        paginationData={paginationData}
-        onNextPage={onNextPage}
-        onPreviousPage={onPreviousPage}
-        onFirstPage={onFirstPage}
-        emptyStateComponent={emptyStateComponent}
+              },
+            }
+          : {})}
+        {...(onSelectionChange !== undefined ? { onSelectionChanged: onSelectionChange } : {})}
+        {...(paginationData !== undefined ? { paginationData } : {})}
+        {...(onNextPage !== undefined ? { onNextPage } : {})}
+        {...(onPreviousPage !== undefined ? { onPreviousPage } : {})}
+        {...(onFirstPage !== undefined ? { onFirstPage } : {})}
+        {...(emptyStateComponent !== undefined ? { emptyStateComponent } : {})}
         height="100%"
         className="h-full arda-hide-auto-selection"
       />

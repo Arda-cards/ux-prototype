@@ -74,7 +74,7 @@ describe('ArdaSupplierDataGrid', () => {
 
     // Wait for grid to render
     await waitFor(() => {
-      expect(screen.getByText(mockSuppliers[0].name)).toBeInTheDocument();
+      expect(screen.getByText(mockSuppliers[0]!.name)).toBeInTheDocument();
     });
 
     expect(onUnsavedChangesChange).toHaveBeenCalledWith(false);

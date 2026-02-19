@@ -76,7 +76,7 @@ describe('ArdaItemsDataGrid', () => {
 
     // Wait for grid to render
     await waitFor(() => {
-      expect(screen.getByText(mockPublishedItems[0].name)).toBeInTheDocument();
+      expect(screen.getByText(mockPublishedItems[0]!.name)).toBeInTheDocument();
     });
 
     // Note: Full cell editing test would require more complex AG Grid interaction

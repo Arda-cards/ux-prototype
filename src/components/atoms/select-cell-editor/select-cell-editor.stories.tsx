@@ -164,6 +164,7 @@ function SelectCellEditorGrid({ withPlaceholder = false }: { withPlaceholder?: b
 }
 
 export const Default: Story = {
+  args: {} as any,
   render: () => (
     <div className="space-y-4">
       <div>
@@ -183,6 +184,7 @@ export const Default: Story = {
 };
 
 export const WithPlaceholder: Story = {
+  args: {} as any,
   render: () => (
     <div className="space-y-4">
       <div>
@@ -197,6 +199,7 @@ export const WithPlaceholder: Story = {
 };
 
 export const WithManyOptions: Story = {
+  args: {} as any,
   render: () => {
     const manyOptions = Array.from({ length: 20 }, (_, i) => ({
       value: `option-${i + 1}`,
@@ -232,7 +235,7 @@ export const WithManyOptions: Story = {
           </p>
         </div>
         <div className="ag-theme-quartz" style={{ height: 250, width: '100%' }}>
-          <AgGridReact rowData={rowData} columnDefs={columnDefs} />
+          <AgGridReact rowData={rowData} columnDefs={columnDefs as any} />
         </div>
       </div>
     );
@@ -240,6 +243,7 @@ export const WithManyOptions: Story = {
 };
 
 export const Interactive: Story = {
+  args: {} as any,
   render: () => {
     const [selectedValue, setSelectedValue] = useState<string>('active');
     const [editHistory, setEditHistory] = useState<Array<{ from: string; to: string }>>([]);
@@ -280,7 +284,7 @@ export const Interactive: Story = {
         <div className="ag-theme-quartz" style={{ height: 250, width: '100%' }}>
           <AgGridReact
             rowData={rowData}
-            columnDefs={columnDefs}
+            columnDefs={columnDefs as any}
             onCellValueChanged={onCellValueChanged}
           />
         </div>

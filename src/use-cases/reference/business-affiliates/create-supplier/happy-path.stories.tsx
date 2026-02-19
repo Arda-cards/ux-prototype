@@ -198,7 +198,7 @@ function formDataToAffiliate(data: SupplierFormData): BusinessAffiliate {
     if (data.state) a.state = data.state;
     if (data.postalCode) a.postalCode = data.postalCode;
     if (data.country) a.country = data.country;
-    affiliate.mainAddress = a as typeof affiliate.mainAddress;
+    affiliate.mainAddress = a as NonNullable<typeof affiliate.mainAddress>;
   }
 
   // Legal
@@ -209,7 +209,7 @@ function formDataToAffiliate(data: SupplierFormData): BusinessAffiliate {
     if (data.taxId) l.taxId = data.taxId;
     if (data.registrationId) l.registrationId = data.registrationId;
     if (data.naicsCode) l.naicsCode = data.naicsCode;
-    affiliate.legal = l as typeof affiliate.legal;
+    affiliate.legal = l as NonNullable<typeof affiliate.legal>;
   }
 
   // Notes

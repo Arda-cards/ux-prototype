@@ -15,7 +15,7 @@ export const SelectionCheckboxCell = CommonSelectionCheckboxCell;
  * Delegates to the generic NotesIconCell.
  */
 export function NotesCell({ item }: { item: Item }) {
-  return <NotesIconCell notes={item.notes} />;
+  return <NotesIconCell {...(item.notes !== undefined ? { notes: item.notes } : {})} />;
 }
 
 /**

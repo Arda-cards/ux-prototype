@@ -134,7 +134,7 @@ export function SelectionCheckboxCell({ node }: { node: IRowNode }) {
         type="checkbox"
         className="rounded cursor-pointer"
         checked={node.isSelected()}
-        onChange={handleMouseEvent}
+        onChange={(e) => e.stopPropagation()}
         onClick={handleCheckboxClick}
         onMouseDown={handleMouseEvent}
       />

@@ -6,6 +6,7 @@ import type {
   CardSize,
   LabelSize,
   BreadcrumbSize,
+  OrderMechanism,
 } from '@/types/reference/items/item-domain';
 import type { Money } from '@/types/model';
 
@@ -59,17 +60,18 @@ export function formatQuantity(value?: { amount: number; unit: string }): string
 function setNestedValue(item: Item, path: string, value: unknown): boolean {
   switch (path) {
     case 'internalSKU':
-      item.internalSKU =
-        value === null || value === undefined || value === '' ? undefined : String(value).trim();
+      if (value === null || value === undefined || value === '') {
+        delete item.internalSKU;
+      } else {
+        item.internalSKU = String(value).trim();
+      }
       return true;
     case 'name':
       item.name = String(value ?? '').trim() || '';
       return true;
     case 'primarySupply.orderMechanism':
       if (item.primarySupply) {
-        item.primarySupply.orderMechanism = String(
-          value ?? '',
-        ).trim() as Item['primarySupply'] extends undefined ? never : string;
+        item.primarySupply.orderMechanism = String(value ?? '').trim() as OrderMechanism;
       }
       return true;
     case 'primarySupply.orderQuantity.unit': {
@@ -593,7 +595,7 @@ export const itemsColumnDefs: ColDef<Item>[] = [
   },
   {
     headerName: '# of Cards',
-    field: 'cardCount',
+    field: 'cardCount' as any,
     colId: 'cardCount',
     width: 100,
     cellStyle: {
@@ -608,7 +610,7 @@ export const itemsColumnDefs: ColDef<Item>[] = [
   },
   {
     headerName: 'Quick Actions',
-    field: 'quickActions',
+    field: 'quickActions' as any,
     colId: 'quickActions',
     width: 123,
     cellStyle: {

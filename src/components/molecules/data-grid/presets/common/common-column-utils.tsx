@@ -58,7 +58,7 @@ export function createSelectColumn<T>(): ColDef<T> {
 export function createNotesColumn<T>(notesAccessor: (data: T) => string | undefined): ColDef<T> {
   return {
     headerName: 'Notes',
-    field: 'notes',
+    field: 'notes' as any,
     width: 100,
     cellStyle: {
       display: 'flex',
@@ -68,7 +68,7 @@ export function createNotesColumn<T>(notesAccessor: (data: T) => string | undefi
     cellRenderer: (params: ICellRendererParams<T>) => {
       if (!params.data) return <span>{'\u2014'}</span>;
       const notes = notesAccessor(params.data);
-      return <NotesIconCell notes={notes} />;
+      return <NotesIconCell {...(notes !== undefined ? { notes } : {})} />;
     },
   };
 }
@@ -79,7 +79,7 @@ export function createNotesColumn<T>(notesAccessor: (data: T) => string | undefi
 export function createQuickActionsColumn<T>(): ColDef<T> {
   return {
     headerName: 'Quick Actions',
-    field: 'quickActions',
+    field: 'quickActions' as any,
     colId: 'quickActions',
     width: 123,
     cellStyle: {

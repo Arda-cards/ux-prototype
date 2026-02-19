@@ -26,7 +26,7 @@ const sampleData: SampleDataRow[] = [
   { id: '5', name: 'Eve Davis', email: 'eve@example.com', role: 'Admin', status: 'Active' },
 ];
 
-const columnDefs: ColDef<SampleDataRow>[] = [
+const columnDefs: ColDef[] = [
   { field: 'id', headerName: 'ID', width: 80 },
   { field: 'name', headerName: 'Name', width: 200 },
   { field: 'email', headerName: 'Email', width: 250 },
@@ -329,7 +329,7 @@ export const WithRowClick: Story = {
           columnDefs={columnDefs}
           rowData={sampleData}
           height={400}
-          onRowClicked={(event) => setClickedRow(event.data)}
+          onRowClicked={(event) => setClickedRow(event.data ?? null)}
         />
       </div>
     );

@@ -16,22 +16,14 @@ import {
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import '@/styles/ag-theme-arda.css';
+import type { PaginationData } from '@/types/model';
 import { useColumnPersistence } from './use-column-persistence';
 
 // Register AG-Grid modules
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-// ============================================================================
-// Types
-// ============================================================================
-
-export interface PaginationData {
-  hasNextPage: boolean;
-  hasPreviousPage: boolean;
-  currentPage: number;
-  currentPageSize: number;
-  totalItems?: number;
-}
+// Re-export PaginationData from the canonical location
+export type { PaginationData } from '@/types/model';
 
 export interface ArdaDataGridStaticConfig<T> {
   /* --- Model / Data Binding --- */
@@ -384,12 +376,14 @@ export const ArdaDataGrid = forwardRef(
       theme: 'legacy',
 
       // Selection
-      rowSelection: enableRowSelection
+      ...(enableRowSelection
         ? {
-            mode: enableMultiRowSelection ? 'multiRow' : 'singleRow',
-            enableClickSelection: true,
+            rowSelection: {
+              mode: enableMultiRowSelection ? ('multiRow' as const) : ('singleRow' as const),
+              enableClickSelection: true as const,
+            },
           }
-        : undefined,
+        : {}),
 
       // Performance
       suppressColumnVirtualisation: false,
@@ -408,12 +402,14 @@ export const ArdaDataGrid = forwardRef(
       },
 
       // Cell editing
-      ...(enableCellEditing && {
-        singleClickEdit: false,
-        stopEditingWhenCellsLoseFocus: true,
-        enterNavigatesVertically: true,
-        enterNavigatesVerticallyAfterEdit: true,
-      }),
+      ...(enableCellEditing
+        ? {
+            singleClickEdit: false,
+            stopEditingWhenCellsLoseFocus: true,
+            enterNavigatesVertically: true,
+            enterNavigatesVerticallyAfterEdit: true,
+          }
+        : {}),
     };
 
     // Combined no rows overlay
@@ -440,12 +436,12 @@ export const ArdaDataGrid = forwardRef(
             onGridReady={handleGridReady}
             onSelectionChanged={handleSelectionChanged}
             onRowClicked={handleRowClicked}
-            onCellValueChanged={onCellValueChanged}
+            {...(onCellValueChanged !== undefined ? { onCellValueChanged } : {})}
             onColumnMoved={onColumnStateChanged}
             onColumnResized={onColumnStateChanged}
             onColumnVisible={onColumnStateChanged}
             onSortChanged={onColumnStateChanged}
-            loadingOverlayComponent={loading ? LoadingOverlay : undefined}
+            {...(loading ? { loadingOverlayComponent: LoadingOverlay } : {})}
             noRowsOverlayComponent={NoRowsOverlay}
           />
 
@@ -453,9 +449,9 @@ export const ArdaDataGrid = forwardRef(
           {paginationData && (
             <PaginationFooter
               paginationData={paginationData}
-              onFirstPage={onFirstPage}
-              onPreviousPage={onPreviousPage}
-              onNextPage={onNextPage}
+              {...(onFirstPage !== undefined ? { onFirstPage } : {})}
+              {...(onPreviousPage !== undefined ? { onPreviousPage } : {})}
+              {...(onNextPage !== undefined ? { onNextPage } : {})}
               loading={loading}
             />
           )}
@@ -467,7 +463,7 @@ export const ArdaDataGrid = forwardRef(
   props: ArdaDataGridProps<T> & { ref?: React.Ref<ArdaDataGridRef<T>> },
 ) => React.ReactElement;
 
-ArdaDataGrid.displayName = 'ArdaDataGrid';
+(ArdaDataGrid as any).displayName = 'ArdaDataGrid';
 
 // Export GridImage for use in column definitions
 export { GridImage };

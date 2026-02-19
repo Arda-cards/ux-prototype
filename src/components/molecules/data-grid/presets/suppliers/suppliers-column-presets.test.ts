@@ -38,8 +38,8 @@ describe('suppliers-column-presets', () => {
 
       const enhanced = enhanceEditableSupplierColumnDefs(defs as any);
 
-      expect(enhanced[0].editable).toBe(true);
-      expect(enhanced[1].editable).toBeUndefined();
+      expect(enhanced[0]!.editable).toBe(true);
+      expect(enhanced[1]!.editable).toBeUndefined();
     });
 
     it('preserves original column configuration', () => {
@@ -47,8 +47,8 @@ describe('suppliers-column-presets', () => {
 
       const enhanced = enhanceEditableSupplierColumnDefs(defs as any);
 
-      expect(enhanced[0].headerName).toBe('Name');
-      expect(enhanced[0].width).toBe(250);
+      expect(enhanced[0]!.headerName).toBe('Name');
+      expect(enhanced[0]!.width).toBe(250);
     });
 
     it('adds valueGetter to editable columns', () => {
@@ -56,7 +56,7 @@ describe('suppliers-column-presets', () => {
 
       const enhanced = enhanceEditableSupplierColumnDefs(defs as any);
 
-      expect(typeof enhanced[0].valueGetter).toBe('function');
+      expect(typeof enhanced[0]!.valueGetter).toBe('function');
     });
 
     it('adds valueSetter to editable columns', () => {
@@ -64,7 +64,7 @@ describe('suppliers-column-presets', () => {
 
       const enhanced = enhanceEditableSupplierColumnDefs(defs as any);
 
-      expect(typeof enhanced[0].valueSetter).toBe('function');
+      expect(typeof enhanced[0]!.valueSetter).toBe('function');
     });
 
     it('respects enabled option', () => {
@@ -72,7 +72,7 @@ describe('suppliers-column-presets', () => {
 
       const enhanced = enhanceEditableSupplierColumnDefs(defs as any, { enabled: false });
 
-      expect(enhanced[0].editable).toBeUndefined();
+      expect(enhanced[0]!.editable).toBeUndefined();
     });
 
     it('enhances contact.lastName column by colId', () => {
@@ -80,8 +80,8 @@ describe('suppliers-column-presets', () => {
 
       const enhanced = enhanceEditableSupplierColumnDefs(defs as any);
 
-      expect(enhanced[0].editable).toBe(true);
-      expect(typeof enhanced[0].valueGetter).toBe('function');
+      expect(enhanced[0]!.editable).toBe(true);
+      expect(typeof enhanced[0]!.valueGetter).toBe('function');
     });
 
     it('enhances notes column', () => {
@@ -89,7 +89,7 @@ describe('suppliers-column-presets', () => {
 
       const enhanced = enhanceEditableSupplierColumnDefs(defs as any);
 
-      expect(enhanced[0].editable).toBe(true);
+      expect(enhanced[0]!.editable).toBe(true);
     });
   });
 
@@ -99,7 +99,7 @@ describe('suppliers-column-presets', () => {
     });
 
     it('has select column first', () => {
-      expect(suppliersColumnDefs[0].colId).toBe('select');
+      expect(suppliersColumnDefs[0]!.colId).toBe('select');
     });
 
     it('has name column', () => {
@@ -177,7 +177,7 @@ describe('suppliers-column-presets', () => {
     });
 
     it('select column has custom header component', () => {
-      const selectCol = suppliersColumnDefs[0];
+      const selectCol = suppliersColumnDefs[0]!;
       expect(selectCol.headerComponent).toBeDefined();
     });
   });

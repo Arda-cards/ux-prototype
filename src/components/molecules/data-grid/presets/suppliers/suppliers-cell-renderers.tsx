@@ -99,7 +99,7 @@ export function LocationCell({ affiliate }: { affiliate: BusinessAffiliate }) {
  * Delegates to the generic NotesIconCell.
  */
 export function SupplierNotesCell({ affiliate }: { affiliate: BusinessAffiliate }) {
-  return <NotesIconCell notes={affiliate.notes} />;
+  return <NotesIconCell {...(affiliate.notes !== undefined ? { notes: affiliate.notes } : {})} />;
 }
 
 /**

@@ -22,7 +22,7 @@ type ColumnStateEvent =
  * are deferred to issue #717.
  */
 export function useColumnPersistence(persistenceKey?: string) {
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Clear timeout on unmount
   useEffect(() => {

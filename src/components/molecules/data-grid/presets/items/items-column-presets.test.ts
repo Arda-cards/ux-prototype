@@ -107,9 +107,9 @@ describe('items-column-presets', () => {
 
       const enhanced = enhanceEditableColumnDefs(defs as any);
 
-      expect(enhanced[0].editable).toBe(true);
-      expect(enhanced[1].editable).toBe(true);
-      expect(enhanced[2].editable).toBeUndefined();
+      expect(enhanced[0]!.editable).toBe(true);
+      expect(enhanced[1]!.editable).toBe(true);
+      expect(enhanced[2]!.editable).toBeUndefined();
     });
 
     it('preserves original column configuration', () => {
@@ -117,8 +117,8 @@ describe('items-column-presets', () => {
 
       const enhanced = enhanceEditableColumnDefs(defs as any);
 
-      expect(enhanced[0].headerName).toBe('SKU');
-      expect(enhanced[0].width).toBe(140);
+      expect(enhanced[0]!.headerName).toBe('SKU');
+      expect(enhanced[0]!.width).toBe(140);
     });
 
     it('adds valueGetter to editable columns', () => {
@@ -126,7 +126,7 @@ describe('items-column-presets', () => {
 
       const enhanced = enhanceEditableColumnDefs(defs as any);
 
-      expect(typeof enhanced[0].valueGetter).toBe('function');
+      expect(typeof enhanced[0]!.valueGetter).toBe('function');
     });
 
     it('adds valueSetter to editable columns', () => {
@@ -134,7 +134,7 @@ describe('items-column-presets', () => {
 
       const enhanced = enhanceEditableColumnDefs(defs as any);
 
-      expect(typeof enhanced[0].valueSetter).toBe('function');
+      expect(typeof enhanced[0]!.valueSetter).toBe('function');
     });
 
     it('respects enabled option', () => {
@@ -142,7 +142,7 @@ describe('items-column-presets', () => {
 
       const enhanced = enhanceEditableColumnDefs(defs as any, { enabled: false });
 
-      expect(enhanced[0].editable).toBeUndefined();
+      expect(enhanced[0]!.editable).toBeUndefined();
     });
 
     it('adds cellEditor for order mechanism field', () => {
@@ -156,7 +156,7 @@ describe('items-column-presets', () => {
 
       const enhanced = enhanceEditableColumnDefs(defs as any);
 
-      expect(enhanced[0].cellEditor).toBeDefined();
+      expect(enhanced[0]!.cellEditor).toBeDefined();
     });
 
     it('adds cellEditor for unit field', () => {
@@ -170,7 +170,7 @@ describe('items-column-presets', () => {
 
       const enhanced = enhanceEditableColumnDefs(defs as any);
 
-      expect(enhanced[0].cellEditor).toBeDefined();
+      expect(enhanced[0]!.cellEditor).toBeDefined();
     });
 
     it('adds cellEditor for size fields', () => {
@@ -182,9 +182,9 @@ describe('items-column-presets', () => {
 
       const enhanced = enhanceEditableColumnDefs(defs as any);
 
-      expect(enhanced[0].cellEditor).toBeDefined();
-      expect(enhanced[1].cellEditor).toBeDefined();
-      expect(enhanced[2].cellEditor).toBeDefined();
+      expect(enhanced[0]!.cellEditor).toBeDefined();
+      expect(enhanced[1]!.cellEditor).toBeDefined();
+      expect(enhanced[2]!.cellEditor).toBeDefined();
     });
 
     it('adds cellEditor for color field', () => {
@@ -192,7 +192,7 @@ describe('items-column-presets', () => {
 
       const enhanced = enhanceEditableColumnDefs(defs as any);
 
-      expect(enhanced[0].cellEditor).toBeDefined();
+      expect(enhanced[0]!.cellEditor).toBeDefined();
     });
   });
 
@@ -202,7 +202,7 @@ describe('items-column-presets', () => {
     });
 
     it('has select column first', () => {
-      expect(itemsColumnDefs[0].colId).toBe('select');
+      expect(itemsColumnDefs[0]!.colId).toBe('select');
     });
 
     it('has image column', () => {
@@ -300,7 +300,7 @@ describe('items-column-presets', () => {
     });
 
     it('select column has custom header component', () => {
-      const selectCol = itemsColumnDefs[0];
+      const selectCol = itemsColumnDefs[0]!;
       expect(selectCol.headerComponent).toBeDefined();
     });
   });

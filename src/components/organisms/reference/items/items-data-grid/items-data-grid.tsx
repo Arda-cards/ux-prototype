@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 
 import {
   createArdaEntityDataGrid,
@@ -60,7 +60,12 @@ export interface ArdaItemsDataGridRef extends EntityDataGridRef {}
 export const ArdaItemsDataGrid = forwardRef<ArdaItemsDataGridRef, ArdaItemsDataGridProps>(
   function ArdaItemsDataGrid({ items, onItemUpdated, ...otherProps }, ref) {
     return (
-      <BaseItemsDataGrid ref={ref} data={items} onEntityUpdated={onItemUpdated} {...otherProps} />
+      <BaseItemsDataGrid
+        ref={ref}
+        data={items}
+        {...(onItemUpdated !== undefined ? { onEntityUpdated: onItemUpdated } : {})}
+        {...otherProps}
+      />
     );
   },
 );

@@ -162,7 +162,7 @@ describe('createArdaEntityDataGrid', () => {
 
     // Wait for grid to render
     await waitFor(() => {
-      expect(screen.getByText(testEntities[0].name)).toBeInTheDocument();
+      expect(screen.getByText(testEntities[0]!.name)).toBeInTheDocument();
     });
 
     // Initial state should be no unsaved changes

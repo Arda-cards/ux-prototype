@@ -84,7 +84,7 @@ export function createInteractive<
       setMode('display');
     }, [value]);
 
-    const extra = extraProps as ExtraProps;
+    const extra = extraProps as unknown as ExtraProps;
 
     if (mode === 'display') {
       return (

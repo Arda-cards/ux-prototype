@@ -24,25 +24,37 @@ function setNestedValue(affiliate: BusinessAffiliate, path: string, value: unkno
       return true;
     case 'contact.lastName': {
       if (!affiliate.contact) affiliate.contact = {};
-      affiliate.contact.lastName =
-        value === null || value === undefined || value === '' ? undefined : String(value).trim();
+      if (value === null || value === undefined || value === '') {
+        delete affiliate.contact.lastName;
+      } else {
+        affiliate.contact.lastName = String(value).trim();
+      }
       return true;
     }
     case 'contact.email': {
       if (!affiliate.contact) affiliate.contact = {};
-      affiliate.contact.email =
-        value === null || value === undefined || value === '' ? undefined : String(value).trim();
+      if (value === null || value === undefined || value === '') {
+        delete affiliate.contact.email;
+      } else {
+        affiliate.contact.email = String(value).trim();
+      }
       return true;
     }
     case 'contact.phone': {
       if (!affiliate.contact) affiliate.contact = {};
-      affiliate.contact.phone =
-        value === null || value === undefined || value === '' ? undefined : String(value).trim();
+      if (value === null || value === undefined || value === '') {
+        delete affiliate.contact.phone;
+      } else {
+        affiliate.contact.phone = String(value).trim();
+      }
       return true;
     }
     case 'notes':
-      affiliate.notes =
-        value === null || value === undefined || value === '' ? undefined : String(value).trim();
+      if (value === null || value === undefined || value === '') {
+        delete affiliate.notes;
+      } else {
+        affiliate.notes = String(value).trim();
+      }
       return true;
     default:
       return false;
@@ -301,7 +313,7 @@ export const suppliersColumnDefs: ColDef<BusinessAffiliate>[] = [
   },
   {
     headerName: 'Quick Actions',
-    field: 'quickActions',
+    field: 'quickActions' as any,
     colId: 'quickActions',
     width: 123,
     cellStyle: {

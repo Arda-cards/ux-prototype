@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 
 import {
   createArdaEntityDataGrid,
@@ -63,7 +63,7 @@ export const ArdaSupplierDataGrid = forwardRef<ArdaSupplierDataGridRef, ArdaSupp
       <BaseSupplierDataGrid
         ref={ref}
         data={suppliers}
-        onEntityUpdated={onSupplierUpdated}
+        {...(onSupplierUpdated !== undefined ? { onEntityUpdated: onSupplierUpdated } : {})}
         {...otherProps}
       />
     );
