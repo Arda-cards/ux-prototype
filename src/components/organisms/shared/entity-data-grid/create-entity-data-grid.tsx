@@ -147,6 +147,8 @@ export function createArdaEntityDataGrid<T extends Record<string, any>>(
     // Track unsaved changes (edited entities that haven't been saved)
     const [dirtyItems, setDirtyItems] = useState<Set<string>>(new Set());
     const dirtyItemDataRef = useRef<Map<string, T>>(new Map());
+    // Store original entity snapshots for discard/revert
+    const originalItemDataRef = useRef<Map<string, T>>(new Map());
 
     // Apply column visibility filtering to columnDefs
     const applyColumnVisibility = useCallback(
@@ -226,6 +228,13 @@ export function createArdaEntityDataGrid<T extends Record<string, any>>(
         const entityId = config.getEntityId(entity);
         if (!entityId) return;
 
+        // Store original snapshot before first edit
+        if (!originalItemDataRef.current.has(entityId)) {
+          // event.oldValue is the previous cell value; reconstruct original entity
+          const original = { ...entity, [event.colDef.field as string]: event.oldValue } as T;
+          originalItemDataRef.current.set(entityId, structuredClone(original));
+        }
+
         // Mark this entity as dirty
         setDirtyItems((prev) => new Set(prev).add(entityId));
         dirtyItemDataRef.current.set(entityId, entity);
@@ -254,16 +263,27 @@ export function createArdaEntityDataGrid<T extends Record<string, any>>(
         },
         getHasUnsavedChanges: () => dirtyItems.size > 0,
         discardAllDrafts: () => {
-          // Clear all dirty state and revert data
-          setDirtyItems(new Set());
-          dirtyItemDataRef.current.clear();
-          onUnsavedChangesChange?.(false);
-
-          // Refresh grid to revert visual changes
+          // Restore original entity values on the mutated row objects
+          // AG Grid edits data in-place, so we copy original values back
           const api = gridRef.current?.getGridApi();
           if (api) {
+            api.forEachNode((rowNode) => {
+              const entity = rowNode.data as T | undefined;
+              if (!entity) return;
+              const entityId = config.getEntityId(entity);
+              const original = originalItemDataRef.current.get(entityId);
+              if (original) {
+                Object.assign(entity, original);
+              }
+            });
             api.refreshCells({ force: true });
           }
+
+          // Clear all dirty state
+          setDirtyItems(new Set());
+          dirtyItemDataRef.current.clear();
+          originalItemDataRef.current.clear();
+          onUnsavedChangesChange?.(false);
         },
       }),
       [dirtyItems.size, onUnsavedChangesChange],

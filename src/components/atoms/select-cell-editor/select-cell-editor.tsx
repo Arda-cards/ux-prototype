@@ -132,6 +132,10 @@ export function createSelectCellEditor(
   placeholder?: string,
 ) {
   return (props: Omit<ArdaSelectCellEditorProps, keyof SelectCellEditorStaticConfig>) => (
-    <ArdaSelectCellEditor options={options} placeholder={placeholder} {...props} />
+    <ArdaSelectCellEditor
+      options={options}
+      {...(placeholder !== undefined ? { placeholder } : {})}
+      {...props}
+    />
   );
 }

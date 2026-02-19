@@ -29,6 +29,7 @@
     "test": "vitest --run",
     "test:watch": "vitest",
     "test:coverage": "vitest --run --coverage",
+    "test:storybook": "test-storybook --testTimeout 30000",
     "serve": "node tools/server.js"
   },
   "dependencies": {
@@ -46,6 +47,7 @@
   "devDependencies": {
     "@storybook/addon-docs": "^10.2.8",
     "@storybook/react-vite": "^10.2.8",
+    "@storybook/test-runner": "^0.24.2",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.6.0",
     "@testing-library/react": "^16.1.0",
