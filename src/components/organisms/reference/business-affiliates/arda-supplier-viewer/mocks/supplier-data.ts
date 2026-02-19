@@ -1,8 +1,5 @@
 import type { BusinessAffiliate } from '@/types/reference/business-affiliates/business-affiliate';
-import type {
-  ValidationResult,
-  UpdateResult,
-} from '@/components/organisms/shared/entity-viewer';
+import type { ValidationResult, UpdateResult } from '@/components/organisms/shared/entity-viewer';
 
 // ============================================================================
 // Mock Data

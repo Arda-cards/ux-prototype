@@ -1,5 +1,5 @@
 import type { Preview } from '@storybook/react-vite';
-import { withAgentation } from './addons/agentation-toggle/withAgentation';
+import { withAgentation } from './addons/agentation-toggle/with-agentation';
 
 import '../src/styles/globals.css';
 import '../src/styles/ag-theme-arda.css';

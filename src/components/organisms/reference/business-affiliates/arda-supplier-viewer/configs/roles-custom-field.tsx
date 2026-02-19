@@ -1,5 +1,8 @@
 import type { AtomMode, AtomProps } from '@/lib/data-types/atom-types';
-import type { BusinessRole, BusinessRoleType } from '@/types/reference/business-affiliates/business-affiliate';
+import type {
+  BusinessRole,
+  BusinessRoleType,
+} from '@/types/reference/business-affiliates/business-affiliate';
 import type { FieldDescriptor } from '@/components/organisms/shared/entity-viewer';
 import { ArdaCustomFieldInteractive } from '@/components/atoms/form/custom';
 
@@ -74,7 +77,9 @@ export function renderRolesField(
       {errors && errors.length > 0 && (
         <div className="mt-1">
           {errors.map((err, i) => (
-            <p key={i} className="text-xs text-red-600">{err}</p>
+            <p key={i} className="text-xs text-red-600">
+              {err}
+            </p>
           ))}
         </div>
       )}

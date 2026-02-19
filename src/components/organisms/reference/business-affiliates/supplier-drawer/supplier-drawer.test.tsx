@@ -58,9 +58,7 @@ describe('ArdaSupplierDrawer', () => {
   });
 
   it('renders dialog with translate-x-0 when open', () => {
-    render(
-      <ArdaSupplierDrawer open mode="view" affiliate={affiliate} onClose={() => {}} />,
-    );
+    render(<ArdaSupplierDrawer open mode="view" affiliate={affiliate} onClose={() => {}} />);
     expect(screen.getByRole('dialog')).toHaveClass('translate-x-0');
   });
 

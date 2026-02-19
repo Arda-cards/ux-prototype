@@ -18,16 +18,13 @@ export interface ArdaSupplierFormRuntimeConfig {
 export interface ArdaSupplierFormProps
   extends ArdaSupplierFormStaticConfig, ArdaSupplierFormRuntimeConfig {}
 
-export function ArdaSupplierForm({
-  value,
-  mode = 'single-scroll',
-}: ArdaSupplierFormProps) {
+export function ArdaSupplierForm({ value, mode = 'single-scroll' }: ArdaSupplierFormProps) {
   const isStepped = mode === 'stepped';
 
   // Build MountConfig conditionally to respect exactOptionalPropertyTypes
   const mountProps = {
     title: value.name || 'Supplier',
-    layoutMode: isStepped ? 'stepped' as const : 'continuous-scroll' as const,
+    layoutMode: isStepped ? ('stepped' as const) : ('continuous-scroll' as const),
     editable: true,
     ...(value.eId ? { entityId: value.eId } : {}),
     ...(isStepped ? { tabs: supplierTabs } : { fieldOrder: supplierFieldOrder }),

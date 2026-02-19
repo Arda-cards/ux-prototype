@@ -21,11 +21,7 @@ export function Tool() {
   });
 
   return (
-    <IconButton
-      active={isActive}
-      title="Toggle Agentation feedback overlay"
-      onClick={toggle}
-    >
+    <IconButton active={isActive} title="Toggle Agentation feedback overlay" onClick={toggle}>
       <ChatIcon />
     </IconButton>
   );

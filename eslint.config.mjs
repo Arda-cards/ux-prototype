@@ -66,7 +66,7 @@ prettierConfig, // ── TypeScript strict rules ──────────
   },
 }, // ── Config & middleware files (TS parser, no type-aware rules) ──────
 {
-  files: ['.storybook/**/*.ts', 'middleware.ts'],
+  files: ['.storybook/**/*.ts', '.storybook/**/*.tsx', 'middleware.ts'],
   languageOptions: {
     parser: tsParser,
     parserOptions: {

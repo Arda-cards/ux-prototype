@@ -8,10 +8,19 @@ const SampleComponent = () => (
     <p data-testid="sample-text">
       This is a sample component used to test the Agentation feedback overlay.
     </p>
-    <button data-testid="sample-button" type="button" className="px-4 py-2 bg-blue-600 text-white rounded">
+    <button
+      data-testid="sample-button"
+      type="button"
+      className="px-4 py-2 bg-blue-600 text-white rounded"
+    >
       Click Me
     </button>
-    <input data-testid="sample-input" type="text" placeholder="Type here..." className="border px-3 py-2 rounded" />
+    <input
+      data-testid="sample-input"
+      type="text"
+      placeholder="Type here..."
+      className="border px-3 py-2 rounded"
+    />
   </div>
 );
 

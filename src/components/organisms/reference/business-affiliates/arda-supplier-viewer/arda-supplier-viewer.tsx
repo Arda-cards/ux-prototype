@@ -1,7 +1,10 @@
 import type { AtomProps } from '@/lib/data-types/atom-types';
 import type { BusinessAffiliate } from '@/types/reference/business-affiliates/business-affiliate';
-import type { DesignConfig, FieldDescriptor } from '@/components/organisms/shared/entity-viewer';
-import { createArdaEntityViewer } from '@/components/organisms/shared/entity-viewer';
+import {
+  createArdaEntityViewer,
+  type DesignConfig,
+  type FieldDescriptor,
+} from '@/components/organisms/shared/entity-viewer';
 import { ArdaTextFieldInteractive } from '@/components/atoms/form/text';
 import { ArdaCustomFieldInteractive } from '@/components/atoms/form/custom';
 
@@ -12,7 +15,11 @@ import {
   createSupplierInstance,
 } from './mocks/supplier-data';
 import { renderRolesField } from './configs/roles-custom-field';
-import { ContactSubViewer, PostalAddressSubViewer, CompanyInfoSubViewer } from './configs/sub-viewers';
+import {
+  ContactSubViewer,
+  PostalAddressSubViewer,
+  CompanyInfoSubViewer,
+} from './configs/sub-viewers';
 
 // ============================================================================
 // Design-Time Configuration
@@ -23,7 +30,9 @@ const designConfig: DesignConfig<BusinessAffiliate> = {
   get: getSupplier,
   update: updateSupplier,
   newInstance: createSupplierInstance,
-  onExitWithSuccess: (entity) => console.log('[ArdaSupplierViewer] Saved', entity),
+  onExitWithSuccess: (_entity) => {
+    /* placeholder: handle save */
+  },
   onExitWithErrors: (errors) => console.warn('[ArdaSupplierViewer] Errors', errors),
 };
 

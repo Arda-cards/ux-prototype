@@ -1,18 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { userEvent, within, waitFor } from 'storybook/test';
 
-import type { DesignConfig } from '@/components/organisms/shared/entity-viewer';
-import { createArdaEntityViewer } from '@/components/organisms/shared/entity-viewer';
+import {
+  createArdaEntityViewer,
+  type DesignConfig,
+} from '@/components/organisms/shared/entity-viewer';
 import type { BusinessAffiliate } from '@/types/reference/business-affiliates/business-affiliate';
 
-import { ArdaSupplierViewer, supplierFieldDescriptors } from './ArdaSupplierViewer';
+import { ArdaSupplierViewer, supplierFieldDescriptors } from './arda-supplier-viewer';
 import { supplierTabs } from './configs/stepped-layout';
 import { supplierFieldOrder } from './configs/continuous-scroll-layout';
-import {
-  getSupplier,
-  updateSupplier,
-  createSupplierInstance,
-} from './mocks/supplier-data';
+import { getSupplier, updateSupplier, createSupplierInstance } from './mocks/supplier-data';
 
 // ============================================================================
 // Error Viewer Instance (hoisted — must not be created inside render)
@@ -86,12 +84,7 @@ export const EditModeStepped: Story = {
 /** Create flow — no entityId, starts in edit mode automatically. */
 export const CreateFlow: Story = {
   render: () => (
-    <ArdaSupplierViewer
-      title="New Supplier"
-      layoutMode="stepped"
-      editable
-      tabs={supplierTabs}
-    />
+    <ArdaSupplierViewer title="New Supplier" layoutMode="stepped" editable tabs={supplierTabs} />
   ),
 };
 

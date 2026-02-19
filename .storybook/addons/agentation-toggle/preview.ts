@@ -1,3 +1,3 @@
-import { withAgentation } from './withAgentation';
+import { withAgentation } from './with-agentation';
 
 export const decorators = [withAgentation];

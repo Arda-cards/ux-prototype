@@ -3,10 +3,14 @@ import userEvent from '@testing-library/user-event';
 import { describe, it, expect } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 
-import { ArdaSupplierViewer } from './ArdaSupplierViewer';
+import { ArdaSupplierViewer } from './arda-supplier-viewer';
 import { supplierTabs } from './configs/stepped-layout';
 import { supplierFieldOrder } from './configs/continuous-scroll-layout';
-import { validateBusinessAffiliate, mockSupplier, createSupplierInstance } from './mocks/supplier-data';
+import {
+  validateBusinessAffiliate,
+  mockSupplier,
+  createSupplierInstance,
+} from './mocks/supplier-data';
 
 // ============================================================================
 // 1. Rendering

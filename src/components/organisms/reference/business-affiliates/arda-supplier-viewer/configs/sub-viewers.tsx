@@ -49,7 +49,9 @@ function withOptional<T extends object, K extends keyof T>(obj: T, key: K, value
  * Build the optional `editable` prop conditionally.
  * exactOptionalPropertyTypes forbids passing `{ editable: undefined }`.
  */
-function editableProp(editable: boolean | undefined): { editable: boolean } | Record<string, never> {
+function editableProp(
+  editable: boolean | undefined,
+): { editable: boolean } | Record<string, never> {
   return editable !== undefined ? { editable } : {};
 }
 
@@ -143,7 +145,8 @@ export function PostalAddressSubViewer({
       </div>
       {address.geoLocation && (
         <div className="text-xs text-muted-foreground">
-          Location: {address.geoLocation.latitude.toFixed(4)}, {address.geoLocation.longitude.toFixed(4)}
+          Location: {address.geoLocation.latitude.toFixed(4)},{' '}
+          {address.geoLocation.longitude.toFixed(4)}
           {address.geoLocation.elevation !== undefined && ` (${address.geoLocation.elevation}m)`}
         </div>
       )}
@@ -218,7 +221,11 @@ export function ContactSubViewer({
           mode={hasEmailError ? 'error' : effectiveMode}
           label="Email"
           {...ep}
-          {...errorsProp(hasEmailError ? fieldErrors.filter((e) => e.toLowerCase().includes('email')) : undefined)}
+          {...errorsProp(
+            hasEmailError
+              ? fieldErrors.filter((e) => e.toLowerCase().includes('email'))
+              : undefined,
+          )}
         />
         <ArdaTextFieldInteractive
           value={contact.phone ?? ''}
@@ -226,7 +233,11 @@ export function ContactSubViewer({
           mode={hasPhoneError ? 'error' : effectiveMode}
           label="Phone"
           {...ep}
-          {...errorsProp(hasPhoneError ? fieldErrors.filter((e) => e.toLowerCase().includes('phone')) : undefined)}
+          {...errorsProp(
+            hasPhoneError
+              ? fieldErrors.filter((e) => e.toLowerCase().includes('phone'))
+              : undefined,
+          )}
         />
       </div>
       {contact.postalAddress && (
@@ -300,7 +311,9 @@ export function CompanyInfoSubViewer({
         mode={hasTaxIdError ? 'error' : effectiveMode}
         label="Tax ID"
         {...ep}
-        {...errorsProp(hasTaxIdError ? fieldErrors.filter((e) => e.toLowerCase().includes('tax')) : undefined)}
+        {...errorsProp(
+          hasTaxIdError ? fieldErrors.filter((e) => e.toLowerCase().includes('tax')) : undefined,
+        )}
       />
       <ArdaTextFieldInteractive
         value={info.registrationId ?? ''}

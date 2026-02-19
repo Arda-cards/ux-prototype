@@ -47,10 +47,7 @@ export function ArdaSupplierDrawer({
   const panelRef = useRef<HTMLDivElement>(null);
 
   const resolvedTitle =
-    title ??
-    (mode === 'view'
-      ? (affiliate?.name ?? 'Supplier Details')
-      : 'New Supplier');
+    title ?? (mode === 'view' ? (affiliate?.name ?? 'Supplier Details') : 'New Supplier');
 
   // Escape key
   useEffect(() => {
