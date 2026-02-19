@@ -319,10 +319,11 @@ export const LargeDataset: Story = {
   args: {} as any,
   render: () => {
     // Generate 100 user options
+    const departments = ['Engineering', 'Product', 'Design', 'Marketing', 'Sales'];
     const largeUserList: TypeaheadOption[] = Array.from({ length: 100 }, (_, i) => ({
       value: `user-${i + 1}`,
       label: `User ${String(i + 1).padStart(3, '0')}`,
-      meta: ['Engineering', 'Product', 'Design', 'Marketing', 'Sales'][i % 5]!,
+      meta: departments[i % departments.length] ?? 'Engineering',
     }));
 
     const [rowData] = useState([
