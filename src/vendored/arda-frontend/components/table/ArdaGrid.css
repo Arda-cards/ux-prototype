@@ -1,0 +1,1296 @@
+/* Arda Grid Theme - Custom CSS Variables */
+.ag-theme-arda {
+  --ag-background-color: #ffffff;
+  --ag-foreground-color: #000000;
+  --ag-border-color: #e5e5e5;
+  --ag-header-background-color: #ffffff;
+  --ag-header-foreground-color: #000000;
+  --ag-odd-row-background-color: #ffffff;
+  --ag-row-hover-color: #f0f0f0;
+  --ag-selected-row-background-color: #f5f5f5;
+  --ag-range-selection-background-color: #f5f5f5;
+  --ag-input-border-color: #e5e5e5;
+  --ag-input-focus-border-color: #fc5a29;
+  --ag-input-background-color: transparent;
+  --ag-checkbox-checked-color: var(--base-primary);
+  --ag-font-family: 'Geist', sans-serif;
+  --ag-font-size: 14px;
+  --ag-header-height: 48px;
+  --ag-row-height: 48px;
+  --ag-cell-horizontal-padding: 16px;
+  --ag-header-cell-horizontal-padding: 16px;
+
+  /* Responsive grid sizing */
+
+  border: 1px solid #e5e5e5;
+  overflow: hidden;
+  position: relative;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+/* Dark mode support */
+.dark .ag-theme-arda {
+  --ag-background-color: var(--base-background-dark);
+  --ag-foreground-color: var(--base-foreground-dark);
+  --ag-border-color: rgb(255 255 255 / 10%);
+  --ag-header-background-color: rgb(255 255 255 / 5%);
+  --ag-header-foreground-color: var(--base-foreground-dark);
+  --ag-odd-row-background-color: var(--base-background-dark);
+  --ag-row-hover-color: rgb(255 255 255 / 5%);
+  --ag-selected-row-background-color: rgb(252 90 41 / 20%);
+  --ag-range-selection-background-color: rgb(252 90 41 / 20%);
+  --ag-input-border-color: rgb(255 255 255 / 10%);
+  --ag-input-focus-border-color: var(--base-primary);
+  --ag-checkbox-checked-color: var(--base-primary);
+}
+
+/* Custom styling for Arda brand colors - clean white header with no borders */
+.ag-theme-arda .ag-header {
+  border-bottom: none;
+  background-color: #ffffff;
+}
+
+.ag-theme-arda .ag-header-cell {
+  border: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  border-top: none !important;
+  background-color: #ffffff !important;
+}
+
+.ag-theme-arda .ag-header-cell-label {
+  font-weight: 600;
+  color: var(--base-foreground);
+}
+
+/* Hide all header buttons, menus, sort indicators, and filter buttons */
+.ag-theme-arda .ag-header-cell-menu-button,
+.ag-theme-arda .ag-header-cell-menu,
+.ag-theme-arda .ag-icon-menu,
+.ag-theme-arda .ag-sort-indicator-container,
+.ag-theme-arda .ag-header-icon,
+.ag-theme-arda .ag-sort-indicator-icon-none,
+.ag-theme-arda .ag-sort-indicator-icon-asc,
+.ag-theme-arda .ag-sort-indicator-icon-desc,
+.ag-theme-arda .ag-header-cell-filter-button,
+.ag-theme-arda .ag-header-cell-filter,
+.ag-theme-arda .ag-filter-wrapper {
+  display: none !important;
+}
+
+/* Hide default AG Grid checkbox column - but keep it for our custom 'select' column */
+.ag-theme-arda
+  .ag-header-cell[col-id='ag-Grid-SelectionColumn']
+  .ag-selection-checkbox,
+.ag-theme-arda
+  .ag-header-cell[col-id='ag-Grid-SelectionColumn']
+  .ag-header-select-all,
+.ag-theme-arda
+  .ag-header-cell[col-id='ag-Grid-SelectionColumn']
+  .ag-header-checkbox,
+.ag-theme-arda
+  .ag-cell[col-id='ag-Grid-SelectionColumn']
+  .ag-checkbox-input-wrapper,
+.ag-theme-arda
+  .ag-header-cell[col-id='ag-Grid-SelectionColumn']
+  .ag-selection-checkbox-input,
+.ag-theme-arda
+  .ag-header-cell[col-id='ag-Grid-SelectionColumn']
+  .ag-header-checkbox-input {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Hide the default AG Grid selection column completely */
+.ag-theme-arda .ag-header-cell[col-id='ag-Grid-SelectionColumn'],
+.ag-theme-arda .ag-cell[col-id='ag-Grid-SelectionColumn'],
+.ag-theme-arda .ag-header-cell[col-id='ag-Grid-SelectionColumn'] *,
+.ag-theme-arda .ag-cell[col-id='ag-Grid-SelectionColumn'] * {
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  left: -9999px !important;
+  opacity: 0 !important;
+  flex: 0 0 0 !important;
+  flex-basis: 0 !important;
+  flex-grow: 0 !important;
+  flex-shrink: 0 !important;
+}
+
+/* Also hide the column group if it exists */
+.ag-theme-arda .ag-header-group-cell[col-id='ag-Grid-SelectionColumn'],
+.ag-theme-arda .ag-header-group-cell[col-id='ag-Grid-SelectionColumn'] * {
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  flex: 0 0 0 !important;
+  flex-basis: 0 !important;
+  flex-grow: 0 !important;
+  flex-shrink: 0 !important;
+}
+
+/* Hide any column with SelectionColumn in any form - but NOT our custom 'select' column */
+.ag-theme-arda [col-id*='SelectionColumn']:not([col-id='select']),
+.ag-theme-arda [col-id*='SelectionColumn']:not([col-id='select']) * {
+  display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  flex: 0 0 0 !important;
+  flex-basis: 0 !important;
+  flex-grow: 0 !important;
+  flex-shrink: 0 !important;
+}
+
+/* Ensure our custom select column is visible */
+.ag-theme-arda .ag-header-cell[col-id='select'],
+.ag-theme-arda .ag-cell[col-id='select'] {
+  display: flex !important;
+  visibility: visible !important;
+  width: 32px !important;
+  min-width: 32px !important;
+  max-width: 32px !important;
+  flex: 0 0 32px !important;
+  flex-basis: 32px !important;
+  flex-grow: 0 !important;
+  flex-shrink: 0 !important;
+  padding: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+}
+
+/* Keep select-all header content small (only the checkbox size, no big orange box) */
+.ag-theme-arda .ag-header-cell[col-id='select'] .ag-header-cell-comp-wrapper,
+.ag-theme-arda
+  .ag-header-cell[col-id='select']
+  .ag-header-cell-comp-wrapper
+  > div {
+  max-width: 20px !important;
+  max-height: 20px !important;
+  min-height: unset !important;
+}
+
+/* Remove focus outline from select column to avoid orange box when row is selected */
+.ag-theme-arda .ag-cell[col-id='select'].ag-cell-focus,
+.ag-theme-arda .ag-cell[col-id='select'].ag-cell-no-focus,
+.ag-theme-arda .ag-header-cell[col-id='select'].ag-header-cell-focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* No orange on focused-but-not-editing cells — causes sticky orange after popup closes */
+.ag-theme-arda .ag-cell-focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Hide resize handle in select column */
+.ag-theme-arda .ag-header-cell[col-id='select'] .ag-header-cell-resize {
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Ensure cells in select column are centered */
+.ag-theme-arda .ag-cell[col-id='select'] > div {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  padding-left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Ensure headerComponent content is visible */
+.ag-theme-arda .ag-header-cell[col-id='select'] .ag-header-cell-comp-wrapper,
+.ag-theme-arda .ag-header-cell[col-id='select'] .ag-header-cell-comp-wrapper *,
+.ag-theme-arda
+  .ag-header-cell[col-id='select']
+  .ag-header-cell-comp-wrapper
+  > div,
+.ag-theme-arda
+  .ag-header-cell[col-id='select']
+  .ag-header-cell-comp-wrapper
+  > div
+  * {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: 100% !important;
+  height: 100% !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+/* Ensure any div inside the headerComponent wrapper is visible */
+.ag-theme-arda
+  .ag-header-cell[col-id='select']
+  .ag-header-cell-comp-wrapper
+  > div {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: 100% !important;
+  height: 100% !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 48px !important;
+  padding: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+/* Ensure header cell wrapper matches cell wrapper */
+.ag-theme-arda .ag-header-cell[col-id='select'] > div {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  padding-left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+}
+
+/* Ensure custom headerComponent input checkbox is visible */
+.ag-theme-arda .ag-header-cell[col-id='select'] input[type='checkbox'],
+.ag-theme-arda
+  .ag-header-cell[col-id='select']
+  .ag-header-cell-comp-wrapper
+  input[type='checkbox'],
+.ag-theme-arda
+  .ag-header-cell[col-id='select']
+  .ag-header-cell-comp-wrapper
+  > div
+  input[type='checkbox'],
+.ag-theme-arda .ag-header-cell[col-id='select'] > div input[type='checkbox'] {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  min-height: 16px !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  border: 1.5px solid #e5e5e5 !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  position: relative !important;
+  background-color: #fff !important;
+  box-shadow:
+    0px 1px 3px rgba(0, 0, 0, 0.1),
+    0px 1px 2px -1px rgba(0, 0, 0, 0.1) !important;
+  flex-shrink: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.ag-theme-arda .ag-header-cell[col-id='select'] input[type='checkbox']:checked,
+.ag-theme-arda
+  .ag-header-cell[col-id='select']
+  .ag-header-cell-comp-wrapper
+  input[type='checkbox']:checked {
+  background-color: #fc5a29 !important;
+  border-color: #fc5a29 !important;
+}
+
+.ag-theme-arda
+  .ag-header-cell[col-id='select']
+  input[type='checkbox']:checked::after,
+.ag-theme-arda
+  .ag-header-cell[col-id='select']
+  .ag-header-cell-comp-wrapper
+  input[type='checkbox']:checked::after {
+  content: '' !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) rotate(45deg) !important;
+  width: 4px !important;
+  height: 8px !important;
+  border: solid #fff !important;
+  border-width: 0 2px 2px 0 !important;
+}
+
+/* Style the default checkbox in our custom 'select' column with custom styling */
+.ag-theme-arda .ag-header-cell[col-id='select'] .ag-selection-checkbox,
+.ag-theme-arda .ag-header-cell[col-id='select'] .ag-header-select-all,
+.ag-theme-arda .ag-header-cell[col-id='select'] .ag-header-checkbox,
+.ag-theme-arda .ag-header-cell[col-id='select'] .ag-checkbox-input-wrapper,
+.ag-theme-arda .ag-header-cell[col-id='select'] .ag-selection-checkbox-input,
+.ag-theme-arda .ag-header-cell[col-id='select'] .ag-header-checkbox-input {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Apply custom checkbox styling to ag-grid default checkboxes in select column */
+.ag-theme-arda
+  .ag-header-cell[col-id='select']
+  .ag-checkbox-input-wrapper
+  input[type='checkbox'],
+.ag-theme-arda
+  .ag-header-cell[col-id='select']
+  .ag-header-checkbox-input
+  input[type='checkbox'],
+.ag-theme-arda
+  .ag-cell[col-id='select']
+  .ag-checkbox-input-wrapper
+  input[type='checkbox'] {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  width: 16px !important;
+  height: 16px !important;
+  border: 1.5px solid #e5e5e5 !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  position: relative !important;
+  background-color: #fff !important;
+  box-shadow:
+    0px 1px 3px rgba(0, 0, 0, 0.1),
+    0px 1px 2px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+.ag-theme-arda
+  .ag-header-cell[col-id='select']
+  .ag-checkbox-input-wrapper
+  input[type='checkbox']:checked,
+.ag-theme-arda
+  .ag-header-cell[col-id='select']
+  .ag-header-checkbox-input
+  input[type='checkbox']:checked,
+.ag-theme-arda
+  .ag-cell[col-id='select']
+  .ag-checkbox-input-wrapper
+  input[type='checkbox']:checked {
+  background-color: #fc5a29 !important;
+  border-color: #fc5a29 !important;
+}
+
+.ag-theme-arda
+  .ag-header-cell[col-id='select']
+  .ag-checkbox-input-wrapper
+  input[type='checkbox']:checked::after,
+.ag-theme-arda
+  .ag-header-cell[col-id='select']
+  .ag-header-checkbox-input
+  input[type='checkbox']:checked::after,
+.ag-theme-arda
+  .ag-cell[col-id='select']
+  .ag-checkbox-input-wrapper
+  input[type='checkbox']:checked::after {
+  content: '' !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) rotate(45deg) !important;
+  width: 4px !important;
+  height: 8px !important;
+  border: solid #fff !important;
+  border-width: 0 2px 2px 0 !important;
+}
+
+/* Hide any checkbox that ag-grid might add automatically in first column */
+.ag-theme-arda .ag-header-cell:first-child .ag-selection-checkbox,
+.ag-theme-arda .ag-header-cell:first-child .ag-header-select-all,
+.ag-theme-arda .ag-header-cell:first-child .ag-header-checkbox,
+.ag-theme-arda .ag-header-cell:first-child .ag-checkbox-input-wrapper,
+.ag-theme-arda .ag-header-cell:first-child .ag-selection-checkbox-input,
+.ag-theme-arda .ag-header-cell:first-child .ag-header-checkbox-input {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Hide any checkbox wrapper or container that ag-grid creates */
+.ag-theme-arda .ag-header-cell .ag-selection-checkbox-wrapper,
+.ag-theme-arda .ag-header-cell .ag-checkbox-wrapper {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Remove space reserved for default checkbox in select column header */
+.ag-theme-arda .ag-header-cell[col-id='select'],
+.ag-theme-arda .ag-cell[col-id='select'] {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  overflow: visible !important;
+}
+
+.ag-theme-arda .ag-header-cell[col-id='select'] {
+  text-overflow: clip !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  user-select: none !important;
+}
+
+.ag-theme-arda .ag-cell[col-id='select'] > div {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  min-width: 0 !important;
+}
+
+.ag-theme-arda .ag-header-cell[col-id='select'] .ag-header-cell-label {
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: normal !important;
+}
+
+/* Remove any spacing from checkbox containers in select column */
+.ag-theme-arda .ag-header-cell[col-id='select'] > * {
+  margin: 0 !important;
+}
+
+.ag-theme-arda .ag-header-cell[col-id='select'] .ag-header-cell-comp-wrapper {
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 48px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  visibility: visible !important;
+  padding-left: 0 !important;
+  opacity: 1 !important;
+}
+
+/* Ensure the headerComponent div wrapper is visible */
+.ag-theme-arda
+  .ag-header-cell[col-id='select']
+  .ag-header-cell-comp-wrapper
+  > div {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding-left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.ag-theme-arda .ag-header-cell::after,
+.ag-theme-arda .ag-header-cell::before {
+  display: none !important;
+  content: none !important;
+}
+
+/* Remove any hover effects on header cells */
+.ag-theme-arda .ag-header-cell:hover {
+  background-color: #ffffff !important;
+}
+
+/* Remove any cell borders that might create white lines */
+.ag-theme-arda .ag-cell,
+.ag-theme-arda .ag-header-cell {
+  border-right: none !important;
+  border-left: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+}
+
+/* Ensure cells fill the full width of the table when columns are hidden */
+.ag-theme-arda .ag-center-cols-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: min-content !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+
+/* Ensure no borders appear during column drag */
+.ag-theme-arda .ag-column-moving,
+.ag-theme-arda .ag-header-cell-moving {
+  border: none !important;
+  border-right: none !important;
+  border-left: none !important;
+}
+
+/* Invisible, no borders or shadows */
+.ag-dnd-ghost {
+  background: transparent !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Hide all children of ghost */
+.ag-dnd-ghost * {
+  background: transparent !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  opacity: 0 !important;
+}
+
+/* Prevent native drag on header (prevents weird fallbacks) */
+/* But allow column dragging - AG Grid handles this */
+.ag-header {
+  user-select: none;
+}
+
+/* Allow column dragging - don't disable drag on header cells */
+.ag-header-cell {
+  -webkit-user-drag: auto;
+  user-select: none;
+  cursor: grab !important;
+  pointer-events: auto !important;
+}
+
+.ag-header-cell:not(.ag-header-cell-moving):hover {
+  cursor: grab !important;
+}
+
+.ag-header-cell-moving,
+.ag-header-cell-moving * {
+  border: none !important;
+  box-shadow: none !important;
+  cursor: grabbing !important;
+}
+
+/* Ensure header cell label doesn't block dragging */
+.ag-header-cell-label {
+  pointer-events: none;
+}
+
+/* Allow dragging on the header cell itself */
+.ag-header-cell[col-id]:not([col-id='select']) {
+  cursor: grab !important;
+}
+
+/* Remove any borders from cells that might show during drag */
+.ag-theme-arda .ag-cell,
+.ag-theme-arda .ag-header-cell,
+.ag-theme-arda .ag-header-cell-moving {
+  border-color: transparent !important;
+  border: none !important;
+}
+
+/* Remove all borders from the root grid elements, but preserve row borders */
+.ag-root-wrapper,
+.ag-root,
+.ag-header,
+.ag-body,
+.ag-body-viewport,
+.ag-center-cols-viewport,
+.ag-center-cols-container {
+  border-right: none !important;
+  border-left: none !important;
+  border-color: transparent !important;
+}
+
+/* Exclude rows from border removal - rows need visible borders */
+.ag-root-wrapper *:not(.ag-row):not(.ag-row *) {
+  border-color: transparent !important;
+}
+
+/* Prevent grid from expanding beyond container width */
+.ag-theme-arda .ag-body-viewport {
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  box-sizing: border-box !important;
+}
+
+.ag-theme-arda .ag-root-wrapper {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Specific override for AG Grid Alpine theme ghost */
+body .ag-dnd-ghost,
+body .ag-dnd-ghost * {
+  display: none !important;
+}
+
+/* Remove borders from header row */
+.ag-theme-arda .ag-header-row {
+  border-bottom: none !important;
+}
+
+/* When pagination is present, use flex layout so the footer reserves space and the last row is visible */
+.arda-grid-with-pagination {
+  display: flex;
+  flex-direction: column;
+}
+
+.arda-grid-with-pagination .arda-grid-body-wrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.arda-grid-with-pagination .arda-grid-body-wrap > div {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Without pagination: still need flex chain so ag-root-wrapper gets height (fixes 0px height on desktop) */
+.ag-theme-arda:not(.arda-grid-with-pagination) .arda-grid-body-wrap {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.ag-theme-arda:not(.arda-grid-with-pagination) .arda-grid-body-wrap > div {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+}
+
+.ag-theme-arda:not(.arda-grid-with-pagination) .ag-root-wrapper {
+  height: 100% !important;
+  min-height: 0;
+}
+
+/* Pagination footer styling - in flow when .arda-grid-with-pagination, so last row is not covered */
+.ag-theme-arda .ag-pagination-footer {
+  height: 48px;
+  flex-shrink: 0;
+  background-color: #ffffff;
+  border-top: 1px solid #e5e5e5;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 16px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.ag-theme-arda .ag-pagination-footer .pagination-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ag-theme-arda .ag-pagination-footer .pagination-range {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.ag-theme-arda .ag-pagination-footer .pagination-range .font-bold {
+  font-weight: 600;
+  color: #000000;
+}
+
+.ag-theme-arda .ag-pagination-footer .pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ag-theme-arda .ag-pagination-footer .pagination-button {
+  padding: 4px 8px;
+  font-size: 14px;
+  color: #6b7280;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: color 0.2s;
+}
+
+.ag-theme-arda .ag-pagination-footer .pagination-button:hover:not(:disabled) {
+  color: #000000;
+}
+
+.ag-theme-arda .ag-pagination-footer .pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ag-theme-arda .ag-pagination-footer .pagination-page-info {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0 8px;
+}
+
+.ag-theme-arda .ag-pagination-footer .pagination-page-info .font-bold {
+  font-weight: 600;
+  color: #000000;
+}
+
+/* Add border lines to rows that extend full width */
+.ag-theme-arda .ag-row {
+  border-top: 1px solid #e5e5e5 !important;
+  border-bottom: 1px solid #e5e5e5 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  height: var(--ag-row-height) !important;
+  line-height: var(--ag-row-height) !important;
+}
+
+/* Ensure cells don't override row borders */
+.ag-theme-arda .ag-row .ag-cell {
+  border-top: none !important;
+  border-bottom: none !important;
+}
+
+.ag-theme-arda .ag-row:hover {
+  background-color: var(--ag-row-hover-color) !important;
+}
+
+.ag-theme-arda .ag-row:hover .ag-cell {
+  background-color: var(--ag-row-hover-color) !important;
+}
+
+/* Disable AG Grid's selection/hover ::before to avoid double layer and band artifact */
+.ag-theme-arda .ag-row-selected::before,
+.ag-theme-arda .ag-row-hover::before,
+.ag-theme-arda .ag-row-hover.ag-row-selected::before {
+  display: none !important;
+}
+.ag-theme-arda .ag-row-selected {
+  background-color: var(--ag-selected-row-background-color) !important;
+}
+
+/* Ensure all cells in selected row have the same background (including select/checkbox column) */
+.ag-theme-arda .ag-row-selected .ag-cell {
+  background-color: var(--ag-selected-row-background-color) !important;
+}
+.ag-theme-arda .ag-row-selected .ag-cell[col-id='select'],
+.ag-theme-arda .ag-row-selected .ag-cell[col-id='select'] > div {
+  background-color: var(--ag-selected-row-background-color) !important;
+}
+
+/* In-table editing: saving and error row states */
+.ag-theme-arda .ag-row.ag-row-saving .ag-cell {
+  background-color: rgb(252 90 41 / 6%) !important;
+}
+.ag-theme-arda .ag-row.ag-row-error .ag-cell {
+  background-color: rgb(239 68 68 / 8%) !important;
+}
+
+/* Ensure row lines extend to full table width by making cells fill space */
+.ag-theme-arda .ag-row .ag-cell:last-child {
+  border-right: none !important;
+}
+
+/* Remove any gaps between rows */
+.ag-theme-arda .ag-body-viewport .ag-center-cols-container {
+  gap: 0 !important;
+  row-gap: 0 !important;
+}
+
+/* Supplier cell editor styling - ensure it matches other cell editors */
+.ag-cell-edit-supplier {
+  height: 100% !important;
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Ensure the supplier editor input doesn't override AG Grid's editing border */
+.ag-cell-edit-supplier input {
+  border: none !important;
+  background: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Unit cell editor - same as supplier */
+.ag-cell-edit-unit {
+  height: 100% !important;
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.ag-cell-edit-unit input {
+  border: none !important;
+  background: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Ensure rows extend to full width even when columns are hidden */
+.ag-theme-arda .ag-center-cols-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Make sure selected row background covers all cells */
+.ag-theme-arda .ag-row-selected .ag-cell {
+  background-color: var(--ag-selected-row-background-color) !important;
+}
+
+/* Make sure hover background covers all cells */
+.ag-theme-arda .ag-row:hover .ag-cell {
+  background-color: var(--ag-row-hover-color) !important;
+}
+
+/* Ensure the row container extends to full width but doesn't expand unnecessarily */
+.ag-theme-arda .ag-center-cols-viewport {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+}
+
+/* Checkbox styling */
+.ag-theme-arda input[type='checkbox'] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid #e5e5e5;
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  background-color: #fff;
+  box-shadow:
+    0px 1px 3px rgba(0, 0, 0, 0.1),
+    0px 1px 2px -1px rgba(0, 0, 0, 0.1);
+}
+
+.ag-theme-arda input[type='checkbox']:checked {
+  background-color: #fc5a29 !important;
+  border-color: #fc5a29 !important;
+}
+
+.ag-theme-arda input[type='checkbox']:checked::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  width: 4px;
+  height: 8px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+}
+
+/* Action buttons styling */
+.ag-theme-arda .ag-cell button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.ag-theme-arda .ag-cell button:hover {
+  background-color: var(--base-secondary);
+}
+
+/* Loading and error states */
+.arda-grid-container .loading-overlay,
+.arda-grid-container .error-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgb(255 255 255 / 90%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.dark .arda-grid-container .loading-overlay,
+.dark .arda-grid-container .error-overlay {
+  background-color: rgb(0 0 0 / 90%);
+}
+
+/* Selected count badge */
+.selected-count-badge {
+  background-color: var(--accent-light);
+  color: var(--base-primary);
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: inline-block;
+}
+
+/* Hide column menu dots and ellipsis for select column */
+.ag-theme-arda .ag-header-cell[col-id='select'] .ag-header-cell-menu-button {
+  display: none !important;
+}
+
+.ag-theme-arda .ag-header-cell[col-id='select'] .ag-header-cell-menu {
+  display: none !important;
+}
+
+.ag-theme-arda .ag-header-cell[col-id='select'] .ag-icon-menu {
+  display: none !important;
+}
+
+.ag-theme-arda
+  .ag-header-cell[col-id='select']
+  .ag-header-cell-menu-button::after,
+.ag-theme-arda
+  .ag-header-cell[col-id='select']
+  .ag-header-cell-menu-button::before {
+  display: none !important;
+}
+
+.ag-theme-arda .ag-header-cell[col-id='select'] .ag-icon {
+  display: none !important;
+}
+
+.ag-theme-arda .ag-header-cell[col-id='select'] .ag-header-icon {
+  display: none !important;
+}
+
+/* Empty state overlay styling */
+.ag-theme-arda .ag-overlay-no-rows-wrapper {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: auto !important;
+}
+
+.ag-theme-arda .ag-overlay-no-rows-wrapper > div {
+  pointer-events: auto !important;
+  border: 1px dashed #e5e5e5 !important;
+  border-style: dashed !important;
+  border-width: 1px !important;
+  border-color: #e5e5e5 !important;
+  border-radius: 10px !important;
+}
+
+.ag-theme-arda .ag-overlay-no-rows-wrapper * {
+  pointer-events: auto !important;
+}
+
+/* Hide any ellipsis or text overflow indicators in select column */
+.ag-theme-arda .ag-header-cell[col-id='select'] .ag-header-cell-text {
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: normal !important;
+}
+
+/* Hide any pseudo-elements that might show ellipsis */
+.ag-theme-arda .ag-header-cell[col-id='select']::after,
+.ag-theme-arda .ag-header-cell[col-id='select']::before,
+.ag-theme-arda .ag-header-cell[col-id='select'] .ag-header-cell-label::after,
+.ag-theme-arda .ag-header-cell[col-id='select'] .ag-header-cell-label::before {
+  display: none !important;
+  content: none !important;
+}
+
+/* Responsive adjustments */
+@media (width <= 768px) {
+  .ag-theme-arda {
+    --ag-header-height: 40px;
+    --ag-row-height: 40px;
+    --ag-cell-horizontal-padding: 12px;
+    --ag-header-cell-horizontal-padding: 12px;
+    --ag-font-size: 13px;
+    min-height: 250px;
+    max-height: calc(100vh - 160px);
+  }
+
+  .ag-theme-arda .ag-pagination-footer {
+    height: 44px;
+    padding: 0 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .ag-theme-arda .ag-pagination-footer .pagination-content {
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .ag-theme-arda .ag-pagination-footer .pagination-range {
+    font-size: 12px;
+  }
+
+  .ag-theme-arda .ag-pagination-footer .pagination-button {
+    padding: 4px 6px;
+    font-size: 12px;
+  }
+
+  .ag-theme-arda .ag-pagination-footer .pagination-page-info {
+    font-size: 12px;
+    margin: 0 4px;
+  }
+}
+
+@media (width <= 480px) {
+  .ag-theme-arda {
+    --ag-header-height: 36px;
+    --ag-row-height: 36px;
+    --ag-cell-horizontal-padding: 8px;
+    --ag-header-cell-horizontal-padding: 8px;
+    --ag-font-size: 12px;
+    min-height: 200px;
+    max-height: calc(100vh - 160px);
+  }
+
+  .ag-theme-arda .ag-pagination-footer {
+    height: auto;
+    min-height: 40px;
+    padding: 8px;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .ag-theme-arda .ag-pagination-footer .pagination-content {
+    width: 100%;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .ag-theme-arda .ag-pagination-footer .pagination-range {
+    font-size: 11px;
+    text-align: center;
+  }
+
+  .ag-theme-arda .ag-pagination-footer .pagination-controls {
+    gap: 2px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .ag-theme-arda .ag-pagination-footer .pagination-button {
+    padding: 4px 6px;
+    font-size: 12px;
+    min-width: 32px;
+  }
+
+  .ag-theme-arda .ag-pagination-footer .pagination-page-info {
+    font-size: 11px;
+    margin: 0 2px;
+    text-align: center;
+  }
+}
+
+@media (width >= 1200px) {
+  .ag-theme-arda {
+    --ag-header-height: 52px;
+    --ag-row-height: 52px;
+    --ag-cell-horizontal-padding: 20px;
+    --ag-header-cell-horizontal-padding: 20px;
+    --ag-font-size: 15px;
+    max-height: calc(100vh - 100px);
+  }
+
+  .ag-theme-arda .ag-pagination-footer {
+    height: 52px;
+    padding: 0 20px;
+  }
+
+  .ag-theme-arda .ag-pagination-footer .pagination-content {
+    gap: 20px;
+  }
+
+  .ag-theme-arda .ag-pagination-footer .pagination-range {
+    font-size: 15px;
+  }
+
+  .ag-theme-arda .ag-pagination-footer .pagination-button {
+    padding: 6px 10px;
+    font-size: 15px;
+  }
+
+  .ag-theme-arda .ag-pagination-footer .pagination-page-info {
+    font-size: 15px;
+    margin: 0 10px;
+  }
+}
+/* ================================
+   Popup editor (isPopup: true editors — select dropdowns)
+   ================================ */
+
+/* Container injected by AG Grid when isPopup: true.
+   Orange border matches inline editing cells — the popup IS the visible edit area. */
+.ag-theme-arda .ag-popup-editor {
+  background-color: #fff;
+  border: 2px solid var(--ag-input-focus-border-color);
+  border-radius: 6px;
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 10%),
+    0 2px 4px -2px rgb(0 0 0 / 10%);
+  padding: 2px;
+  min-width: 160px;
+
+  /* overflow:visible so the native <select> arrow is never clipped,
+     even when the column is narrower than the select's min-width */
+  overflow: visible;
+}
+
+/* Native <select> inside the popup */
+.ag-theme-arda .ag-popup-editor select {
+  width: 100%;
+  height: 36px;
+  padding: 0 8px;
+  font-size: var(--ag-font-size);
+  font-family: var(--ag-font-family);
+  color: #0a0a0a;
+  background-color: #fff;
+  border: none;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+  appearance: auto;
+}
+
+.ag-theme-arda .ag-popup-editor select:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.ag-theme-arda .ag-popup-editor select option {
+  font-size: var(--ag-font-size);
+  font-family: var(--ag-font-family);
+  padding: 4px 8px;
+}
+
+/* ================================
+   Dropdown display cell (ChevronDown button in read mode)
+   ================================ */
+
+/* position:relative container so the button can be absolutely anchored
+   to the right edge — avoids clipping by AG Grid's overflow:hidden chain */
+.ag-theme-arda .ag-cell .cell-dropdown-display {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+
+  /* Reserve right-side space for the 20px button */
+  padding-right: 22px;
+  box-sizing: border-box;
+}
+
+.ag-theme-arda .ag-cell .cell-dropdown-display span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--ag-font-size);
+  color: #0a0a0a;
+}
+
+/* Absolutely positioned so it never gets pushed off the right edge */
+.ag-theme-arda .ag-cell .cell-dropdown-display button {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  color: #737373;
+}
+
+.ag-theme-arda .ag-cell .cell-dropdown-display button:hover {
+  background-color: #f0f0f0;
+  color: #0a0a0a;
+}
+
+/* ================================
+   FIX: Blue shadows on selected rows
+   ================================ */
+
+/* A) Remove AG Grid range-selection glow */
+.ag-theme-arda .ag-cell.ag-cell-range-selected,
+.ag-theme-arda .ag-cell.ag-cell-range-selected-1,
+.ag-theme-arda .ag-cell.ag-cell-range-selected-2,
+.ag-theme-arda .ag-cell.ag-cell-range-selected-3,
+.ag-theme-arda .ag-cell.ag-cell-range-selected-4,
+.ag-theme-arda .ag-cell.ag-cell-range-selected-5,
+.ag-theme-arda .ag-cell.ag-cell-range-selected-6,
+.ag-theme-arda .ag-cell.ag-cell-range-selected-7,
+.ag-theme-arda .ag-cell.ag-cell-range-selected-8,
+.ag-theme-arda .ag-cell.ag-cell-range-selected-9 {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* B) Keep focus indicators on buttons/inputs/combobox so keyboard users can see focus when tabbing. Only range-selection glow (A) and cell-level focus (select column) are suppressed above. */
+
+/* C) Inline editors: outline paints above the content layer (unlike inset box-shadow which
+   is covered by the input element). z-index:2 ensures the editing cell row sits above
+   adjacent rows so the bottom edge of the outline is fully visible.
+   Background is controlled via --ag-input-background-color: transparent set in variables. */
+.ag-theme-arda .ag-cell.ag-cell-editing,
+.ag-theme-arda .ag-cell.ag-cell-inline-editing {
+  z-index: 2 !important;
+  outline: 2px solid var(--ag-input-focus-border-color) !important;
+  outline-offset: -1px !important;
+  box-shadow: none !important;
+}
+
+/* Popup editors: the .ag-popup-editor div IS the visible edit surface (orange border set
+   on .ag-popup-editor below). Suppress cell-level styling to avoid double-border. */
+.ag-theme-arda .ag-cell.ag-cell-popup-editing {
+  outline: none !important;
+  box-shadow: none !important;
+}

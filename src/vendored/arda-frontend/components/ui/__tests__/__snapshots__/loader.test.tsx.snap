@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Loader Snapshot matches snapshot for default loader 1`] = `
+<div
+  aria-label="Loading..."
+  class="jsx-8a074fdcbdd55d91 loader loader-default"
+  role="status"
+/>
+`;
+
+exports[`Loader Snapshot matches snapshot for large loader 1`] = `
+<div
+  aria-label="Loading..."
+  class="jsx-8a074fdcbdd55d91 loader loader-lg"
+  role="status"
+/>
+`;
+
+exports[`Loader Snapshot matches snapshot for small loader 1`] = `
+<div
+  aria-label="Loading..."
+  class="jsx-8a074fdcbdd55d91 loader loader-sm"
+  role="status"
+/>
+`;
+
+exports[`Loader Snapshot matches snapshot with custom className 1`] = `
+<div
+  aria-label="Loading..."
+  class="jsx-8a074fdcbdd55d91 loader loader-default test-class"
+  role="status"
+/>
+`;
