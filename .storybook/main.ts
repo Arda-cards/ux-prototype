@@ -49,6 +49,48 @@ const config: StorybookConfig = {
       { find: 'next/dynamic', replacement: resolve(__dirname, '../src/shims/next-dynamic.tsx') },
     ];
 
+    // Vite plugin to transform vendored CJS require() calls to ESM imports.
+    // The vendored rootReducer.ts uses `require('redux-persist/lib/storage')`
+    // for SSR-safe lazy loading, but Vite (ESM-only) cannot handle require().
+    // This transform rewrites it at build time without modifying files on disk.
+    config.plugins = config.plugins || [];
+    config.plugins.push({
+      name: 'vendored-cjs-to-esm',
+      enforce: 'pre' as const,
+      transform(code, id) {
+        if (id.includes('vendored/arda-frontend/store/rootReducer')) {
+          // Add ESM import at the top and replace the require() ternary
+          const transformed = `import __persistStorage from 'redux-persist/lib/storage';\n` +
+            code.replace(
+              /const persistStorage\s*=\s*typeof window[\s\S]*?createNoopStorage\(\);/,
+              'const persistStorage = __persistStorage;'
+            );
+          return { code: transformed, map: null };
+        }
+        return null;
+      },
+    });
+
+    // Define process.env replacements for vendored code that references
+    // Next.js environment variables. In Storybook we always run in mock mode.
+    // The catch-all 'process.env' must come AFTER specific entries so Vite
+    // replaces specific keys first, then the catch-all handles any remaining
+    // process.env references (e.g., process.env.ANYTHING_ELSE).
+    config.define = {
+      ...config.define,
+      'process.env.NODE_ENV': JSON.stringify('development'),
+      'process.env.NEXT_PUBLIC_MOCK_MODE': JSON.stringify('true'),
+      'process.env.NEXT_PUBLIC_COGNITO_REGION': JSON.stringify('us-east-1'),
+      'process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID': JSON.stringify('mock-pool-id'),
+      'process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID': JSON.stringify('mock-client-id'),
+      'process.env.NEXT_PUBLIC_PYLON_APP_ID': JSON.stringify(''),
+      'process.env.NEXT_PUBLIC_HUBSPOT_PORTAL_ID': JSON.stringify(''),
+      'process.env.NEXT_PUBLIC_HUBSPOT_MEETING_LINK': JSON.stringify(''),
+      'process.env.NEXT_PUBLIC_HUBSPOT_FORM_GUID': JSON.stringify(''),
+      // Catch-all for any remaining process.env access
+      'process.env': '{}',
+    };
+
     config.css = config.css || {};
     config.css.postcss = {
       plugins: [(await import('@tailwindcss/postcss')).default],

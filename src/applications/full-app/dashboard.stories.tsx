@@ -43,9 +43,9 @@ export const Default: Story = {
     const ordersHeading = await canvas.findByText('Orders');
     await expect(ordersHeading).toBeVisible();
 
-    // Verify at least one order row is visible
-    const firstItem = await canvas.findByText(/Stainless Steel/i);
-    await expect(firstItem).toBeVisible();
+    // Verify at least one order row is visible (multiple items match, use getAllByText)
+    const steelItems = canvas.getAllByText(/Stainless Steel/i);
+    await expect(steelItems.length).toBeGreaterThan(0);
 
     // Verify the "Get started" panel
     const getStarted = await canvas.findByText('Get started with Arda');

@@ -176,4 +176,30 @@ fs.writeFileSync('$OUTPUT_FILE', JSON.stringify(output, null, 2) + '\n');
 console.log('Wrote ' + Object.keys(vendoredDeps).length + ' vendored dependencies to vendored-deps.json');
 "
 
+# --- Step 6: Copy public assets ---
+echo "Copying public assets ..."
+
+# Copy images and illustration directories used by vendored components.
+# Exclude Next.js/Vercel-specific files and the MSW worker script.
+PUBLIC_DEST="$REPO_ROOT/public"
+mkdir -p "$PUBLIC_DEST"
+
+if [ -d "$SOURCE_REPO/public/images" ]; then
+  rsync -a "$SOURCE_REPO/public/images/" "$PUBLIC_DEST/images/"
+  echo "  Copied public/images/"
+fi
+
+if [ -d "$SOURCE_REPO/public/ilustrationsColors" ]; then
+  rsync -a "$SOURCE_REPO/public/ilustrationsColors/" "$PUBLIC_DEST/ilustrationsColors/"
+  echo "  Copied public/ilustrationsColors/"
+fi
+
+# Copy individual SVGs referenced by vendored code
+for svg in file.svg globe.svg; do
+  if [ -f "$SOURCE_REPO/public/$svg" ]; then
+    cp "$SOURCE_REPO/public/$svg" "$PUBLIC_DEST/$svg"
+    echo "  Copied public/$svg"
+  fi
+done
+
 echo "Done. Vendored code synced to $TARGET_DIR"
