@@ -81,7 +81,9 @@ echo "Rewriting imports: @/ -> @frontend/ ..."
 find "$TARGET_DIR_ABS" -type f \( -name '*.ts' -o -name '*.tsx' \) -print0 | \
   xargs -0 sed -i '' \
     -e "s|from '@/|from '@frontend/|g" \
-    -e "s|from \"@/|from \"@frontend/|g"
+    -e "s|from \"@/|from \"@frontend/|g" \
+    -e "s|import('@/|import('@frontend/|g" \
+    -e "s|import(\"@/|import(\"@frontend/|g"
 
 echo "Import rewriting complete."
 

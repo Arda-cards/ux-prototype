@@ -53,7 +53,7 @@ import { KanbanCardStatus, KanbanCardPrintStatus } from '@frontend/types/kanban-
 
 const ItemDetailsPanel = dynamic(
   () =>
-    import('@/components/items/ItemDetailsPanel').then(
+    import('@frontend/components/items/ItemDetailsPanel').then(
       (mod) => mod.ItemDetailsPanel
     ),
   {
@@ -68,7 +68,7 @@ const ItemDetailsPanel = dynamic(
 
 const ItemFormPanel = dynamic(
   () =>
-    import('@/components/items/ItemFormPanel').then((mod) => mod.ItemFormPanel),
+    import('@frontend/components/items/ItemFormPanel').then((mod) => mod.ItemFormPanel),
   {
     loading: () => (
       <div className='p-4 text-sm text-muted-foreground'>
@@ -79,7 +79,7 @@ const ItemFormPanel = dynamic(
   }
 );
 
-const EmailPanel = dynamic(() => import('@/components/EmailPanel'), {
+const EmailPanel = dynamic(() => import('@frontend/components/EmailPanel'), {
   loading: () => (
     <div className='p-4 text-sm text-muted-foreground'>
       Loading email panel...

@@ -46,7 +46,7 @@ import type * as items from '@frontend/types/items';
 
 const ItemDetailsPanel = dynamic(
   () =>
-    import('@/components/items/ItemDetailsPanel').then(
+    import('@frontend/components/items/ItemDetailsPanel').then(
       (mod) => mod.ItemDetailsPanel,
     ),
   {
@@ -61,7 +61,7 @@ const ItemDetailsPanel = dynamic(
 
 const ItemFormPanel = dynamic(
   () =>
-    import('@/components/items/ItemFormPanel').then((mod) => mod.ItemFormPanel),
+    import('@frontend/components/items/ItemFormPanel').then((mod) => mod.ItemFormPanel),
   {
     loading: () => (
       <div className='p-4 text-sm text-muted-foreground'>

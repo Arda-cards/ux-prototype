@@ -70,7 +70,7 @@ export const signInThunk = createAsyncThunk<
       // In mock mode, bypass Cognito and return mock tokens directly
       const isMockMode = process.env.NEXT_PUBLIC_MOCK_MODE === 'true';
       if (isMockMode) {
-        const { generateMockTokens, MOCK_USER } = await import('@/mocks/data/mockUser');
+        const { generateMockTokens, MOCK_USER } = await import('@frontend/mocks/data/mockUser');
 
         await new Promise(resolve => setTimeout(resolve, 100)); // simulate network
 
@@ -330,7 +330,7 @@ export const refreshTokensThunk = createAsyncThunk<
       // In mock mode, bypass Cognito and return fresh mock tokens
       const isMockMode = process.env.NEXT_PUBLIC_MOCK_MODE === 'true';
       if (isMockMode) {
-        const { generateMockTokens } = await import('@/mocks/data/mockUser');
+        const { generateMockTokens } = await import('@frontend/mocks/data/mockUser');
         const tokens = generateMockTokens();
         const accessPayload = JSON.parse(atob(tokens.accessToken.split('.')[1]));
         return {

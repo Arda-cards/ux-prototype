@@ -17,7 +17,7 @@ const config: StorybookConfig = {
     '../src/use-cases/**/*.mdx',
     '../src/use-cases/**/*.stories.@(ts|tsx)',
   ],
-  addons: ['@storybook/addon-docs'],
+  addons: ['@storybook/addon-docs', 'msw-storybook-addon'],
   framework: {
     name: '@storybook/react-vite',
     options: {},
@@ -26,10 +26,28 @@ const config: StorybookConfig = {
     const { resolve } = await import('node:path');
 
     config.resolve = config.resolve || {};
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      '@': resolve(__dirname, '../src'),
-    };
+    // Use array format for aliases to guarantee matching order.
+    // More specific aliases (e.g., @frontend/lib/jwt) MUST come before
+    // less specific ones (e.g., @frontend) so they match first.
+    const existingAlias = config.resolve.alias || {};
+    const existingAliasArray = Array.isArray(existingAlias)
+      ? existingAlias
+      : Object.entries(existingAlias).map(([find, replacement]) => ({ find, replacement }));
+
+    config.resolve.alias = [
+      ...existingAliasArray,
+      // Specific shims for blocklisted/server-only modules (must come BEFORE @frontend)
+      { find: '@frontend/lib/jwt', replacement: resolve(__dirname, '../src/shims/frontend-jwt.ts') },
+      { find: '@aws-sdk/client-cognito-identity-provider', replacement: resolve(__dirname, '../src/shims/aws-cognito-stub.ts') },
+      // General aliases
+      { find: '@', replacement: resolve(__dirname, '../src') },
+      { find: '@frontend', replacement: resolve(__dirname, '../src/vendored/arda-frontend') },
+      // Next.js shims
+      { find: 'next/navigation', replacement: resolve(__dirname, '../src/shims/next-navigation.tsx') },
+      { find: 'next/image', replacement: resolve(__dirname, '../src/shims/next-image.tsx') },
+      { find: 'next/link', replacement: resolve(__dirname, '../src/shims/next-link.tsx') },
+      { find: 'next/dynamic', replacement: resolve(__dirname, '../src/shims/next-dynamic.tsx') },
+    ];
 
     config.css = config.css || {};
     config.css.postcss = {

@@ -412,7 +412,7 @@ describe('verifyJWTToken', () => {
         create: jest.fn().mockReturnValue({ verify: jest.fn() }),
       },
     }));
-    const freshJwt = await import('@/lib/jwt');
+    const freshJwt = await import('@frontend/lib/jwt');
     const result = await freshJwt.verifyJWTToken('some-token', 'access');
     expect(result).toBeNull();
   });
@@ -432,7 +432,7 @@ describe('verifyJWTToken', () => {
     jest.doMock('aws-jwt-verify', () => ({
       CognitoJwtVerifier: { create: mockCreateFresh },
     }));
-    const freshJwt = await import('@/lib/jwt');
+    const freshJwt = await import('@frontend/lib/jwt');
     await freshJwt.verifyJWTToken('token1', 'access');
     await freshJwt.verifyJWTToken('token2', 'id');
     expect(mockCreateFresh).toHaveBeenCalledTimes(2);
@@ -449,7 +449,7 @@ describe('verifyJWTToken', () => {
     jest.doMock('aws-jwt-verify', () => ({
       CognitoJwtVerifier: { create: jest.fn().mockReturnValue({ verify: jest.fn() }) },
     }));
-    const freshJwt = await import('@/lib/jwt');
+    const freshJwt = await import('@frontend/lib/jwt');
     const result = await freshJwt.verifyJWTToken('some-token', 'id');
     expect(result).toBeNull();
   });
@@ -532,7 +532,7 @@ describe('processJWTForArda', () => {
     }));
     process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID = 'us-east-1_mockPool';
     process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID = 'mock-client-id';
-    const freshJwt = await import('@/lib/jwt');
+    const freshJwt = await import('@frontend/lib/jwt');
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { NextRequest: FreshNextRequest } = require('next/server');
     const token = createMockJWT({ exp: futureExp() });
@@ -558,7 +558,7 @@ describe('processJWTForArda', () => {
       },
     }));
     process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID = 'us-east-1_mockPool';
-    const freshJwt = await import('@/lib/jwt');
+    const freshJwt = await import('@frontend/lib/jwt');
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { NextRequest: FreshNextRequest } = require('next/server');
     const req = new FreshNextRequest('http://localhost/api/test', {
@@ -659,7 +659,7 @@ describe('processJWTForArda – additional edge cases', () => {
     process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID = 'us-east-1_mockPool';
     process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID = 'mock-client-id';
 
-    const freshJwt = await import('@/lib/jwt');
+    const freshJwt = await import('@frontend/lib/jwt');
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { NextRequest: FreshNextRequest } = require('next/server');
     const token = createMockJWT({ exp: futureExp() });
@@ -695,7 +695,7 @@ describe('processJWTForArda – additional edge cases', () => {
     process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID = 'us-east-1_mockPool';
     process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID = 'mock-client-id';
 
-    const freshJwt = await import('@/lib/jwt');
+    const freshJwt = await import('@frontend/lib/jwt');
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { NextRequest: FreshNextRequest } = require('next/server');
     const token = createMockJWT({ exp: futureExp() });
@@ -722,7 +722,7 @@ describe('processJWTForArda – additional edge cases', () => {
     process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID = 'us-east-1_mockPool';
     process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID = 'mock-client-id';
 
-    const freshJwt = await import('@/lib/jwt');
+    const freshJwt = await import('@frontend/lib/jwt');
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { NextRequest: FreshNextRequest } = require('next/server');
     // Token with expired payload → decodes OK but fails validateCognitoPayload
