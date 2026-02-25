@@ -18,6 +18,29 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [1.3.0] - 2026-02-24
+
+### Added
+
+- Full App integration: vendored production page components from arda-frontend-app into Storybook
+  - Pages: Dashboard, Items Grid, Item Detail, Order Queue, Receiving, Account Profile, Company Settings, Sign In, Kanban Card, Scan
+  - Next.js shims for Storybook: next/navigation, next/image, next/font, next/headers
+  - Composite decorator `withFullAppProviders` for Redux store, auth context, navigation, and sidebar
+  - MSW request handlers for API mocking in Full App stories
+  - Interactive play functions exercising use cases (UC-NEW-001, UC-AUTH-001, etc.)
+- Visual Regression Testing (VRT) pipeline with Playwright
+  - 10 full-page screenshot tests for Full App stories
+  - CI workflow with baseline generation and diff artifact upload
+  - Platform-independent snapshot paths for cross-OS compatibility
+- Storybook test runner integration: 347 interaction tests across 73 story suites
+- CI workflow: auto-merge for labeled PRs
+- Documentation: Full App Integration architecture guide and Contributing guide
+
+### Fixed
+
+- ESLint configuration: added ignores for vendored code, test files, and Playwright config
+- Shim and decorator files excluded from no-console rule
+
 ## [1.2.0] - 2026-02-18
 
 ### Added

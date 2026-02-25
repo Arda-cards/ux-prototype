@@ -55,7 +55,7 @@ It serves three audiences:
 
 ## How the Sidebar Is Organized
 
-The sidebar groups content into five top-level sections. Each section has a distinct purpose and audience.
+The sidebar groups content into six top-level sections. Each section has a distinct purpose and audience.
 
 ### Docs
 
@@ -118,6 +118,24 @@ Reference documentation for contributors and consumers of the library. You are h
     </tr>
     <tr>
       <td>
+        <strong>Full App Integration</strong>
+      </td>
+      <td>
+        Architecture and CI pipeline for vendored production pages from arda-frontend-app,
+        including shims, provider stack, MSW handlers, and route traceability.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Full App Contributing</strong>
+      </td>
+      <td>
+        How to add new page stories, override MSW handlers, run the sync script locally,
+        and debug common integration issues.
+      </td>
+    </tr>
+    <tr>
+      <td>
         <strong>Publishing</strong>
       </td>
       <td>How the package is versioned, published to GitHub Packages, and consumed downstream.</td>
@@ -157,6 +175,10 @@ Full-page application mocks that simulate how components appear in a real produc
 
 Application mocks compose library components into realistic pages (e.g., items data grid with tab navigation, search, and pagination). See the **Applications** docs page for how to create new mocks and promote local components to the shared library.
 
+### Full App
+
+Vendored production page components from the `arda-frontend-app` repository, rendered against MSW mock services. Unlike the hand-built application mocks above, these are the actual production page components kept in sync via an automated CI pipeline. Each page story carries route traceability metadata and is covered by interaction tests and visual regression baselines. See the **Full App Integration** docs page for architecture details and the **Full App Contributing** page for how to add new stories.
+
 ### Use Cases
 
 End-to-end user workflow scenarios that validate how the application supports real tasks. Each use case provides:
@@ -184,4 +206,5 @@ Component names use the `Arda` prefix (e.g., `ArdaButton`, `ArdaDataGrid`, `Arda
 - **Building a component?** Read the **Component Guidelines**.
 - **Creating a full-page mock?** See **Applications**.
 - **Defining a user workflow?** Follow the **Use Cases** guide.
+- **Working with vendored pages?** Read the **Full App Integration** overview and the **Full App Contributing** guide.
 - **Ready to ship?** Check the **Publishing** page for versioning and release steps.

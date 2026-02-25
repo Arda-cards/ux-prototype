@@ -1,0 +1,324 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Full App Integration" />
+
+# Full App Integration
+
+The **Full App** section in the Storybook sidebar contains live page components vendored from the production `arda-frontend-app` repository. Each page renders against MSW mock services, reproducing the real application behavior without a running backend.
+
+## Why Vendor Production Pages?
+
+The existing **Applications** section uses hand-built mocks that compose library components into page-like layouts. Those mocks are useful for design review but diverge from production over time.
+
+The Full App section solves this by syncing actual production source code into `src/vendored/arda-frontend/`. The vendored pages use the same Redux store, auth context, API client, and UI components as the real application. An automated CI pipeline keeps the vendored copy in sync with the `dev` branch of `arda-frontend-app`.
+
+This gives three audiences a shared source of truth:
+
+<table>
+  <thead>
+    <tr>
+      <th>Audience</th>
+      <th>Benefit</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Designers</strong></td>
+      <td>Review the actual production UI, not an approximation</td>
+    </tr>
+    <tr>
+      <td><strong>Developers</strong></td>
+      <td>Catch regressions early via interaction tests and visual regression testing</td>
+    </tr>
+    <tr>
+      <td><strong>Product owners</strong></td>
+      <td>Validate acceptance criteria against real page components</td>
+    </tr>
+  </tbody>
+</table>
+
+## Architecture Overview
+
+The integration has four layers: vendored source code, Next.js shims, a provider stack decorator, and MSW request handlers.
+
+### Vendored Source Code
+
+The sync script (`tools/sync-frontend-app.sh`) copies the `src/` directory from `arda-frontend-app` into `src/vendored/arda-frontend/`, excluding server-only files (API routes, `layout.tsx`, `lib/jwt.ts`). During the copy, all `@/` import paths are rewritten to `@frontend/` so they resolve via the Vite alias in `.storybook/main.ts`.
+
+<table>
+  <thead>
+    <tr>
+      <th>Vite Alias</th>
+      <th>Resolves To</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>@/</code></td>
+      <td><code>src/</code></td>
+      <td>Native ux-prototype code (existing)</td>
+    </tr>
+    <tr>
+      <td><code>@frontend/</code></td>
+      <td><code>src/vendored/arda-frontend/</code></td>
+      <td>Vendored production code</td>
+    </tr>
+    <tr>
+      <td><code>next/navigation</code></td>
+      <td><code>src/shims/next-navigation.tsx</code></td>
+      <td>Router shim</td>
+    </tr>
+    <tr>
+      <td><code>next/image</code></td>
+      <td><code>src/shims/next-image.tsx</code></td>
+      <td>Image shim</td>
+    </tr>
+    <tr>
+      <td><code>next/link</code></td>
+      <td><code>src/shims/next-link.tsx</code></td>
+      <td>Link shim</td>
+    </tr>
+    <tr>
+      <td><code>next/dynamic</code></td>
+      <td><code>src/shims/next-dynamic.tsx</code></td>
+      <td>Dynamic import shim</td>
+    </tr>
+  </tbody>
+</table>
+
+### Next.js Shims
+
+Because the vendored code was written for Next.js, several framework APIs need Storybook-compatible replacements:
+
+- **`next/navigation`** &#8212; Provides `useRouter`, `usePathname`, `useSearchParams`, and `useParams` backed by a React context. Router actions (`push`, `replace`, `back`) log to the console.
+- **`next/image`** &#8212; Renders a plain `<img>` element, ignoring Next.js optimization props.
+- **`next/link`** &#8212; Renders an `<a>` that calls `push()` on the navigation context instead of navigating.
+- **`next/dynamic`** &#8212; Wraps `React.lazy` for dynamic imports without Next.js SSR handling.
+- **`@frontend/lib/jwt`** &#8212; Stubs server-side JWT functions as no-ops.
+- **`@aws-sdk/client-cognito-identity-provider`** &#8212; Stub classes so imports resolve without the AWS SDK.
+
+### Provider Stack
+
+The `withFullAppProviders` decorator in `src/decorators/withFullAppProviders.tsx` wraps every story whose title starts with `Full App`. It composes the same provider hierarchy used in the production application:
+
+<table>
+  <thead>
+    <tr>
+      <th>Provider</th>
+      <th>Role</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>NavigationContext</code></td>
+      <td>Supplies pathname, search params, and route params from story args</td>
+    </tr>
+    <tr>
+      <td><code>ReduxProvider</code></td>
+      <td>Fresh Redux store per story, pre-loaded with mock auth state</td>
+    </tr>
+    <tr>
+      <td><code>MockAuthProvider</code></td>
+      <td>Auto-logs in with a mock user so auth guards pass</td>
+    </tr>
+    <tr>
+      <td><code>JWTProvider</code></td>
+      <td>Decodes the mock JWT from the Redux store</td>
+    </tr>
+    <tr>
+      <td><code>SidebarVisibilityProvider</code></td>
+      <td>Controls sidebar expand/collapse state</td>
+    </tr>
+    <tr>
+      <td><code>OrderQueueProvider</code></td>
+      <td>Provides badge count polling (disabled by default in stories)</td>
+    </tr>
+  </tbody>
+</table>
+
+Non-Full-App stories pass through the decorator unchanged.
+
+### MSW Request Handlers
+
+MSW (Mock Service Worker) intercepts browser fetch calls at the service worker level. The vendored `ardaClient.ts` calls `/api/arda/*` paths; MSW returns mock responses before any network request leaves the browser.
+
+Handler files live in `src/vendored/arda-frontend/mocks/handlers/`:
+
+<table>
+  <thead>
+    <tr>
+      <th>Handler File</th>
+      <th>Endpoints Covered</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>items.ts</code></td>
+      <td>Items CRUD &#8212; query, create, update, draft</td>
+    </tr>
+    <tr>
+      <td><code>kanban.ts</code></td>
+      <td>Kanban cards &#8212; query, detail, events, notes, history</td>
+    </tr>
+    <tr>
+      <td><code>lookups.ts</code></td>
+      <td>Fuzzy lookup endpoints &#8212; suppliers, units, types, facilities, etc.</td>
+    </tr>
+    <tr>
+      <td><code>auth.ts</code></td>
+      <td>Auth endpoints &#8212; secret hash</td>
+    </tr>
+    <tr>
+      <td><code>user.ts</code></td>
+      <td>User profile</td>
+    </tr>
+    <tr>
+      <td><code>tenant.ts</code></td>
+      <td>Tenant queries</td>
+    </tr>
+  </tbody>
+</table>
+
+Handlers use in-memory mock stores (`mockItems.ts`, `mockKanbanCards.ts`) that support stateful CRUD operations within a single story session. Stores reset between stories automatically.
+
+## Page Inventory
+
+The Full App section contains 10 page stories with 14 total variants:
+
+<table>
+  <thead>
+    <tr>
+      <th>Story Title</th>
+      <th>App Route</th>
+      <th>Variants</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Full App/Sign In</td>
+      <td><code>/signin</code></td>
+      <td>Default, InvalidCredentials</td>
+    </tr>
+    <tr>
+      <td>Full App/Dashboard</td>
+      <td><code>/dashboard</code></td>
+      <td>Default</td>
+    </tr>
+    <tr>
+      <td>Full App/Items Grid</td>
+      <td><code>/items</code></td>
+      <td>Default, EmptyState</td>
+    </tr>
+    <tr>
+      <td>Full App/Item Detail</td>
+      <td><code>/item/[itemId]</code></td>
+      <td>Default</td>
+    </tr>
+    <tr>
+      <td>Full App/Kanban Card</td>
+      <td><code>/kanban/cards/[cardId]</code></td>
+      <td>Default</td>
+    </tr>
+    <tr>
+      <td>Full App/Order Queue</td>
+      <td><code>/order-queue</code></td>
+      <td>Default, EmptyQueue</td>
+    </tr>
+    <tr>
+      <td>Full App/Receiving</td>
+      <td><code>/receiving</code></td>
+      <td>Default</td>
+    </tr>
+    <tr>
+      <td>Full App/Scan</td>
+      <td><code>/scan</code></td>
+      <td>Default</td>
+    </tr>
+    <tr>
+      <td>Full App/Company Settings</td>
+      <td><code>/company-settings</code></td>
+      <td>Default</td>
+    </tr>
+    <tr>
+      <td>Full App/Account Profile</td>
+      <td><code>/account-profile</code></td>
+      <td>Default</td>
+    </tr>
+  </tbody>
+</table>
+
+## Route Traceability
+
+Every Full App story carries metadata that traces it back to the production application:
+
+- **Tag**: `app-route:<path>` &#8212; queryable via Storybook&#8217;s `stories.json` index, allowing external tooling to enumerate all covered routes.
+- **`appRoute` parameter** &#8212; the application route the story represents (e.g., `/items`).
+- **`appComponent` parameter** &#8212; path to the source page component relative to `arda-frontend-app/src/` (e.g., `app/items/page.tsx`).
+
+For dynamic routes, the tag uses the Next.js pattern form (`app-route:/item/[itemId]`) while the `pathname` story arg provides the concrete value used at render time.
+
+## CI Sync Pipeline
+
+An automated pipeline keeps vendored code in sync with the production application:
+
+1. A developer merges a PR into the `dev` branch of `arda-frontend-app`.
+2. A GitHub Actions workflow (`sync-to-storybook.yml`) triggers on push to `dev`.
+3. The workflow checks out both repositories, runs `tools/sync-frontend-app.sh`, and pushes the updated vendored code to the `app-sync` branch of `ux-prototype`.
+4. A PR is created (or updated) from `app-sync` to `main` in `ux-prototype`.
+5. The `ux-prototype` CI validates the PR: Storybook build, test runner (347 tests), and visual regression tests (10 baselines).
+6. On green CI, the PR auto-merges to `main`.
+7. Vercel deploys the updated Storybook from `main`.
+
+The sync script performs these operations:
+
+1. Deletes the existing `src/vendored/arda-frontend/` directory (clean slate).
+2. Copies `src/` from `arda-frontend-app`, excluding server-only files.
+3. Rewrites `@/` imports to `@frontend/`.
+4. Generates `vendored-deps.json` from the source `package.json`.
+5. Copies public assets (images, illustrations, SVGs) used by vendored components.
+
+### Dependency Management
+
+Vendored dependencies are tracked in `vendored-deps.json` at the repository root. The `tools/install-vendored-deps.js` script installs them at build time using `npm install --no-save`, so `package.json` and `package-lock.json` remain untouched. Dependencies already present in the ux-prototype `package.json` are excluded; version conflicts are reported in the sync PR description.
+
+## Testing
+
+The Full App stories are covered by three layers of automated testing:
+
+<table>
+  <thead>
+    <tr>
+      <th>Layer</th>
+      <th>Tool</th>
+      <th>What It Validates</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Interaction tests</td>
+      <td>Storybook test runner</td>
+      <td>Play functions execute assertions against rendered pages (347 tests across all stories)</td>
+    </tr>
+    <tr>
+      <td>Visual regression</td>
+      <td>Playwright</td>
+      <td>Pixel-level comparison of 10 Full App page screenshots against baselines (1% diff threshold)</td>
+    </tr>
+    <tr>
+      <td>Build validation</td>
+      <td>Storybook build</td>
+      <td>All vendored imports resolve, TypeScript compiles, no runtime errors</td>
+    </tr>
+  </tbody>
+</table>
+
+## Future: Migration Workbench
+
+The vendored code establishes the foundation for a component migration project. When migration begins:
+
+1. A `src/migration/` directory will contain forked page components that progressively replace `@frontend/components/ui/*` imports with `@/components/atoms/*` (native library components).
+2. A **Full App (Migrated)** story section will provide side-by-side comparison with the original vendored pages.
+3. Playwright tests will compare original vs. migrated stories for visual and functional parity.
+
+This infrastructure is not built yet &#8212; it is a future project that builds on the base established here.
