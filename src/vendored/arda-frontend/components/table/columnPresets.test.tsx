@@ -69,10 +69,10 @@ import {
 // ──────────────────────────────────────────────────────────────────────────────
 // Helpers
 // ──────────────────────────────────────────────────────────────────────────────
-function makeMockParams(data: Record<string, any> = {}) {
+function makeMockParams(data: Record<string, any> = {}, value?: any) {
   return {
     data,
-    value: undefined,
+    value,
     api: null,
     node: { rowIndex: 0, isSelected: () => false, data },
     column: { getColId: () => 'test' },
@@ -85,6 +85,13 @@ function getCellRenderer(field: string): (params: any) => any {
     (c) => c.field === field || (c as any).colId === field
   );
   return col?.cellRenderer as (params: any) => any;
+}
+
+function getValueFormatter(field: string): (params: any) => any {
+  const col = itemsColumnDefs.find(
+    (c) => c.field === field || (c as any).colId === field
+  );
+  return col?.valueFormatter as (params: any) => any;
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -233,20 +240,18 @@ describe('ordersDefaultColDef', () => {
 // ──────────────────────────────────────────────────────────────────────────────
 describe('itemsColumnDefs cell renderers', () => {
   it('internalSKU renderer returns sku string', () => {
-    const cr = getCellRenderer('internalSKU');
-    const result = cr(makeMockParams({ internalSKU: 'SKU-001' }));
-    expect(result).toBe('SKU-001');
+    const vf = getValueFormatter('internalSKU');
+    expect(vf(makeMockParams({ internalSKU: 'SKU-001' }, 'SKU-001'))).toBe('SKU-001');
   });
 
   it('internalSKU renderer returns empty string when undefined', () => {
-    const cr = getCellRenderer('internalSKU');
-    expect(cr(makeMockParams({}))).toBe('');
+    const vf = getValueFormatter('internalSKU');
+    expect(vf(makeMockParams({}))).toBe('');
   });
 
   it('generalLedgerCode renderer returns gl code string', () => {
-    const cr = getCellRenderer('generalLedgerCode');
-    const result = cr(makeMockParams({ generalLedgerCode: 'GL-100' }));
-    expect(result).toBe('GL-100');
+    const vf = getValueFormatter('generalLedgerCode');
+    expect(vf(makeMockParams({ generalLedgerCode: 'GL-100' }, 'GL-100'))).toBe('GL-100');
   });
 
   it('name renderer renders item name element', () => {
@@ -280,31 +285,30 @@ describe('itemsColumnDefs cell renderers', () => {
   });
 
   it('unitCost renderer formats currency', () => {
-    const cr = getCellRenderer('primarySupply.unitCost');
-    const result = cr(makeMockParams({ primarySupply: { unitCost: { value: 5.99, currency: 'USD' } } }));
-    expect(result).toBe('$5.99 USD');
+    const vf = getValueFormatter('primarySupply.unitCost');
+    expect(vf(makeMockParams({ primarySupply: { unitCost: { value: 5.99, currency: 'USD' } } }, { value: 5.99, currency: 'USD' }))).toBe('$5.99 USD');
   });
 
   it('unitCost renderer returns dash when undefined', () => {
-    const cr = getCellRenderer('primarySupply.unitCost');
-    expect(cr(makeMockParams({}))).toBe('-');
+    const vf = getValueFormatter('primarySupply.unitCost');
+    expect(vf(makeMockParams({}))).toBe('-');
   });
 
   it('createdCoordinates renderer returns formatted date', () => {
-    const cr = getCellRenderer('createdCoordinates');
-    const result = cr(makeMockParams({ createdCoordinates: { recordedAsOf: '2024-01-15T00:00:00Z' } }));
+    const vf = getValueFormatter('createdCoordinates');
+    const result = vf(makeMockParams({ createdCoordinates: { recordedAsOf: '2024-01-15T00:00:00Z' } }, { recordedAsOf: '2024-01-15T00:00:00Z' }));
     expect(typeof result).toBe('string');
     expect(result).not.toBe('-');
   });
 
   it('minQuantityAmount renderer returns amount', () => {
-    const cr = getCellRenderer('minQuantityAmount');
-    expect(cr(makeMockParams({ minQuantity: { amount: 10, unit: 'each' } }))).toBe(10);
+    const vf = getValueFormatter('minQuantityAmount');
+    expect(vf(makeMockParams({ minQuantity: { amount: 10, unit: 'each' } }, 10))).toBe('10');
   });
 
   it('minQuantityAmount renderer returns dash when undefined', () => {
-    const cr = getCellRenderer('minQuantityAmount');
-    expect(cr(makeMockParams({}))).toBe('-');
+    const vf = getValueFormatter('minQuantityAmount');
+    expect(vf(makeMockParams({}))).toBe('-');
   });
 
   it('minQuantityUnit renderer returns unit', () => {
@@ -313,8 +317,8 @@ describe('itemsColumnDefs cell renderers', () => {
   });
 
   it('orderQuantityAmount renderer returns amount', () => {
-    const cr = getCellRenderer('orderQuantityAmount');
-    expect(cr(makeMockParams({ primarySupply: { orderQuantity: { amount: 24, unit: 'pack' } } }))).toBe(24);
+    const vf = getValueFormatter('orderQuantityAmount');
+    expect(vf(makeMockParams({ primarySupply: { orderQuantity: { amount: 24, unit: 'pack' } } }, 24))).toBe('24');
   });
 
   it('orderQuantityUnit renderer returns unit', () => {
@@ -458,9 +462,8 @@ describe('itemsColumnDefs cell renderers', () => {
   });
 
   it('orderCost renderer formats currency', () => {
-    const col = itemsColumnDefs.find((c) => c.field === 'primarySupply.orderCost');
-    const cr = col?.cellRenderer as Function;
-    expect(cr(makeMockParams({ primarySupply: { orderCost: { value: 25.0, currency: 'USD' } } }))).toBe('$25.00 USD');
+    const vf = getValueFormatter('primarySupply.orderCost');
+    expect(vf(makeMockParams({ primarySupply: { orderCost: { value: 25.0, currency: 'USD' } } }, { value: 25.0, currency: 'USD' }))).toBe('$25.00 USD');
   });
 
   it('cardSize renderer renders label', () => {
@@ -1540,7 +1543,7 @@ describe('SelectAllHeaderComponent — selectionChanged event handling', () => {
     const api = makeMockApi({
       getSelectedRows: jest.fn(() => mockRows),
       getDisplayedRowCount: jest.fn(() => 2),
-      addEventListener: jest.fn((event, handler) => { listener = handler; }),
+      addEventListener: jest.fn(),
     });
     const { container } = render(React.createElement(SelectAllHeaderComponent, { api }));
     const checkbox = container.querySelector('input[type="checkbox"]');
@@ -1940,7 +1943,7 @@ describe('QuickActionsCell — handleAddToCart', () => {
       }
     });
 
-    if (cartBtn && !cartBtn.disabled) {
+    if (cartBtn && !(cartBtn as HTMLButtonElement).disabled) {
       await act(async () => {
         fireEvent.click(cartBtn!);
         await new Promise((r) => setTimeout(r, 100));

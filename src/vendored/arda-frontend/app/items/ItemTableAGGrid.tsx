@@ -12,7 +12,7 @@ import React, {
   useImperativeHandle,
 } from 'react';
 import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
-import type { ColDef, ICellEditorParams } from 'ag-grid-community';
+import type { ColDef, GridApi, GridState, ICellEditorParams } from 'ag-grid-community';
 import {
   ArdaGrid,
   ArdaGridRef,
@@ -1046,6 +1046,88 @@ function enhanceEditableColumnDefs(
   });
 }
 
+/**
+ * Converts the raw localStorage value for a grid tab into an AG Grid GridState
+ * suitable for `gridOptions.initialState`.
+ *
+ * Handles two on-disk formats:
+ *  - New: the object returned by `api.getState()` — detected by presence of
+ *         `columnSizing`, `columnOrder`, `sort`, or `version` keys.
+ *  - Legacy: `{ columnState: ColumnState[], sortModel: [...] }` written by
+ *            our earlier `api.getColumnState()` persistence code.
+ *
+ * Column visibility is intentionally excluded — it is controlled by the
+ * `columnVisibility` prop, not by localStorage.
+ */
+function buildGridStateFromStorage(raw: string): GridState | undefined {
+  try {
+    const saved = JSON.parse(raw) as Record<string, unknown>;
+
+    // Very old bare-array format: [{colId, hide, width, sort, sortIndex}]
+    // Written by the earliest ArdaGrid column-state persistence code before
+    // the object format was introduced. Handle it so users who haven't
+    // reconfigured since then still get their layout restored.
+    if (Array.isArray(saved)) {
+      type LegacyCol = { colId?: string; width?: number | null; sort?: string | null };
+      const cols = saved as unknown as LegacyCol[];
+      const orderedColIds = cols
+        .map((c) => c.colId)
+        .filter((id): id is string => Boolean(id));
+      const columnSizingModel = cols
+        .filter((c) => c.colId && c.width != null)
+        .map((c) => ({ colId: c.colId as string, width: c.width as number }));
+      const sortItems = cols
+        .filter((c) => c.colId && (c.sort === 'asc' || c.sort === 'desc'))
+        .map((c) => ({ colId: c.colId as string, sort: c.sort as 'asc' | 'desc' }));
+      const result: GridState = { partialColumnState: true };
+      if (orderedColIds.length > 0) result.columnOrder = { orderedColIds };
+      if (columnSizingModel.length > 0) result.columnSizing = { columnSizingModel };
+      if (sortItems.length > 0) result.sort = { sortModel: sortItems };
+      return result;
+    }
+
+    // New GridState format (saved via api.getState()):
+    if (
+      saved.columnSizing !== undefined ||
+      saved.columnOrder !== undefined ||
+      saved.sort !== undefined ||
+      saved.version !== undefined
+    ) {
+      // Strip columnVisibility — managed by props, not by localStorage
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { columnVisibility: _cv, ...rest } = saved;
+      return rest as GridState;
+    }
+
+    // Legacy format: { columnState: ColState[], sortModel?: [...] }
+    if (Array.isArray(saved.columnState)) {
+      type LegacyCol = { colId?: string; width?: number | null; sort?: string | null };
+      const cols = saved.columnState as LegacyCol[];
+
+      const orderedColIds = cols
+        .map((c) => c.colId)
+        .filter((id): id is string => Boolean(id));
+
+      const columnSizingModel = cols
+        .filter((c) => c.colId && c.width != null)
+        .map((c) => ({ colId: c.colId as string, width: c.width as number }));
+
+      const sortItems = cols
+        .filter((c) => c.colId && (c.sort === 'asc' || c.sort === 'desc'))
+        .map((c) => ({ colId: c.colId as string, sort: c.sort as 'asc' | 'desc' }));
+
+      const result: GridState = { partialColumnState: true };
+      if (orderedColIds.length > 0) result.columnOrder = { orderedColIds };
+      if (columnSizingModel.length > 0) result.columnSizing = { columnSizingModel };
+      if (sortItems.length > 0) result.sort = { sortModel: sortItems };
+      return result;
+    }
+  } catch {
+    // Ignore malformed data
+  }
+  return undefined;
+}
+
 export const ItemTableAGGrid = forwardRef<ItemTableAGGridRef, Props>(function ItemTableAGGrid({
   items: itemsData,
   activeTab,
@@ -1461,7 +1543,8 @@ export const ItemTableAGGrid = forwardRef<ItemTableAGGridRef, Props>(function It
         const api = gridRef.current?.getGridApi?.();
         api?.stopEditing(false);
         const rowToPublish = prev;
-        dirtyRowIdsRef.current.add(rowToPublish);
+        // Do NOT unconditionally add to dirtyRowIdsRef — only publish if
+        // the row was genuinely dirtied by handleCellValueChanged.
         setTimeout(() => {
           if (dirtyRowIdsRef.current.has(rowToPublish) && !isUnsavedModalOpen) void publishRow(rowToPublish);
           editingRowIdRef.current = id;
@@ -1579,7 +1662,9 @@ export const ItemTableAGGrid = forwardRef<ItemTableAGGridRef, Props>(function It
         const api = gridRef.current?.getGridApi?.();
         api?.stopEditing(false);
         const rowToPublish = prev;
-        dirtyRowIdsRef.current.add(rowToPublish);
+        // Do NOT unconditionally add to dirtyRowIdsRef — that would publish
+        // clean rows on every focus change. Only publish if the row was
+        // genuinely dirtied by handleCellValueChanged.
         setTimeout(() => {
           if (dirtyRowIdsRef.current.has(rowToPublish) && !isUnsavedModalOpen) void publishRow(rowToPublish);
           editingRowIdRef.current = newRowId;
@@ -1788,13 +1873,48 @@ export const ItemTableAGGrid = forwardRef<ItemTableAGGridRef, Props>(function It
           persistedState.columnState &&
           Array.isArray(persistedState.columnState)
         ) {
-          // New format: object with columnState
+          // Legacy format: object with columnState array
           persistedOrder = persistedState.columnState
             .map((col: { colId?: string }) => col.colId)
             .filter((id: string | undefined): id is string => !!id);
+        } else if (
+          persistedState.columnOrder &&
+          Array.isArray(persistedState.columnOrder.orderedColIds)
+        ) {
+          // New GridState format (api.getState() / stateUpdated): { columnOrder: { orderedColIds: [...] } }
+          persistedOrder = (persistedState.columnOrder.orderedColIds as unknown[])
+            .filter((id): id is string => typeof id === 'string' && !!id);
         }
 
         if (persistedOrder.length > 0) {
+          // Build a width map from the saved columnSizing state so that column
+          // widths are embedded in the column defs — same belt-and-suspenders
+          // approach as column order. This ensures resize persists even if
+          // initialState.columnSizing is applied after a columnDefs re-render.
+          const savedWidths = new Map<string, number>();
+          const sizingModel = (persistedState as { columnSizing?: { columnSizingModel?: Array<{ colId?: string; width?: number }> } })
+            .columnSizing?.columnSizingModel;
+          if (Array.isArray(sizingModel)) {
+            sizingModel.forEach(({ colId, width }) => {
+              if (colId && width != null) savedWidths.set(colId, width);
+            });
+          }
+
+          // Build a sort map from the saved sort state so that sort direction and
+          // index are embedded in the column defs. colDef.sort / colDef.sortIndex
+          // are the colDef-level way to set initial sort; they persist across
+          // columnDefs re-renders the same way colDef.width does for resize.
+          const savedSort = new Map<string, { sort: 'asc' | 'desc'; sortIndex: number }>();
+          const sortModel = (persistedState as { sort?: { sortModel?: Array<{ colId?: string; sort?: string }> } })
+            .sort?.sortModel;
+          if (Array.isArray(sortModel)) {
+            sortModel.forEach(({ colId, sort }, index) => {
+              if (colId && (sort === 'asc' || sort === 'desc')) {
+                savedSort.set(colId, { sort, sortIndex: index });
+              }
+            });
+          }
+
           // Create a map of column definitions by identifier
           const colMap = new Map<string, (typeof baseColumnDefs)[number]>();
           baseColumnDefs.forEach((col) => {
@@ -1804,7 +1924,19 @@ export const ItemTableAGGrid = forwardRef<ItemTableAGGridRef, Props>(function It
             }
           });
 
-          // Build ordered array based on persisted order
+          // Helper: apply saved width and sort overrides to a colDef
+          const applyOverrides = (col: (typeof baseColumnDefs)[number], id: string) => {
+            const savedWidth = savedWidths.get(id);
+            const sortState = savedSort.get(id);
+            if (savedWidth == null && !sortState) return col;
+            return {
+              ...col,
+              ...(savedWidth != null ? { width: savedWidth } : {}),
+              ...(sortState ? { sort: sortState.sort, sortIndex: sortState.sortIndex } : {}),
+            };
+          };
+
+          // Build ordered array based on persisted order, applying saved overrides
           const ordered: (typeof baseColumnDefs)[number][] = [];
           const added = new Set<string>();
 
@@ -1812,7 +1944,7 @@ export const ItemTableAGGrid = forwardRef<ItemTableAGGridRef, Props>(function It
           persistedOrder.forEach((colId) => {
             const col = colMap.get(colId);
             if (col) {
-              ordered.push(col);
+              ordered.push(applyOverrides(col, colId));
               added.add(colId);
             }
           });
@@ -1821,7 +1953,7 @@ export const ItemTableAGGrid = forwardRef<ItemTableAGGridRef, Props>(function It
           baseColumnDefs.forEach((col) => {
             const identifier = (col.colId as string) || (col.field as string);
             if (identifier && !added.has(identifier)) {
-              ordered.push(col);
+              ordered.push(applyOverrides(col, identifier));
             }
           });
 
@@ -1853,14 +1985,35 @@ export const ItemTableAGGrid = forwardRef<ItemTableAGGridRef, Props>(function It
   const persistedColumnOrderRef = useRef<
     Array<{ colId: string; order: number }>
   >([]);
-  // Track if we're applying persisted state to prevent saving during application
-  const isApplyingPersistedStateRef = useRef(false);
+  // Ref keeps activeTab current inside event listener closures registered at mount time
+  const activeTabRef = useRef(activeTab);
 
-  // Reset grid ready flag when tab changes
-  // The persisted state will be applied by ArdaGrid when persistenceKey changes
+  // On tab switch: reset flags, keep activeTabRef current, restore column state for the new tab.
+  // initialState only applies at grid creation (page load); this useEffect covers all
+  // subsequent tab switches on the same mounted grid instance.
+  // Uses api.setState() with propertiesToIgnore=['columnVisibility'] so that visibility
+  // (controlled by the columnVisibility prop) is never overridden by localStorage data.
   useEffect(() => {
     isGridReadyRef.current = false;
     prevColumnVisibilityRef.current = { ...columnVisibility };
+    activeTabRef.current = activeTab;
+
+    const api = gridRef.current?.getGridApi?.();
+    if (!api) return;
+
+    const savedStateRaw = localStorage.getItem(`items-grid-${activeTab}`);
+    if (!savedStateRaw) return;
+
+    try {
+      const state = buildGridStateFromStorage(savedStateRaw);
+      if (state) {
+        // 'columnVisibility' is controlled by the columnVisibility prop — never
+        // override it from localStorage during a tab switch.
+        api.setState(state, ['columnVisibility']);
+      }
+    } catch (err) {
+      console.warn('Failed to restore column state on tab switch:', err);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
@@ -1955,8 +2108,6 @@ export const ItemTableAGGrid = forwardRef<ItemTableAGGridRef, Props>(function It
       }, 150);
     };
 
-    // Only listen to columnVisible, not columnMoved
-    // columnMoved is handled by ArdaGrid's persistence system
     api.addEventListener('columnVisible', handleColumnVisibilityChange);
 
     return () => {
@@ -2079,23 +2230,43 @@ export const ItemTableAGGrid = forwardRef<ItemTableAGGridRef, Props>(function It
     prevColumnVisibilityRef.current = columnVisibility;
   }, [columnVisibility, activeTab]);
 
-  // Handle grid ready - apply columnVisibility from props (itemsColumnVisibility) to grid
-  // This ensures itemsColumnVisibility is the source of truth and overrides grid persisted state
-  const handleGridReady = useCallback(() => {
-    const api = gridRef.current?.getGridApi?.();
-    if (!api) return;
+  // Read persisted column state once at mount and convert to AG Grid GridState format.
+  // Passed as a direct initialState prop on <ArdaGrid> so AG Grid applies it
+  // synchronously at grid creation — before the first render and before any
+  // useEffect fires. This is immune to all timing races.
+  const initialGridState = useMemo((): GridState | undefined => {
+    if (typeof localStorage === 'undefined') return undefined;
+    const raw = localStorage.getItem(`items-grid-${activeTab}`);
+    if (!raw) return undefined;
+    return buildGridStateFromStorage(raw);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // [] intentional — only read at mount; activeTab is stable at that point
 
-    // Wait for persisted state to be applied by ArdaGrid
+  // Pass context through gridOptions. initialState is passed as a direct prop on
+  // <ArdaGrid> below so it reaches <AgGridReact initialState={...}> without any
+  // risk of being overshadowed by the gridOptions merging logic.
+  const gridOptionsWithPersistence = useMemo(
+    () => ({ context: gridContext }),
+    [gridContext]
+  );
+
+  // ArdaGrid forwards the GridReadyEvent from params directly — use params.api in a
+  // closure so the 200ms setTimeout never needs to go through React state (getGridApi
+  // reads useState which may not be committed yet at the moment onGridReady fires).
+  const handleGridReady = useCallback((params: { api: GridApi }) => {
+    const api = params.api; // captured directly; always valid, no async state needed
     setTimeout(() => {
+      if (!api) return;
+
       isGridReadyRef.current = true;
 
-      // Save the current column order from persisted state (after it's been applied)
-      const currentState = api.getColumnState();
-      persistedColumnOrderRef.current = currentState
-        .map((col, index) => ({
-          colId: col.colId || '',
-          order: index,
-        }))
+      // Initialise persistedColumnOrderRef from the default column order
+      // initialState is applied synchronously at grid creation, so by the time
+      // onGridReady fires (and this 200ms timeout runs), the column order is already
+      // the restored order — safe to snapshot here.
+      const defaultState = api.getColumnState();
+      persistedColumnOrderRef.current = defaultState
+        .map((col, index) => ({ colId: col.colId || '', order: index }))
         .filter((col) => col.colId);
 
       const viewKeyToField: Record<string, string> = {
@@ -2133,72 +2304,56 @@ export const ItemTableAGGrid = forwardRef<ItemTableAGGridRef, Props>(function It
         actions: 'quickActions',
       };
 
-      // Always use columnVisibility from props as source of truth
-      // This comes from itemsColumnVisibility in localStorage and should override grid state
-      // Apply visibility from props to grid, preserving column order from persisted state
+      // Apply column visibility from props (source of truth for show/hide)
       const allOtherColumnsHidden = Object.values(columnVisibility).every(
         (visible) => visible === false
       );
 
       isUpdatingFromPropsRef.current = true;
-      
-      // Apply visibility from props to grid
       Object.entries(columnVisibility).forEach(([viewKey, visible]) => {
         const field = viewKeyToField[viewKey];
-        if (field) {
-          api.setColumnsVisible([field], visible);
-        }
+        if (field) api.setColumnsVisible([field], visible);
       });
-
-      // Hide/show select column based on other columns visibility
       api.setColumnsVisible(['select'], !allOtherColumnsHidden);
-      
-      // Update previous visibility reference
       prevColumnVisibilityRef.current = columnVisibility;
 
-      // Force save grid state with correct visibility after applying
-      const saveGridStateOnReady = () => {
-        const currentApi = gridRef.current?.getGridApi?.();
-        if (!currentApi) {
-          isUpdatingFromPropsRef.current = false;
-          return;
-        }
-
-        const updatedState = currentApi.getColumnState();
-        if (updatedState && updatedState.length > 0) {
-          const gridState = {
-            columnState: updatedState.map((col) => ({
-              colId: col.colId,
-              hide: col.hide,
-              width: col.width,
-              sort: col.sort,
-              sortIndex: col.sortIndex,
-              pinned: null,
-            })),
-            sortModel: updatedState
-              .filter((col) => col.sort !== null && col.sort !== undefined)
-              .map((col) => ({
-                colId: col.colId,
-                sort: col.sort,
-                sortIndex: col.sortIndex,
-              })),
-          };
-          
-          try {
-            localStorage.setItem(`items-grid-${activeTab}`, JSON.stringify(gridState));
-          } catch (error) {
-            console.error('Failed to save grid state to localStorage:', error);
-          }
-        }
-        
+      // Reset flag after visibility events have been processed
+      setTimeout(() => {
         isUpdatingFromPropsRef.current = false;
-      };
+      }, 300);
 
-      // Save multiple times to ensure persistence
-      setTimeout(saveGridStateOnReady, 400);
-      setTimeout(saveGridStateOnReady, 600);
-    }, 200); // Increased delay to ensure persisted state is fully applied
-  }, [columnVisibility, activeTab]);
+      // Register a stateUpdated listener to persist column widths, order, and sort.
+      // stateUpdated is the AG Grid v31+ native event for all grid state changes.
+      // We filter to only save when relevant parts change (columnSizing, columnOrder,
+      // sort) and skip columnVisibility (controlled by the columnVisibility prop).
+      // Debounce 300ms to coalesce rapid events during column resize dragging.
+      let saveDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+      api.addEventListener('stateUpdated', (event: { sources: string[]; state: GridState }) => {
+        const relevant = ['columnSizing', 'columnOrder', 'sort'];
+        if (!event.sources.some((s) => relevant.includes(s))) return;
+
+        if (saveDebounceTimer !== null) clearTimeout(saveDebounceTimer);
+        saveDebounceTimer = setTimeout(() => {
+          // Strip columnVisibility — controlled by props, not localStorage.
+          // Set partialColumnState:true because we removed a column-state property
+          // (columnVisibility). Without it AG Grid would treat the absent property
+          // as "reset to default" on the next initialState restore.
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { columnVisibility: _cv, ...rest } = event.state;
+          const stateToSave: GridState = { ...rest, partialColumnState: true };
+          try {
+            localStorage.setItem(
+              `items-grid-${activeTabRef.current}`,
+              JSON.stringify(stateToSave)
+            );
+          } catch (err) {
+            console.error('Failed to save grid state:', err);
+          }
+        }, 300);
+      });
+    }, 200);
+  }, [columnVisibility]);
+
 
   // Prevent any visible drag image by setting a 0x0 image on the grid root
   // Only apply to row drags, not column drags
@@ -2257,8 +2412,7 @@ export const ItemTableAGGrid = forwardRef<ItemTableAGGridRef, Props>(function It
           onCellEditingStopped={handleCellEditingStopped}
           onCellFocused={handleCellFocused}
           getRowClass={getRowClass}
-          enableColumnStatePersistence={true}
-          persistenceKey={`items-grid-${activeTab}`}
+          enableColumnStatePersistence={false}
           className='h-full'
           paginationData={paginationData}
           onNextPage={onNextPage}
@@ -2267,17 +2421,8 @@ export const ItemTableAGGrid = forwardRef<ItemTableAGGridRef, Props>(function It
           onGridReady={handleGridReady}
           emptyStateComponent={emptyStateComponent}
           hasActiveSearch={hasActiveSearch}
-          onColumnStateChange={() => {
-            // Prevent saving if we're applying persisted state
-            if (isApplyingPersistedStateRef.current) {
-              return false;
-            }
-            // Allow saving even when updating from props (dropdown selection)
-            // The isUpdatingFromPropsRef flag prevents circular updates in handleColumnVisibilityChange
-            // but we still want to persist the changes to localStorage
-            return true;
-          }}
-          gridOptions={{ context: gridContext }}
+          gridOptions={gridOptionsWithPersistence}
+          initialState={initialGridState}
         />
       </div>
     </ItemCardsContext.Provider>

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { ColDef, IRowNode } from 'ag-grid-community';
+import { ColDef, IRowNode, ValueFormatterParams } from 'ag-grid-community';
 import { ShoppingCart, Printer, Eye } from 'lucide-react';
 import { LuCaptions } from 'react-icons/lu';
 import { HiOutlineChatBubbleBottomCenterText } from 'react-icons/hi2';
@@ -80,7 +80,7 @@ const GridImage = ({
 };
 
 export const formatCurrency = (value: domain.Money | undefined) => {
-  if (!value) return '-';
+  if (!value || value.value == null) return '-';
   return `$${value.value.toFixed(2)} ${value.currency}`;
 };
 
@@ -144,9 +144,6 @@ const QuickActionsCell = ({ item }: { item: items.Item }) => {
   const notPrintedCards = safeCards.filter(
     (card: any) => card.payload?.printStatus === 'NOT_PRINTED'
   );
-
-  // Hide Captions button in production
-  const showCaptions = process.env.NODE_ENV !== 'production';
 
   const [isPrintingLabels, setIsPrintingLabels] = React.useState(false);
 
@@ -520,9 +517,10 @@ const QuickActionsCell = ({ item }: { item: items.Item }) => {
       style={{
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
         width: '100%',
         height: '100%',
+        overflow: 'hidden',
       }}
       onClick={handleMouseEvent}
       onMouseDown={handleMouseEvent}
@@ -537,36 +535,34 @@ const QuickActionsCell = ({ item }: { item: items.Item }) => {
         }}
       >
         {/* View Item Details Button */}
-        {onOpenItemDetails && (
-          <button
-            style={{
-              height: '36px',
-              boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)',
-              borderRadius: '8px',
-              backgroundColor: '#fff',
-              border: '1px solid #e5e5e5',
-              boxSizing: 'border-box',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '8px 10px',
-              zIndex: 0,
-              cursor: 'pointer',
-              position: 'relative',
-              overflow: 'visible',
-            }}
-            title='View item details'
-            onClick={(e) => {
-              e.stopPropagation();
-              onOpenItemDetails(item);
-            }}
-            onMouseDown={(e) => {
-              e.stopPropagation();
-            }}
-          >
-            <Eye size={16} style={{ color: '#000' }} />
-          </button>
-        )}
+        <button
+          style={{
+            height: '36px',
+            boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)',
+            borderRadius: '8px',
+            backgroundColor: '#fff',
+            border: '1px solid #e5e5e5',
+            boxSizing: 'border-box',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '8px 10px',
+            zIndex: 0,
+            cursor: onOpenItemDetails ? 'pointer' : 'default',
+            position: 'relative',
+            overflow: 'visible',
+          }}
+          title='View item details'
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenItemDetails?.(item);
+          }}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+          }}
+        >
+          <Eye size={16} style={{ color: '#000' }} />
+        </button>
         {/* Shopping Cart Button */}
         <div
           data-item-id={item.entityId}
@@ -750,9 +746,8 @@ const QuickActionsCell = ({ item }: { item: items.Item }) => {
           </div>
         </div>
 
-        {/* Captions/Grid Button (Print Label) */}
-        {showCaptions && (
-          <div style={{ position: 'relative', overflow: 'visible' }}>
+        {/* Print Label Button */}
+        <div style={{ position: 'relative', overflow: 'visible' }}>
             <button
               style={{
                 height: '36px',
@@ -841,8 +836,7 @@ const QuickActionsCell = ({ item }: { item: items.Item }) => {
                 {hasLoadedCards ? notPrintedCards.length : '—'}
               </div>
             </div>
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );
@@ -1278,7 +1272,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
       // grid instance so multiple grids on the same page don't share state.
       const selRef = (
         params.context?.lastSelectedRowIndexRef as
-          | React.MutableRefObject<number | null>
+          | React.RefObject<number | null>
           | undefined
       ) ?? null;
 
@@ -1375,19 +1369,13 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
     headerName: 'SKU',
     field: 'internalSKU',
     width: 140,
-    cellRenderer: (params: any) => {
-      const item = params.data as items.Item;
-      return item.internalSKU || '';
-    },
+    valueFormatter: (params: ValueFormatterParams) => params.value ?? '',
   },
   {
     headerName: 'GL Code',
     field: 'generalLedgerCode',
     width: 140,
-    cellRenderer: (params: any) => {
-      const item = params.data as items.Item;
-      return item.generalLedgerCode || '';
-    },
+    valueFormatter: (params: ValueFormatterParams) => params.value ?? '',
   },
   {
     headerName: 'Item',
@@ -1396,13 +1384,6 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
     sortable: true,
     filter: false,
     resizable: true,
-    cellStyle: {
-      padding: '0 16px',
-      height: '42px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '10px',
-    },
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       return (
@@ -1463,9 +1444,12 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Quick Actions',
     field: 'quickActions' as any,
-    width: 123,
+    // 4 buttons × ~38px + 3 gaps × 4px = ~164px; min = 1 button (~38px)
+    width: 164,
+    minWidth: 38,
+    sortable: false,
     cellStyle: {
-      overflow: 'visible',
+      overflow: 'hidden',
       textOverflow: 'clip',
       whiteSpace: 'normal',
       display: 'flex',
@@ -1499,21 +1483,14 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
     headerName: 'Unit Price',
     field: 'primarySupply.unitCost',
     width: 120,
-    cellRenderer: (params: any) => {
-      const item = params.data as items.Item;
-      return formatCurrency(item.primarySupply?.unitCost);
-    },
+    valueFormatter: (params: ValueFormatterParams) => formatCurrency(params.value),
   },
   {
     headerName: 'Created',
     field: 'createdCoordinates',
     width: 150,
-    cellRenderer: (params: any) => {
-      const item = params.data as items.Item;
-      return formatDateTime(
-        new Date(item.createdCoordinates?.recordedAsOf || 0).toISOString()
-      );
-    },
+    valueFormatter: (params: ValueFormatterParams) =>
+      formatDateTime(new Date(params.value?.recordedAsOf || 0).toISOString()),
   },
   {
     headerName: 'Min Qty',
@@ -1522,10 +1499,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
     width: 150,
     minWidth: 100,
     suppressSizeToFit: true,
-    cellRenderer: (params: any) => {
-      const item = params.data as items.Item;
-      return item.minQuantity?.amount ?? '-';
-    },
+    valueFormatter: (params: ValueFormatterParams) => String(params.value ?? '-'),
   },
   {
     headerName: 'Min Unit',
@@ -1546,10 +1520,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
     width: 150,
     minWidth: 100,
     suppressSizeToFit: true,
-    cellRenderer: (params: any) => {
-      const item = params.data as items.Item;
-      return item.primarySupply?.orderQuantity?.amount ?? '-';
-    },
+    valueFormatter: (params: ValueFormatterParams) => String(params.value ?? '-'),
   },
   {
     headerName: 'Order Unit',
@@ -1774,10 +1745,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
     headerName: 'Order Cost',
     field: 'primarySupply.orderCost',
     width: 120,
-    cellRenderer: (params: any) => {
-      const item = params.data as items.Item;
-      return formatCurrency(item.primarySupply?.orderCost);
-    },
+    valueFormatter: (params: ValueFormatterParams) => formatCurrency(params.value),
   },
   {
     headerName: 'Card Size',

@@ -8,6 +8,7 @@ import React, {
   useEffect,
   useState,
 } from 'react';
+import { createPortal } from 'react-dom';
 import { AgGridReact } from 'ag-grid-react';
 import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
 import {
@@ -15,6 +16,8 @@ import {
   GridApi,
   GridReadyEvent,
   GridOptions,
+  GridState,
+  IHeaderParams,
   SelectionChangedEvent,
   SortChangedEvent,
   RowClickedEvent,
@@ -82,6 +85,9 @@ export interface ArdaGridProps<T = any> {
   persistenceKey?: string;
   onColumnStateChange?: (columnState: any[]) => boolean | void; // Callback to check if we should save state
 
+  // Initial grid state (AG Grid v31+ native persistence — applied once at grid creation)
+  initialState?: GridState;
+
   // Server-side data
   onGridReady?: (params: GridReadyEvent<T>) => void;
 
@@ -141,6 +147,117 @@ export interface ArdaGridProps<T = any> {
   hasActiveSearch?: boolean;
 }
 
+// ─── Sort menu header component ───────────────────────────────────────────────
+// Renders column name + optional ↑/↓ indicator + ⋮ button that opens a
+// sort dropdown (portal into document.body to escape overflow:hidden).
+const SortMenuHeader: React.FC<IHeaderParams> = (params) => {
+  const [sortDir, setSortDir] = useState<'asc' | 'desc' | null>(() => {
+    const s = params.column.getSort?.() ?? null;
+    return s === 'asc' || s === 'desc' ? s : null;
+  });
+  const [menuAnchor, setMenuAnchor] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+
+  // Keep sortDir in sync with AG Grid's column sort state
+  useEffect(() => {
+    const syncSort = () => {
+      const s = params.column.getSort?.() ?? null;
+      setSortDir(s === 'asc' || s === 'desc' ? s : null);
+    };
+    params.column.addEventListener('sortChanged', syncSort);
+    return () => {
+      params.column.removeEventListener('sortChanged', syncSort);
+    };
+  }, [params.column]);
+
+  // Close menu on outside click (but not if click is on the button or inside dropdown)
+  useEffect(() => {
+    if (!menuAnchor) return;
+    const handleOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (btnRef.current?.contains(target)) return;
+      if (
+        target instanceof Element &&
+        target.closest('.arda-sort-menu-dropdown')
+      )
+        return;
+      setMenuAnchor(null);
+    };
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [menuAnchor]);
+
+  // Toggle menu open / closed using functional state update (stable callback)
+  const openMenu = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setMenuAnchor((prev) => {
+      if (prev) return null;
+      const rect = btnRef.current?.getBoundingClientRect();
+      if (!rect) return null;
+      return { top: rect.bottom + 4, left: rect.left };
+    });
+  }, []);
+
+  const applySort = useCallback(
+    (dir: 'asc' | 'desc' | null) => {
+      params.setSort(dir);
+      setMenuAnchor(null);
+    },
+    [params],
+  );
+
+  return (
+    <div className='arda-sort-header'>
+      <span className='arda-sort-header-text'>{params.displayName}</span>
+      {sortDir && (
+        <span className='arda-sort-header-icon' aria-hidden='true'>
+          {sortDir === 'asc' ? '↑' : '↓'}
+        </span>
+      )}
+      {params.enableSorting && (
+        <button
+          ref={btnRef}
+          className={`arda-sort-header-btn${sortDir ? ' arda-sort-header-btn-active' : ''}`}
+          onClick={openMenu}
+          title='Sort options'
+          aria-label='Sort options'
+          aria-expanded={menuAnchor !== null}
+        >
+          ⋮
+        </button>
+      )}
+      {menuAnchor !== null &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            className='arda-sort-menu-dropdown'
+            style={{ top: menuAnchor.top, left: menuAnchor.left }}
+          >
+            <button onClick={() => applySort('asc')}>
+              <span aria-hidden='true'>↑</span> Sort Ascending
+            </button>
+            <button onClick={() => applySort('desc')}>
+              <span aria-hidden='true'>↓</span> Sort Descending
+            </button>
+            {sortDir && (
+              <button onClick={() => applySort(null)}>
+                <span aria-hidden='true'>↕</span> Clear Sort
+              </button>
+            )}
+          </div>,
+          document.body,
+        )}
+    </div>
+  );
+};
+
+SortMenuHeader.displayName = 'SortMenuHeader';
+
+// ──────────────────────────────────────────────────────────────────────────────
+
 const ArdaGrid = forwardRef<ArdaGridRef, ArdaGridProps>(
   (
     {
@@ -184,6 +301,7 @@ const ArdaGrid = forwardRef<ArdaGridRef, ArdaGridProps>(
       onFirstPage,
       emptyStateComponent,
       hasActiveSearch = false,
+      initialState,
     },
     ref,
   ) => {
@@ -231,6 +349,11 @@ const ArdaGrid = forwardRef<ArdaGridRef, ArdaGridProps>(
     const handleGridReady = useCallback(
       (params: GridReadyEvent) => {
         setGridApi(params.api);
+
+        // Expose the gridApi on window so E2E tests can sort/filter programmatically
+        if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_MOCK_MODE === 'true') {
+          (window as unknown as Record<string, unknown>).__ag_grid_api = params.api;
+        }
 
         // Initialize the previous persistence key ref
         previousPersistenceKeyRef.current = persistenceKey;
@@ -762,6 +885,8 @@ const ArdaGrid = forwardRef<ArdaGridRef, ArdaGridProps>(
 
     // Default column definition
     const defaultColumnDef: ColDef = {
+      // Custom header with sort menu (columns with their own headerComponent override this)
+      headerComponent: SortMenuHeader,
       sortable: enableSorting,
       filter: enableFiltering,
       resizable: true,
@@ -1034,6 +1159,7 @@ const ArdaGrid = forwardRef<ArdaGridRef, ArdaGridProps>(
               columnDefs={finalColumnDefs}
               defaultColDef={defaultColumnDef}
               gridOptions={mergedGridOptions}
+              initialState={initialState}
               onGridReady={handleGridReady}
               onSelectionChanged={handleSelectionChanged}
               onSortChanged={handleSortChanged}

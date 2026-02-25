@@ -244,9 +244,9 @@ describe('ItemTableAGGrid', () => {
     expect(_lastArdaGridProps?.enableRowActions).toBe(false);
   });
 
-  it('passes persistenceKey based on activeTab', () => {
+  it('does not pass persistenceKey to ArdaGrid (ItemTableAGGrid owns persistence)', () => {
     render(<ItemTableAGGrid {...defaultProps} activeTab='ordered' />);
-    expect(_lastArdaGridProps?.persistenceKey).toBe('items-grid-ordered');
+    expect(_lastArdaGridProps?.persistenceKey).toBeUndefined();
   });
 
   it('passes columnDefs as array to ArdaGrid', () => {
@@ -254,9 +254,9 @@ describe('ItemTableAGGrid', () => {
     expect(Array.isArray(_lastArdaGridProps?.columnDefs)).toBe(true);
   });
 
-  it('passes enableColumnStatePersistence=true to ArdaGrid', () => {
+  it('passes enableColumnStatePersistence=false to ArdaGrid (ItemTableAGGrid owns persistence)', () => {
     render(<ItemTableAGGrid {...defaultProps} />);
-    expect(_lastArdaGridProps?.enableColumnStatePersistence).toBe(true);
+    expect(_lastArdaGridProps?.enableColumnStatePersistence).toBe(false);
   });
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -769,11 +769,9 @@ describe('ItemTableAGGrid', () => {
   // ──────────────────────────────────────────────────────────────────────────
   // onColumnStateChange callback
   // ──────────────────────────────────────────────────────────────────────────
-  it('onColumnStateChange returns true when not applying persisted state', () => {
+  it('does not pass onColumnStateChange to ArdaGrid (ItemTableAGGrid owns persistence)', () => {
     render(<ItemTableAGGrid {...defaultProps} />);
-    const onColumnStateChange = _lastArdaGridProps?.onColumnStateChange;
-    const result = onColumnStateChange?.([]);
-    expect(result).toBe(true);
+    expect(_lastArdaGridProps?.onColumnStateChange).toBeUndefined();
   });
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -1144,7 +1142,7 @@ describe('ItemTableAGGrid — publishRow edge cases', () => {
     const rowNode = { data: items[0] };
     mockGridApi.getRowNode.mockReturnValue(rowNode);
     const onRefreshRequested = jest.fn().mockResolvedValue(undefined);
-    let resolveUpdate: () => void;
+    let resolveUpdate: (value?: unknown) => void;
     mockUpdateItem.mockReturnValue(new Promise((res) => { resolveUpdate = res; }));
 
     const ref = createRef<ItemTableAGGridRef>();
@@ -1520,13 +1518,12 @@ describe('ItemTableAGGrid — CardSizeCellEditor class', () => {
   });
 });
 
-describe('ItemTableAGGrid — onColumnStateChange with isApplyingPersistedState', () => {
-  it('onColumnStateChange returns false when isApplyingPersistedState is active', () => {
+describe('ItemTableAGGrid — persistence ownership', () => {
+  it('does not pass onColumnStateChange to ArdaGrid — ItemTableAGGrid is the sole persistence owner', () => {
     render(<ItemTableAGGrid {...defaultProps} />);
-    const onColumnStateChange = _lastArdaGridProps?.onColumnStateChange;
-    // Since isApplyingPersistedStateRef starts false, this returns true
-    const result = onColumnStateChange?.([{ colId: 'name' }]);
-    expect(result).toBe(true);
+    expect(_lastArdaGridProps?.onColumnStateChange).toBeUndefined();
+    expect(_lastArdaGridProps?.persistenceKey).toBeUndefined();
+    expect(_lastArdaGridProps?.enableColumnStatePersistence).toBe(false);
   });
 });
 
@@ -1544,7 +1541,7 @@ describe('ItemTableAGGrid — handleGridReady callback', () => {
     ]);
     render(<ItemTableAGGrid {...defaultProps} columnVisibility={{ sku: true, name: true }} />);
     const onGridReady = _lastArdaGridProps?.onGridReady;
-    act(() => { onGridReady?.(); });
+    act(() => { onGridReady?.({ api: mockGridApi }); });
     act(() => { jest.runAllTimers(); });
     // No error thrown — test passes
     jest.useRealTimers();

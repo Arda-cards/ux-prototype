@@ -12,6 +12,7 @@
 
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import authReducer from '../slices/authSlice';
+import type { AppDispatch } from '../store';
 import {
   CognitoIdentityProviderClient,
   InitiateAuthCommand,
@@ -76,11 +77,14 @@ const mockAccessToken = fakeJwt(mockAccessPayload);
 const mockRefreshToken = 'mock-refresh-token';
 
 function createStore(preloadedAuth?: Record<string, unknown>) {
-  return configureStore({
+  const s = configureStore({
     reducer: combineReducers({ auth: authReducer }),
     preloadedState: preloadedAuth ? { auth: preloadedAuth as never } : undefined,
     middleware: (getDefault) => getDefault({ serializableCheck: false }),
   });
+  // Cast dispatch to AppDispatch so async thunks typed with { state: RootState }
+  // can be dispatched without TypeScript errors in this isolated test store.
+  return s as typeof s & { dispatch: AppDispatch };
 }
 
 // Get the mock send function

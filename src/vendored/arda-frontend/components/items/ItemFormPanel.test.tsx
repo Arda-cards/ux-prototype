@@ -90,7 +90,7 @@ const { createItem, createDraftItem, updateItem } = require('@/lib/ardaClient');
 const { isItemFormValidForPublish } = require('@/lib/validators/itemFormValidator');
 
 const mockLocalStorage = {
-  getItem: jest.fn(() => null),
+  getItem: jest.fn((_key: string) => null as string | null),
   setItem: jest.fn(),
   removeItem: jest.fn(),
   clear: jest.fn(),

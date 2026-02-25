@@ -146,7 +146,7 @@ describe('refreshTokens', () => {
 
     const dispatchResult = { type: 'auth/refreshTokens/rejected' };
     (store.dispatch as jest.Mock).mockResolvedValue(dispatchResult);
-    (refreshTokensThunk.fulfilled.match as jest.Mock).mockReturnValue(false);
+    (refreshTokensThunk.fulfilled.match as unknown as jest.Mock).mockReturnValue(false);
 
     const result = await refreshTokens();
     expect(result).toBeNull();
@@ -170,7 +170,7 @@ describe('refreshTokens', () => {
 
     const dispatchResult = { type: 'auth/refreshTokens/fulfilled', payload: {} };
     (store.dispatch as jest.Mock).mockResolvedValue(dispatchResult);
-    (refreshTokensThunk.fulfilled.match as jest.Mock).mockReturnValue(true);
+    (refreshTokensThunk.fulfilled.match as unknown as jest.Mock).mockReturnValue(true);
 
     const result = await refreshTokens('mock-refresh');
     expect(result).not.toBeNull();
@@ -183,7 +183,7 @@ describe('refreshTokens', () => {
     // Store has no refresh token, but param provides one
     const dispatchResult = { type: 'auth/refreshTokens/rejected' };
     (store.dispatch as jest.Mock).mockResolvedValue(dispatchResult);
-    (refreshTokensThunk.fulfilled.match as jest.Mock).mockReturnValue(false);
+    (refreshTokensThunk.fulfilled.match as unknown as jest.Mock).mockReturnValue(false);
 
     const result = await refreshTokens('param-refresh-token');
     // Should have dispatched since param provides a refresh token
@@ -198,7 +198,7 @@ describe('refreshTokens', () => {
 
     const dispatchResult = { type: 'auth/refreshTokens/rejected', error: { message: 'failed' } };
     (store.dispatch as jest.Mock).mockResolvedValue(dispatchResult);
-    (refreshTokensThunk.fulfilled.match as jest.Mock).mockReturnValue(false);
+    (refreshTokensThunk.fulfilled.match as unknown as jest.Mock).mockReturnValue(false);
 
     const result = await refreshTokens('mock-refresh');
     expect(result).toBeNull();
@@ -260,7 +260,7 @@ describe('ensureValidTokens', () => {
 
     const dispatchResult = { type: 'auth/refreshTokens/fulfilled', payload: {} };
     (store.dispatch as jest.Mock).mockResolvedValue(dispatchResult);
-    (refreshTokensThunk.fulfilled.match as jest.Mock).mockReturnValue(true);
+    (refreshTokensThunk.fulfilled.match as unknown as jest.Mock).mockReturnValue(true);
 
     const result = await ensureValidTokens(token, 'valid-refresh', 'user@test.com');
     expect(result).toBe(true);

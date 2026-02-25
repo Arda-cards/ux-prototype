@@ -10,7 +10,7 @@ describe('loggerMiddleware', () => {
 
   it('passes action through to next in production', () => {
     const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'production';
+    (process.env as Record<string, string>).NODE_ENV = 'production';
 
     const action = { type: 'test/action' };
     const result = loggerMiddleware(store)(next)(action);
@@ -18,12 +18,12 @@ describe('loggerMiddleware', () => {
     expect(next).toHaveBeenCalledWith(action);
     expect(result).toEqual(action);
 
-    process.env.NODE_ENV = originalEnv;
+    (process.env as Record<string, string>).NODE_ENV = originalEnv ?? 'test';
   });
 
   it('logs and passes action through in development', () => {
     const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'development';
+    (process.env as Record<string, string>).NODE_ENV = 'development';
 
     const groupSpy = jest.spyOn(console, 'group').mockImplementation();
     const logSpy = jest.spyOn(console, 'log').mockImplementation();
@@ -40,6 +40,6 @@ describe('loggerMiddleware', () => {
     groupSpy.mockRestore();
     logSpy.mockRestore();
     groupEndSpy.mockRestore();
-    process.env.NODE_ENV = originalEnv;
+    (process.env as Record<string, string>).NODE_ENV = originalEnv ?? 'test';
   });
 });

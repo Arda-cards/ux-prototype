@@ -34,3 +34,20 @@ export const persistor = persistStore(store);
 // Define RootState from rootReducer (not store.getState) to avoid circular reference
 export type RootState = ReturnType<typeof rootReducer>;
 export type AppDispatch = typeof store.dispatch;
+
+// ---------------------------------------------------------------------------
+// Test-only helpers (used via the manual mock at src/store/__mocks__/store.ts)
+// These stubs exist solely to satisfy TypeScript imports in test files that
+// call `jest.mock('@/store/store')` and then import these symbols. At runtime
+// the Jest manual mock provides the real implementations; these stubs are
+// never executed in production or test code.
+// ---------------------------------------------------------------------------
+/* istanbul ignore next */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function __setMockState(_partialState: Record<string, any>): void {
+  throw new Error('__setMockState is only available in tests via jest.mock("@/store/store")');
+}
+/* istanbul ignore next */
+export function __resetMockState(): void {
+  throw new Error('__resetMockState is only available in tests via jest.mock("@/store/store")');
+}

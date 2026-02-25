@@ -27,9 +27,7 @@ describe('AuthInit', () => {
   it('renders null (no visible output)', () => {
     const store = createTestStore();
     const { container } = render(
-      React.createElement(Provider, { store },
-        React.createElement(AuthInit)
-      )
+      <Provider store={store}><AuthInit /></Provider>
     );
     expect(container.innerHTML).toBe('');
   });
@@ -45,9 +43,7 @@ describe('AuthInit', () => {
 
     const store = createTestStore({ auth: mockAuthStateSignedOut });
     render(
-      React.createElement(Provider, { store },
-        React.createElement(AuthInit)
-      )
+      <Provider store={store}><AuthInit /></Provider>
     );
 
     const state = store.getState();
@@ -60,9 +56,7 @@ describe('AuthInit', () => {
   it('does not dispatch checkAuthThunk when no tokens exist anywhere (unauthenticated user)', () => {
     const store = createTestStore({ auth: mockAuthStateSignedOut });
     render(
-      React.createElement(Provider, { store },
-        React.createElement(AuthInit)
-      )
+      <Provider store={store}><AuthInit /></Provider>
     );
     // No tokens in localStorage or Redux → AuthInit does nothing; user stays null
     // useAuthValidation handles the redirect to /signin
@@ -84,9 +78,7 @@ describe('AuthInit', () => {
     });
 
     render(
-      React.createElement(Provider, { store },
-        React.createElement(AuthInit)
-      )
+      <Provider store={store}><AuthInit /></Provider>
     );
 
     expect(localStorage.getItem('accessToken')).toBe('synced-at');
@@ -101,9 +93,7 @@ describe('AuthInit', () => {
 
     const store = createTestStore({ auth: mockAuthStateSignedOut });
     render(
-      React.createElement(Provider, { store },
-        React.createElement(AuthInit)
-      )
+      <Provider store={store}><AuthInit /></Provider>
     );
 
     // tokenExpiresAt should be cleared since all tokens are null

@@ -6,6 +6,7 @@ import { useSidebarVisibility } from './useSidebarVisibility';
 
 function wrapper(store: ReturnType<typeof createTestStore>) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
+    // @ts-expect-error React.createElement passes children as 3rd arg at runtime; ProviderProps type mismatch is harmless
     return React.createElement(Provider, { store }, children);
   };
 }
