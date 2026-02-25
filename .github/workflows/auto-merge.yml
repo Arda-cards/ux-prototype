@@ -15,4 +15,4 @@ jobs:
       - name: Enable auto-merge
         run: gh pr merge ${{ github.event.pull_request.number }} --auto --squash
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.CROSS_REPO_TOKEN }}
