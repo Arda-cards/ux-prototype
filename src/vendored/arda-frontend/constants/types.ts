@@ -1,4 +1,5 @@
 // Import existing types from the types folder
+// sync-pipeline test: trigger end-to-end flow verification
 import type {
   Supply,
   ItemClassification,
