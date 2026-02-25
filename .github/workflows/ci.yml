@@ -107,6 +107,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    outputs:
+      changelog-modified: ${{ steps.changelog-check.outputs.modified }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -116,13 +118,14 @@ jobs:
         env:
           EVENT_NAME: ${{ github.event_name }}
           BEFORE_SHA: ${{ github.event.before }}
+          BASE_REF: ${{ github.base_ref }}
         run: |
           # For push events, compare against the previous commit.
-          # For PRs, compare against the base branch.
+          # For PRs, compare against the PR's base branch.
           if [ "$EVENT_NAME" = "push" ]; then
             DIFF_RANGE="${BEFORE_SHA}..HEAD"
           else
-            DIFF_RANGE="origin/main...HEAD"
+            DIFF_RANGE="origin/${BASE_REF}...HEAD"
           fi
           if git diff --name-only "$DIFF_RANGE" | grep -q '^CHANGELOG.md$'; then
             echo "modified=true" >> "$GITHUB_OUTPUT"
@@ -145,7 +148,7 @@ jobs:
           tag: ${{ steps.clq-extract.outputs.tag }}
 
   tag:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && needs.validate-release.outputs.changelog-modified == 'true'
     needs: [validate-release]
     runs-on: ubuntu-latest
     permissions:
