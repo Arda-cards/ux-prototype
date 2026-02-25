@@ -725,7 +725,7 @@ describe('mount-time validation', () => {
 
     // Should not have mount-time errors (design config errors may fire but not mount ones)
     const mountErrors = consoleErrorSpy.mock.calls.filter(
-      (call) => typeof call[0] === 'string' && call[0].includes('MountConfig'),
+      (call: unknown[]) => typeof call[0] === 'string' && call[0].includes('MountConfig'),
     );
     expect(mountErrors).toHaveLength(0);
   });
