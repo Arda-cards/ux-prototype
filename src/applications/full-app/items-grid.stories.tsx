@@ -29,44 +29,37 @@ export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    // UC-ITEM-002: Verify the items grid page renders
-    const heading = await canvas.findByText(/Published Items/i, {}, { timeout: 10000 });
+    // UC-ITEM-002: Verify the items grid page renders with heading and tabs
+    const heading = await canvas.findByRole('heading', { name: /Items/i }, { timeout: 10000 });
     await expect(heading).toBeVisible();
   },
 };
 
 /**
  * Empty state — no items returned from the API.
+ * The items page calls POST /api/arda/items/query.
  */
 export const EmptyState: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get('/api/arda/items/query', () =>
-          HttpResponse.json({ items: [], total: 0 }),
+        http.post('/api/arda/items/query', () =>
+          HttpResponse.json({
+            ok: true,
+            status: 200,
+            data: {
+              thisPage: '0',
+              nextPage: '0',
+              previousPage: '0',
+              results: [],
+            },
+          }),
         ),
       ],
     },
   },
 };
 
-/**
- * Server error — API returns 500 for items query.
- */
-export const ServerError: Story = {
-  parameters: {
-    msw: {
-      handlers: [
-        http.get('/api/arda/items/query', () =>
-          new HttpResponse(null, { status: 500 }),
-        ),
-      ],
-    },
-  },
-};
-
-/**
- * Loading state — uses default MSW handlers.
- * The initial render shows the loading skeleton before data arrives.
- */
-export const Loading: Story = {};
+// Server error story removed: the Items page catches fetch errors via toast
+// and falls back to showing the empty grid — visually identical to EmptyState.
+// This is the production app behavior (see vendored app/items/page.tsx).

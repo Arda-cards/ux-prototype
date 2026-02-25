@@ -27,10 +27,9 @@ export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    // The scan page renders inside an AuthGuard and shows either
-    // MobileScanView or DesktopScanView depending on viewport.
-    // Verify that the component mounts and renders content.
-    // The page content is wrapped in Suspense, so we wait for it to appear.
-    await expect(canvasElement).toBeInTheDocument();
+    // The scan page renders DesktopScanView (desktop viewport in Storybook).
+    // Verify the scan UI renders with its characteristic elements.
+    const scanLabel = await canvas.findByText(/Scan cards/i, {}, { timeout: 10000 });
+    await expect(scanLabel).toBeVisible();
   },
 };

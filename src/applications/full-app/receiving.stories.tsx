@@ -33,7 +33,7 @@ export const Default: Story = {
 
     // UC-RCV-001: Verify the receiving page renders its UI structure
     // TODO: Badge counts may be inaccurate with mock data
-    const heading = await canvas.findByText(/Receiving/i, {}, { timeout: 10000 });
+    const heading = await canvas.findByRole('heading', { name: /Receiving/i }, { timeout: 10000 });
     await expect(heading).toBeVisible();
   },
 };

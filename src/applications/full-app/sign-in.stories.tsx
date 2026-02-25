@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, within } from 'storybook/test';
-import { http, HttpResponse } from 'msw';
+import { expect, within, userEvent } from 'storybook/test';
 import SignInPage from '@frontend/app/signin/page';
 
 const meta: Meta<typeof SignInPage> = {
@@ -47,17 +46,32 @@ export const Default: Story = {
 };
 
 /**
- * UC-AUTH-001 edge case: Invalid credentials returns 401.
- * Fills the form and submits, then verifies error message appears.
+ * UC-AUTH-001 edge case: Invalid credentials error state.
+ *
+ * Mock limitation: The sign-in form dispatches signInThunk, which in Storybook
+ * runs in mock mode (NEXT_PUBLIC_MOCK_MODE=true) and always succeeds — it
+ * bypasses Cognito and returns mock tokens directly. The MSW handler approach
+ * doesn't work because the form never makes an HTTP request to an auth endpoint.
+ *
+ * To demonstrate the error UI, we pre-populate the Redux auth slice with an
+ * error. The sign-in page reads `error` from useAuth() (Redux selector) and
+ * displays it as `authError`.
  */
 export const InvalidCredentials: Story = {
-  parameters: {
-    msw: {
-      handlers: [
-        http.post('/api/auth/login', () =>
-          HttpResponse.json({ message: 'Invalid credentials' }, { status: 401 }),
-        ),
-      ],
+  args: {
+    initialState: {
+      auth: {
+        user: null,
+        userContext: null,
+        tokens: { accessToken: '', idToken: '', refreshToken: '', expiresAt: 0 },
+        jwtPayload: null,
+        isTokenValid: false,
+        loading: false,
+        error: 'Invalid email or password',
+        isLoggingOut: false,
+        isRefreshing: false,
+        lastRefreshAttempt: null,
+      },
     },
   },
   play: async ({ canvasElement }) => {
@@ -67,14 +81,9 @@ export const InvalidCredentials: Story = {
     const heading = await canvas.findByText('Sign in', {}, { timeout: 10000 });
     await expect(heading).toBeVisible();
 
-    // Verify the form fields are present for the invalid credentials scenario
-    const emailInput = await canvas.findByPlaceholderText('Email');
-    await expect(emailInput).toBeVisible();
-
-    const passwordInput = await canvas.findByPlaceholderText('Password');
-    await expect(passwordInput).toBeVisible();
-
-    const submitButton = await canvas.findByRole('button', { name: /sign in/i });
-    await expect(submitButton).toBeVisible();
+    // The pre-populated auth error should be displayed
+    // The sign-in page maps 'Invalid email or password' → 'Password or account incorrect'
+    const errorMessage = await canvas.findByText(/password or account incorrect/i, {}, { timeout: 5000 });
+    await expect(errorMessage).toBeVisible();
   },
 };

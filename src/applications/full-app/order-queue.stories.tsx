@@ -29,21 +29,43 @@ export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    // UC-ORD-006: Verify the order queue page renders
-    const heading = await canvas.findByText(/Order Queue/i, {}, { timeout: 10000 });
+    // UC-ORD-006: Verify the order queue page renders with heading
+    const heading = await canvas.findByRole('heading', { name: /Order Queue/i }, { timeout: 10000 });
     await expect(heading).toBeVisible();
   },
 };
 
 /**
- * Empty queue — API returns no orders.
+ * Empty queue — no kanban cards in any status bucket.
+ * The Order Queue page fetches cards from three POST endpoints:
+ * - /api/arda/kanban/kanban-card/details/requested
+ * - /api/arda/kanban/kanban-card/details/in-process
+ * - /api/arda/kanban/kanban-card/details/requesting
  */
 export const EmptyQueue: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get('/api/arda/kanban-cards', () =>
-          HttpResponse.json({ results: [], total: 0, pageToken: null }),
+        http.post('/api/arda/kanban/kanban-card/details/requested', () =>
+          HttpResponse.json({
+            ok: true,
+            status: 200,
+            data: { thisPage: '0', nextPage: '0', previousPage: '0', results: [] },
+          }),
+        ),
+        http.post('/api/arda/kanban/kanban-card/details/in-process', () =>
+          HttpResponse.json({
+            ok: true,
+            status: 200,
+            data: { thisPage: '0', nextPage: '0', previousPage: '0', results: [] },
+          }),
+        ),
+        http.post('/api/arda/kanban/kanban-card/details/requesting', () =>
+          HttpResponse.json({
+            ok: true,
+            status: 200,
+            data: { thisPage: '0', nextPage: '0', previousPage: '0', results: [] },
+          }),
         ),
       ],
     },

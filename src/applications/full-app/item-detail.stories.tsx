@@ -31,7 +31,7 @@ export const Default: Story = {
     const canvas = within(canvasElement);
 
     // UC-ITEM-003: Verify the items page renders (detail panel opens based on URL)
-    const heading = await canvas.findByText(/Published Items/i, {}, { timeout: 10000 });
+    const heading = await canvas.findByRole('heading', { name: /Items/i }, { timeout: 10000 });
     await expect(heading).toBeVisible();
   },
 };
