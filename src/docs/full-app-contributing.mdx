@@ -1,0 +1,272 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Full App Contributing" />
+
+# Full App Contributing Guide
+
+This page covers how to add new page stories, override MSW handlers, run the sync script locally, and debug common issues with the Full App integration.
+
+## Adding a New Page Story
+
+Each Full App page story lives in `src/applications/full-app/` and follows a consistent template.
+
+### 1. Create the Story File
+
+```tsx
+// src/applications/full-app/my-page.stories.tsx
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import MyPage from '@frontend/app/my-page/page';
+
+const meta: Meta<typeof MyPage> = {
+  title: 'Full App/My Page',
+  component: MyPage,
+  tags: ['app-route:/my-page'],
+  parameters: {
+    layout: 'fullscreen',
+    appRoute: '/my-page',
+    appComponent: 'app/my-page/page.tsx',
+  },
+  args: {
+    pathname: '/my-page',
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof MyPage>;
+
+export const Default: Story = {};
+```
+
+Key points:
+
+- The `title` must start with `Full App/` so the `withFullAppProviders` decorator activates.
+- The `tags` array should include `app-route:<path>` for route traceability.
+- Set `pathname` in `args` to match the application route. For dynamic routes, provide a concrete value (e.g., `/item/mock-item-001`).
+
+### 2. Handle Dynamic Routes
+
+For pages with URL parameters (like `[itemId]`), pass `params` in the story args:
+
+```tsx
+args: {
+  pathname: '/item/mock-item-001',
+  params: { itemId: 'mock-item-001' },
+},
+```
+
+The `withFullAppProviders` decorator passes these to `NavigationContext`, making them available via `useParams()`.
+
+### 3. Add a Play Function
+
+Play functions run interaction tests against the rendered page:
+
+```tsx
+import { expect, within } from 'storybook/test';
+
+export const Default: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const heading = await canvas.findByRole(
+      'heading',
+      { name: /My Page/i },
+      { timeout: 10000 },
+    );
+    await expect(heading).toBeVisible();
+  },
+};
+```
+
+Use `findByRole` or `findByText` with a timeout, because vendored pages fetch data from MSW handlers asynchronously.
+
+### 4. Verify the Build
+
+```bash
+npm run build-storybook
+```
+
+If the build fails, the most common cause is a missing vendored dependency or an unresolved import. Check the error message for the module name and verify it exists in `vendored-deps.json` or `package.json`.
+
+## MSW Handler Overrides
+
+The default MSW handlers return realistic mock data for all stories. To test edge cases &#8212; empty states, errors, loading delays &#8212; override specific handlers in the story&#8217;s `parameters.msw.handlers` array.
+
+### Empty State
+
+Return an empty result set:
+
+```tsx
+import { http, HttpResponse } from 'msw';
+
+export const EmptyState: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        http.post('/api/arda/items/query', () =>
+          HttpResponse.json({
+            ok: true,
+            status: 200,
+            data: { results: [], thisPage: '0', nextPage: '0', previousPage: '0' },
+          }),
+        ),
+      ],
+    },
+  },
+};
+```
+
+### Server Error
+
+Return an error response:
+
+```tsx
+export const ServerError: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        http.post('/api/arda/items/query', () =>
+          new HttpResponse(null, { status: 500 }),
+        ),
+      ],
+    },
+  },
+};
+```
+
+### Loading Delay
+
+Simulate slow network conditions:
+
+```tsx
+import { delay } from 'msw';
+
+export const Loading: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        http.post('/api/arda/items/query', async () => {
+          await delay(5000);
+          return HttpResponse.json({ ok: true, data: { results: [] } });
+        }),
+      ],
+    },
+  },
+};
+```
+
+Handler overrides apply only to the specific story. Other stories continue to use the default handlers. The `msw-storybook-addon` resets handlers between stories automatically.
+
+## Running the Sync Script Locally
+
+To test changes to the sync process or pull the latest production code:
+
+```bash
+# From the ux-prototype repo root
+bash tools/sync-frontend-app.sh /path/to/arda-frontend-app
+```
+
+The script accepts two arguments:
+
+<table>
+  <thead>
+    <tr>
+      <th>Argument</th>
+      <th>Required</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>SOURCE_REPO</code></td>
+      <td>Yes</td>
+      <td>Path to the <code>arda-frontend-app</code> repository root</td>
+    </tr>
+    <tr>
+      <td><code>TARGET_DIR</code></td>
+      <td>No</td>
+      <td>Destination directory (default: <code>src/vendored/arda-frontend</code>)</td>
+    </tr>
+  </tbody>
+</table>
+
+The script is idempotent: it deletes the target directory before copying. After running it:
+
+1. Check `vendored-deps.json` for any new dependencies.
+2. Run `node tools/install-vendored-deps.js` to install them.
+3. Run `npm run build-storybook` to verify the build.
+
+## Debugging Common Issues
+
+### Build Error: Could Not Resolve Module
+
+**Symptom:** Storybook build fails with `Could not resolve "@frontend/some/module"`.
+
+**Cause:** The vendored code imports a module that was excluded by the sync script blocklist or does not exist in the source repository.
+
+**Fix:** Check whether the missing module is in the blocklist (`tools/sync-frontend-app.sh`, the rsync `--exclude` list). If it is a server-only module, add a shim in `src/shims/` and register it as a Vite alias in `.storybook/main.ts`. If it is a legitimate client module, update the blocklist to stop excluding it.
+
+### Build Error: Missing Dependency
+
+**Symptom:** `Cannot find module 'some-package'` during build.
+
+**Cause:** The vendored code depends on a package not listed in either `package.json` or `vendored-deps.json`.
+
+**Fix:** Run the sync script to regenerate `vendored-deps.json`, then run `node tools/install-vendored-deps.js`. If the package is still missing, it may be in the skip list (server-only packages excluded from vendored deps). Check whether the vendored code actually needs it at runtime or only on the server.
+
+### Build Error: Could Not Parse Expression with Acorn
+
+**Symptom:** MDX file fails to compile with `Could not parse expression with acorn`.
+
+**Cause:** MDX files are compiled as JSX. Bare curly braces, markdown tables, and named HTML entities break the parser.
+
+**Fix:** In MDX files, use HTML `<table>` elements instead of markdown tables, use numeric character references (e.g., `&#8212;`) instead of named entities (e.g., `&mdash;`), and wrap any literal curly braces in backtick code spans.
+
+### Runtime Error: Story Shows Sign-In Page
+
+**Symptom:** A Full App story renders the sign-in page instead of the expected page.
+
+**Cause:** The auth guard detected missing or invalid auth state and redirected to `/signin`.
+
+**Fix:** Verify the story title starts with `Full App/` (case-sensitive). The `withFullAppProviders` decorator only activates for titles matching that prefix. If the title is correct, check that `MockAuthProvider` and the Redux store pre-loading are working by inspecting the browser console for auth-related errors.
+
+### Runtime Error: API Calls Return Empty Data
+
+**Symptom:** A page renders but shows no data.
+
+**Cause:** The MSW handler for the relevant API endpoint may be missing or the request URL may not match the handler&#8217;s route pattern.
+
+**Fix:** Open the browser developer tools and check the console. MSW logs unhandled requests when `onUnhandledRequest` is set to `'bypass'` (the current default). Look for the request URL and verify a matching handler exists in `src/vendored/arda-frontend/mocks/handlers/`. If the endpoint pattern changed in the production app, update the handler.
+
+### Sync Script: Version Conflict Warning
+
+**Symptom:** The sync script logs `Version conflicts detected` with a list of packages.
+
+**Cause:** A dependency exists in both `package.json` (ux-prototype) and the source app&#8217;s `package.json` at different versions. The dependency is not added to `vendored-deps.json` because ux-prototype already has it.
+
+**Fix:** Check whether the version difference causes runtime issues. If so, update one of the two repositories to align the version. The sync PR description includes conflict details when run in CI.
+
+## Updating VRT Baselines
+
+After making intentional visual changes to a Full App page, update the Playwright screenshot baselines:
+
+```bash
+# Build Storybook first
+npm run build-storybook
+
+# Regenerate baselines
+npm run test:vrt:update
+
+# Or use the helper script
+./tools/generate-vrt-baselines.sh
+```
+
+Review the updated screenshots in `tests/vrt/__snapshots__/` before committing. The VRT threshold is 1% pixel difference (`maxDiffPixelRatio: 0.01`).
+
+## Vendored Files: What Not to Edit
+
+Files under `src/vendored/arda-frontend/` are auto-synced and will be overwritten on the next sync. Never edit vendored files directly. Instead:
+
+- **Need a bug fix?** Fix it in `arda-frontend-app` and let the sync propagate the change.
+- **Need a shim or override?** Add it to `src/shims/` and register a Vite alias.
+- **Need to exclude a file?** Add it to the blocklist in `tools/sync-frontend-app.sh`.
+
+Files outside the vendored directory &#8212; story files, shims, decorators, and MSW handler overrides in stories &#8212; are manually maintained and safe to edit.
