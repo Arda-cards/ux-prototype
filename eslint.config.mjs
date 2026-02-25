@@ -11,7 +11,7 @@ import noHardcodedColors from './tools/eslint-rules/no-hardcoded-colors.js';
 
 export default [// ── Global ignores ──────────────────────────────────────────────────
 {
-  ignores: ['dist/**', 'node_modules/**', 'public/**', 'storybook-static/**', 'coverage/**'],
+  ignores: ['dist/**', 'node_modules/**', 'public/**', 'storybook-static/**', 'coverage/**', 'src/vendored/**', 'tests/**'],
 }, // ── Prettier (disable conflicting format rules) ───────────────────
 prettierConfig, // ── TypeScript strict rules ─────────────────────────────────────────
 {
