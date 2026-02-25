@@ -28,7 +28,7 @@ export const Default: Story = {
     const canvas = within(canvasElement);
 
     // Verify the sign-in heading is visible
-    const heading = await canvas.findByText('Sign in', {}, { timeout: 10000 });
+    const heading = await canvas.findByRole('heading', { name: /sign in/i }, { timeout: 10000 });
     await expect(heading).toBeVisible();
 
     // Verify email field is present
@@ -78,7 +78,7 @@ export const InvalidCredentials: Story = {
     const canvas = within(canvasElement);
 
     // Wait for the form to render
-    const heading = await canvas.findByText('Sign in', {}, { timeout: 10000 });
+    const heading = await canvas.findByRole('heading', { name: /sign in/i }, { timeout: 10000 });
     await expect(heading).toBeVisible();
 
     // The pre-populated auth error should be displayed

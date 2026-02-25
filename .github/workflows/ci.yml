@@ -31,6 +31,33 @@ jobs:
             "npx http-server storybook-static --port 6006 --silent" \
             "npx wait-on http://127.0.0.1:6006 && npm run test:storybook"
 
+  vrt:
+    if: ${{ ! github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build-storybook
+      - name: Run VRT tests
+        run: |
+          npx concurrently -k -s first -n "SB,VRT" \
+            "npx http-server storybook-static --port 6006 --silent" \
+            "npx wait-on http://127.0.0.1:6006 && npx playwright test --project=vrt"
+      - name: Upload VRT diff artifacts
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: vrt-diffs
+          path: tests/vrt/test-results/
+          retention-days: 14
+
   is-target-branch-protected:
     if: ${{ ! github.event.pull_request.draft }}
     runs-on: ubuntu-latest
