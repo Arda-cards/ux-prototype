@@ -12,6 +12,13 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v6
+      - name: Auto-approve sync PRs
+        if: >-
+          github.event.pull_request.user.login == 'systems-arda'
+          && github.event.pull_request.head.ref == 'app-sync'
+        run: gh pr review ${{ github.event.pull_request.number }} --approve
+        env:
+          GH_TOKEN: ${{ github.token }}
       - name: Enable auto-merge
         run: gh pr merge ${{ github.event.pull_request.number }} --auto --squash
         env:
