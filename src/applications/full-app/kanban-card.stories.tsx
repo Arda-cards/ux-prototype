@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
-import { http, HttpResponse } from 'msw';
 import KanbanCardPage from '@frontend/app/kanban/cards/[cardId]/page';
 
 const meta: Meta<typeof KanbanCardPage> = {
@@ -59,7 +58,11 @@ export const CardNotFound: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    const heading = await canvas.findByRole('heading', { name: /Card Not Found/i }, { timeout: 10000 });
+    const heading = await canvas.findByRole(
+      'heading',
+      { name: /Card Not Found/i },
+      { timeout: 10000 },
+    );
     await expect(heading).toBeVisible();
   },
 };

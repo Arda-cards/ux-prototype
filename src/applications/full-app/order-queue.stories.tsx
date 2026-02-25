@@ -30,7 +30,11 @@ export const Default: Story = {
     const canvas = within(canvasElement);
 
     // UC-ORD-006: Verify the order queue page renders with heading
-    const heading = await canvas.findByRole('heading', { name: /Order Queue/i }, { timeout: 10000 });
+    const heading = await canvas.findByRole(
+      'heading',
+      { name: /Order Queue/i },
+      { timeout: 10000 },
+    );
     await expect(heading).toBeVisible();
   },
 };

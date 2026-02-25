@@ -14,7 +14,9 @@ export class CognitoIdentityProviderClient {
     // stub
   }
   send(_command: any): Promise<any> {
-    throw new Error('[Storybook stub] CognitoIdentityProviderClient.send() called — use MockAuthProvider instead');
+    throw new Error(
+      '[Storybook stub] CognitoIdentityProviderClient.send() called — use MockAuthProvider instead',
+    );
   }
 }
 

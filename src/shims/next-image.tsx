@@ -16,7 +16,10 @@ interface StaticImageData {
 
 type ImageSrc = string | StaticImageData;
 
-interface ImageProps extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src' | 'width' | 'height'> {
+interface ImageProps extends Omit<
+  React.ImgHTMLAttributes<HTMLImageElement>,
+  'src' | 'width' | 'height'
+> {
   src: ImageSrc;
   alt: string;
   width?: number | string;

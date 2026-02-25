@@ -10,19 +10,17 @@ import React from 'react';
 import type { Decorator } from '@storybook/react-vite';
 import { Provider as ReduxProvider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import {
-  FLUSH,
-  REHYDRATE,
-  PAUSE,
-  PERSIST,
-  PURGE,
-  REGISTER,
-} from 'redux-persist';
+import { FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from 'redux-persist';
 import rootReducer from '@frontend/store/rootReducer';
 import { store as singletonStore } from '@frontend/store/store';
 import { setUser, setTokens, setIsTokenValid } from '@frontend/store/slices/authSlice';
 import { MockAuthProvider } from '@frontend/mocks/MockAuthProvider';
-import { MOCK_USER, MOCK_TENANT_ID, generateMockTokens, createMockIdTokenPayload } from '@frontend/mocks/data/mockUser';
+import {
+  MOCK_USER,
+  MOCK_TENANT_ID,
+  generateMockTokens,
+  createMockIdTokenPayload,
+} from '@frontend/mocks/data/mockUser';
 import { JWTProvider } from '@frontend/contexts/JWTContext';
 import { SidebarVisibilityProvider } from '@frontend/contexts/SidebarVisibilityContext';
 import { OrderQueueProvider } from '@frontend/contexts/OrderQueueContext';
@@ -106,12 +104,14 @@ function ensureSingletonStoreHasAuth() {
   if (!state.auth.tokens.accessToken) {
     const tokens = generateMockTokens();
     singletonStore.dispatch(setUser(MOCK_USER));
-    singletonStore.dispatch(setTokens({
-      accessToken: tokens.accessToken,
-      idToken: tokens.idToken,
-      refreshToken: tokens.refreshToken,
-      expiresAt: Date.now() + 86400000,
-    }));
+    singletonStore.dispatch(
+      setTokens({
+        accessToken: tokens.accessToken,
+        idToken: tokens.idToken,
+        refreshToken: tokens.refreshToken,
+        expiresAt: Date.now() + 86400000,
+      }),
+    );
     singletonStore.dispatch(setIsTokenValid(true));
   }
 }

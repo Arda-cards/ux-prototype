@@ -47,8 +47,7 @@ export function decodeJWTPayload(token: string): CognitoJWTPayload | null {
     }
 
     const payload = parts[1];
-    const paddedPayload =
-      payload + '=='.slice(0, (4 - (payload.length % 4)) % 4);
+    const paddedPayload = payload + '=='.slice(0, (4 - (payload.length % 4)) % 4);
     const decoded = JSON.parse(atob(paddedPayload));
 
     if (!decoded.sub || !decoded.exp || !decoded.iss) {

@@ -28,7 +28,11 @@ export const Default: Story = {
     const canvas = within(canvasElement);
 
     // Verify the Account Profile heading is visible
-    const heading = await canvas.findByRole('heading', { name: /Account Profile/i }, { timeout: 10000 });
+    const heading = await canvas.findByRole(
+      'heading',
+      { name: /Account Profile/i },
+      { timeout: 10000 },
+    );
     await expect(heading).toBeVisible();
 
     // Verify form fields are present

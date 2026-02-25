@@ -37,13 +37,22 @@ const config: StorybookConfig = {
     config.resolve.alias = [
       ...existingAliasArray,
       // Specific shims for blocklisted/server-only modules (must come BEFORE @frontend)
-      { find: '@frontend/lib/jwt', replacement: resolve(__dirname, '../src/shims/frontend-jwt.ts') },
-      { find: '@aws-sdk/client-cognito-identity-provider', replacement: resolve(__dirname, '../src/shims/aws-cognito-stub.ts') },
+      {
+        find: '@frontend/lib/jwt',
+        replacement: resolve(__dirname, '../src/shims/frontend-jwt.ts'),
+      },
+      {
+        find: '@aws-sdk/client-cognito-identity-provider',
+        replacement: resolve(__dirname, '../src/shims/aws-cognito-stub.ts'),
+      },
       // General aliases
       { find: '@', replacement: resolve(__dirname, '../src') },
       { find: '@frontend', replacement: resolve(__dirname, '../src/vendored/arda-frontend') },
       // Next.js shims
-      { find: 'next/navigation', replacement: resolve(__dirname, '../src/shims/next-navigation.tsx') },
+      {
+        find: 'next/navigation',
+        replacement: resolve(__dirname, '../src/shims/next-navigation.tsx'),
+      },
       { find: 'next/image', replacement: resolve(__dirname, '../src/shims/next-image.tsx') },
       { find: 'next/link', replacement: resolve(__dirname, '../src/shims/next-link.tsx') },
       { find: 'next/dynamic', replacement: resolve(__dirname, '../src/shims/next-dynamic.tsx') },
@@ -60,10 +69,11 @@ const config: StorybookConfig = {
       transform(code, id) {
         if (id.includes('vendored/arda-frontend/store/rootReducer')) {
           // Add ESM import at the top and replace the require() ternary
-          const transformed = `import __persistStorage from 'redux-persist/lib/storage';\n` +
+          const transformed =
+            `import __persistStorage from 'redux-persist/lib/storage';\n` +
             code.replace(
               /const persistStorage\s*=\s*typeof window[\s\S]*?createNoopStorage\(\);/,
-              'const persistStorage = __persistStorage;'
+              'const persistStorage = __persistStorage;',
             );
           return { code: transformed, map: null };
         }

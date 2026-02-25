@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, within, userEvent } from 'storybook/test';
+import { expect, within } from 'storybook/test';
 import SignInPage from '@frontend/app/signin/page';
 
 const meta: Meta<typeof SignInPage> = {
@@ -83,7 +83,11 @@ export const InvalidCredentials: Story = {
 
     // The pre-populated auth error should be displayed
     // The sign-in page maps 'Invalid email or password' → 'Password or account incorrect'
-    const errorMessage = await canvas.findByText(/password or account incorrect/i, {}, { timeout: 5000 });
+    const errorMessage = await canvas.findByText(
+      /password or account incorrect/i,
+      {},
+      { timeout: 5000 },
+    );
     await expect(errorMessage).toBeVisible();
   },
 };

@@ -1,6 +1,6 @@
 import type { Preview } from '@storybook/react-vite';
 import { withAgentation } from './addons/agentation-toggle/with-agentation';
-import { withFullAppProviders } from '../src/decorators/withFullAppProviders';
+import { withFullAppProviders } from '../src/decorators/with-full-app-providers';
 import { initialize, mswLoader } from 'msw-storybook-addon';
 import { handlers } from '@frontend/mocks/handlers';
 
