@@ -129,10 +129,10 @@ const uxAllDeps = {
   ...uxPkg.peerDependencies,
 };
 
-// Process source dependencies (both deps and devDeps)
+// Only include runtime dependencies — devDependencies (jest, stylelint,
+// license-checker, etc.) are not needed for building Storybook stories.
 const allSourceDeps = {
   ...sourcePkg.dependencies,
-  ...sourcePkg.devDependencies,
 };
 
 const vendoredDeps = {};
