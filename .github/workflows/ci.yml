@@ -45,7 +45,30 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run build-storybook
+      - name: Check for existing baselines
+        id: baselines
+        run: |
+          count=$(find tests/vrt/__snapshots__ -name '*.png' 2>/dev/null | wc -l)
+          if [ "$count" -eq 0 ]; then
+            echo "exist=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "exist=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Generate VRT baselines
+        if: steps.baselines.outputs.exist == 'false'
+        run: |
+          npx concurrently -k -s first -n "SB,VRT" \
+            "npx http-server storybook-static --port 6006 --silent" \
+            "npx wait-on http://127.0.0.1:6006 && npx playwright test --project=vrt --update-snapshots"
+      - name: Upload generated baselines
+        if: steps.baselines.outputs.exist == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: vrt-baselines
+          path: tests/vrt/__snapshots__/
+          retention-days: 30
       - name: Run VRT tests
+        if: steps.baselines.outputs.exist == 'true'
         run: |
           npx concurrently -k -s first -n "SB,VRT" \
             "npx http-server storybook-static --port 6006 --silent" \

@@ -26,5 +26,5 @@
     }
   },
   "include": ["src", ".storybook", "tests", "vite.config.ts", "vitest.config.ts", "vitest.setup.ts"],
-  "exclude": ["node_modules", "dist", "storybook-static", "coverage"]
+  "exclude": ["node_modules", "dist", "storybook-static", "coverage", "src/vendored", "src/shims", "src/decorators", "src/applications/full-app"]
 }
