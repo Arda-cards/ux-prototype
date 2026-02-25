@@ -70,6 +70,22 @@ export const kanbanQueryHandlers = [
   http.post('/api/arda/kanban/kanban-card/details/requesting', async ({ request }) => {
     console.log('[MSW] POST /api/arda/kanban/kanban-card/details/requesting');
 
+    // E2E: When __msw_error_orders flag is set, return 500 error
+    if (typeof window !== 'undefined' && (window as unknown as Record<string, unknown>).__msw_error_orders) {
+      console.log('[MSW] __msw_error_orders flag set — returning 500 error');
+      return HttpResponse.json({ ok: false, status: 500, message: 'Internal Server Error' }, { status: 500 });
+    }
+
+    // E2E: When __msw_empty_orders flag is set, return empty results
+    if (typeof window !== 'undefined' && (window as unknown as Record<string, unknown>).__msw_empty_orders) {
+      console.log('[MSW] __msw_empty_orders flag set — returning empty results');
+      return HttpResponse.json({
+        ok: true,
+        status: 200,
+        data: { thisPage: '0', nextPage: '0', previousPage: '0', results: [] },
+      });
+    }
+
     const body = await request.json() as { paginate?: { index: number; size: number } };
     const { paginate = { index: 0, size: 200 } } = body;
 
@@ -97,6 +113,22 @@ export const kanbanQueryHandlers = [
   http.post('/api/arda/kanban/kanban-card/details/requested', async ({ request }) => {
     console.log('[MSW] POST /api/arda/kanban/kanban-card/details/requested');
 
+    // E2E: When __msw_error_orders flag is set, return 500 error
+    if (typeof window !== 'undefined' && (window as unknown as Record<string, unknown>).__msw_error_orders) {
+      console.log('[MSW] __msw_error_orders flag set — returning 500 error');
+      return HttpResponse.json({ ok: false, status: 500, message: 'Internal Server Error' }, { status: 500 });
+    }
+
+    // E2E: When __msw_empty_orders flag is set, return empty results
+    if (typeof window !== 'undefined' && (window as unknown as Record<string, unknown>).__msw_empty_orders) {
+      console.log('[MSW] __msw_empty_orders flag set — returning empty results');
+      return HttpResponse.json({
+        ok: true,
+        status: 200,
+        data: { thisPage: '0', nextPage: '0', previousPage: '0', results: [] },
+      });
+    }
+
     const body = await request.json() as { paginate?: { index: number; size: number } };
     const { paginate = { index: 0, size: 200 } } = body;
 
@@ -123,6 +155,22 @@ export const kanbanQueryHandlers = [
   // Query kanban card details - in-process (IN_PROCESS cards)
   http.post('/api/arda/kanban/kanban-card/details/in-process', async ({ request }) => {
     console.log('[MSW] POST /api/arda/kanban/kanban-card/details/in-process');
+
+    // E2E: When __msw_error_receiving flag is set, return 500 error
+    if (typeof window !== 'undefined' && (window as unknown as Record<string, unknown>).__msw_error_receiving) {
+      console.log('[MSW] __msw_error_receiving flag set — returning 500 error');
+      return HttpResponse.json({ ok: false, status: 500, message: 'Internal Server Error' }, { status: 500 });
+    }
+
+    // E2E: When __msw_empty_receiving flag is set, return empty results
+    if (typeof window !== 'undefined' && (window as unknown as Record<string, unknown>).__msw_empty_receiving) {
+      console.log('[MSW] __msw_empty_receiving flag set — returning empty results');
+      return HttpResponse.json({
+        ok: true,
+        status: 200,
+        data: { thisPage: '0', nextPage: '0', previousPage: '0', results: [] },
+      });
+    }
 
     const body = await request.json() as { paginate?: { index: number; size: number } };
     const { paginate = { index: 0, size: 200 } } = body;
@@ -176,6 +224,23 @@ export const kanbanQueryHandlers = [
   // Query kanban card details - fulfilled (MOCK-012)
   http.post('/api/arda/kanban/kanban-card/details/fulfilled', async ({ request }) => {
     console.log('[MSW] POST /api/arda/kanban/kanban-card/details/fulfilled');
+
+    // E2E: When __msw_error_receiving flag is set, return 500 error
+    if (typeof window !== 'undefined' && (window as unknown as Record<string, unknown>).__msw_error_receiving) {
+      console.log('[MSW] __msw_error_receiving flag set — returning 500 error');
+      return HttpResponse.json({ ok: false, status: 500, message: 'Internal Server Error' }, { status: 500 });
+    }
+
+    // E2E: When __msw_empty_receiving flag is set, return empty results
+    if (typeof window !== 'undefined' && (window as unknown as Record<string, unknown>).__msw_empty_receiving) {
+      console.log('[MSW] __msw_empty_receiving flag set — returning empty results');
+      return HttpResponse.json({
+        ok: true,
+        status: 200,
+        data: { thisPage: '0', nextPage: '0', previousPage: '0', results: [] },
+      });
+    }
+
     const body = await request.json() as { paginate?: { index: number; size: number } };
     const { paginate = { index: 0, size: 200 } } = body;
 

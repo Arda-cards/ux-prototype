@@ -4,7 +4,7 @@
  *        ErrorOverlay, EmptyStateOverlay, NoRowsOverlay sub-components, column event handler internals
  */
 import React, { createRef } from 'react';
-import { render, act } from '@testing-library/react';
+import { render, act, fireEvent } from '@testing-library/react';
 import ArdaGrid, { ArdaGridRef } from './ArdaGrid';
 import '@testing-library/jest-dom';
 
@@ -731,5 +731,213 @@ describe('ArdaGrid - supplementary coverage (PC-2)', () => {
       'columnResized',
       expect.any(Function)
     );
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // SortMenuHeader component
+  // ──────────────────────────────────────────────────────────────────────────
+
+  describe('SortMenuHeader', () => {
+    // Extract the SortMenuHeader component from the defaultColDef after rendering ArdaGrid
+    let SortMenuHeaderComponent: React.FC<any>;
+
+    const makeSortParams = (overrides: Record<string, unknown> = {}) => ({
+      displayName: 'Test Column',
+      enableSorting: true,
+      column: {
+        getSort: jest.fn(() => null),
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn(),
+      },
+      setSort: jest.fn(),
+      ...overrides,
+    });
+
+    beforeEach(() => {
+      render(
+        <ArdaGrid rowData={minimalRowData} columnDefs={minimalColumnDefs} />
+      );
+      SortMenuHeaderComponent = _lastAgGridProps?.defaultColDef?.headerComponent;
+    });
+
+    it('renders the column display name', () => {
+      const params = makeSortParams();
+      const { getByText } = render(<SortMenuHeaderComponent {...params} />);
+      expect(getByText('Test Column')).toBeInTheDocument();
+    });
+
+    it('does not render a sort icon when no sort is active', () => {
+      const params = makeSortParams();
+      const { container } = render(<SortMenuHeaderComponent {...params} />);
+      expect(container.querySelector('.arda-sort-header-icon')).not.toBeInTheDocument();
+    });
+
+    it('renders ↑ icon when sorted ascending', () => {
+      const params = makeSortParams({
+        column: {
+          getSort: jest.fn(() => 'asc'),
+          addEventListener: jest.fn(),
+          removeEventListener: jest.fn(),
+        },
+      });
+      const { container } = render(<SortMenuHeaderComponent {...params} />);
+      expect(container.querySelector('.arda-sort-header-icon')?.textContent).toBe('↑');
+    });
+
+    it('renders ↓ icon when sorted descending', () => {
+      const params = makeSortParams({
+        column: {
+          getSort: jest.fn(() => 'desc'),
+          addEventListener: jest.fn(),
+          removeEventListener: jest.fn(),
+        },
+      });
+      const { container } = render(<SortMenuHeaderComponent {...params} />);
+      expect(container.querySelector('.arda-sort-header-icon')?.textContent).toBe('↓');
+    });
+
+    it('renders ⋮ button when enableSorting is true', () => {
+      const params = makeSortParams();
+      const { container } = render(<SortMenuHeaderComponent {...params} />);
+      expect(container.querySelector('.arda-sort-header-btn')).toBeInTheDocument();
+    });
+
+    it('does not render ⋮ button when enableSorting is false', () => {
+      const params = makeSortParams({ enableSorting: false });
+      const { container } = render(<SortMenuHeaderComponent {...params} />);
+      expect(container.querySelector('.arda-sort-header-btn')).not.toBeInTheDocument();
+    });
+
+    it('adds active class to ⋮ button when sort is active', () => {
+      const params = makeSortParams({
+        column: {
+          getSort: jest.fn(() => 'asc'),
+          addEventListener: jest.fn(),
+          removeEventListener: jest.fn(),
+        },
+      });
+      const { container } = render(<SortMenuHeaderComponent {...params} />);
+      expect(
+        container.querySelector('.arda-sort-header-btn')?.classList.contains('arda-sort-header-btn-active')
+      ).toBe(true);
+    });
+
+    it('opens dropdown on ⋮ button click', () => {
+      const params = makeSortParams();
+      const { container } = render(<SortMenuHeaderComponent {...params} />);
+      act(() => {
+        fireEvent.click(container.querySelector('.arda-sort-header-btn')!);
+      });
+      expect(document.body.querySelector('.arda-sort-menu-dropdown')).toBeInTheDocument();
+    });
+
+    it('calls setSort("asc") when Sort Ascending is clicked', () => {
+      const params = makeSortParams();
+      const { container } = render(<SortMenuHeaderComponent {...params} />);
+      act(() => {
+        fireEvent.click(container.querySelector('.arda-sort-header-btn')!);
+      });
+      const dropdown = document.body.querySelector('.arda-sort-menu-dropdown')!;
+      const ascBtn = Array.from(dropdown.querySelectorAll('button')).find(
+        (b) => b.textContent?.includes('Sort Ascending'),
+      );
+      act(() => { fireEvent.click(ascBtn!); });
+      expect(params.setSort).toHaveBeenCalledWith('asc');
+    });
+
+    it('calls setSort("desc") when Sort Descending is clicked', () => {
+      const params = makeSortParams();
+      const { container } = render(<SortMenuHeaderComponent {...params} />);
+      act(() => {
+        fireEvent.click(container.querySelector('.arda-sort-header-btn')!);
+      });
+      const dropdown = document.body.querySelector('.arda-sort-menu-dropdown')!;
+      const descBtn = Array.from(dropdown.querySelectorAll('button')).find(
+        (b) => b.textContent?.includes('Sort Descending'),
+      );
+      act(() => { fireEvent.click(descBtn!); });
+      expect(params.setSort).toHaveBeenCalledWith('desc');
+    });
+
+    it('shows Clear Sort option when a sort is active', () => {
+      const params = makeSortParams({
+        column: {
+          getSort: jest.fn(() => 'asc'),
+          addEventListener: jest.fn(),
+          removeEventListener: jest.fn(),
+        },
+      });
+      const { container } = render(<SortMenuHeaderComponent {...params} />);
+      act(() => {
+        fireEvent.click(container.querySelector('.arda-sort-header-btn')!);
+      });
+      const dropdown = document.body.querySelector('.arda-sort-menu-dropdown')!;
+      const clearBtn = Array.from(dropdown.querySelectorAll('button')).find(
+        (b) => b.textContent?.includes('Clear Sort'),
+      );
+      expect(clearBtn).toBeInTheDocument();
+    });
+
+    it('calls setSort(null) when Clear Sort is clicked', () => {
+      const params = makeSortParams({
+        column: {
+          getSort: jest.fn(() => 'desc'),
+          addEventListener: jest.fn(),
+          removeEventListener: jest.fn(),
+        },
+      });
+      const { container } = render(<SortMenuHeaderComponent {...params} />);
+      act(() => {
+        fireEvent.click(container.querySelector('.arda-sort-header-btn')!);
+      });
+      const dropdown = document.body.querySelector('.arda-sort-menu-dropdown')!;
+      const clearBtn = Array.from(dropdown.querySelectorAll('button')).find(
+        (b) => b.textContent?.includes('Clear Sort'),
+      );
+      act(() => { fireEvent.click(clearBtn!); });
+      expect(params.setSort).toHaveBeenCalledWith(null);
+    });
+
+    it('closes dropdown on outside click', () => {
+      const params = makeSortParams();
+      const { container } = render(<SortMenuHeaderComponent {...params} />);
+      act(() => {
+        fireEvent.click(container.querySelector('.arda-sort-header-btn')!);
+      });
+      expect(document.body.querySelector('.arda-sort-menu-dropdown')).toBeInTheDocument();
+      act(() => { fireEvent.mouseDown(document.body); });
+      expect(document.body.querySelector('.arda-sort-menu-dropdown')).not.toBeInTheDocument();
+    });
+
+    it('syncs sort direction from column sortChanged event', () => {
+      let syncCallback: (() => void) | null = null;
+      const mockColumn = {
+        getSort: jest.fn((): string | null => null),
+        addEventListener: jest.fn((event: string, cb: () => void) => {
+          if (event === 'sortChanged') syncCallback = cb;
+        }),
+        removeEventListener: jest.fn(),
+      };
+      const params = makeSortParams({ column: mockColumn });
+      const { container } = render(<SortMenuHeaderComponent {...params} />);
+      expect(container.querySelector('.arda-sort-header-icon')).not.toBeInTheDocument();
+
+      mockColumn.getSort.mockReturnValue('asc');
+      act(() => { syncCallback?.(); });
+      expect(container.querySelector('.arda-sort-header-icon')?.textContent).toBe('↑');
+    });
+
+    it('does not show Clear Sort when no sort is active', () => {
+      const params = makeSortParams();
+      const { container } = render(<SortMenuHeaderComponent {...params} />);
+      act(() => {
+        fireEvent.click(container.querySelector('.arda-sort-header-btn')!);
+      });
+      const dropdown = document.body.querySelector('.arda-sort-menu-dropdown')!;
+      const clearBtn = Array.from(dropdown.querySelectorAll('button')).find(
+        (b) => b.textContent?.includes('Clear Sort'),
+      );
+      expect(clearBtn).toBeUndefined();
+    });
   });
 });

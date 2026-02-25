@@ -65,19 +65,29 @@
   color: var(--base-foreground);
 }
 
-/* Hide all header buttons, menus, sort indicators, and filter buttons */
+/* Hide header menus, filter buttons, and sort order numbers.
+   .ag-header-icon hides menu buttons; .ag-sort-indicator-container
+   also carries that class, so we override it below. */
 .ag-theme-arda .ag-header-cell-menu-button,
 .ag-theme-arda .ag-header-cell-menu,
 .ag-theme-arda .ag-icon-menu,
-.ag-theme-arda .ag-sort-indicator-container,
 .ag-theme-arda .ag-header-icon,
 .ag-theme-arda .ag-sort-indicator-icon-none,
-.ag-theme-arda .ag-sort-indicator-icon-asc,
-.ag-theme-arda .ag-sort-indicator-icon-desc,
+.ag-theme-arda .ag-sort-none-icon,
+.ag-theme-arda .ag-sort-order,
 .ag-theme-arda .ag-header-cell-filter-button,
 .ag-theme-arda .ag-header-cell-filter,
 .ag-theme-arda .ag-filter-wrapper {
   display: none !important;
+}
+
+/* Sort indicator container shares .ag-header-icon — override to show it.
+   pointer-events: none ensures it never blocks header click-to-sort.
+   AG Grid internally controls which arrow (asc/desc) is visible via its own logic. */
+.ag-theme-arda .ag-sort-indicator-container {
+  /* stylelint-disable-next-line declaration-no-important */
+  display: flex !important;
+  pointer-events: none;
 }
 
 /* Hide default AG Grid checkbox column - but keep it for our custom 'select' column */
@@ -542,10 +552,10 @@
   border-bottom: none !important;
 }
 
-/* Ensure cells fill the full width of the table when columns are hidden */
+/* Let AG Grid manage the container width (= sum of column widths).
+   height/overflow/box-sizing are kept; width overrides removed so the
+   container can exceed the viewport width when scrolling horizontally. */
 .ag-theme-arda .ag-center-cols-container {
-  width: 100% !important;
-  max-width: 100% !important;
   height: min-content !important;
   overflow: visible !important;
   box-sizing: border-box !important;
@@ -766,14 +776,14 @@ body .ag-dnd-ghost * {
   color: #000000;
 }
 
-/* Add border lines to rows that extend full width */
+/* Row borders — width is intentionally not set here; AG Grid sizes rows
+   to match the container (= total column widths) so borders extend past
+   the viewport when scrolling horizontally. */
 .ag-theme-arda .ag-row {
   border-top: 1px solid #e5e5e5 !important;
   border-bottom: 1px solid #e5e5e5 !important;
   margin: 0 !important;
   padding: 0 !important;
-  width: 100% !important;
-  min-width: 100% !important;
   height: var(--ag-row-height) !important;
   line-height: var(--ag-row-height) !important;
 }
@@ -861,12 +871,6 @@ body .ag-dnd-ghost * {
   box-shadow: none !important;
 }
 
-/* Ensure rows extend to full width even when columns are hidden */
-.ag-theme-arda .ag-center-cols-container {
-  width: 100% !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-}
 
 /* Make sure selected row background covers all cells */
 .ag-theme-arda .ag-row-selected .ag-cell {
@@ -878,10 +882,10 @@ body .ag-dnd-ghost * {
   background-color: var(--ag-row-hover-color) !important;
 }
 
-/* Ensure the row container extends to full width but doesn't expand unnecessarily */
+/* Viewport: min-width keeps it filling the full page when columns are narrow;
+   overflow-x:auto enables horizontal scroll when columns exceed the viewport. */
 .ag-theme-arda .ag-center-cols-viewport {
-  width: 100% !important;
-  max-width: 100% !important;
+  min-width: 100%;
   overflow-x: auto !important;
 }
 
@@ -1293,4 +1297,142 @@ body .ag-dnd-ghost * {
 .ag-theme-arda .ag-cell.ag-cell-popup-editing {
   outline: none !important;
   box-shadow: none !important;
+}
+
+/* ================================
+   Sort menu header component
+   ================================ */
+
+/* Flex wrapper — fills the full header cell */
+.ag-theme-arda .ag-header-cell .arda-sort-header {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  gap: 4px;
+  overflow: hidden;
+}
+
+/* Column name text — truncates if column is narrow */
+.ag-theme-arda .ag-header-cell .arda-sort-header-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--base-foreground);
+
+  /* Let drag events pass through to the header cell */
+  pointer-events: none;
+}
+
+/* ↑ / ↓ indicator shown when column is sorted */
+.ag-theme-arda .ag-header-cell .arda-sort-header-icon {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--ag-input-focus-border-color);
+  pointer-events: none;
+}
+
+/* Center header label for specific columns (e.g. quickActions) */
+.ag-theme-arda .ag-header-cell[col-id='quickActions'] .arda-sort-header {
+  justify-content: center;
+}
+
+/* ⋮ button — hidden until hover, always visible when sorted */
+.ag-theme-arda .ag-header-cell .arda-sort-header-btn {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+
+  /* Override inherited grab cursor */
+  cursor: pointer;
+  color: #737373;
+  font-size: 16px;
+  line-height: 1;
+  opacity: 0;
+  transition:
+    opacity 0.15s,
+    background-color 0.15s;
+
+  /* Must be interactive even when pointer-events are suppressed on siblings */
+  pointer-events: auto !important;
+}
+
+/* Show on header cell hover */
+.ag-theme-arda .ag-header-cell:hover .arda-sort-header-btn {
+  opacity: 1;
+}
+
+/* Always visible when column is sorted (.arda-sort-header-btn-active added by component) */
+.ag-theme-arda .ag-header-cell .arda-sort-header-btn-active {
+  opacity: 1;
+}
+
+.ag-theme-arda .ag-header-cell .arda-sort-header-btn:hover {
+  background-color: #e5e5e5;
+  color: #0a0a0a;
+  opacity: 1;
+}
+
+/* Sort dropdown — rendered in document.body via portal, positioned fixed */
+.arda-sort-menu-dropdown {
+  position: fixed;
+  z-index: 9999;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 10%),
+    0 2px 4px -2px rgb(0 0 0 / 10%);
+  min-width: 160px;
+  padding: 4px;
+  overflow: hidden;
+}
+
+.arda-sort-menu-dropdown button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: var(--ag-font-family, 'Geist', sans-serif);
+  color: #0a0a0a;
+  text-align: left;
+}
+
+.arda-sort-menu-dropdown button:hover {
+  background-color: #f5f5f5;
+}
+
+/* Suppress inner input/editor border during inline editing.
+   The cell-level outline on .ag-cell-inline-editing is the sole edit indicator.
+   Without this, cells with display:flex cellStyle produce a double orange ring
+   (outer: cell outline, inner: AG Grid input focus border). */
+.ag-theme-arda .ag-cell-inline-editing .ag-text-field-input,
+.ag-theme-arda .ag-cell-inline-editing .ag-input-field-input,
+.ag-theme-arda .ag-cell-inline-editing .ag-cell-editor input {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Restore horizontal padding on the inline editing input so the value
+   does not render flush against the cell border. */
+.ag-theme-arda .ag-cell-inline-editing .ag-cell-editor input {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
 }

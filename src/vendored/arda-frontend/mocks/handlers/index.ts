@@ -9,12 +9,12 @@ import { emailHandlers } from './email';
 
 // Combine all handlers
 export const handlers = [
+  ...lookupHandlers,    // Before itemHandlers — specific /items/lookup-* paths must match before /items/:entityId
   ...itemHandlers,
   ...kanbanHandlers,
   ...authHandlers,
   ...userHandlers,
   ...tenantHandlers,
-  ...lookupHandlers,
   ...emailHandlers,
 ];
 

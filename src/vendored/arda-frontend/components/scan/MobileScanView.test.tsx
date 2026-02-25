@@ -1752,7 +1752,7 @@ describe('MobileScanView', () => {
 
       // Find the card toggle button
       const cardButton = screen.getAllByRole('button').find(
-        (btn) => btn.disabled === false && btn.querySelector('svg'),
+        (btn) => (btn as HTMLButtonElement).disabled === false && btn.querySelector('svg'),
       );
       expect(cardButton).toBeTruthy();
     });
@@ -2357,7 +2357,7 @@ describe('MobileScanView', () => {
 
       // Find the card toggle button (CreditCard icon button)
       const allBtns = screen.getAllByRole('button');
-      const cardToggleBtn = allBtns.find((b) => !b.disabled && b.querySelector('svg'));
+      const cardToggleBtn = allBtns.find((b) => !(b as HTMLButtonElement).disabled && b.querySelector('svg'));
 
       if (cardToggleBtn) {
         await act(async () => {

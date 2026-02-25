@@ -11,6 +11,22 @@ export const itemHandlers = [
   http.post('/api/arda/items/query', async ({ request }) => {
     console.log('[MSW] POST /api/arda/items/query');
 
+    // E2E: When __msw_empty_items flag is set on window, return empty results
+    // This supports the dedicated-mock strategy for empty state testing
+    if (typeof window !== 'undefined' && (window as unknown as Record<string, unknown>).__msw_empty_items) {
+      console.log('[MSW] __msw_empty_items flag set — returning empty results');
+      return HttpResponse.json({
+        ok: true,
+        status: 200,
+        data: {
+          thisPage: '0',
+          nextPage: '0',
+          previousPage: '0',
+          results: [],
+        },
+      });
+    }
+
     const body = await request.json() as { paginate?: { index: number; size: number } };
     const { paginate = { index: 0, size: 20 } } = body;
 
