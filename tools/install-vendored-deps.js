@@ -52,7 +52,7 @@ if (toInstall.length === 0) {
 }
 
 console.log(`Installing ${toInstall.length} vendored dependencies...`);
-const installCmd = `npm install --no-save ${toInstall.join(' ')}`;
+const installCmd = `npm install --no-save --legacy-peer-deps ${toInstall.join(' ')}`;
 console.log(`  ${installCmd}`);
 
 try {
