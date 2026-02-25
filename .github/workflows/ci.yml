@@ -107,21 +107,48 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    outputs:
+      changelog-modified: ${{ steps.changelog-check.outputs.modified }}
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Check if CHANGELOG.md was modified
+        id: changelog-check
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          # For push events, compare against the previous commit.
+          # For PRs, compare against the PR's base branch.
+          if [ "$EVENT_NAME" = "push" ]; then
+            DIFF_RANGE="${BEFORE_SHA}..HEAD"
+          else
+            DIFF_RANGE="origin/${BASE_REF}...HEAD"
+          fi
+          if git diff --name-only "$DIFF_RANGE" | grep -q '^CHANGELOG.md$'; then
+            echo "modified=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "modified=false" >> "$GITHUB_OUTPUT"
+            echo "CHANGELOG.md not modified — skipping release validation"
+          fi
       - name: 'Extract tag from the changelog'
+        if: steps.changelog-check.outputs.modified == 'true'
         uses: denisa/clq-action@v1
         id: clq-extract
         with:
           changeMap: .github/clq/changemap.json
           mode: release
-      - uses: denisa/semantic-tag-helper@v1
+      - name: Validate tag
+        if: steps.changelog-check.outputs.modified == 'true'
+        uses: denisa/semantic-tag-helper@v1
         with:
           mode: test
           tag: ${{ steps.clq-extract.outputs.tag }}
 
   tag:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && needs.validate-release.outputs.changelog-modified == 'true'
     needs: [validate-release]
     runs-on: ubuntu-latest
     permissions:

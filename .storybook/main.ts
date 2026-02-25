@@ -7,6 +7,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const config: StorybookConfig = {
+  typescript: {
+    // Use react-docgen for prop extraction, but patch the Vite plugin below
+    // to skip vendored files (they crash react-docgen's babel traverse).
+    reactDocgen: 'react-docgen',
+  },
   stories: [
     '../src/docs/**/*.mdx',
     '../src/docs/**/*.stories.@(ts|tsx)',
@@ -100,6 +105,26 @@ const config: StorybookConfig = {
       // Catch-all for any remaining process.env access
       'process.env': '{}',
     };
+
+    // Patch the react-docgen Vite plugin to skip vendored files.
+    // Vendored code from arda-frontend-app contains complex TypeScript that
+    // crashes react-docgen's babel traverse. These are full page components
+    // that don't need prop extraction.
+    const plugins = (config.plugins || []).flat();
+    for (const plugin of plugins) {
+      if (plugin && 'name' in plugin && plugin.name === 'storybook:react-docgen-plugin') {
+        const original = (plugin as { transform: Function }).transform;
+        (plugin as { transform: Function }).transform = function (
+          this: unknown,
+          code: string,
+          id: string,
+          ...args: unknown[]
+        ) {
+          if (id.includes('/vendored/') || id.includes('/shims/')) return null;
+          return original.call(this, code, id, ...args);
+        };
+      }
+    }
 
     config.css = config.css || {};
     config.css.postcss = {
