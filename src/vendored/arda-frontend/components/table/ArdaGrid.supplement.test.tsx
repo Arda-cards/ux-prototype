@@ -56,6 +56,7 @@ beforeEach(() => {
     getEditingCells: jest.fn(() => []),
     forEachNodeAfterFilterAndSort: jest.fn(),
     getFilterModel: jest.fn(() => ({})),
+    autoSizeAllColumns: jest.fn(),
   };
 });
 
@@ -267,6 +268,8 @@ describe('ArdaGrid - supplementary coverage (PC-2)', () => {
         (c: any[]) => c[0] === 'columnVisible'
       );
       expect(visibleCall).toBeTruthy();
+      // Flush onGridReady timers (autoSize) before triggering column event
+      act(() => { jest.runAllTimers(); });
       act(() => { visibleCall[1](); });
       act(() => { jest.runAllTimers(); });
 
@@ -289,6 +292,8 @@ describe('ArdaGrid - supplementary coverage (PC-2)', () => {
         (c: any[]) => c[0] === 'columnMoved'
       );
       expect(movedCall).toBeTruthy();
+      // Flush onGridReady timers (autoSize) before triggering column events
+      act(() => { jest.runAllTimers(); });
       act(() => { movedCall[1](); });
 
       // Then trigger columnResized right after (should be skipped due to justMovedColumn)
@@ -660,6 +665,8 @@ describe('ArdaGrid - supplementary coverage (PC-2)', () => {
         (c: any[]) => c[0] === 'columnVisible'
       );
       expect(visibleCall).toBeTruthy();
+      // Flush onGridReady timers (autoSize) before triggering column event
+      act(() => { jest.runAllTimers(); });
       act(() => { visibleCall[1](); });
       act(() => { jest.runAllTimers(); });
       expect(onColumnStateChange).toHaveBeenCalled();
@@ -681,6 +688,8 @@ describe('ArdaGrid - supplementary coverage (PC-2)', () => {
         (c: any[]) => c[0] === 'columnMoved'
       );
       expect(movedCall).toBeTruthy();
+      // Flush onGridReady timers (autoSize) before triggering column event
+      act(() => { jest.runAllTimers(); });
       act(() => { movedCall[1](); });
       act(() => { jest.runAllTimers(); });
       expect(onColumnStateChange).toHaveBeenCalled();

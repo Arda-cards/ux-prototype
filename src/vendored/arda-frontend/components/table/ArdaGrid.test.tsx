@@ -50,6 +50,7 @@ beforeEach(() => {
     getEditingCells: jest.fn(() => []),
     forEachNodeAfterFilterAndSort: jest.fn(),
     getFilterModel: jest.fn(() => ({})),
+    autoSizeAllColumns: jest.fn(),
   };
 });
 
@@ -925,6 +926,8 @@ describe('ArdaGrid', () => {
         (c: any[]) => c[0] === 'columnVisible'
       );
       if (!visibleCall) return;
+      // Flush onGridReady timers (autoSize) before triggering column event
+      act(() => { jest.runAllTimers(); });
       act(() => { visibleCall[1](); });
       act(() => { jest.runAllTimers(); });
       expect(localStorage.getItem('visible-key')).not.toBeNull();
@@ -943,6 +946,8 @@ describe('ArdaGrid', () => {
         (c: any[]) => c[0] === 'columnMoved'
       );
       if (!movedCall) return;
+      // Flush onGridReady timers (autoSize) before triggering column event
+      act(() => { jest.runAllTimers(); });
       act(() => { movedCall[1](); });
       act(() => { jest.runAllTimers(); });
       expect(localStorage.getItem('moved-key')).not.toBeNull();
