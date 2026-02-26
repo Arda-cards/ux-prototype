@@ -20,6 +20,12 @@
   --ag-cell-horizontal-padding: 16px;
   --ag-header-cell-horizontal-padding: 16px;
 
+  /* Column header separator */
+  --ag-header-column-separator-display: block;
+  --ag-header-column-separator-height: 50%;
+  --ag-header-column-separator-width: 1px;
+  --ag-header-column-separator-color: #e5e5e5;
+
   /* Responsive grid sizing */
 
   border: 1px solid #e5e5e5;
@@ -44,6 +50,24 @@
   --ag-input-border-color: rgb(255 255 255 / 10%);
   --ag-input-focus-border-color: var(--base-primary);
   --ag-checkbox-checked-color: var(--base-primary);
+  --ag-header-column-separator-color: rgb(255 255 255 / 15%);
+}
+
+/* Column separator line — visible divider on the right edge of each header cell */
+.ag-theme-arda .ag-header-cell-resize::after {
+  content: '' !important;
+  display: block !important;
+  position: absolute !important;
+  top: 25% !important;
+  height: 50% !important;
+  right: 0 !important;
+  width: 1px !important;
+  background-color: #e5e5e5 !important;
+  z-index: 1 !important;
+}
+
+.dark .ag-theme-arda .ag-header-cell-resize::after {
+  background-color: rgb(255 255 255 / 15%) !important;
 }
 
 /* Custom styling for Arda brand colors - clean white header with no borders */

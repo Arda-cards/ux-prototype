@@ -475,6 +475,15 @@ const ArdaGrid = forwardRef<ArdaGridRef, ArdaGridProps>(
             } catch (error) {
               console.warn('Failed to load persisted grid state:', error);
             }
+          } else {
+            // No saved state — auto-size columns to fit content (including header text)
+            setTimeout(() => {
+              isApplyingPersistedStateRef.current = true;
+              params.api.autoSizeAllColumns(false);
+              setTimeout(() => {
+                isApplyingPersistedStateRef.current = false;
+              }, 500);
+            }, 200);
           }
         }
 
