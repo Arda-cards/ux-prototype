@@ -50,6 +50,10 @@ export default function SignUp() {
 
     const isValid = validate(
       {
+        familyName: (value) =>
+          !value
+            ? 'Last name is required'
+            : null,
         email: (value) =>
           !value
             ? 'Email is required'
@@ -97,17 +101,6 @@ export default function SignUp() {
           { Name: 'email', Value: email },
         ];
         
-        // Add name attributes to UserAttributes so they are saved in Cognito
-        if (givenName.trim()) {
-          userAttributes.push({ Name: 'given_name', Value: givenName.trim() });
-        }
-        if (middleName.trim()) {
-          userAttributes.push({ Name: 'middle_name', Value: middleName.trim() });
-        }
-        if (familyName.trim()) {
-          userAttributes.push({ Name: 'family_name', Value: familyName.trim() });
-        }
-
         const command = new SignUpCommand({
           ClientId: process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID,
           Username: email,
@@ -304,7 +297,7 @@ export default function SignUp() {
                   color: 'var(--base-foreground, #0A0A0A)',
                 }}
               >
-                Last name
+                Last name <RequiredAsterisk />
               </Label>
               <Input
                 id='familyName'
