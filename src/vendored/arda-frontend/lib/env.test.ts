@@ -77,8 +77,6 @@ describe('env.ts', () => {
     it('populates env with all required fields when env vars are set', () => {
       process.env.BASE_URL = 'http://example.com';
       process.env.ARDA_API_KEY = 'test-api-key';
-      process.env.TENANT_ID = 'tenant-123';
-      process.env.TENANT_ID_2 = 'tenant-456';
       process.env.HUBSPOT_API_BASE = 'https://custom.hubapi.com';
       process.env.HUBSPOT_PRIVATE_ACCESS_TOKEN = 'token-abc';
 
@@ -87,8 +85,6 @@ describe('env.ts', () => {
         const { env } = require('./env') as typeof import('./env');
         expect(env.BASE_URL).toBe('http://example.com');
         expect(env.ARDA_API_KEY).toBe('test-api-key');
-        expect(env.TENANT_ID).toBe('tenant-123');
-        expect(env.TENANT_ID_2).toBe('tenant-456');
         expect(env.HUBSPOT_API_BASE).toBe('https://custom.hubapi.com');
         expect(env.HUBSPOT_PRIVATE_ACCESS_TOKEN).toBe('token-abc');
       });
@@ -97,8 +93,6 @@ describe('env.ts', () => {
     it('env object falls back to mock-safe defaults when requiredEnv throws (missing vars)', () => {
       delete process.env.BASE_URL;
       delete process.env.ARDA_API_KEY;
-      delete process.env.TENANT_ID;
-      delete process.env.TENANT_ID_2;
 
       jest.isolateModules(() => {
         // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -106,16 +100,12 @@ describe('env.ts', () => {
         // The try/catch in env.ts catches the throw and falls back to mock-safe values
         expect(env.BASE_URL).toBe('http://localhost:3000');
         expect(env.ARDA_API_KEY).toBe('mock-api-key');
-        expect(env.TENANT_ID).toBe('mock-tenant-001');
-        expect(env.TENANT_ID_2).toBe('mock-tenant-002');
       });
     });
 
     it('env.HUBSPOT_API_BASE defaults to "https://api.hubapi.com" when not set', () => {
       process.env.BASE_URL = 'http://example.com';
       process.env.ARDA_API_KEY = 'test-api-key';
-      process.env.TENANT_ID = 'tenant-123';
-      process.env.TENANT_ID_2 = 'tenant-456';
       delete process.env.HUBSPOT_API_BASE;
       delete process.env.HUBSPOT_PRIVATE_ACCESS_TOKEN;
 
