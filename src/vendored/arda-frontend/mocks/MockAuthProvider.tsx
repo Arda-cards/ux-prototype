@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
+import React, { useContext, useState, useEffect, useLayoutEffect, useCallback, useMemo, ReactNode } from 'react';
 import { User } from '@frontend/types';
 import { AuthContext } from '@frontend/contexts/AuthContext';
 import { MOCK_USER, generateMockTokens } from './data/mockUser';
+import { useAppDispatch } from '@frontend/store/hooks';
+import { setLoading as setReduxLoading, setUser as setReduxUser, setTokens as setReduxTokens } from '@frontend/store/slices/authSlice';
 
 interface AuthState {
   user: User | null;
@@ -52,6 +54,7 @@ interface MockAuthProviderProps {
  * Implements the same interface as the real AuthProvider
  */
 export function MockAuthProvider({ children, autoLogin = true }: MockAuthProviderProps) {
+  const dispatch = useAppDispatch();
   const [state, setState] = useState<AuthState>({
     user: null,
     loading: true,
@@ -59,9 +62,38 @@ export function MockAuthProvider({ children, autoLogin = true }: MockAuthProvide
     isLoggingOut: false,
   });
 
+  // Synchronously tell Redux that auth is loading before the first paint.
+  // This prevents useAuthValidation (which reads Redux, not AuthContext) from
+  // seeing { loading: false, user: null } and redirecting to /signin before
+  // the auto-login useEffect below has a chance to run.
+  useLayoutEffect(() => {
+    dispatch(setReduxLoading(true));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Initialize mock authentication
   useEffect(() => {
     console.log('[MOCK AUTH] Initializing mock authentication');
+
+    // Helper: finalize auth state in both AuthContext and Redux
+    const finalize = (user: User | null, tokens?: { accessToken: string; idToken: string; refreshToken: string }) => {
+      setState({
+        user,
+        loading: false,
+        error: null,
+        isLoggingOut: false,
+      });
+      // Mirror to Redux so useAuthValidation sees the correct state
+      dispatch(setReduxUser(user));
+      if (tokens) {
+        dispatch(setReduxTokens({
+          accessToken: tokens.accessToken,
+          idToken: tokens.idToken,
+          refreshToken: tokens.refreshToken,
+          expiresAt: Date.now() + 86400000,
+        }));
+      }
+      dispatch(setReduxLoading(false));
+    };
 
     // On the signin page, skip auto-login so users (and tests) can interact
     // with the login form. signIn() will set tokens when the form is submitted.
@@ -77,13 +109,13 @@ export function MockAuthProvider({ children, autoLogin = true }: MockAuthProvide
 
     if (isSigninPage) {
       console.log('[MOCK AUTH] Skipping auto-login (signin page)');
-      setState((prev) => ({ ...prev, loading: false }));
+      finalize(null);
       return;
     }
 
     if (wasSignedOut) {
       console.log('[MOCK AUTH] Skipping auto-login (was signed out)');
-      setState((prev) => ({ ...prev, loading: false }));
+      finalize(null);
       return;
     }
 
@@ -92,11 +124,11 @@ export function MockAuthProvider({ children, autoLogin = true }: MockAuthProvide
     if (existingToken) {
       console.log('[MOCK AUTH] Restoring session from existing localStorage tokens');
       const email = localStorage.getItem('userEmail') || MOCK_USER.email;
-      setState({
-        user: { ...MOCK_USER, email, name: email.split('@')[0] || MOCK_USER.name },
-        loading: false,
-        error: null,
-        isLoggingOut: false,
+      const user = { ...MOCK_USER, email, name: email.split('@')[0] || MOCK_USER.name };
+      finalize(user, {
+        accessToken: localStorage.getItem('accessToken') || '',
+        idToken: existingToken,
+        refreshToken: localStorage.getItem('refreshToken') || '',
       });
       return;
     }
@@ -109,16 +141,17 @@ export function MockAuthProvider({ children, autoLogin = true }: MockAuthProvide
       localStorage.setItem('idToken', tokens.idToken);
       localStorage.setItem('refreshToken', tokens.refreshToken);
       localStorage.setItem('userEmail', MOCK_USER.email);
-      setState({ user: MOCK_USER, loading: false, error: null, isLoggingOut: false });
+      finalize(MOCK_USER, tokens);
     } else {
-      setState((prev) => ({ ...prev, loading: false }));
+      finalize(null);
     }
-  }, [autoLogin]);
+  }, [autoLogin, dispatch]);
 
   // Mock sign in - always succeeds with mock user
   const signIn = useCallback(async ({ email, password: _password }: SignInCredentials): Promise<{ requiresNewPassword?: boolean; session?: string } | void> => {
     console.log(`[MOCK AUTH] Sign in attempt for: ${email}`);
     setState((prev) => ({ ...prev, loading: true, error: null }));
+    dispatch(setReduxLoading(true));
 
     // Short delay to simulate network (kept minimal for test speed)
     await new Promise((resolve) => setTimeout(resolve, 100));
@@ -142,7 +175,15 @@ export function MockAuthProvider({ children, autoLogin = true }: MockAuthProvide
 
     console.log('[MOCK AUTH] Sign in successful');
     setState({ user, loading: false, error: null, isLoggingOut: false });
-  }, []);
+    dispatch(setReduxUser(user));
+    dispatch(setReduxTokens({
+      accessToken: tokens.accessToken,
+      idToken: tokens.idToken,
+      refreshToken: tokens.refreshToken,
+      expiresAt: Date.now() + 86400000,
+    }));
+    dispatch(setReduxLoading(false));
+  }, [dispatch]);
 
   // Mock sign out
   const signOut = useCallback(async () => {
@@ -164,7 +205,10 @@ export function MockAuthProvider({ children, autoLogin = true }: MockAuthProvide
 
     console.log('[MOCK AUTH] Sign out complete');
     setState({ user: null, loading: false, error: null, isLoggingOut: false });
-  }, []);
+    dispatch(setReduxUser(null));
+    dispatch(setReduxTokens({ accessToken: null, idToken: null, refreshToken: null, expiresAt: null }));
+    dispatch(setReduxLoading(false));
+  }, [dispatch]);
 
   // Mock check auth - syncs React state with localStorage token presence
   const checkAuth = useCallback(async () => {
