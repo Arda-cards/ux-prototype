@@ -45,6 +45,7 @@ import { isAuthenticationError } from '@frontend/lib/utils';
 import { useAuth } from '@frontend/store/hooks/useAuth';
 import { useAuthErrorHandler } from '@frontend/hooks/useAuthErrorHandler';
 import { registerBlocker } from '@frontend/lib/unsavedNavigation';
+import { extractKanbanRecords } from '@frontend/lib/kanbanResponseParser';
 import { getAdjacentItem } from '@frontend/lib/itemListNavigation';
 
 const allTabs = [
@@ -392,28 +393,9 @@ export default function ItemsPage() {
             data.data?.results,
           );
 
-          let results = null;
-          if (data.ok && data.data?.results) {
-            results = data.data.results;
-            devLog(
-              '[getKanbanCardsForItem] Found results in data.data.results:',
-              results.length,
-            );
-          } else if (data.ok && data.results) {
-            results = data.results;
-            devLog(
-              '[getKanbanCardsForItem] Found results in data.results:',
-              results.length,
-            );
-          } else if (data.ok && Array.isArray(data.data)) {
-            results = data.data;
-            devLog(
-              '[getKanbanCardsForItem] Found results as data.data array:',
-              results.length,
-            );
-          }
+          const results = data.ok ? extractKanbanRecords(data) : [];
 
-          if (results && Array.isArray(results) && results.length > 0) {
+          if (results.length > 0) {
             devLog(
               '[getKanbanCardsForItem] Returning',
               results.length,
@@ -1193,51 +1175,10 @@ export default function ItemsPage() {
 
           if (response.ok) {
             const data = await response.json();
-            devLog(
-              `Cards response for item ${item.entityId}:`,
-              data.ok,
-              data.data?.records?.length || 0,
-            );
-            if (data.ok && data.data?.records) {
-              // Map the API response to KanbanCardResult format
-              const cards = data.data.records.map(
-                (record: {
-                  payload: {
-                    eId: string;
-                    serialNumber: string;
-                    item: {
-                      eId: string;
-                      name: string;
-                    };
-                    cardQuantity: {
-                      amount: number;
-                      unit: string;
-                    };
-                    status: string;
-                  };
-                  rId: string;
-                }) => ({
-                  payload: {
-                    eId: record.payload.eId,
-                    serialNumber: record.payload.serialNumber,
-                    item: {
-                      eId: record.payload.item.eId,
-                      name: record.payload.item.name,
-                    },
-                    cardQuantity: record.payload.cardQuantity,
-                    status: record.payload.status,
-                  },
-                  rId: record.rId,
-                }),
-              );
-              devLog(`Found ${cards.length} card(s) for item ${item.entityId}`);
-              cardsMap[item.entityId] = cards;
+            const rawRecords = extractKanbanRecords(data);
+            if (data.ok && rawRecords.length > 0) {
+              cardsMap[item.entityId] = rawRecords;
             } else {
-              devLog(
-                `No cards found for item ${item.entityId} (ok: ${
-                  data.ok
-                }, records: ${data.data?.records?.length || 0})`,
-              );
               cardsMap[item.entityId] = [];
             }
           } else {
@@ -1313,15 +1254,7 @@ export default function ItemsPage() {
       for (const item of itemsToDeleteList) {
         const cardsToDelete = cardsToDeleteMap[item.entityId] || [];
 
-        devLog(
-          `Item ${item.entityId} has ${cardsToDelete.length} card(s) to delete`,
-        );
-
         if (cardsToDelete.length > 0) {
-          devLog(
-            `Deleting ${cardsToDelete.length} card(s) for item ${item.entityId}`,
-          );
-
           const cardDeletePromises = cardsToDelete.map(async (card) => {
             try {
               const response = await fetch(
@@ -1336,21 +1269,7 @@ export default function ItemsPage() {
               );
 
               if (response.ok) {
-                const data = await response.json();
-                // Consider it successful if response status is 200
-                // The API route returns { ok: upstream.ok, status: upstream.status, data }
-                // So if response.ok is true, the deletion was successful
-                const success = response.status === 200;
-                devLog(
-                  `Card ${card.payload.eId} deletion: status=${response.status}, data.ok=${data.ok}, success=${success}`,
-                );
-                if (!success) {
-                  devWarn(
-                    `Unexpected response for card ${card.payload.eId}:`,
-                    data,
-                  );
-                }
-                return { success, cardId: card.payload.eId };
+                return { success: true, cardId: card.payload.eId };
               }
               const errorText = await response.text();
               console.error(
@@ -1375,29 +1294,18 @@ export default function ItemsPage() {
           totalCardsDeleted += successfulCards.length;
           totalCardsFailed += failedCards.length;
 
-          if (failedCards.length > 0) {
-            devWarn(
-              `Failed to delete ${failedCards.length} of ${cardsToDelete.length} cards for item ${item.entityId}`,
-            );
-            devWarn(
-              'Failed card IDs:',
-              failedCards.map((f) => f.cardId),
-            );
-          }
-
-          if (successfulCards.length > 0) {
-            devLog(
-              `Successfully deleted ${successfulCards.length} card(s) for item ${item.entityId}`,
-            );
-          }
-        } else {
-          devLog(`No cards found for item ${item.entityId}`);
         }
       }
 
-      devLog(
-        `Total cards deleted: ${totalCardsDeleted}, failed: ${totalCardsFailed}`,
-      );
+      // If any cards failed to delete, abort item deletion
+      if (totalCardsFailed > 0) {
+        toast.error(
+          `Failed to delete ${totalCardsFailed} card${
+            totalCardsFailed > 1 ? 's' : ''
+          }. Item${itemsToDeleteList.length > 1 ? 's were' : ' was'} not deleted.`,
+        );
+        return;
+      }
 
       // Then, delete all items
       const deletePromises = itemsToDeleteList.map(async (item) => {
@@ -1454,14 +1362,6 @@ export default function ItemsPage() {
       }
 
       // Show warning if some cards failed to delete
-      if (totalCardsFailed > 0) {
-        toast.warning(
-          `Warning: ${totalCardsFailed} card${
-            totalCardsFailed > 1 ? 's' : ''
-          } failed to delete. The items were still deleted.`,
-        );
-      }
-
       // Refresh the items list (stay on current page)
       // Calculate index: (currentPage - 1) * pageSize
       const currentPageIndex =
@@ -1610,8 +1510,7 @@ export default function ItemsPage() {
 
           if (response.ok) {
             const data = await response.json();
-            // Handle both possible response structures: data.data.records or data.data.results
-            const records = data.data?.records || data.data?.results || [];
+            const records = extractKanbanRecords(data);
 
             if (data.ok && records.length > 0) {
               // Group cards by template (cardSize from itemDetails)
@@ -2008,8 +1907,7 @@ export default function ItemsPage() {
 
           if (response.ok) {
             const data = await response.json();
-            // Handle both possible response structures: data.data.records or data.data.results
-            const records = data.data?.records || data.data?.results || [];
+            const records = extractKanbanRecords(data);
 
             if (data.ok && records.length > 0) {
               // Store original card list for status
