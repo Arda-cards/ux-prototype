@@ -14,3 +14,5 @@ export const selectAuthLoading = (state: RootState) => state.auth.loading;
 export const selectAuthError = (state: RootState) => state.auth.error;
 export const selectIsLoggingOut = (state: RootState) => state.auth.isLoggingOut;
 export const selectIsRefreshing = (state: RootState) => state.auth.isRefreshing;
+export const selectSessionExpired = (state: RootState) => state.auth.sessionExpired;
+export const selectRefreshFailedAt = (state: RootState) => state.auth.refreshFailedAt;

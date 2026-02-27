@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { checkAuthThunk } from '../thunks/authThunks';
 import { setTokens } from '../slices/authSlice';
-import { selectTokens } from '../selectors/authSelectors';
+import { selectTokens, selectSessionExpired } from '../selectors/authSelectors';
 
 /**
  * AuthInit component
@@ -16,6 +16,7 @@ import { selectTokens } from '../selectors/authSelectors';
 export function AuthInit() {
   const dispatch = useAppDispatch();
   const tokens = useAppSelector(selectTokens);
+  const sessionExpired = useAppSelector(selectSessionExpired);
 
   useEffect(() => {
     // On mount, check if we have tokens in localStorage and sync to Redux
@@ -66,8 +67,23 @@ export function AuthInit() {
       localStorage.removeItem('idToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('tokenExpiresAt');
+      localStorage.removeItem('userEmail');
     }
   }, [tokens]);
+
+  // When the session is permanently expired (e.g. refresh token rejected by Cognito),
+  // Redux has already cleared tokens and user. Clear remaining localStorage remnants
+  // so AuthInit doesn't re-hydrate stale tokens on the next render cycle.
+  // AuthGuard will then detect user === null and redirect to /signin.
+  useEffect(() => {
+    if (sessionExpired && typeof window !== 'undefined') {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('idToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('tokenExpiresAt');
+      localStorage.removeItem('userEmail');
+    }
+  }, [sessionExpired]);
 
   return null; // This component doesn't render anything
 }
