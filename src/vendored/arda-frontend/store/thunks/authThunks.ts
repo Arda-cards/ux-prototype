@@ -322,7 +322,7 @@ export const signOutThunk = createAsyncThunk<
 export const refreshTokensThunk = createAsyncThunk<
   { accessToken: string; idToken: string; refreshToken: string; expiresAt: number },
   void,
-  { state: RootState }
+  { state: RootState; rejectValue: { message: string; isPermanent: boolean } }
 >(
   'auth/refreshTokens',
   async (_, { getState, rejectWithValue }) => {
@@ -347,7 +347,7 @@ export const refreshTokensThunk = createAsyncThunk<
 
       if (!refreshToken) {
         debugLog('[TOKEN_REFRESH] No refresh token available');
-        return rejectWithValue('No refresh token available');
+        return rejectWithValue({ message: 'No refresh token available', isPermanent: true });
       }
 
       debugLog('[TOKEN_REFRESH] Attempting to refresh tokens');
@@ -404,7 +404,10 @@ export const refreshTokensThunk = createAsyncThunk<
         debugError('[TOKEN_REFRESH] Permanent error detected:', errorName);
       }
 
-      return rejectWithValue(error instanceof Error ? error.message : 'Token refresh failed');
+      return rejectWithValue({
+        message: error instanceof Error ? error.message : 'Token refresh failed',
+        isPermanent: isPermanentError,
+      });
     }
   }
 );

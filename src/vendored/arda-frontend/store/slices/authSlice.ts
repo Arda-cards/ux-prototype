@@ -45,6 +45,8 @@ interface AuthState {
   // Token refresh state
   isRefreshing: boolean;
   lastRefreshAttempt: number | null;
+  refreshFailedAt: number | null;    // timestamp of last failed refresh (cooldown)
+  sessionExpired: boolean;           // permanent failure — refresh token dead, must sign in
 }
 
 const initialState: AuthState = {
@@ -63,6 +65,8 @@ const initialState: AuthState = {
   isLoggingOut: false,
   isRefreshing: false,
   lastRefreshAttempt: null,
+  refreshFailedAt: null,
+  sessionExpired: false,
 };
 
 const authSlice = createSlice({
@@ -128,6 +132,12 @@ const authSlice = createSlice({
       state.isLoggingOut = false;
       state.isRefreshing = false;
       state.lastRefreshAttempt = null;
+      state.refreshFailedAt = null;
+      state.sessionExpired = false;
+    },
+    clearSessionExpired: (state) => {
+      state.sessionExpired = false;
+      state.refreshFailedAt = null;
     },
   },
   extraReducers: (builder) => {
@@ -150,6 +160,8 @@ const authSlice = createSlice({
         state.isTokenValid = true;
         state.loading = false;
         state.error = null;
+        state.sessionExpired = false;
+        state.refreshFailedAt = null;
       })
       .addCase(signInThunk.rejected, (state, action) => {
         state.loading = false;
@@ -256,9 +268,21 @@ const authSlice = createSlice({
         state.isTokenValid = true;
         state.isRefreshing = false;
       })
-      .addCase(refreshTokensThunk.rejected, (state) => {
+      .addCase(refreshTokensThunk.rejected, (state, action) => {
         state.isRefreshing = false;
-        // Don't clear tokens on refresh failure - let ensureValidTokens handle graceful degradation
+        state.refreshFailedAt = Date.now();
+
+        const payload = action.payload as { message: string; isPermanent: boolean } | undefined;
+        if (payload?.isPermanent) {
+          // Refresh token is permanently invalid — clear session, AuthGuard will redirect to /signin
+          state.sessionExpired = true;
+          state.tokens = { accessToken: null, idToken: null, refreshToken: null, expiresAt: null };
+          state.user = null;
+          state.userContext = null;
+          state.jwtPayload = null;
+          state.isTokenValid = false;
+        }
+        // Transient failures: keep tokens so ensureValidTokens can attempt graceful degradation
       });
 
     // Check auth — no loading flag: this is a local JWT decode, not a user-facing async operation
@@ -345,6 +369,7 @@ export const {
   setIsRefreshing,
   setLastRefreshAttempt,
   clearAuth,
+  clearSessionExpired,
 } = authSlice.actions;
 
 export default authSlice.reducer;

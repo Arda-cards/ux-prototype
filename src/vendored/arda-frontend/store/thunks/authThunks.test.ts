@@ -451,8 +451,10 @@ describe('refreshTokensThunk', () => {
     const store = createStore(authenticatedState);
     const result = await store.dispatch(refreshTokensThunk());
     expect(result.type).toBe('auth/refreshTokens/rejected');
-    // Tokens should NOT be cleared on refresh failure
-    expect(store.getState().auth.tokens.refreshToken).toBe(mockRefreshToken);
+    // NotAuthorizedException is a permanent failure — tokens must be cleared so
+    // the user is signed out and AuthGuard redirects to /signin
+    expect(store.getState().auth.tokens.refreshToken).toBeNull();
+    expect(store.getState().auth.sessionExpired).toBe(true);
   });
 
   it('handles empty AuthenticationResult', async () => {
