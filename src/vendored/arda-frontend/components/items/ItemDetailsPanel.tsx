@@ -38,6 +38,7 @@ import { flyToTarget } from '@frontend/lib/fly-to-target';
 import { toast } from 'sonner';
 import { DeleteConfirmationModal } from '@frontend/components/common/DeleteConfirmationModal';
 import { useAuthErrorHandler } from '@frontend/hooks/useAuthErrorHandler';
+import { extractKanbanRecords } from '@frontend/lib/kanbanResponseParser';
 
 // Types for API response
 interface KanbanCardResult {
@@ -466,46 +467,10 @@ export function ItemDetailsPanel({
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Cards query response:', data);
-        if (data.ok && data.data?.records) {
-          console.log(
-            `Found ${data.data.records.length} cards for item ${item.eid}`
-          );
-          // Map the API response to KanbanCardResult format
-          const cards = data.data.records.map(
-            (record: {
-              payload: {
-                eId: string;
-                serialNumber: string;
-                item: {
-                  eId: string;
-                  name: string;
-                };
-                cardQuantity: {
-                  amount: number;
-                  unit: string;
-                };
-                status: string;
-              };
-              rId: string;
-            }) => ({
-              payload: {
-                eId: record.payload.eId,
-                serialNumber: record.payload.serialNumber,
-                item: {
-                  eId: record.payload.item.eId,
-                  name: record.payload.item.name,
-                },
-                cardQuantity: record.payload.cardQuantity,
-                status: record.payload.status,
-              },
-              rId: record.rId,
-            })
-          );
-          console.log('Mapped cards to delete:', cards);
-          setCardsToDelete(cards);
+        const rawRecords = extractKanbanRecords(data);
+        if (data.ok && rawRecords.length > 0) {
+          setCardsToDelete(rawRecords);
         } else {
-          console.log('No cards found for item or invalid response structure');
           setCardsToDelete([]);
         }
       } else {
@@ -541,11 +506,7 @@ export function ItemDetailsPanel({
       }
 
       // First, delete all cards associated with this item
-      console.log(`Cards to delete: ${cardsToDelete.length}`);
       if (cardsToDelete.length > 0) {
-        console.log(
-          `Deleting ${cardsToDelete.length} card(s) before deleting item`
-        );
 
         const cardDeletePromises = cardsToDelete.map(async (card) => {
           try {
@@ -581,20 +542,20 @@ export function ItemDetailsPanel({
         });
 
         const cardResults = await Promise.all(cardDeletePromises);
-        const successfulCards = cardResults.filter((r) => r.success);
         const failedCards = cardResults.filter((r) => !r.success);
 
         if (failedCards.length > 0) {
           console.warn(
             `Failed to delete ${failedCards.length} of ${cardsToDelete.length} cards`
           );
+          toast.error(
+            `Failed to delete ${failedCards.length} card${
+              failedCards.length > 1 ? 's' : ''
+            }. Item was not deleted.`
+          );
+          return;
         }
 
-        if (successfulCards.length > 0) {
-          console.log(
-            `Successfully deleted ${successfulCards.length} card(s) before deleting item`
-          );
-        }
       }
 
       // Then delete the item
