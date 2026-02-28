@@ -262,14 +262,13 @@ describe('ItemTableAGGrid', () => {
   // ──────────────────────────────────────────────────────────────────────────
   // Column visibility
   // ──────────────────────────────────────────────────────────────────────────
-  it('does not set hide on internalSKU column def — visibility applied via api.setColumnsVisible', () => {
+  it('hides internalSKU column when columnVisibility.sku=false', () => {
     render(
       <ItemTableAGGrid {...defaultProps} columnVisibility={{ sku: false }} />
     );
     const colDefs: any[] = _lastArdaGridProps?.columnDefs ?? [];
     const skuCol = colDefs.find((c: any) => c.field === 'internalSKU');
-    // hide is no longer set in column defs (Phase 2.2 — single visibility source)
-    if (skuCol) expect(skuCol.hide).toBeUndefined();
+    if (skuCol) expect(skuCol.hide).toBe(true);
   });
 
   it('shows all columns when columnVisibility is empty', () => {
@@ -1550,7 +1549,7 @@ describe('ItemTableAGGrid — handleGridReady callback', () => {
 });
 
 describe('ItemTableAGGrid — column visibility prop changes', () => {
-  it('does not set hide on sku col def when columnVisibility.sku changes — visibility applied imperatively', () => {
+  it('passes columnVisibility toggling sku to false as hide=true on sku col', () => {
     const { rerender } = render(
       <ItemTableAGGrid {...defaultProps} columnVisibility={{ sku: true }} />
     );
@@ -1559,8 +1558,7 @@ describe('ItemTableAGGrid — column visibility prop changes', () => {
     );
     const colDefs: any[] = _lastArdaGridProps?.columnDefs ?? [];
     const skuCol = colDefs.find((c: any) => c.field === 'internalSKU');
-    // hide is no longer set in column defs (Phase 2.2 — single visibility source)
-    if (skuCol) expect(skuCol.hide).toBeUndefined();
+    if (skuCol) expect(skuCol.hide).toBe(true);
   });
 
   it('onFirstPage is passed to ArdaGrid', () => {

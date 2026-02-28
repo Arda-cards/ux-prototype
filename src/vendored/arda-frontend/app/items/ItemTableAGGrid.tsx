@@ -26,7 +26,6 @@ import { toast } from 'sonner';
 import { isAuthenticationError } from '@frontend/lib/utils';
 import { ChevronDown } from 'lucide-react';
 import { orderMethodOptions, cardSizeOptions, labelSizeOptions, breadcrumbSizeOptions } from '@frontend/constants/constants';
-import { VIEW_KEY_TO_FIELD } from './itemTableConfig';
 import { SupplierCellEditor } from '@frontend/components/items/SupplierCellEditor';
 import { UnitCellEditor } from '@frontend/components/items/UnitCellEditor';
 import { TypeCellEditor } from '@frontend/components/items/TypeCellEditor';
@@ -1162,9 +1161,6 @@ export const ItemTableAGGrid = forwardRef<ItemTableAGGridRef, Props>(function It
   // without triggering them, and is isolated from other grids on the same page.
   const lastSelectedRowIndexRef = useRef<number | null>(null);
   const [selectedRows, setSelectedRows] = useState<items.Item[]>([]);
-  // Hidden until handleGridReady applies column visibility — prevents a flash
-  // of all columns visible before setColumnsVisible fires on first render.
-  const [isGridVisible, setIsGridVisible] = useState(false);
   const persistentSelectionRef = useRef<Set<string>>(new Set());
   const isRestoringSelectionRef = useRef<boolean>(false);
 
@@ -1790,22 +1786,73 @@ export const ItemTableAGGrid = forwardRef<ItemTableAGGridRef, Props>(function It
   // Row actions for the grid
   // No row actions - column removed per latest requirements
 
-  // Visibility is set imperatively in handleGridReady (single owner).
-  // No hide prop here — setting it in column defs races with the api.setColumnsVisible()
-  // calls in handleGridReady and the columnVisibility useEffect.
+  // Field -> view key mapping
+  const fieldMapping: Record<string, string> = {
+    name: 'name',
+    internalSKU: 'sku',
+    generalLedgerCode: 'glCode',
+    imageUrl: 'image',
+    quickActions: 'actions',
+    'primarySupply.supplier': 'supplier',
+    'primarySupply.unitCost': 'unitCost',
+    createdCoordinates: 'created',
+    minQuantityAmount: 'minQuantityAmount',
+    minQuantityUnit: 'minQuantityUnit',
+    orderQuantityAmount: 'orderQuantityAmount',
+    orderQuantityUnit: 'orderQuantityUnit',
+    'primarySupply.orderMechanism': 'orderMethod',
+    'classification.type': 'classification',
+    'classification.subType': 'subType',
+    'locator.location': 'location',
+    'locator.subLocation': 'subLocation',
+    'locator.department': 'department',
+    'locator.facility': 'facility',
+    useCase: 'useCase',
+    cardSize: 'cardSizeOption', // columna "Card Size" <-> menú View "Card Size"
+    cardCount: 'cardSize', // columna "# of Cards" <-> menú View "# of Cards"
+    notes: 'notes',
+    cardNotesDefault: 'cardNotes',
+    taxable: 'taxable',
+    'primarySupply.url': 'supplierUrl',
+    'primarySupply.sku': 'supplierSku',
+    'primarySupply.averageLeadTime': 'leadTime',
+    'primarySupply.orderCost': 'orderCost',
+    labelSize: 'labelSize',
+    breadcrumbSize: 'breadcrumbSize',
+    color: 'color',
+  };
+
+  // Check if all columns (except select) are hidden
+  const allOtherColumnsHidden = Object.keys(fieldMapping).every((field) => {
+    const visibilityKey = fieldMapping[field];
+    return columnVisibility[visibilityKey] === false;
+  });
+
+  // Include all columns but set initial visibility based on columnVisibility prop
+  // This allows columns to be dragged and reordered even if hidden
   const baseColumnDefs = itemsColumnDefs.map((col) => {
     const identifier = (col.colId as string) || (col.field as string);
 
+    // Hide select column if all other columns are hidden
     if (identifier === 'select' || col.headerName === '') {
       return {
         ...col,
-        suppressMovable: true,
+        suppressMovable: true, // Don't allow moving the select column
+        hide: allOtherColumnsHidden, // Hide if all other columns are hidden
       };
     }
 
+    const visibilityKey = fieldMapping[identifier];
+    const isVisible = visibilityKey
+      ? columnVisibility[visibilityKey] !== false
+      : true;
+
+    // For all other columns, explicitly set suppressMovable to false to enable reordering
+    // This ensures columns can be dragged and reordered
     return {
       ...col,
-      suppressMovable: false,
+      hide: !isVisible,
+      suppressMovable: false, // Explicitly enable column reordering
     };
   });
 
@@ -1921,26 +1968,9 @@ export const ItemTableAGGrid = forwardRef<ItemTableAGGridRef, Props>(function It
     return baseColumnDefs;
   };
 
-  // Memoize column order — getOrderedColumnDefs reads and JSON-parses localStorage
-  // on every call. Without memoization it runs on every rowState / selectedRows /
-  // isLoading re-render, and each new array reference can trigger AG Grid column
-  // re-initialization causing visual flicker during editing.
-  const orderedColumnDefs = useMemo(
-    () => getOrderedColumnDefs(),
-    // Re-run only when the active tab changes (different localStorage key).
-    // columnVisibility is intentionally excluded — after Phase 2.2, hide is no
-    // longer in column defs, so visibility changes don't affect column order.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [activeTab]
-  );
-
-  const filteredColumnDefs = useMemo(
-    () =>
-      enableCellEditing
-        ? enhanceEditableColumnDefs(orderedColumnDefs, { pendingCellValuesRef })
-        : orderedColumnDefs,
-    [enableCellEditing, orderedColumnDefs]
-  );
+  const filteredColumnDefs = enableCellEditing
+    ? enhanceEditableColumnDefs(getOrderedColumnDefs(), { pendingCellValuesRef })
+    : getOrderedColumnDefs();
 
   // Track if we're updating visibility from props to avoid circular updates
   const isUpdatingFromPropsRef = useRef(false);
@@ -2097,6 +2127,41 @@ export const ItemTableAGGrid = forwardRef<ItemTableAGGridRef, Props>(function It
       JSON.stringify(columnVisibility);
     if (!visibilityChanged) return;
 
+    const viewKeyToField: Record<string, string> = {
+      sku: 'internalSKU',
+      glCode: 'generalLedgerCode',
+      name: 'name',
+      image: 'imageUrl',
+      classification: 'classification.type',
+      supplier: 'primarySupply.supplier',
+      location: 'locator.location',
+      subLocation: 'locator.subLocation',
+      unitCost: 'primarySupply.unitCost',
+      created: 'createdCoordinates',
+      minQuantityAmount: 'minQuantityAmount',
+      minQuantityUnit: 'minQuantityUnit',
+      orderQuantityAmount: 'orderQuantityAmount',
+      orderQuantityUnit: 'orderQuantityUnit',
+      orderMethod: 'primarySupply.orderMechanism',
+      cardSize: 'cardCount',
+      notes: 'notes',
+      actions: 'quickActions',
+      subType: 'classification.subType',
+      useCase: 'useCase',
+      department: 'locator.department',
+      facility: 'locator.facility',
+      cardNotes: 'cardNotesDefault',
+      taxable: 'taxable',
+      supplierUrl: 'primarySupply.url',
+      supplierSku: 'primarySupply.sku',
+      leadTime: 'primarySupply.averageLeadTime',
+      orderCost: 'primarySupply.orderCost',
+      cardSizeOption: 'cardSize',
+      labelSize: 'labelSize',
+      breadcrumbSize: 'breadcrumbSize',
+      color: 'color',
+    };
+
     // Check if all columns (except select) are hidden
     const allOtherColumnsHidden = Object.values(columnVisibility).every(
       (visible) => visible === false
@@ -2108,7 +2173,7 @@ export const ItemTableAGGrid = forwardRef<ItemTableAGGridRef, Props>(function It
 
     // Apply all column visibility changes
     Object.entries(columnVisibility).forEach(([viewKey, visible]) => {
-      const field = VIEW_KEY_TO_FIELD[viewKey];
+      const field = viewKeyToField[viewKey];
       if (field) {
         api.setColumnsVisible([field], visible);
       }
@@ -2118,9 +2183,8 @@ export const ItemTableAGGrid = forwardRef<ItemTableAGGridRef, Props>(function It
     // Do this immediately after other columns to ensure proper state
     api.setColumnsVisible(['select'], !allOtherColumnsHidden);
 
-    // Save grid state once — no race to defend against since ArdaGrid's own
-    // persistence is disabled (Phase 2.1). api.getColumnState() is synchronous
-    // and reflects the setColumnsVisible calls made above immediately.
+    // Force save grid state after all visibility changes are applied
+    // Use multiple timeouts to ensure state is saved even if one fails
     const saveGridState = () => {
       const currentApi = gridRef.current?.getGridApi?.();
       if (!currentApi) return;
@@ -2144,7 +2208,7 @@ export const ItemTableAGGrid = forwardRef<ItemTableAGGridRef, Props>(function It
               sortIndex: col.sortIndex,
             })),
         };
-
+        
         try {
           localStorage.setItem(`items-grid-${activeTab}`, JSON.stringify(gridState));
         } catch (error) {
@@ -2153,8 +2217,14 @@ export const ItemTableAGGrid = forwardRef<ItemTableAGGridRef, Props>(function It
       }
     };
 
-    saveGridState();
-    isUpdatingFromPropsRef.current = false;
+    // Save multiple times to ensure persistence
+    setTimeout(saveGridState, 300);
+    setTimeout(() => {
+      saveGridState();
+      // Reset flag after saving to allow events to process
+      // The flag prevents circular updates (grid -> parent -> grid) but allows persistence
+      isUpdatingFromPropsRef.current = false;
+    }, 500);
 
     // Update previous visibility reference
     prevColumnVisibilityRef.current = columnVisibility;
@@ -2185,49 +2255,69 @@ export const ItemTableAGGrid = forwardRef<ItemTableAGGridRef, Props>(function It
   // reads useState which may not be committed yet at the moment onGridReady fires).
   const handleGridReady = useCallback((params: { api: GridApi }) => {
     const api = params.api; // captured directly; always valid, no async state needed
-
-    // Apply column visibility immediately — before any setTimeout — so columns
-    // never flash visible while waiting for the initialisation delay below.
-    // initialState (column order + sort) is applied synchronously before
-    // onGridReady fires, so it is safe to call setColumnsVisible here without
-    // waiting.
-    const allOtherColumnsHidden = Object.values(columnVisibility).every(
-      (visible) => visible === false
-    );
-
-    isUpdatingFromPropsRef.current = true;
-    Object.entries(columnVisibility).forEach(([viewKey, visible]) => {
-      const field = VIEW_KEY_TO_FIELD[viewKey];
-      if (field) api.setColumnsVisible([field], visible);
-    });
-    api.setColumnsVisible(['select'], !allOtherColumnsHidden);
-    prevColumnVisibilityRef.current = columnVisibility;
-
-    // Reveal the grid now that column visibility is set — the wrapper starts
-    // invisible (isGridVisible=false) to prevent a flash of all columns before
-    // setColumnsVisible fires.
-    setIsGridVisible(true);
-
-    // Give AG Grid 200ms to finish internal initialisation before snapshotting
-    // the column state and registering the stateUpdated persistence listener.
     setTimeout(() => {
       if (!api) return;
 
       isGridReadyRef.current = true;
 
-      // Initialise persistedColumnOrderRef from the default column order.
+      // Initialise persistedColumnOrderRef from the default column order
       // initialState is applied synchronously at grid creation, so by the time
-      // onGridReady fires (and this 200ms timeout runs), the column order is
-      // already the restored order — safe to snapshot here.
+      // onGridReady fires (and this 200ms timeout runs), the column order is already
+      // the restored order — safe to snapshot here.
       const defaultState = api.getColumnState();
-      if (defaultState) {
-        persistedColumnOrderRef.current = defaultState
-          .map((col, index) => ({ colId: col.colId || '', order: index }))
-          .filter((col) => col.colId);
-      }
+      persistedColumnOrderRef.current = defaultState
+        .map((col, index) => ({ colId: col.colId || '', order: index }))
+        .filter((col) => col.colId);
 
-      // Reset flag after any columnVisible events fired by setColumnsVisible
-      // have settled (fired synchronously above, AG Grid side-effects may be async).
+      const viewKeyToField: Record<string, string> = {
+        sku: 'internalSKU',
+        glCode: 'generalLedgerCode',
+        name: 'name',
+        image: 'imageUrl',
+        classification: 'classification.type',
+        subType: 'classification.subType',
+        supplier: 'primarySupply.supplier',
+        location: 'locator.location',
+        subLocation: 'locator.subLocation',
+        department: 'locator.department',
+        facility: 'locator.facility',
+        useCase: 'useCase',
+        unitCost: 'primarySupply.unitCost',
+        created: 'createdCoordinates',
+        minQuantityAmount: 'minQuantityAmount',
+        minQuantityUnit: 'minQuantityUnit',
+        orderQuantityAmount: 'orderQuantityAmount',
+        orderQuantityUnit: 'orderQuantityUnit',
+        orderMethod: 'primarySupply.orderMechanism',
+        cardSize: 'cardCount',
+        notes: 'notes',
+        cardNotes: 'cardNotesDefault',
+        taxable: 'taxable',
+        supplierUrl: 'primarySupply.url',
+        supplierSku: 'primarySupply.sku',
+        leadTime: 'primarySupply.averageLeadTime',
+        orderCost: 'primarySupply.orderCost',
+        cardSizeOption: 'cardSize',
+        labelSize: 'labelSize',
+        breadcrumbSize: 'breadcrumbSize',
+        color: 'color',
+        actions: 'quickActions',
+      };
+
+      // Apply column visibility from props (source of truth for show/hide)
+      const allOtherColumnsHidden = Object.values(columnVisibility).every(
+        (visible) => visible === false
+      );
+
+      isUpdatingFromPropsRef.current = true;
+      Object.entries(columnVisibility).forEach(([viewKey, visible]) => {
+        const field = viewKeyToField[viewKey];
+        if (field) api.setColumnsVisible([field], visible);
+      });
+      api.setColumnsVisible(['select'], !allOtherColumnsHidden);
+      prevColumnVisibilityRef.current = columnVisibility;
+
+      // Reset flag after visibility events have been processed
       setTimeout(() => {
         isUpdatingFromPropsRef.current = false;
       }, 300);
@@ -2295,10 +2385,7 @@ export const ItemTableAGGrid = forwardRef<ItemTableAGGridRef, Props>(function It
     <ItemCardsContext.Provider
       value={{ itemCardsMap, refreshCardsForItem, ensureCardsForItem, onOpenItemDetails }}
     >
-      <div
-        className='h-full flex flex-col min-h-0'
-        style={{ visibility: isGridVisible ? 'visible' : 'hidden' }}
-      >
+      <div className='h-full flex flex-col min-h-0'>
         {/* Grid with integrated pagination */}
         <ArdaGrid
           ref={gridRef}
