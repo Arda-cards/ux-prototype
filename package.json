@@ -11,7 +11,27 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./canary": {
+      "types": "./dist/canary.d.ts",
+      "import": "./dist/canary.js",
+      "require": "./dist/canary.cjs"
+    },
+    "./extras": {
+      "types": "./dist/extras.d.ts",
+      "import": "./dist/extras.js",
+      "require": "./dist/extras.cjs"
+    },
     "./styles": "./dist/styles/globals.css"
+  },
+  "typesVersions": {
+    "*": {
+      "canary": [
+        "./dist/canary.d.ts"
+      ],
+      "extras": [
+        "./dist/extras.d.ts"
+      ]
+    }
   },
   "engines": {
     "node": ">=20.19.0"

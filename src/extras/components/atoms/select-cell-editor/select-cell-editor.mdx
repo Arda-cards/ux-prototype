@@ -1,0 +1,225 @@
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
+import * as SelectCellEditorStories from './select-cell-editor.stories';
+
+<Meta of={SelectCellEditorStories} />
+
+# Select Cell Editor
+
+An AG Grid cell editor component that renders a `<select>` dropdown for inline editing.
+
+## Overview
+
+The `ArdaSelectCellEditor` replaces multiple inline select editors from the source application with a single reusable component. It integrates with AG Grid v28+ using the modern component-based editor API.
+
+## Features
+
+- Native `<select>` element for accessibility and performance
+- Auto-focus on mount for immediate editing
+- Automatic commit on selection change
+- Keyboard support including Escape to cancel
+- Optional placeholder for empty values
+- Factory helper for easy column definition integration
+
+## Usage
+
+### Basic Usage in AG Grid
+
+Use the `createSelectCellEditor` factory to create a cell editor for your column definition:
+
+```typescript
+import { createSelectCellEditor } from '@/extras/components/atoms/select-cell-editor/select-cell-editor';
+
+const columnDefs = [
+  {
+    field: 'status',
+    headerName: 'Status',
+    editable: true,
+    cellEditor: createSelectCellEditor([
+      { value: 'active', label: 'Active' },
+      { value: 'inactive', label: 'Inactive' },
+      { value: 'pending', label: 'Pending' },
+    ]),
+  },
+];
+```
+
+### With Placeholder
+
+```typescript
+cellEditor: createSelectCellEditor(
+  [
+    { value: 'low', label: 'Low' },
+    { value: 'medium', label: 'Medium' },
+    { value: 'high', label: 'High' },
+  ],
+  'Select priority...',
+);
+```
+
+### Direct Component Usage
+
+For advanced use cases, you can use the component directly:
+
+```typescript
+import { ArdaSelectCellEditor } from '@/extras/components/atoms/select-cell-editor/select-cell-editor';
+
+const columnDefs = [
+  {
+    field: 'category',
+    cellEditor: ArdaSelectCellEditor,
+    cellEditorParams: {
+      options: [
+        { value: 'bug', label: 'Bug' },
+        { value: 'feature', label: 'Feature' },
+      ],
+      placeholder: 'Choose category...',
+    },
+  },
+];
+```
+
+## API
+
+### ArdaSelectCellEditor Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>options</td>
+      <td>Array&#x3C;&#123; value: string; label: string &#125;&#x3E;</td>
+      <td>required</td>
+      <td>Array of options to display in the dropdown</td>
+    </tr>
+    <tr>
+      <td>placeholder</td>
+      <td>string</td>
+      <td>undefined</td>
+      <td>Placeholder text shown for empty values</td>
+    </tr>
+    <tr>
+      <td>value</td>
+      <td>string</td>
+      <td>undefined</td>
+      <td>Initial value (passed by AG Grid)</td>
+    </tr>
+    <tr>
+      <td>stopEditing</td>
+      <td>() =&#x3E; void</td>
+      <td>undefined</td>
+      <td>Callback to stop editing (passed by AG Grid)</td>
+    </tr>
+  </tbody>
+</table>
+
+### createSelectCellEditor Parameters
+
+<table>
+  <thead>
+    <tr>
+      <th>Parameter</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>options</td>
+      <td>Array&#x3C;&#123; value: string; label: string &#125;&#x3E;</td>
+      <td>Array of options for the dropdown</td>
+    </tr>
+    <tr>
+      <td>placeholder</td>
+      <td>string</td>
+      <td>Optional placeholder text</td>
+    </tr>
+  </tbody>
+</table>
+
+## Behavior
+
+### Editing Flow
+
+1. User clicks or presses Enter on a cell with this editor
+2. Editor appears and auto-focuses the select element
+3. User selects an option or presses Escape to cancel
+4. On selection, the value is committed immediately
+5. Editor closes and the grid displays the new value
+
+### Keyboard Support
+
+- **Arrow Up/Down**: Navigate options
+- **Enter**: Confirm selection (browser default)
+- **Escape**: Cancel editing and close dropdown
+
+## Examples
+
+<Canvas of={SelectCellEditorStories.Default} />
+
+<Canvas of={SelectCellEditorStories.WithPlaceholder} />
+
+<Canvas of={SelectCellEditorStories.WithManyOptions} />
+
+<Canvas of={SelectCellEditorStories.Interactive} />
+
+## Design Rationale
+
+### Why a Native Select?
+
+The component uses a native `<select>` element rather than a custom dropdown for several reasons:
+
+- **Accessibility**: Native selects provide built-in keyboard navigation and screen reader support
+- **Performance**: No additional JavaScript or React rendering for the dropdown
+- **Mobile support**: Native selects trigger the platform's optimized picker UI on mobile devices
+- **Simplicity**: Fewer edge cases and less code to maintain
+
+### Auto-Focus Behavior
+
+The editor auto-focuses on mount to provide immediate editing without requiring an additional click. This matches AG Grid's standard editing UX.
+
+### Commit on Change
+
+Unlike text inputs that wait for Enter or blur, select editors commit immediately on change. This provides faster editing for users who expect the selection to save as soon as they choose it.
+
+## Integration Notes
+
+### AG Grid Version Compatibility
+
+This component is designed for AG Grid v28+ which uses the modern component-based editor API. It uses `forwardRef` and `useImperativeHandle` to expose the `getValue()` method required by AG Grid.
+
+### Cell Renderer Compatibility
+
+The select editor works with any cell renderer. The editor's width automatically matches the cell's width.
+
+### Validation
+
+To add validation, use AG Grid's `valueSetter` or `processCellFromClipboard` callbacks in your column definition:
+
+```typescript
+const columnDefs = [
+  {
+    field: 'status',
+    cellEditor: createSelectCellEditor(statusOptions),
+    valueSetter: (params) => {
+      const newValue = params.newValue;
+      if (validateStatus(newValue)) {
+        params.data.status = newValue;
+        return true;
+      }
+      return false;
+    },
+  },
+];
+```
+
+## Related Components
+
+- `ArdaTypeaheadCellEditor` - For searchable select with many options
+- Standard AG Grid text editors for free-form input

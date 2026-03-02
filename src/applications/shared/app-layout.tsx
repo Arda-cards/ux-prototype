@@ -10,7 +10,7 @@ import {
   Bell,
 } from 'lucide-react';
 
-import { ArdaSidebar, type NavItem } from '@/components/organisms/sidebar/sidebar';
+import { ArdaSidebar, type NavItem } from '@/extras/components/organisms/sidebar/sidebar';
 
 const defaultNavItems: NavItem[] = [
   { href: '/', icon: LayoutDashboard, label: 'Dashboard', exact: true },

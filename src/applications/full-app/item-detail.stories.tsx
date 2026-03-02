@@ -3,7 +3,7 @@ import { expect, within } from 'storybook/test';
 import ItemDetailPage from '@frontend/app/item/[itemId]/page';
 
 const meta: Meta<typeof ItemDetailPage> = {
-  title: 'Full App/Item Detail',
+  title: 'Dev Witness/Item Detail',
   component: ItemDetailPage,
   tags: ['app-route:/item/[itemId]'],
   parameters: {

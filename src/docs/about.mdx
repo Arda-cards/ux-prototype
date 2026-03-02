@@ -55,7 +55,7 @@ It serves three audiences:
 
 ## How the Sidebar Is Organized
 
-The sidebar groups content into six top-level sections. Each section has a distinct purpose and audience.
+The sidebar groups content into eight top-level sections. Each section has a distinct purpose and audience.
 
 ### Docs
 
@@ -118,7 +118,7 @@ Reference documentation for contributors and consumers of the library. You are h
     </tr>
     <tr>
       <td>
-        <strong>Full App Integration</strong>
+        <strong>Dev Witness Integration</strong>
       </td>
       <td>
         Architecture and CI pipeline for vendored production pages from arda-frontend-app,
@@ -127,7 +127,7 @@ Reference documentation for contributors and consumers of the library. You are h
     </tr>
     <tr>
       <td>
-        <strong>Full App Contributing</strong>
+        <strong>Dev Witness Contributing</strong>
       </td>
       <td>
         How to add new page stories, override MSW handlers, run the sync script locally,
@@ -140,16 +140,33 @@ Reference documentation for contributors and consumers of the library. You are h
       </td>
       <td>How the package is versioned, published to GitHub Packages, and consumed downstream.</td>
     </tr>
+    <tr>
+      <td>
+        <strong>From Figma</strong>
+      </td>
+      <td>
+        Design system reference extracted from the Figma Hi-Fi Mockups: color palette, typography,
+        spacing tokens, component inventory, screen patterns, icon system, and brand assets.
+      </td>
+    </tr>
   </tbody>
 </table>
 
 ### Components
 
-The component library, organized by **Atomic Design** level:
+The component library, organized by **Atomic Design** level and **maturity stage**:
 
-- **Atoms** &#8212; Smallest building blocks: buttons, badges, inputs, confirm dialogs, cell editors (select, typeahead).
-- **Molecules** &#8212; Compositions of atoms: cards, tables, data grids (with column persistence and items presets).
-- **Organisms** &#8212; Complex compositions: sidebars, item drawers, items data grid.
+**Stable** (`@arda-cards/ui-components`) &#8212; Promoted, production-ready components. Currently contains placeholders while existing components are being reorganized.
+
+**Canary** (`@arda-cards/ui-components/canary`) &#8212; Experimental components not yet promoted to stable. The canary&#8594;stable dependency direction is enforced by ESLint boundary rules.
+
+**Extras** (`@arda-cards/ui-components/extras`) &#8212; Supplementary components that extend the core library. All previously stable components (atoms, molecules, organisms) currently live here.
+
+Within each stage, components are organized by atomic level:
+
+- **Atoms** &#8212; Smallest building blocks: buttons, badges, inputs, confirm dialogs, cell editors.
+- **Molecules** &#8212; Compositions of atoms: cards, tables, data grids.
+- **Organisms** &#8212; Complex compositions: sidebars, drawers, data grids, entity viewers.
 
 Each component includes:
 
@@ -175,9 +192,13 @@ Full-page application mocks that simulate how components appear in a real produc
 
 Application mocks compose library components into realistic pages (e.g., items data grid with tab navigation, search, and pagination). See the **Applications** docs page for how to create new mocks and promote local components to the shared library.
 
-### Full App
+### Dev Witness
 
-Vendored production page components from the `arda-frontend-app` repository, rendered against MSW mock services. Unlike the hand-built application mocks above, these are the actual production page components kept in sync via an automated CI pipeline. Each page story carries route traceability metadata and is covered by interaction tests and visual regression baselines. See the **Full App Integration** docs page for architecture details and the **Full App Contributing** page for how to add new stories.
+Vendored production page components from the `arda-frontend-app` repository, rendered against MSW mock services. Unlike the hand-built application mocks above, these are the actual production page components kept in sync via an automated CI pipeline. Each page story carries route traceability metadata and is covered by interaction tests and visual regression baselines. See the **Dev Witness Integration** docs page for architecture details and the **Dev Witness Contributing** page for how to add new stories.
+
+### Canary Refactor
+
+An active working area that mirrors the Dev Witness pages but progressively replaces vendored production components with canary-stage library components. Each page here validates that canary components can serve as drop-in replacements for their production counterparts, enabling side-by-side comparison with the Dev Witness originals for visual and functional parity.
 
 ### Use Cases
 
@@ -206,5 +227,6 @@ Component names use the `Arda` prefix (e.g., `ArdaButton`, `ArdaDataGrid`, `Arda
 - **Building a component?** Read the **Component Guidelines**.
 - **Creating a full-page mock?** See **Applications**.
 - **Defining a user workflow?** Follow the **Use Cases** guide.
-- **Working with vendored pages?** Read the **Full App Integration** overview and the **Full App Contributing** guide.
+- **Working with vendored pages?** Read the **Dev Witness Integration** overview and the **Dev Witness Contributing** guide.
+- **Migrating components to canary?** Check the **Canary Refactor** section for side-by-side comparison pages.
 - **Ready to ship?** Check the **Publishing** page for versioning and release steps.

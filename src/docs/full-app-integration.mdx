@@ -1,16 +1,16 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Docs/Full App Integration" />
+<Meta title="Docs/Dev Witness Integration" />
 
-# Full App Integration
+# Dev Witness Integration
 
-The **Full App** section in the Storybook sidebar contains live page components vendored from the production `arda-frontend-app` repository. Each page renders against MSW mock services, reproducing the real application behavior without a running backend.
+The **Dev Witness** section in the Storybook sidebar contains live page components vendored from the production `arda-frontend-app` repository. Each page renders against MSW mock services, reproducing the real application behavior without a running backend.
 
 ## Why Vendor Production Pages?
 
 The existing **Applications** section uses hand-built mocks that compose library components into page-like layouts. Those mocks are useful for design review but diverge from production over time.
 
-The Full App section solves this by syncing actual production source code into `src/vendored/arda-frontend/`. The vendored pages use the same Redux store, auth context, API client, and UI components as the real application. An automated CI pipeline keeps the vendored copy in sync with the `dev` branch of `arda-frontend-app`.
+The Dev Witness section solves this by syncing actual production source code into `src/vendored/arda-frontend/`. The vendored pages use the same Redux store, auth context, API client, and UI components as the real application. An automated CI pipeline keeps the vendored copy in sync with the `dev` branch of `arda-frontend-app`.
 
 This gives three audiences a shared source of truth:
 
@@ -100,7 +100,7 @@ Because the vendored code was written for Next.js, several framework APIs need S
 
 ### Provider Stack
 
-The `withFullAppProviders` decorator in `src/decorators/withFullAppProviders.tsx` wraps every story whose title starts with `Full App`. It composes the same provider hierarchy used in the production application:
+The `withFullAppProviders` decorator in `src/decorators/withFullAppProviders.tsx` wraps every story whose title starts with `Dev Witness`. It composes the same provider hierarchy used in the production application:
 
 <table>
   <thead>
@@ -184,7 +184,7 @@ Handlers use in-memory mock stores (`mockItems.ts`, `mockKanbanCards.ts`) that s
 
 ## Page Inventory
 
-The Full App section contains 10 page stories with 14 total variants:
+The Dev Witness section contains 10 page stories with 14 total variants:
 
 <table>
   <thead>
@@ -196,52 +196,52 @@ The Full App section contains 10 page stories with 14 total variants:
   </thead>
   <tbody>
     <tr>
-      <td>Full App/Sign In</td>
+      <td>Dev Witness/Sign In</td>
       <td><code>/signin</code></td>
       <td>Default, InvalidCredentials</td>
     </tr>
     <tr>
-      <td>Full App/Dashboard</td>
+      <td>Dev Witness/Dashboard</td>
       <td><code>/dashboard</code></td>
       <td>Default</td>
     </tr>
     <tr>
-      <td>Full App/Items Grid</td>
+      <td>Dev Witness/Items Grid</td>
       <td><code>/items</code></td>
       <td>Default, EmptyState</td>
     </tr>
     <tr>
-      <td>Full App/Item Detail</td>
+      <td>Dev Witness/Item Detail</td>
       <td><code>/item/[itemId]</code></td>
       <td>Default</td>
     </tr>
     <tr>
-      <td>Full App/Kanban Card</td>
+      <td>Dev Witness/Kanban Card</td>
       <td><code>/kanban/cards/[cardId]</code></td>
       <td>Default</td>
     </tr>
     <tr>
-      <td>Full App/Order Queue</td>
+      <td>Dev Witness/Order Queue</td>
       <td><code>/order-queue</code></td>
       <td>Default, EmptyQueue</td>
     </tr>
     <tr>
-      <td>Full App/Receiving</td>
+      <td>Dev Witness/Receiving</td>
       <td><code>/receiving</code></td>
       <td>Default</td>
     </tr>
     <tr>
-      <td>Full App/Scan</td>
+      <td>Dev Witness/Scan</td>
       <td><code>/scan</code></td>
       <td>Default</td>
     </tr>
     <tr>
-      <td>Full App/Company Settings</td>
+      <td>Dev Witness/Company Settings</td>
       <td><code>/company-settings</code></td>
       <td>Default</td>
     </tr>
     <tr>
-      <td>Full App/Account Profile</td>
+      <td>Dev Witness/Account Profile</td>
       <td><code>/account-profile</code></td>
       <td>Default</td>
     </tr>
@@ -250,7 +250,7 @@ The Full App section contains 10 page stories with 14 total variants:
 
 ## Route Traceability
 
-Every Full App story carries metadata that traces it back to the production application:
+Every Dev Witness story carries metadata that traces it back to the production application:
 
 - **Tag**: `app-route:<path>` &#8212; queryable via Storybook&#8217;s `stories.json` index, allowing external tooling to enumerate all covered routes.
 - **`appRoute` parameter** &#8212; the application route the story represents (e.g., `/items`).
@@ -284,7 +284,7 @@ Vendored dependencies are tracked in `vendored-deps.json` at the repository root
 
 ## Testing
 
-The Full App stories are covered by three layers of automated testing:
+The Dev Witness stories are covered by three layers of automated testing:
 
 <table>
   <thead>
@@ -303,7 +303,7 @@ The Full App stories are covered by three layers of automated testing:
     <tr>
       <td>Visual regression</td>
       <td>Playwright</td>
-      <td>Pixel-level comparison of 10 Full App page screenshots against baselines (1% diff threshold)</td>
+      <td>Pixel-level comparison of 10 Dev Witness page screenshots against baselines (1% diff threshold)</td>
     </tr>
     <tr>
       <td>Build validation</td>
@@ -318,7 +318,7 @@ The Full App stories are covered by three layers of automated testing:
 The vendored code establishes the foundation for a component migration project. When migration begins:
 
 1. A `src/migration/` directory will contain forked page components that progressively replace `@frontend/components/ui/*` imports with `@/components/atoms/*` (native library components).
-2. A **Full App (Migrated)** story section will provide side-by-side comparison with the original vendored pages.
+2. A **Dev Witness (Migrated)** story section will provide side-by-side comparison with the original vendored pages.
 3. Playwright tests will compare original vs. migrated stories for visual and functional parity.
 
 This infrastructure is not built yet &#8212; it is a future project that builds on the base established here.

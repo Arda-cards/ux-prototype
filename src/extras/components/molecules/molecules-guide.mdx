@@ -1,0 +1,120 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Components/Extras/Molecules/Guide" />
+
+# Molecules
+
+Molecules are compositions of atoms (and native elements) that work together as a cohesive unit. They are more complex than atoms but remain relatively generic and reusable across features.
+
+## Criteria
+
+- Composed of multiple atoms or native elements
+- May contain composition logic but minimal domain knowledge
+- Reusable across multiple features or domains
+- Focuses on a specific UI pattern (data grid, table, card layout)
+- Does not directly interact with business APIs or domain entities
+
+## Organization
+
+Molecules are organized into two tiers:
+
+<table>
+  <thead>
+    <tr>
+      <th>Tier</th>
+      <th>Directory</th>
+      <th>Story title prefix</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Shared</strong></td>
+      <td><code>molecules/&#123;component&#125;/</code></td>
+      <td><code>Components/Extras/Molecules/</code></td>
+      <td>Fully generic molecules with no domain coupling. Usable in any context.</td>
+    </tr>
+    <tr>
+      <td><strong>Reference</strong></td>
+      <td><code>molecules/reference/&#123;domain&#125;/&#123;component&#125;/</code></td>
+      <td><code>Components/Extras/Molecules/</code></td>
+      <td>Molecules that display domain data but contain no business logic. The data shape is domain-aware, but the rendering is generic.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Current components
+
+**Shared:**
+
+- **DataGrid** (`molecules/data-grid/`) &#8212; Generic AG Grid wrapper with Arda configuration, pagination, selection, and editing support. Also contains the `presets/` subdirectory.
+- **Table** (`molecules/table/`) &#8212; Simple table component using @tanstack/react-table.
+- **Item Card** (`molecules/item-card/`) &#8212; Card layout for displaying item information.
+
+**Reference:**
+
+- **Supply Card** (`molecules/reference/items/supply-card/`) &#8212; Card for displaying item supply relationships.
+
+### Presets subdirectory
+
+The DataGrid molecule contains a `presets/` subdirectory that holds column definitions, cell renderers, and option arrays for each entity type. These are configuration modules, not components, but live in the molecules layer because they configure the DataGrid molecule.
+
+```
+molecules/data-grid/presets/
+  common/                          # Entity-agnostic utilities
+    common-cell-renderers.tsx       # SelectAllHeader, SelectionCheckbox, NotesIcon, QuickActions
+    common-column-utils.tsx         # COMMON_DEFAULT_COL_DEF, createSelectColumn, etc.
+    index.ts
+  items/                            # Items-specific presets
+    items-column-presets.tsx
+    items-cell-renderers.tsx
+    items-options.ts
+    index.ts
+  suppliers/                        # Suppliers-specific presets
+    suppliers-column-presets.tsx
+    suppliers-cell-renderers.tsx
+    index.ts
+```
+
+## File structure
+
+```
+molecules/
+  data-grid/
+    data-grid.tsx
+    data-grid.stories.tsx
+    data-grid.mdx
+    data-grid.test.tsx
+    presets/                 # Column definitions and cell renderers
+  table/
+    table.tsx
+    table.stories.tsx
+    ...
+  reference/
+    items/
+      supply-card/
+        supply-card.tsx
+        supply-card.stories.tsx
+        ...
+```
+
+## Adding a new molecule
+
+1. **Determine placement:**
+   - Is it fully generic (no domain types in its interface)? &#8594; `molecules/{component-name}/`
+   - Does its interface reference domain types but contain no business logic? &#8594; `molecules/reference/{domain}/{component-name}/`
+2. **Create the directory** and implement the component.
+3. **Create stories** with the title `Components/Extras/Molecules/{ComponentName}`.
+4. **Optionally create docs** in `{component-name}.mdx` using `<Meta of={Stories} />`.
+5. **Export from** `src/index.ts` if part of the public API.
+
+### Adding presets for a new entity
+
+When creating a new entity data grid, add a presets directory:
+
+1. Create `molecules/data-grid/presets/{entity}/`.
+2. Add `{entity}-column-presets.tsx` with column definitions and optional `enhanceEditableColumnDefs`.
+3. Add `{entity}-cell-renderers.tsx` for custom cell renderers.
+4. Add `{entity}-options.ts` for dropdown option arrays (if applicable).
+5. Add `index.ts` barrel export.
+6. Use the common utilities (`createSelectColumn`, `createNotesColumn`, `createQuickActionsColumn`) from `presets/common/` for standard columns.

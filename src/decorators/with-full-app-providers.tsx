@@ -1,8 +1,8 @@
 /**
- * withFullAppProviders — Storybook decorator that wraps Full App stories
+ * withFullAppProviders — Storybook decorator that wraps Dev Witness stories
  * with the complete provider stack from the vendored arda-frontend-app.
  *
- * Applied conditionally: only stories whose title starts with 'Full App'
+ * Applied conditionally: only stories whose title starts with 'Dev Witness'
  * are wrapped. All other stories pass through unchanged.
  */
 
@@ -117,8 +117,10 @@ function ensureSingletonStoreHasAuth() {
 }
 
 export const withFullAppProviders: Decorator = (Story, context) => {
-  // Only wrap Full App stories
-  if (!context.title.startsWith('Full App')) {
+  // Wrap Dev Witness stories automatically, plus any story that opts in via parameter
+  const isFullApp = context.title.startsWith('Dev Witness');
+  const optsIn = context.parameters.fullAppProviders === true;
+  if (!isFullApp && !optsIn) {
     return <Story />;
   }
 

@@ -1,0 +1,140 @@
+import { Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as EnumStories from './enum.stories';
+
+<Meta of={EnumStories} />
+
+# Enum Field
+
+Form field components for displaying and editing enumerated values. Renders a human-readable label
+in display mode and an HTML select dropdown in edit/error mode.
+
+## Variants
+
+### Display
+
+Read-only enum display with form field styling. Shows the human-readable label for the current value.
+Shows &#8212; for empty values. If the value is not found in options, falls back to showing the raw value
+with a console warning.
+
+<Canvas of={EnumStories.Display} />
+
+### Edit
+
+Select dropdown listing all available options. Supports keyboard navigation (Enter to complete, Escape to cancel).
+
+<Canvas of={EnumStories.Edit} />
+
+### Error
+
+Select dropdown with error styling and validation messages.
+
+<Canvas of={EnumStories.Error} />
+
+### Editable Override
+
+When editable is false, the field renders in display mode regardless of the mode prop.
+
+<Canvas of={EnumStories.EditableOverride} />
+
+### Many Options
+
+Demonstrates a select with many options. When options exceeds 100 entries, a console warning
+is emitted recommending a typeahead component instead.
+
+<Canvas of={EnumStories.ManyOptions} />
+
+## Configuration
+
+### Static Configuration (Design Time)
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>options</strong></td>
+      <td>Record&lt;V, string&gt;</td>
+      <td>Mapping from enum value to display label (required)</td>
+    </tr>
+  </tbody>
+</table>
+
+### Runtime Configuration
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>value</strong></td>
+      <td>V</td>
+      <td>The current enum value</td>
+    </tr>
+    <tr>
+      <td><strong>onChange</strong></td>
+      <td>(original: V, current: V) =&gt; void</td>
+      <td>Called when value changes</td>
+    </tr>
+    <tr>
+      <td><strong>onComplete</strong></td>
+      <td>(value: V) =&gt; void</td>
+      <td>Called on Enter or blur</td>
+    </tr>
+    <tr>
+      <td><strong>onCancel</strong></td>
+      <td>() =&gt; void</td>
+      <td>Called on Escape</td>
+    </tr>
+    <tr>
+      <td><strong>mode</strong></td>
+      <td>'display' | 'edit' | 'error'</td>
+      <td>Rendering mode</td>
+    </tr>
+    <tr>
+      <td><strong>editable</strong></td>
+      <td>boolean</td>
+      <td>When false, forces display mode</td>
+    </tr>
+    <tr>
+      <td><strong>errors</strong></td>
+      <td>string[]</td>
+      <td>Validation messages (shown in error mode only)</td>
+    </tr>
+  </tbody>
+</table>
+
+## Limits
+
+When the options object contains more than 100 entries, a console warning is emitted. For large option sets,
+consider using the typeahead cell editor instead.
+
+## Usage
+
+```tsx
+import { ArdaEnumFieldInteractive } from '@/extras/components/atoms/form/enum';
+
+const orderMechanisms = {
+  MARKETPLACE: 'Marketplace',
+  DIRECT: 'Direct Sales',
+  DISTRIBUTOR: 'Distributor',
+  CONSIGNMENT: 'Consignment',
+} as const;
+
+<ArdaEnumFieldInteractive
+  value="MARKETPLACE"
+  mode="edit"
+  onChange={(original, current) => console.log(original, current)}
+  options={orderMechanisms}
+  label="Order Mechanism"
+/>
+```

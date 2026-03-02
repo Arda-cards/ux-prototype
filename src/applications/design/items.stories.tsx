@@ -3,11 +3,11 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 import { Search, Filter, Plus } from 'lucide-react';
 
-import { ArdaButton } from '@/components/atoms/button/button';
-import { ArdaItemsDataGrid } from '@/components/organisms/reference/items/items-data-grid/items-data-grid';
-import { ArdaItemDrawer, sampleItem } from '@/components/organisms/item-drawer/item-drawer';
-import { mockPublishedItems } from '@/components/molecules/data-grid/presets/items/items-mock-data';
-import { sampleItemSupplies } from '@/types/reference/business-affiliates/item-supply';
+import { ArdaButton } from '@/extras/components/atoms/button/button';
+import { ArdaItemsDataGrid } from '@/extras/components/organisms/reference/items/items-data-grid/items-data-grid';
+import { ArdaItemDrawer, sampleItem } from '@/extras/components/organisms/item-drawer/item-drawer';
+import { mockPublishedItems } from '@/extras/components/molecules/data-grid/presets/items/items-mock-data';
+import { sampleItemSupplies } from '@/extras/types/reference/business-affiliates/item-supply';
 import { AppLayout } from '@/applications/shared/app-layout';
 
 const meta: Meta = {

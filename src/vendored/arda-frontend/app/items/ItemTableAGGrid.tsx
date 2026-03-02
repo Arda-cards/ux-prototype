@@ -1060,6 +1060,7 @@ function enhanceEditableColumnDefs(
  * `columnVisibility` prop, not by localStorage.
  */
 function buildGridStateFromStorage(raw: string): GridState | undefined {
+  type LegacyCol = { colId?: string; width?: number | null; sort?: string | null };
   try {
     const saved = JSON.parse(raw) as Record<string, unknown>;
 
@@ -1068,7 +1069,6 @@ function buildGridStateFromStorage(raw: string): GridState | undefined {
     // the object format was introduced. Handle it so users who haven't
     // reconfigured since then still get their layout restored.
     if (Array.isArray(saved)) {
-      type LegacyCol = { colId?: string; width?: number | null; sort?: string | null };
       const cols = saved as unknown as LegacyCol[];
       const orderedColIds = cols
         .map((c) => c.colId)
@@ -1101,7 +1101,6 @@ function buildGridStateFromStorage(raw: string): GridState | undefined {
 
     // Legacy format: { columnState: ColState[], sortModel?: [...] }
     if (Array.isArray(saved.columnState)) {
-      type LegacyCol = { colId?: string; width?: number | null; sort?: string | null };
       const cols = saved.columnState as LegacyCol[];
 
       const orderedColIds = cols

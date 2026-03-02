@@ -3,7 +3,7 @@ import { expect, within } from 'storybook/test';
 import ReceivingPage from '@frontend/app/receiving/page';
 
 const meta: Meta<typeof ReceivingPage> = {
-  title: 'Full App/Receiving',
+  title: 'Dev Witness/Receiving',
   component: ReceivingPage,
   tags: ['app-route:/receiving'],
   parameters: {

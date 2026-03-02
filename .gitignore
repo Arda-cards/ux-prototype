@@ -12,6 +12,7 @@
 
 # testing
 /coverage
+/tests/test-results/
 /tests/vrt/test-results/
 
 # production
@@ -27,6 +28,9 @@
 
 # scratch workspace
 /scratch
+
+# vendored files — local fixes only, changes go upstream to arda-frontend-app
+/src/vendored/
 
 # debug
 npm-debug.log*
