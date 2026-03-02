@@ -11,7 +11,7 @@ import noHardcodedColors from './tools/eslint-rules/no-hardcoded-colors.js';
 
 export default [// ── Global ignores ──────────────────────────────────────────────────
 {
-  ignores: ['dist/**', 'node_modules/**', 'public/**', 'storybook-static/**', 'coverage/**', 'src/vendored/**', 'src/shims/**', 'src/decorators/**', 'src/applications/full-app/**', 'tests/**', 'playwright.config.ts'],
+  ignores: ['dist/**', 'node_modules/**', 'public/**', 'storybook-static/**', 'coverage/**', 'src/vendored/**', 'src/shims/**', 'src/decorators/**', 'src/applications/full-app/**', 'src/applications/dev-witness/**', 'tests/**', 'playwright.config.ts', 'scratch/**'],
 }, // ── Prettier (disable conflicting format rules) ───────────────────
 prettierConfig, // ── TypeScript strict rules ─────────────────────────────────────────
 {
@@ -86,6 +86,7 @@ prettierConfig, // ── TypeScript strict rules ──────────
   rules: {
     'no-console': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
+    'arda-custom/no-hardcoded-colors': 'off',
   },
 }, // ── Test files: relax rules for test assertions ───────────────────
 {
@@ -94,6 +95,12 @@ prettierConfig, // ── TypeScript strict rules ──────────
     'no-console': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
   },
+}, // ── MSW handlers: console.log is standard for mock debugging ──────
+{
+  files: ['**/msw-handlers.ts', '**/msw-handlers.tsx', '**/msw/**/*.ts'],
+  rules: {
+    'no-console': 'off',
+  },
 }, // ── AG Grid integration: any is unavoidable in AG Grid APIs ────────
 {
   files: [
@@ -101,6 +108,10 @@ prettierConfig, // ── TypeScript strict rules ──────────
     'src/components/molecules/data-grid/**/*.tsx',
     'src/components/organisms/shared/entity-data-grid/**/*.ts',
     'src/components/organisms/shared/entity-data-grid/**/*.tsx',
+    'src/extras/components/molecules/data-grid/**/*.ts',
+    'src/extras/components/molecules/data-grid/**/*.tsx',
+    'src/extras/components/organisms/shared/entity-data-grid/**/*.ts',
+    'src/extras/components/organisms/shared/entity-data-grid/**/*.tsx',
   ],
   rules: {
     '@typescript-eslint/no-explicit-any': 'off',
@@ -118,5 +129,22 @@ prettierConfig, // ── TypeScript strict rules ──────────
         cases: { kebabCase: true },
       },
     ],
+  },
+}, // ── Subpath boundaries: stable code must not import from canary or extras ──
+{
+  files: ['src/components/**/*.ts', 'src/components/**/*.tsx', 'src/types/**/*.ts', 'src/types/**/*.tsx', 'src/lib/**/*.ts', 'src/lib/**/*.tsx'],
+  rules: {
+    'no-restricted-imports': ['error', {
+      patterns: [
+        {
+          group: ['**/canary/*', '**/canary/**', '@/canary/*', '@/canary/**'],
+          message: 'Stable code must not import from canary. Promote the component first.',
+        },
+        {
+          group: ['**/extras/*', '**/extras/**', '@/extras/*', '@/extras/**'],
+          message: 'Stable code must not import from extras. Promote the component first.',
+        },
+      ],
+    }],
   },
 }, ...storybook.configs["flat/recommended"]];

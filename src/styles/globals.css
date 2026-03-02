@@ -3,6 +3,9 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
+/* Ensure Tailwind scans vendored arda-frontend components for class usage */
+@source "../vendored/arda-frontend";
+
 @custom-variant dark (&:is(.dark *));
 
 /* -- Arda Design Tokens (aligned with arda-frontend-app) -- */

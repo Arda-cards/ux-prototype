@@ -1,0 +1,147 @@
+import { Meta, Canvas, Controls } from '@storybook/addon-docs/blocks';
+import * as ItemsDataGridStories from './items-data-grid.stories';
+
+<Meta of={ItemsDataGridStories} />
+
+# Items Data Grid
+
+The `ArdaItemsDataGrid` organism composes the `ArdaDataGrid` molecule with items-specific column definitions, editing capabilities, and state management for unsaved changes.
+
+## Features
+
+- Pre-configured column definitions for items data
+- Optional cell editing with unsaved changes tracking
+- Column visibility and ordering support
+- Pagination support
+- Row selection support
+- Imperative API for saving/discarding changes
+
+## Usage
+
+```tsx
+import { ArdaItemsDataGrid } from '@/extras/components/organisms/items-data-grid/items-data-grid';
+import type { Item } from '@/extras/types/reference/items/item-domain';
+
+function MyComponent() {
+  const [items, setItems] = useState&#60;Item[]&#62;([]);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const gridRef = useRef&#60;ArdaItemsDataGridRef&#62;(null);
+
+  return (
+    &#60;div style=&#123;&#123; height: '600px' &#125;&#125;&#62;
+      &#60;ArdaItemsDataGrid
+        ref=&#123;gridRef&#125;
+        items=&#123;items&#125;
+        activeTab="published"
+        enableCellEditing=&#123;true&#125;
+        onUnsavedChangesChange=&#123;setHasUnsavedChanges&#125;
+        onItemUpdated=&#123;(item) =&#62; console.log('Updated:', item)&#125;
+      /&#62;
+    &#60;/div&#62;
+  );
+}
+```
+
+## Stories
+
+### Default
+
+Basic grid with published items.
+
+<Canvas of={ItemsDataGridStories.Default} />
+
+### Empty
+
+Empty state when no items are available.
+
+<Canvas of={ItemsDataGridStories.Empty} />
+
+### Loading
+
+Loading state while fetching data.
+
+<Canvas of={ItemsDataGridStories.Loading} />
+
+### With Editing
+
+Grid with cell editing enabled. Double-click cells to edit.
+
+<Canvas of={ItemsDataGridStories.WithEditing} />
+
+### With Selection
+
+Grid with row selection enabled.
+
+<Canvas of={ItemsDataGridStories.WithSelection} />
+
+### Interactive
+
+Full interactive demo with editing, selection, and unsaved changes tracking.
+
+<Canvas of={ItemsDataGridStories.Interactive} />
+
+## Props
+
+<Controls />
+
+## Imperative API
+
+The component exposes an imperative API via ref:
+
+<table>
+  <thead>
+    <tr>
+      <th>Method</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>`saveAllDrafts()`</td>
+      <td>Saves all unsaved changes (clears dirty state)</td>
+    </tr>
+    <tr>
+      <td>`getHasUnsavedChanges()`</td>
+      <td>Returns true if there are unsaved changes</td>
+    </tr>
+    <tr>
+      <td>`discardAllDrafts()`</td>
+      <td>Discards all unsaved changes and reverts the grid</td>
+    </tr>
+  </tbody>
+</table>
+
+## Column Visibility
+
+You can control which columns are visible using the `columnVisibility` prop:
+
+```tsx
+&#60;ArdaItemsDataGrid
+  items=&#123;items&#125;
+  columnVisibility=&#123;&#123;
+    name: true,
+    internalSKU: true,
+    imageUrl: false,
+    notes: false,
+  &#125;&#125;
+/&#62;
+```
+
+## Column Order
+
+You can control the order of columns using the `columnOrder` prop:
+
+```tsx
+&#60;ArdaItemsDataGrid
+  items=&#123;items&#125;
+  columnOrder=&#123;['name', 'internalSKU', 'classification.type']&#125;
+/&#62;
+```
+
+## Persistence
+
+Grid state (column widths, sort order, visibility) is automatically persisted to localStorage using the key `arda-items-data-grid-&#123;activeTab&#125;`.
+
+## Design Rationale
+
+This organism encapsulates items-specific grid configuration while delegating core grid functionality to the `ArdaDataGrid` molecule. It tracks unsaved changes at the organism level to provide a simple API for parent components to manage draft state without needing to understand AG Grid internals.

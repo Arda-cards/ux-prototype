@@ -1,7 +1,7 @@
 import type { Meta } from '@storybook/react-vite';
 import { expect, userEvent } from 'storybook/test';
 
-import { ArdaBadge } from '@/components/atoms/badge/badge';
+import { ArdaBadge } from '@/extras/components/atoms/badge/badge';
 import {
   createUseCaseStories,
   UseCaseShell,

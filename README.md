@@ -19,6 +19,8 @@ The Storybook gallery is deployed to two environments:
 
 **GitHub Pages** is for team-internal use. Access is restricted to repository collaborators who authenticate with their GitHub account (Settings > Pages > visibility).
 
+For instructions on accessing the Vercel prototype and using the built-in commenting/feedback tool, see **[Storybook Instructions](storybook-instructions.md)**.
+
 ## Quick Start
 
 ```bash
@@ -65,10 +67,17 @@ make clean            # Remove build artifacts and node_modules
 
 ```
 src/
-  components/
-    atoms/            # Buttons, inputs, badges, etc.
-    molecules/        # Cards, form groups, nav items, etc.
-    organisms/        # Headers, sidebars, data tables, etc.
+  index.ts            # Stable entry point
+  canary.ts           # Canary entry point
+  extras.ts           # Extras entry point
+  components/         # Stable components
+    atoms/            #   Buttons, inputs, badges, etc.
+    molecules/        #   Cards, form groups, nav items, etc.
+    organisms/        #   Headers, sidebars, data tables, etc.
+  canary/             # Experimental components (canary → stable OK, not reverse)
+    components/       #   atoms/, molecules/, organisms/
+  extras/             # Supplementary components (extras → stable OK, not reverse)
+    components/       #   atoms/, molecules/, organisms/
   visual-elements/    # Design tokens, colors, typography
   applications/       # Full-page application mocks
   use-cases/          # User workflow scenarios
@@ -76,6 +85,69 @@ src/
   lib/                # Shared utilities
   styles/             # Global CSS
 ```
+
+## Published Package
+
+The library is published to GitHub Packages as `@arda-cards/ui-components`. It is built with Vite 6 in library mode (ESM + CJS) from three entry points: `src/index.ts` (stable), `src/canary.ts` (experimental), and `src/extras.ts` (supplementary).
+
+### Export Paths
+
+| Export | Resolves to | Description |
+|---|---|---|
+| `@arda-cards/ui-components` | `dist/index.js` (ESM) / `dist/index.cjs` (CJS) | Stable components, types, and utilities |
+| `@arda-cards/ui-components/canary` | `dist/canary.js` (ESM) / `dist/canary.cjs` (CJS) | Experimental components (API may change) |
+| `@arda-cards/ui-components/extras` | `dist/extras.js` (ESM) / `dist/extras.cjs` (CJS) | Supplementary components |
+| `@arda-cards/ui-components/styles` | `dist/styles/globals.css` | Tailwind CSS v4 stylesheet |
+
+### Exported Components
+
+**Atoms** — `ArdaBadge`, `ArdaButton`, `ArdaConfirmDialog`, `ArdaTypeahead`
+
+**Molecules** — `ArdaItemCard`, `ArdaTable` (+ Header/Body/Row/Head/Cell), `ArdaSupplyCard`
+
+**Organisms** — `ArdaSidebar`, `ArdaItemDrawer`, `ArdaSupplierForm`, `ArdaSupplierDrawer`, `ArdaItemsDataGrid`, `ArdaSupplierDataGrid`, `ArdaItemSupplySection`, `ArdaItemSupplyFormDialog`, `createArdaEntityDataGrid` (factory)
+
+**Domain types** — `BusinessAffiliate`, `ItemSupply`, `PostalAddress`, `Contact`, `Money`, `Duration`, and related model/reference types
+
+**Utilities** — `cn` (class name merge), `getBrowserTimezone`, `getTimezoneAbbreviation`
+
+### What Goes Into the Package
+
+Only `src/components/`, `src/types/`, `src/lib/`, and `src/styles/` are compiled into `dist/`. The following directories are **excluded** from the published package:
+
+- `src/vendored/` — Production app code used only for Storybook Full App stories
+- `src/applications/` — Full-page application mocks (Storybook only)
+- `src/use-cases/` — User workflow scenarios (Storybook only)
+- `src/docs/` — Documentation pages (Storybook only)
+- `src/visual-elements/` — Design token demos (Storybook only)
+
+### Canary Export Path
+
+The `./canary` subpath contains experimental components that are not yet part of the stable API. Canary components may change or be removed without a major version bump.
+
+```typescript
+// Consumer usage
+import { CanaryAtomPlaceholder } from '@arda-cards/ui-components/canary';
+```
+
+**Dependency direction**: canary components may import from stable (`@/components/`, `@/lib/`), but stable code must never import from `@/canary/`. This is enforced by an ESLint `no-restricted-imports` rule.
+
+**Promotion path**: move the component from `src/canary/components/` to `src/components/`, re-export from `src/index.ts`, remove from `src/canary.ts`.
+
+### Extras Export Path
+
+The `./extras` subpath contains supplementary components that extend the core library with additional functionality.
+
+```typescript
+// Consumer usage
+import { ExtrasAtomPlaceholder } from '@arda-cards/ui-components/extras';
+```
+
+**Dependency direction**: extras components may import from stable (`@/components/`, `@/lib/`), but stable code must never import from `@/extras/`. This is enforced by an ESLint `no-restricted-imports` rule.
+
+### Peer Dependencies
+
+React 18 or 19 (`react`, `react-dom`). Bundled dependencies include AG Grid, Lucide icons, `class-variance-authority`, `clsx`, and `tailwind-merge`.
 
 ## Changelog
 

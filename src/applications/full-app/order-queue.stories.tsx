@@ -4,7 +4,7 @@ import { http, HttpResponse } from 'msw';
 import OrderQueuePage from '@frontend/app/order-queue/page';
 
 const meta: Meta<typeof OrderQueuePage> = {
-  title: 'Full App/Order Queue',
+  title: 'Dev Witness/Order Queue',
   component: OrderQueuePage,
   tags: ['app-route:/order-queue'],
   parameters: {

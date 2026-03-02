@@ -22,6 +22,7 @@ const preview: Preview = {
       storySort: {
         order: [
           'Docs',
+          ['Arda Style Guide', 'About', '*'],
           'Components',
           [
             'Atoms',
@@ -30,11 +31,16 @@ const preview: Preview = {
             ['Guide', '*'],
             'Organisms',
             ['Guide', 'Shared', 'Reference', '*'],
+            'Canary',
+            ['Atoms', 'Molecules', 'Organisms', '*'],
+            'Extras',
+            ['Atoms', 'Molecules', 'Organisms', '*'],
             '*',
           ],
           'Visual Elements',
           'Applications',
-          'Full App',
+          'Dev Witness',
+          'Canary Refactor',
           'Use Cases',
           '*',
         ],

@@ -3,7 +3,7 @@ import { expect, within } from 'storybook/test';
 import AccountProfilePage from '@frontend/app/account-profile/page';
 
 const meta: Meta<typeof AccountProfilePage> = {
-  title: 'Full App/Account Profile',
+  title: 'Dev Witness/Account Profile',
   component: AccountProfilePage,
   tags: ['app-route:/account-profile'],
   parameters: {

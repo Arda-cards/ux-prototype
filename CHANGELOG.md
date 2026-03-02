@@ -18,6 +18,23 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [1.15.0] - 2026-03-01
+
+### Added
+
+- Arda Style Guide documentation page: comprehensive design system reference covering design tokens,
+  typography scale, page layout, component library conventions, icon system, screen patterns, and
+  implementation guidance (first page in the Docs sidebar)
+- From Figma documentation page: design system reference extracted from the Figma Hi-Fi Mockups
+  with color palette, typography, spacing tokens, component inventory, screen patterns, icon system,
+  and brand assets
+- Updated About page: added Arda Style Guide, Component Classification, Agentation, Creating Entity
+  Viewers, and From Figma entries to the Docs table; added design tokens quick link; fixed section
+  count from eight to seven
+- Storybook sidebar: Arda Style Guide now appears as the first page under the Docs section
+- Component library reorganization: canary/extras subpath exports, Dev Witness section, Canary
+  Refactor section, Playwright smoke tests
+
 ## [1.14.0] - 2026-02-28
 
 ### Added

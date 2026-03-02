@@ -1,0 +1,685 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Arda Style Guide" />
+
+# Arda Design System and Style Guide
+
+**Source of Truth:** [Arda MVP 2.0 &#8212; Hi-Fi Mockups](https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups) (File key: `JJJ5Yb7t8hMe2LfCX0W5gQ`)
+
+This guide defines the visual language, layout patterns, and component conventions for the Arda application. It is intended for both human front-end engineers and AI coding agents building UI in the `ux-prototype` Storybook component library.
+
+---
+
+## 1. Technology Stack
+
+<table>
+  <thead>
+    <tr><th>Layer</th><th>Technology</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Framework</td><td>React 19 + TypeScript</td><td>Functional components only</td></tr>
+    <tr><td>Styling</td><td>Tailwind CSS v4</td><td>Utility-first, <code>@theme inline</code> block in globals.css</td></tr>
+    <tr><td>Animations</td><td>tw-animate-css</td><td>Via Tailwind plugin</td></tr>
+    <tr><td>Component base</td><td>shadcn/ui primitives</td><td>Adapted with <code>Arda</code> prefix</td></tr>
+    <tr><td>Variant management</td><td>Class Variance Authority (CVA)</td><td>For multi-variant components</td></tr>
+    <tr><td>Class composition</td><td><code>cn()</code> from <code>@/lib/utils</code></td><td>clsx + tailwind-merge</td></tr>
+    <tr><td>Icons</td><td>Lucide React (<code>lucide-react</code>)</td><td>Tree-shakeable SVG icons</td></tr>
+    <tr><td>Documentation</td><td>Storybook 10</td><td>Stories + MDX documentation</td></tr>
+    <tr><td>Testing</td><td>Vitest + Testing Library</td><td>Import <code>@testing-library/jest-dom/vitest</code></td></tr>
+  </tbody>
+</table>
+
+---
+
+## 2. Design Tokens
+
+All tokens are defined as CSS custom properties in `src/styles/globals.css`. Tailwind consumes them via the `@theme inline` block.
+
+### 2.1 Colors
+
+#### Brand and Primary
+
+<table>
+  <thead>
+    <tr><th>Token</th><th>Value</th><th>Tailwind</th><th>Usage</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>--base-primary</code></td><td><code>#fc5a29</code></td><td><code>bg-[var(--base-primary)]</code></td><td>Primary actions, CTA buttons, active indicators</td></tr>
+    <tr><td><code>--base-primary-foreground</code></td><td><code>#fafafa</code></td><td><code>text-[var(--base-primary-foreground)]</code></td><td>Text on primary backgrounds</td></tr>
+    <tr><td><code>--base-secondary</code></td><td><code>#f5f5f5</code></td><td><code>bg-[var(--base-secondary)]</code></td><td>Secondary/subtle backgrounds</td></tr>
+    <tr><td><code>--base-destructive</code></td><td><code>#dc2626</code></td><td><code>text-[var(--base-destructive)]</code></td><td>Error states, delete actions</td></tr>
+  </tbody>
+</table>
+
+#### Backgrounds and Foregrounds
+
+<table>
+  <thead>
+    <tr><th>Token</th><th>Value</th><th>Tailwind</th><th>Usage</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>--background</code></td><td><code>#ffffff</code></td><td><code>bg-background</code></td><td>Page background</td></tr>
+    <tr><td><code>--foreground</code></td><td><code>#171717</code></td><td><code>text-foreground</code></td><td>Primary text</td></tr>
+    <tr><td><code>--base-background</code></td><td><code>#ffffff</code></td><td>&#8212;</td><td>App-level background</td></tr>
+    <tr><td><code>--base-foreground</code></td><td><code>#0a0a0a</code></td><td>&#8212;</td><td>Strong text</td></tr>
+    <tr><td><code>--base-muted-foreground</code></td><td><code>#737373</code></td><td><code>text-muted-foreground</code></td><td>Secondary/helper text, labels</td></tr>
+    <tr><td><code>--base-accent-foreground</code></td><td><code>#171717</code></td><td><code>text-accent-foreground</code></td><td>Emphasized text</td></tr>
+  </tbody>
+</table>
+
+#### Borders and Inputs
+
+<table>
+  <thead>
+    <tr><th>Token</th><th>Value</th><th>Tailwind</th><th>Usage</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>--base-border</code></td><td><code>#e5e5e5</code></td><td><code>border-border</code></td><td>Card borders, dividers</td></tr>
+    <tr><td><code>--base-input</code></td><td><code>#e5e5e5</code></td><td><code>border-input</code></td><td>Input field borders</td></tr>
+  </tbody>
+</table>
+
+#### UI Chrome (hardcoded in components)
+
+<table>
+  <thead>
+    <tr><th>Element</th><th>Color</th><th>Usage</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Sidebar background</td><td><code>#0A0A0A</code></td><td>Near-black sidebar</td></tr>
+    <tr><td>Sidebar gradient</td><td><code>rgba(252,90,41,0.08)</code> to <code>rgba(255,255,255,0.04)</code></td><td>Subtle warm gradient overlay on sidebar</td></tr>
+    <tr><td>Active nav indicator</td><td><code>#FC5A29</code> (primary orange)</td><td>Left border on active sidebar item</td></tr>
+    <tr><td>Table header bg</td><td><code>#F9FAFB</code> (gray-50)</td><td>Light gray table header row</td></tr>
+    <tr><td>Table row hover</td><td><code>#F3F4F6</code> (gray-100)</td><td>Subtle hover highlight</td></tr>
+    <tr><td>Card accent</td><td><code>#3B82F6</code> (blue-500)</td><td>Optional blue accent bar on cards</td></tr>
+  </tbody>
+</table>
+
+#### Status Colors (for badges and alerts)
+
+<table>
+  <thead>
+    <tr><th>Status</th><th>Background</th><th>Text</th><th>Usage</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Default</td><td><code>#F5F5F5</code></td><td><code>#0A0A0A</code></td><td>Neutral status</td></tr>
+    <tr><td>Success</td><td><code>#DCFCE7</code></td><td><code>#166534</code></td><td>Completed, active, confirmed</td></tr>
+    <tr><td>Warning</td><td><code>#FEF3C7</code></td><td><code>#92400E</code></td><td>Pending, needs attention</td></tr>
+    <tr><td>Info</td><td><code>#DBEAFE</code></td><td><code>#1E40AF</code></td><td>Informational</td></tr>
+    <tr><td>Destructive</td><td><code>#FEE2E2</code></td><td><code>#991B1B</code></td><td>Error, rejected, overdue</td></tr>
+  </tbody>
+</table>
+
+### 2.2 Spacing
+
+Based on a **4px** base unit, aligned with Tailwind&#8217;s default scale:
+
+<table>
+  <thead>
+    <tr><th>Token</th><th>Value</th><th>Tailwind</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>--spacing-1</code></td><td>4px</td><td><code>p-1</code>, <code>gap-1</code>, <code>m-1</code></td></tr>
+    <tr><td><code>--spacing-2</code></td><td>8px</td><td><code>p-2</code>, <code>gap-2</code>, <code>m-2</code></td></tr>
+    <tr><td><code>--spacing-3</code></td><td>12px</td><td><code>p-3</code>, <code>gap-3</code>, <code>m-3</code></td></tr>
+    <tr><td><code>--spacing-4</code></td><td>16px</td><td><code>p-4</code>, <code>gap-4</code>, <code>m-4</code></td></tr>
+    <tr><td><code>--spacing-5</code></td><td>20px</td><td><code>p-5</code>, <code>gap-5</code>, <code>m-5</code></td></tr>
+    <tr><td><code>--spacing-6</code></td><td>24px</td><td><code>p-6</code>, <code>gap-6</code>, <code>m-6</code></td></tr>
+  </tbody>
+</table>
+
+Common spacing patterns from the Figma mockups:
+
+- **Card padding:** `p-4` (16px)
+- **Section gap:** `gap-6` (24px)
+- **Inline element gap:** `gap-2` (8px)
+- **Form field gap:** `gap-4` (16px)
+- **Page content padding:** `p-6` (24px)
+
+### 2.3 Border Radius
+
+<table>
+  <thead>
+    <tr><th>Token</th><th>Value</th><th>Tailwind</th><th>Usage</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>--radius</code></td><td>10px</td><td><code>rounded-lg</code></td><td>Base radius</td></tr>
+    <tr><td><code>--radius-sm</code></td><td>6px</td><td><code>rounded-sm</code></td><td>Small elements (badges, chips)</td></tr>
+    <tr><td><code>--radius-md</code></td><td>8px</td><td><code>rounded-md</code></td><td>Buttons, inputs</td></tr>
+    <tr><td><code>--radius-lg</code></td><td>10px</td><td><code>rounded-lg</code></td><td>Cards, panels</td></tr>
+    <tr><td><code>--radius-xl</code></td><td>14px</td><td><code>rounded-xl</code></td><td>Large cards, modals</td></tr>
+  </tbody>
+</table>
+
+### 2.4 Shadows
+
+<table>
+  <thead>
+    <tr><th>Token</th><th>Tailwind</th><th>Usage</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>shadow/xs</td><td><code>shadow-xs</code></td><td>Subtle depth (inputs, small elements)</td></tr>
+    <tr><td>shadow/sm</td><td><code>shadow-sm</code></td><td>Card elevation, list items</td></tr>
+    <tr><td>shadow/md</td><td><code>shadow-md</code></td><td>Elevated cards, dropdowns</td></tr>
+    <tr><td>shadow/lg</td><td><code>shadow-lg</code></td><td>Modals, dialogs, popovers</td></tr>
+    <tr><td>drop-shadow/sm</td><td><code>drop-shadow-sm</code></td><td>Floating elements</td></tr>
+  </tbody>
+</table>
+
+---
+
+## 3. Typography
+
+### 3.1 Font Families
+
+<table>
+  <thead>
+    <tr><th>Font</th><th>CSS Variable</th><th>Usage</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Geist</strong></td><td><code>--font-geist</code></td><td>Primary UI font (all text)</td></tr>
+    <tr><td><strong>Geist Mono</strong></td><td><code>--font-geist-mono</code></td><td>Code snippets, monospace data</td></tr>
+    <tr><td><strong>Indie Flower</strong></td><td>Google Fonts import</td><td>Decorative annotations only (not for UI)</td></tr>
+  </tbody>
+</table>
+
+### 3.2 Type Scale
+
+The Figma file defines text styles using Tailwind naming conventions:
+
+<table>
+  <thead>
+    <tr><th>Style</th><th>Size</th><th>Weight</th><th>Leading</th><th>Tailwind</th><th>Usage</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Display</td><td>72px</td><td>Bold (700)</td><td>none</td><td><code>text-7xl font-bold leading-none</code></td><td>Hero/splash only</td></tr>
+    <tr><td>Heading XL</td><td>48px</td><td>Medium (500)</td><td>normal</td><td><code>text-5xl font-medium</code></td><td>Page titles (rarely used)</td></tr>
+    <tr><td>Heading LG</td><td>20px</td><td>Extrabold (800)</td><td>none</td><td><code>text-xl font-extrabold leading-none</code></td><td>Section headers</td></tr>
+    <tr><td><strong>Heading MD</strong></td><td>&#8212;</td><td>&#8212;</td><td>&#8212;</td><td>Use <code>custom/heading-md</code> style</td><td>Primary heading</td></tr>
+    <tr><td><strong>Heading SM</strong></td><td>&#8212;</td><td>&#8212;</td><td>&#8212;</td><td>Use <code>custom/heading-sm</code> style</td><td>Secondary heading</td></tr>
+    <tr><td><strong>Heading XS</strong></td><td>&#8212;</td><td>&#8212;</td><td>&#8212;</td><td>Use <code>custom/heading-xs</code> style</td><td>Tertiary heading</td></tr>
+    <tr><td>text-lg</td><td>18px</td><td>Semibold (600)</td><td>normal</td><td><code>text-lg font-semibold</code></td><td>Subheadings, card titles</td></tr>
+    <tr><td><strong>text-base</strong></td><td>16px</td><td>Normal/Medium/Semibold</td><td>normal</td><td><code>text-base</code></td><td>Body text, form labels</td></tr>
+    <tr><td><strong>text-sm</strong></td><td>14px</td><td>Normal/Medium/Semibold/Bold</td><td>normal or none</td><td><code>text-sm</code></td><td><strong>Default UI text</strong>, table cells, inputs</td></tr>
+    <tr><td><strong>text-xs</strong></td><td>12px</td><td>Normal/Semibold</td><td>normal or none</td><td><code>text-xs</code></td><td>Captions, helper text, timestamps</td></tr>
+  </tbody>
+</table>
+
+**Key rule:** The default body text size in Arda is **14px** (`text-sm`), not 16px. Most UI labels, table content, and form text use `text-sm`.
+
+### 3.3 Weight Usage
+
+<table>
+  <thead>
+    <tr><th>Weight</th><th>Tailwind</th><th>Usage</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>400 (Normal)</td><td><code>font-normal</code></td><td>Body text, descriptions</td></tr>
+    <tr><td>500 (Medium)</td><td><code>font-medium</code></td><td>Labels, navigation items, form labels</td></tr>
+    <tr><td>600 (Semibold)</td><td><code>font-semibold</code></td><td>Emphasized text, active states, card titles</td></tr>
+    <tr><td>700 (Bold)</td><td><code>font-bold</code></td><td>Headings, strong emphasis</td></tr>
+    <tr><td>800 (Extrabold)</td><td><code>font-extrabold</code></td><td>Display headings only</td></tr>
+  </tbody>
+</table>
+
+### 3.4 Text Colors
+
+<table>
+  <thead>
+    <tr><th>Purpose</th><th>Color</th><th>Tailwind</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Primary text</td><td><code>#171717</code></td><td><code>text-foreground</code></td></tr>
+    <tr><td>Secondary/muted text</td><td><code>#737373</code></td><td><code>text-muted-foreground</code></td></tr>
+    <tr><td>Link text</td><td>Primary orange or blue</td><td><code>text-[var(--base-primary)]</code></td></tr>
+    <tr><td>Underlined link</td><td>14px, underlined</td><td><code>text-sm underline</code></td></tr>
+    <tr><td>Disabled text</td><td>Slate 400</td><td><code>text-slate-400</code></td></tr>
+  </tbody>
+</table>
+
+---
+
+## 4. Page Layout
+
+### 4.1 Overall Structure
+
+Every authenticated page follows this layout:
+
+```
++--------------------------------------------------+
+| Sidebar (fixed)  |        Content Area            |
+| w-[240px] or     | +----------------------------+ |
+| w-[56px]         | | Page Header (breadcrumb +   | |
+| collapsed        | | title + actions)            | |
+|                  | +----------------------------+ |
+| Dark bg #0A0A0A  | | Tab Navigation (optional)   | |
+|                  | +----------------------------+ |
+| - Logo           | |                            | |
+| - Nav items      | |  Page Content              | |
+| - User footer    | |  (tables, cards, forms...) | |
+|                  | |                            | |
++------------------+----------------------------+---+
+```
+
+### 4.2 Sidebar
+
+- **Width:** 240px expanded, 56px collapsed
+- **Background:** `#0A0A0A` (near-black) with a subtle gradient overlay
+- **Position:** Fixed, full viewport height (`fixed inset-y-0 left-0`)
+- **Z-index:** 50
+- **Transition:** `transition-all duration-200` on width change
+
+**Sidebar sections (top to bottom):**
+
+1. **Logo area** (h-14, border-b border-white/10) &#8212; `ArdaLogoFull` expanded, `ArdaLogo` (icon) collapsed
+2. **Navigation** (flex-1, scrollable) &#8212; Icon + label pairs, grouped with optional group labels
+3. **User footer** &#8212; Avatar + name + email (hidden when collapsed), logout button
+
+**Nav item states:**
+
+- Default: `text-white/70 hover:bg-white/10`
+- Active: `bg-white/10 text-white` with orange left border indicator (`border-l-2 border-[#FC5A29]`)
+
+**Sidebar component sets in Figma:** `Sidebar` / `SidebarMenuButton` / `SidebarGroup` / `SidebarGroupLabel` / `SidebarMenuItem` / `SidebarMenuSub` / `SidebarMenuSubItem` / `CollapseIcon` / `Header Button`
+
+### 4.3 Page Header
+
+Every page has a header component (`Pro Blocks / Page Header / 7.`):
+
+```
++-----------------------------------------------------------+
+| Breadcrumb: Home > Section > Current Page                 |
+| Page Title                              [Action Buttons]  |
++-----------------------------------------------------------+
+```
+
+- Breadcrumb uses `text-sm text-muted-foreground` with `/` or `>` separators
+- Page title: `text-xl font-extrabold` or `heading-md`
+- Action buttons: Right-aligned, primary + secondary variants
+
+### 4.4 Tab Navigation
+
+Below the page header, many pages use horizontal tab navigation (`Pro Blocks / Tab Nav Link`):
+
+- Tabs use `text-sm font-medium`
+- Active tab: Bottom border in primary orange, `font-semibold`
+- Inactive: `text-muted-foreground`, hover state
+
+### 4.5 Content Area
+
+- **Left margin:** matches sidebar width (240px or 56px)
+- **Padding:** `p-6` (24px) all around
+- **Background:** `#ffffff`
+- **Max width:** Content is typically fluid within the available space
+
+### 4.6 Side Drawers / Sheets
+
+Used for item detail editing and viewing:
+
+- Slides in from the right
+- Width: typically 400&#8211;600px
+- Has its own header with close button
+- Overlay/backdrop on the rest of the content
+- Uses `Component/Side Drawer/Item` and `Sheet` component patterns
+
+### 4.7 Responsive Behavior
+
+- **Desktop-first** design (primary target is desktop browsers)
+- Mobile shows a &#8220;device check&#8221; screen encouraging desktop use (`Mobile device check` frame)
+- Sidebar collapses to icon-only (56px) mode on smaller viewports
+- Mobile scanning mode exists as a separate flow
+
+---
+
+## 5. Component Library
+
+### 5.1 Buttons
+
+**Component:** `ArdaButton` (Figma: `Button` component set)
+
+<table>
+  <thead>
+    <tr><th>Variant</th><th>Background</th><th>Text</th><th>Border</th><th>Usage</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>primary</code></td><td><code>#FC5A29</code> (orange)</td><td>White</td><td>none</td><td>Primary CTA, form submit</td></tr>
+    <tr><td><code>secondary</code></td><td>White</td><td>Dark</td><td>1px border</td><td>Secondary actions</td></tr>
+    <tr><td><code>ghost</code></td><td>Transparent</td><td>Dark</td><td>none</td><td>Tertiary actions, toolbars</td></tr>
+    <tr><td><code>destructive</code></td><td><code>#DC2626</code> (red)</td><td>White</td><td>none</td><td>Delete, remove</td></tr>
+  </tbody>
+</table>
+
+**Sizes:**
+
+- `sm`: height 32px (2rem), `text-xs`, `px-3`
+- `md`: height 36px (2.25rem), `text-sm`, `px-4`
+- `lg`: height 40px (2.5rem), `text-sm`, `px-6`
+
+**States:** Default, Hover (slightly darker), Pressed, Disabled (50% opacity), Loading (spinner + disabled)
+
+**Split Button:** Primary action + dropdown chevron for additional options (`.Split button` component set)
+
+**Border radius:** `rounded-md` (8px) for all buttons
+
+### 5.2 Badges
+
+**Component:** `ArdaBadge` (Figma: `Badge` component set)
+
+Six variants matching the status colors: `default` / `success` / `warning` / `info` / `destructive` / `outline`. Optional dot indicator for active/live status. Styled with `text-xs font-medium`, `rounded-sm` (6px), `px-2 py-0.5`.
+
+**Badge Number:** Numeric counter badge (e.g., notification count), small circle, `text-xs font-bold`.
+
+### 5.3 Cards
+
+**Component:** `Card` component set
+
+- Background: White
+- Border: 1px `border-border` (`#E5E5E5`)
+- Shadow: `shadow-sm`
+- Border radius: `rounded-xl` (14px) for large cards, `rounded-lg` (10px) for standard
+- Padding: `p-4`
+- Optional blue accent bar at top (4px height, `#3B82F6`)
+
+### 5.4 Form Controls
+
+#### Input
+**Figma:** `Input` component set. Height: 36px (`h-9`), border: 1px `border-input`, radius: `rounded-md`, font: `text-sm`, placeholder: `text-muted-foreground`. States: Default, Focused, Error (red border + error message), Disabled.
+
+#### Select
+**Figma:** `Select` component set. Same dimensions as Input. Chevron down icon on right. Dropdown uses `shadow-md`, `rounded-md`.
+
+#### Combobox
+**Figma:** `Combobox` component set. Search input + dropdown list. Filterable options. Used for typeahead/autocomplete patterns.
+
+#### Textarea
+**Figma:** `Textarea` component set. Min height: 80px. Same border/radius as Input. Resizable.
+
+#### Switch
+**Figma:** `Switch` component set. Toggle between on/off states. Primary orange when active.
+
+#### File Drop Zone
+**Figma:** `File Drop Zone` / `File Drop Zone Item` component sets. Dashed border area for drag-and-drop uploads. Shows file items after upload with remove option.
+
+### 5.5 Tables
+
+Tables are a primary data display pattern in Arda (item management, order queue, receiving).
+
+- **Header row:** `bg-gray-50` (`#F9FAFB`), `text-xs font-medium text-muted-foreground uppercase`
+- **Body rows:** White background, `text-sm`, `hover:bg-gray-100`
+- **Cell padding:** `px-4 py-3`
+- **Borders:** Horizontal dividers between rows (`border-b border-border`)
+- **Row actions:** Right-aligned column with icon buttons or context menu
+- **Sortable columns:** Header with sort icon indicator
+
+### 5.6 Alerts and Toasts
+
+**Alert** (`Alert` component set): Bordered box with icon + title + description. Variants follow status colors. `rounded-lg`, `p-4`.
+
+**Toast** (`Toast / Close Button` component set): Appears at bottom-right or top-right. Auto-dismisses. Close button (X icon). Success/error variants.
+
+### 5.7 Dialogs and Modals
+
+- Centered overlay with backdrop
+- `rounded-xl`, `shadow-lg`
+- Header: Title + optional description + close button
+- Footer: Action buttons (primary right-aligned, cancel left)
+- Max width varies: sm (400px), md (500px), lg (640px)
+
+### 5.8 Arda-Specific Components
+
+<table>
+  <thead>
+    <tr><th>Component</th><th>Purpose</th><th>Figma Set</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Item Form</td><td>Multi-field form for creating/editing inventory items</td><td><code>Component/Item Form</code></td></tr>
+    <tr><td>Side Drawer / Item</td><td>Slide-out panel for item details</td><td><code>Component/Side Drawer/Item</code></td></tr>
+    <tr><td>Card Items</td><td>Grid display of inventory items</td><td><code>Component/Card items</code></td></tr>
+    <tr><td>Card Preview Count</td><td>Summary count overlay on card</td><td><code>Component/Card Preview Count</code></td></tr>
+    <tr><td>Puddles</td><td>Decorative blob shapes for empty states</td><td><code>Component/Puddles</code></td></tr>
+    <tr><td>Resize Handle</td><td>Drag handle for resizable panels</td><td><code>Component/Resize Handle</code></td></tr>
+    <tr><td>Notification</td><td>Toast-style notification banner</td><td><code>Notification</code></td></tr>
+    <tr><td>Checklist Item</td><td>Checkbox + label for checklist UIs</td><td><code>.Component CheckList Item</code></td></tr>
+  </tbody>
+</table>
+
+---
+
+## 6. Icon System
+
+### 6.1 Library
+
+**Lucide React** (`lucide-react`) &#8212; tree-shakeable, consistent 24&#215;24 viewBox SVG icons.
+
+### 6.2 Standard Icons
+
+<table>
+  <thead>
+    <tr><th>Context</th><th>Icon</th><th>Context</th><th>Icon</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Dashboard / Home</td><td><code>LayoutDashboard</code></td><td>Items / Inventory</td><td><code>Package</code></td></tr>
+    <tr><td>Receiving</td><td><code>PackageOpen</code></td><td>Remove item</td><td><code>PackageMinus</code></td></tr>
+    <tr><td>Order Queue</td><td><code>ShoppingCart</code></td><td>Suppliers</td><td><code>Building2</code></td></tr>
+    <tr><td>Table view</td><td><code>Table2</code></td><td>Reports</td><td><code>BarChart3</code></td></tr>
+    <tr><td>Settings</td><td><code>Settings</code></td><td>Search</td><td><code>Search</code></td></tr>
+    <tr><td>Add / Create</td><td><code>Plus</code></td><td>Edit</td><td><code>Edit</code></td></tr>
+    <tr><td>Delete</td><td><code>Trash</code></td><td>Location</td><td><code>MapPin</code></td></tr>
+    <tr><td>Filter</td><td><code>Filter</code></td><td>Download / Export</td><td><code>Download</code></td></tr>
+    <tr><td>Upload / Import</td><td><code>Upload</code></td><td>View / Visible</td><td><code>Eye</code></td></tr>
+    <tr><td>Hide / Password</td><td><code>EyeOff</code></td><td>Confirm / Success</td><td><code>Check</code></td></tr>
+    <tr><td>Close / Cancel</td><td><code>X</code></td><td>Warning</td><td><code>AlertTriangle</code></td></tr>
+    <tr><td>Information</td><td><code>Info</code></td><td>Notifications</td><td><code>Bell</code></td></tr>
+    <tr><td>User profile</td><td><code>User</code></td><td>Date / Schedule</td><td><code>Calendar</code></td></tr>
+    <tr><td>Logout</td><td><code>LogOut</code></td><td>Navigate back</td><td><code>ChevronLeft</code></td></tr>
+    <tr><td>Navigate forward</td><td><code>ChevronRight</code></td><td>Expand / Dropdown</td><td><code>ChevronDown</code></td></tr>
+    <tr><td>History / Timeline</td><td><code>History</code></td><td>Help</td><td><code>CircleHelp</code></td></tr>
+    <tr><td>Email</td><td><code>Mail</code></td><td>Copy confirmed</td><td><code>CopyCheck</code></td></tr>
+    <tr><td>Mobile device</td><td><code>Smartphone</code></td><td>Laptop</td><td><code>Laptop</code></td></tr>
+  </tbody>
+</table>
+
+### 6.3 Icon Sizes
+
+Icon sizes are defined as design tokens in `globals.css`. **Prefer the token-based approach** for consistency.
+
+<table>
+  <thead>
+    <tr><th>Token</th><th>Pixels</th><th>Tailwind Alternative</th><th>Usage</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>--icon-xxs</code></td><td>14px</td><td><code>w-3.5 h-3.5</code></td><td>Inline with small text</td></tr>
+    <tr><td><code>--icon-xs</code></td><td>16px</td><td><code>w-4 h-4</code></td><td>Small buttons, compact UI</td></tr>
+    <tr><td><code>--icon-s</code></td><td>18px</td><td><code>w-[18px] h-[18px]</code></td><td>Default inline with text</td></tr>
+    <tr><td><code>--icon-m</code></td><td>20px</td><td><code>w-5 h-5</code></td><td>Standard buttons</td></tr>
+    <tr><td><code>--icon-l</code></td><td>24px</td><td><code>w-6 h-6</code></td><td>Prominent, standalone</td></tr>
+    <tr><td><code>--icon-xl</code></td><td>32px</td><td><code>w-8 h-8</code></td><td>Feature sections</td></tr>
+    <tr><td><code>--icon-xxl</code></td><td>48px</td><td><code>w-12 h-12</code></td><td>Empty states, hero</td></tr>
+  </tbody>
+</table>
+
+**Preferred usage (token-based):**
+
+```tsx
+<Search className="size-[var(--icon-m)]" />       // 20px icon
+<Package className="size-[var(--icon-l)]" />       // 24px icon
+<LayoutDashboard className="size-[var(--icon-xxl)]" /> // 48px empty state
+```
+
+**Acceptable alternative (Tailwind utility):**
+
+```tsx
+<Search className="w-5 h-5" />   // 20px
+<Package className="w-6 h-6" />  // 24px
+```
+
+### 6.4 Icon Color
+
+Icons inherit text color. Use the same color tokens as text:
+
+- Default: `text-foreground`
+- Muted: `text-muted-foreground`
+- On primary background: `text-white`
+- Interactive: `text-foreground hover:text-[var(--base-primary)]`
+- Destructive: `text-[var(--base-destructive)]`
+
+---
+
+## 7. Screen Patterns
+
+### 7.1 Authentication Screens (Unauthenticated)
+
+Layout: Centered card on full-page background (no sidebar). Screens: Sign In, Account Creation, Password Reset, Confirm Email, Email Verified. Error states use inline field validation (red border + error text below field). Background uses the `Background` component set (gradient variants).
+
+### 7.2 Manage Items (Primary Data Page)
+
+```
++--sidebar--+-------------------------------------+
+|           | Breadcrumb: Home > Manage Items     |
+|           | Manage Items        [+ Add Item]    |
+|           | [All] [Draft] [Recently Imported]   |
+|           | ----------------------------------- |
+|           | | Name | SKU | Status | Actions |  |
+|           | |------|-----|--------|---------|  |
+|           | | ...  | ... | Badge  | ... ... |  |
++           +-------------------------------------+
+```
+
+- **Tab navigation** for filtering views (All / Draft / Recently Imported / etc.)
+- **Data table** as primary content
+- **Empty state** with illustration (Puddles) and CTA button
+- **Side drawer** opens for item details/editing
+
+### 7.3 Order Queue
+
+Items grouped by supplier in cards. Card has supplier info header + item rows. &#8220;Email sent&#8221; toast notification on order completion. Animation for &#8220;add to queue&#8221; action.
+
+### 7.4 Admin / Account Profile
+
+Tab-based sections within the page (Profile / Company / Preferences). Form-heavy layout with grouped fields. Multiple variants for different admin sub-pages.
+
+### 7.5 Scanning Mode
+
+Desktop and mobile variants exist:
+
+- **Desktop:** Sidebar content area with camera feed / scan overlay
+- **Mobile:** Full-screen scanning interface (separate flow)
+
+### 7.6 Modals and Dialogs
+
+Used extensively for confirm delete actions, import data flows, form submission confirmations, and item detail popovers. Pattern: Centered, overlaid, with clear primary/secondary action buttons.
+
+---
+
+## 8. Implementation Conventions
+
+### 8.1 Component Structure
+
+Components follow a **separated concerns** pattern:
+
+```
+src/components/[level]/[component-name]/
+  [component-name].tsx        # Component implementation
+  [component-name].css        # Component-specific styles (optional)
+  [component-name].stories.tsx # Storybook stories
+  [component-name].test.tsx   # Unit tests
+```
+
+**Levels:** `atoms/` &#124; `molecules/` &#124; `organisms/`
+
+### 8.2 Props Pattern
+
+Components use a three-tier interface pattern:
+
+```typescript
+/** Design-time configuration - structural, set at composition time */
+export interface ArdaComponentStaticConfig {
+  variant?: 'primary' | 'secondary';
+  size?: 'sm' | 'md' | 'lg';
+}
+
+/** Runtime configuration - changes during component lifetime */
+export interface ArdaComponentRuntimeConfig {
+  loading?: boolean;
+  disabled?: boolean;
+}
+
+/** Combined props - extends HTML element attributes */
+export interface ArdaComponentProps
+  extends ArdaComponentStaticConfig,
+    ArdaComponentRuntimeConfig,
+    React.HTMLAttributes<HTMLElement> {}
+```
+
+### 8.3 Naming Conventions
+
+- **Component names:** `Arda[ComponentName]` prefix (e.g., `ArdaButton`, `ArdaSidebar`)
+- **File names:** kebab-case (e.g., `button.tsx`, `item-card.tsx`)
+- **CSS classes:** `arda-[component]` prefix (e.g., `arda-btn`, `arda-btn-primary`)
+- **Type exports:** `Arda[Component]Props`, `Arda[Component]StaticConfig`, `Arda[Component]RuntimeConfig`
+
+### 8.4 Styling Approach
+
+1. **Prefer Tailwind utility classes** for layout and spacing
+2. **Use CSS custom properties** (`var(--base-primary)`) for design tokens
+3. **Use `cn()` utility** for conditional class composition
+4. **Component-specific CSS files** (`.css`) for complex component styles, using `arda-` prefixed class names
+5. **Never use inline `style` objects** except for truly dynamic values (e.g., computed gradients)
+
+### 8.5 Common Tailwind Patterns
+
+```tsx
+// Card
+<div className="rounded-xl border border-border bg-white p-4 shadow-sm">
+
+// Section heading
+<h2 className="text-lg font-semibold text-foreground">
+
+// Muted label
+<span className="text-sm text-muted-foreground">
+
+// Primary button (when not using ArdaButton)
+<button className="rounded-md bg-[var(--base-primary)] px-4 py-2 text-sm font-medium text-white hover:opacity-90">
+
+// Table header cell
+<th className="bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase text-muted-foreground">
+
+// Table body cell
+<td className="px-4 py-3 text-sm text-foreground">
+
+// Form label
+<label className="text-sm font-medium text-foreground">
+
+// Input
+<input className="h-9 w-full rounded-md border border-input px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+
+// Sidebar nav item
+<a className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-white/70 hover:bg-white/10">
+
+// Active sidebar nav item
+<a className="flex items-center gap-3 rounded-md border-l-2 border-[#FC5A29] bg-white/10 px-3 py-2 text-sm font-medium text-white">
+```
+
+### 8.6 Brand Assets
+
+Located at `public/images/arda/`:
+
+<table>
+  <thead>
+    <tr><th>Asset</th><th>File</th><th>Usage</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Primary logo (white)</td><td><code>ArdaLogoV1.svg</code></td><td>Expanded sidebar</td></tr>
+    <tr><td>Mobile/icon logo</td><td><code>ArdaLogoMobileV1.svg</code></td><td>Collapsed sidebar</td></tr>
+    <tr><td>Black logo</td><td><code>ArdaLogoBlack.svg</code></td><td>Auth pages, light backgrounds</td></tr>
+    <tr><td>QR code</td><td><code>QRC.svg</code></td><td>Item card QR display</td></tr>
+    <tr><td>Puddle shapes (1&#8211;4)</td><td><code>Puddle1.svg</code> &#8211; <code>Puddle4.svg</code></td><td>Decorative empty states</td></tr>
+    <tr><td>Sidebar footer graphic</td><td><code>SidebarFooter.svg</code></td><td>Sidebar bottom decoration</td></tr>
+  </tbody>
+</table>
+
+---
+
+## 9. Figma Reference
+
+See the **From Figma** docs page for Figma deep links, component inventory, screen pattern links, and companion document references.

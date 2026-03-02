@@ -4,7 +4,7 @@ import { http, HttpResponse } from 'msw';
 import ItemsPage from '@frontend/app/items/page';
 
 const meta: Meta<typeof ItemsPage> = {
-  title: 'Full App/Items Grid',
+  title: 'Dev Witness/Items Grid',
   component: ItemsPage,
   tags: ['app-route:/items'],
   parameters: {

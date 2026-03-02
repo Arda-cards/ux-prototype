@@ -21,6 +21,10 @@ const config: StorybookConfig = {
     '../src/applications/**/*.stories.@(ts|tsx)',
     '../src/use-cases/**/*.mdx',
     '../src/use-cases/**/*.stories.@(ts|tsx)',
+    '../src/canary/**/*.mdx',
+    '../src/canary/**/*.stories.@(ts|tsx)',
+    '../src/extras/**/*.mdx',
+    '../src/extras/**/*.stories.@(ts|tsx)',
   ],
   addons: ['@storybook/addon-docs', 'msw-storybook-addon'],
   framework: {

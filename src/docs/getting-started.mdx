@@ -46,16 +46,27 @@ Then open [http://localhost:6006](http://localhost:6006) in your browser.
 
 ```
 src/
-  components/
-    atoms/        # Buttons, inputs, badges, etc.
-    molecules/    # Cards, form groups, nav items, etc.
-    organisms/    # Headers, sidebars, data tables, etc.
-  visual-elements/  # Design tokens, colors, typography
-  applications/     # Full-page application mocks
-  use-cases/        # User workflow scenarios
-  docs/             # Documentation (these pages)
-  lib/              # Shared utilities (cn, etc.)
-  styles/           # Global CSS and Tailwind config
+  components/         # Stable components (promoted from canary/extras)
+    atoms/            # Placeholders — new stable components go here
+    molecules/
+    organisms/
+  canary/             # Experimental canary components
+    components/
+      atoms/
+      molecules/
+      organisms/
+  extras/             # Supplementary components (previously stable)
+    components/
+      atoms/          # Buttons, inputs, badges, cell editors, etc.
+      molecules/      # Cards, form groups, data grids, etc.
+      organisms/      # Sidebars, drawers, data grids, entity viewers, etc.
+    types/            # Domain types (model, reference)
+  visual-elements/    # Design tokens, colors, typography
+  applications/       # Full-page application mocks + canary refactor
+  use-cases/          # User workflow scenarios
+  docs/               # Documentation (these pages)
+  lib/                # Shared utilities (cn, formatters, etc.)
+  styles/             # Global CSS and Tailwind config
 ```
 
 ## Quick Start: Create Your First Component
