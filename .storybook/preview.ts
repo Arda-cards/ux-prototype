@@ -22,6 +22,7 @@ const preview: Preview = {
       storySort: {
         order: [
           'Docs',
+          ['Arda Style Guide', 'About', '*'],
           'Components',
           [
             'Atoms',

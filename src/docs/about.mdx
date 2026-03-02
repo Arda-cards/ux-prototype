@@ -55,7 +55,7 @@ It serves three audiences:
 
 ## How the Sidebar Is Organized
 
-The sidebar groups content into eight top-level sections. Each section has a distinct purpose and audience.
+The sidebar groups content into seven top-level sections. Each section has a distinct purpose and audience.
 
 ### Docs
 
@@ -69,6 +69,15 @@ Reference documentation for contributors and consumers of the library. You are h
     </tr>
   </thead>
   <tbody>
+    <tr>
+      <td>
+        <strong>Arda Style Guide</strong>
+      </td>
+      <td>
+        Comprehensive design system reference: design tokens, typography scale, page layout,
+        component library conventions, icon system, screen patterns, and implementation guidance.
+      </td>
+    </tr>
     <tr>
       <td>
         <strong>About</strong>
@@ -88,6 +97,15 @@ Reference documentation for contributors and consumers of the library. You are h
       <td>
         Interface separation pattern (StaticConfig / RuntimeConfig / InitConfig), file layout,
         naming conventions, Storybook requirements, and anti-patterns.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Component Classification</strong>
+      </td>
+      <td>
+        Atom / Molecule / Organism classification guide with a decision flowchart for placing
+        new components at the correct atomic design level.
       </td>
     </tr>
     <tr>
@@ -132,6 +150,24 @@ Reference documentation for contributors and consumers of the library. You are h
       <td>
         How to add new page stories, override MSW handlers, run the sync script locally,
         and debug common integration issues.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Agentation</strong>
+      </td>
+      <td>
+        Integration guide for the Agentation visual annotation tool, which allows reviewers to
+        overlay feedback directly on Storybook stories.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Creating Entity Viewers</strong>
+      </td>
+      <td>
+        Step-by-step how-to guide for building entity viewer pages using the
+        createArdaEntityViewer factory pattern.
       </td>
     </tr>
     <tr>
@@ -229,4 +265,5 @@ Component names use the `Arda` prefix (e.g., `ArdaButton`, `ArdaDataGrid`, `Arda
 - **Defining a user workflow?** Follow the **Use Cases** guide.
 - **Working with vendored pages?** Read the **Dev Witness Integration** overview and the **Dev Witness Contributing** guide.
 - **Migrating components to canary?** Check the **Canary Refactor** section for side-by-side comparison pages.
+- **Looking for design tokens?** See the **Arda Style Guide** or the **From Figma** reference.
 - **Ready to ship?** Check the **Publishing** page for versioning and release steps.
