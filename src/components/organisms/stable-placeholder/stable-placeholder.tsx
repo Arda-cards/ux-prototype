@@ -14,8 +14,7 @@ export interface StableOrganismPlaceholderStaticConfig {
 
 /** Combined props for StableOrganismPlaceholder. */
 export interface StableOrganismPlaceholderProps
-  extends StableOrganismPlaceholderStaticConfig,
-    React.HTMLAttributes<HTMLDivElement> {}
+  extends StableOrganismPlaceholderStaticConfig, React.HTMLAttributes<HTMLDivElement> {}
 
 export function StableOrganismPlaceholder({
   title = 'Stable Organism Placeholder',

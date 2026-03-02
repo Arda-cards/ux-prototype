@@ -1,3 +1,4 @@
+/* eslint-disable eqeqeq -- intentional != null for nullish checks (null | undefined) */
 import React, { useState, useEffect, useCallback } from 'react';
 import { Building2 } from 'lucide-react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -36,12 +37,18 @@ function toDrawerAffiliate(row: BusinessAffiliateWithRoles): BusinessAffiliate {
 
   const mainAddress: BusinessAffiliate['mainAddress'] = row.mainAddress
     ? {
-        ...(row.mainAddress.addressLine1 != null ? { addressLine1: row.mainAddress.addressLine1 } : {}),
-        ...(row.mainAddress.addressLine2 != null ? { addressLine2: row.mainAddress.addressLine2 } : {}),
+        ...(row.mainAddress.addressLine1 != null
+          ? { addressLine1: row.mainAddress.addressLine1 }
+          : {}),
+        ...(row.mainAddress.addressLine2 != null
+          ? { addressLine2: row.mainAddress.addressLine2 }
+          : {}),
         ...(row.mainAddress.city != null ? { city: row.mainAddress.city } : {}),
         ...(row.mainAddress.state != null ? { state: row.mainAddress.state } : {}),
         ...(row.mainAddress.postalCode != null ? { postalCode: row.mainAddress.postalCode } : {}),
-        ...(row.mainAddress.country?.symbol != null ? { country: row.mainAddress.country.symbol } : {}),
+        ...(row.mainAddress.country?.symbol != null
+          ? { country: row.mainAddress.country.symbol }
+          : {}),
       }
     : undefined;
 
@@ -79,11 +86,7 @@ function SuppliersEmptyState({
       <div className="flex flex-col items-center gap-2 w-full">
         <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center p-2 relative">
           <div className="absolute inset-0 flex items-center justify-center z-0">
-            <img
-              src="/images/Puddle1.svg"
-              alt=""
-              className="w-full h-full object-contain"
-            />
+            <img src="/images/Puddle1.svg" alt="" className="w-full h-full object-contain" />
           </div>
           <Building2 className="w-[42px] h-[42px] sm:w-[52px] sm:h-[52px] text-[#0A0A0A] absolute left-[calc(50%-21px)] sm:left-[calc(50%-26px)] top-[20%] z-10" />
         </div>
@@ -143,7 +146,9 @@ function SuppliersPage() {
           paginate: { index: 0, size: 50 },
         }),
       });
-      const json = (await response.json()) as ArdaApiResponse<ArdaQueryResponse<BusinessAffiliateWithRoles>>;
+      const json = (await response.json()) as ArdaApiResponse<
+        ArdaQueryResponse<BusinessAffiliateWithRoles>
+      >;
       if (json.ok) {
         setRowData(json.data.results.map((r) => r.payload));
       } else {
@@ -224,10 +229,7 @@ function SuppliersPage() {
         onClose={() => setDrawerOpen(false)}
       />
 
-      <ImportSuppliersModal
-        isOpen={importModalOpen}
-        onClose={() => setImportModalOpen(false)}
-      />
+      <ImportSuppliersModal isOpen={importModalOpen} onClose={() => setImportModalOpen(false)} />
     </SidebarProvider>
   );
 }
@@ -256,9 +258,13 @@ function SuppliersPageWithDrawer() {
           paginate: { index: 0, size: 50 },
         }),
       });
-      const json = (await response.json()) as ArdaApiResponse<ArdaQueryResponse<BusinessAffiliateWithRoles>>;
+      const json = (await response.json()) as ArdaApiResponse<
+        ArdaQueryResponse<BusinessAffiliateWithRoles>
+      >;
       if (json.ok) {
-        const suppliers = json.data.results.map((r: { payload: BusinessAffiliateWithRoles }) => r.payload);
+        const suppliers = json.data.results.map(
+          (r: { payload: BusinessAffiliateWithRoles }) => r.payload,
+        );
         setRowData(suppliers);
         if (suppliers.length > 0) {
           setSelectedAffiliate(toDrawerAffiliate(suppliers[0]));
@@ -338,10 +344,7 @@ function SuppliersPageWithDrawer() {
         onClose={() => setDrawerOpen(false)}
       />
 
-      <ImportSuppliersModal
-        isOpen={importModalOpen}
-        onClose={() => setImportModalOpen(false)}
-      />
+      <ImportSuppliersModal isOpen={importModalOpen} onClose={() => setImportModalOpen(false)} />
     </SidebarProvider>
   );
 }
