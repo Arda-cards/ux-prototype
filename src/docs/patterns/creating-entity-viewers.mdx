@@ -58,7 +58,7 @@ For fields that need non-standard rendering (e.g. checkbox groups, multi-select)
 use `ArdaCustomFieldInteractive` with a `render` function:
 
 ```tsx
-import { ArdaCustomFieldInteractive } from '@/components/atoms/form/custom';
+import { ArdaCustomFieldInteractive } from '@/extras/components/atoms/form/custom';
 
 const renderRolesField: CustomFieldRenderFn<Role[]> = ({ value, onChange, mode, editable }) => (
   <div>
@@ -113,7 +113,7 @@ Each descriptor specifies:
 Define a `TabConfig` array specifying tab names, labels, field assignments, and order:
 
 ```tsx
-import type { TabConfig } from '@/components/organisms/shared/entity-viewer';
+import type { TabConfig } from '@/extras/components/organisms/shared/entity-viewer';
 
 export const myTabs: readonly TabConfig[] = [
   { name: 'identity', label: 'Identity', fieldKeys: ['name', 'roles'], order: 0 },
@@ -135,7 +135,7 @@ export const myFieldOrder: (keyof MyEntity)[] = ['name', 'roles', 'address', 'no
 Assemble the `DesignConfig` and call `createArdaEntityViewer`:
 
 ```tsx
-import { createArdaEntityViewer } from '@/components/organisms/shared/entity-viewer';
+import { createArdaEntityViewer } from '@/extras/components/organisms/shared/entity-viewer';
 
 const designConfig: DesignConfig<MyEntity> = {
   validate: validateMyEntity,

@@ -1,0 +1,469 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/From Figma" />
+
+# From Figma
+
+Design system reference extracted from the **Arda MVP 2.0 &#8212; Hi-Fi Mockups** Figma file.
+This page summarizes the visual language, design tokens, component inventory, screen patterns, and brand assets
+defined in the source-of-truth Figma file, mapped to their codebase equivalents.
+
+**Figma file:** [Arda MVP 2.0 &#8212; Hi-Fi Mockups](https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups)
+&#8226; File key: `JJJ5Yb7t8hMe2LfCX0W5gQ` &#8226; Last modified: 2026-02-08 &#8226; 717 components &#8226; 158 component sets &#8226; 92 styles
+
+---
+
+## File Structure
+
+The Figma file is organized into seven pages:
+
+<table>
+  <thead>
+    <tr><th>#</th><th>Page</th><th>Purpose</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>0</td><td>Coversheet</td><td>Title page and file overview</td></tr>
+    <tr><td>1</td><td><strong>MVP 2.0</strong></td><td>Primary design page with all screens and flows</td></tr>
+    <tr><td>2</td><td>&#8212;</td><td>Separator</td></tr>
+    <tr><td>3</td><td><strong>Components</strong></td><td>Shared component library and audit sections</td></tr>
+    <tr><td>4</td><td>&#8212;</td><td>Separator</td></tr>
+    <tr><td>5</td><td>Archive</td><td>Deprecated or earlier-version screens</td></tr>
+    <tr><td>6</td><td>Inspiration</td><td>Reference images and visual inspiration</td></tr>
+  </tbody>
+</table>
+
+---
+
+## Color Palette
+
+### Brand and Primary
+
+<table>
+  <thead>
+    <tr><th>Token</th><th>Hex</th><th>Tailwind</th><th>Usage</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>--base-primary</code></td><td>#FC5A29</td><td><code>bg-[var(--base-primary)]</code></td><td>Primary actions, CTA buttons, active indicators</td></tr>
+    <tr><td><code>--base-primary-foreground</code></td><td>#FAFAFA</td><td><code>text-[var(--base-primary-foreground)]</code></td><td>Text on primary backgrounds</td></tr>
+    <tr><td><code>--base-secondary</code></td><td>#F5F5F5</td><td><code>bg-[var(--base-secondary)]</code></td><td>Secondary / subtle backgrounds</td></tr>
+    <tr><td><code>--base-destructive</code></td><td>#DC2626</td><td><code>text-[var(--base-destructive)]</code></td><td>Error states, delete actions</td></tr>
+  </tbody>
+</table>
+
+### Backgrounds and Foregrounds
+
+<table>
+  <thead>
+    <tr><th>Token</th><th>Hex</th><th>Usage</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>--background</code></td><td>#FFFFFF</td><td>Page background</td></tr>
+    <tr><td><code>--foreground</code></td><td>#171717</td><td>Primary text</td></tr>
+    <tr><td><code>--base-foreground</code></td><td>#0A0A0A</td><td>Strong text</td></tr>
+    <tr><td><code>--base-muted-foreground</code></td><td>#737373</td><td>Secondary / helper text, labels</td></tr>
+    <tr><td><code>--base-accent-foreground</code></td><td>#171717</td><td>Emphasized text</td></tr>
+  </tbody>
+</table>
+
+### Borders and Inputs
+
+<table>
+  <thead>
+    <tr><th>Token</th><th>Hex</th><th>Usage</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>--base-border</code></td><td>#E5E5E5</td><td>Card borders, dividers</td></tr>
+    <tr><td><code>--base-input</code></td><td>#E5E5E5</td><td>Input field borders</td></tr>
+  </tbody>
+</table>
+
+### UI Chrome (Hardcoded)
+
+<table>
+  <thead>
+    <tr><th>Element</th><th>Color</th><th>Usage</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Sidebar background</td><td>#0A0A0A</td><td>Near-black sidebar</td></tr>
+    <tr><td>Active nav indicator</td><td>#FC5A29</td><td>Left border on active sidebar item</td></tr>
+    <tr><td>Table header bg</td><td>#F9FAFB</td><td>Light gray table header row</td></tr>
+    <tr><td>Table row hover</td><td>#F3F4F6</td><td>Subtle hover highlight</td></tr>
+    <tr><td>Card accent</td><td>#3B82F6</td><td>Optional blue accent bar on cards</td></tr>
+  </tbody>
+</table>
+
+### Status Colors (Badges)
+
+<table>
+  <thead>
+    <tr><th>Status</th><th>Background</th><th>Text</th><th>Usage</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Default</td><td>#F5F5F5</td><td>#0A0A0A</td><td>Neutral status</td></tr>
+    <tr><td>Success</td><td>#DCFCE7</td><td>#166534</td><td>Completed, active, confirmed</td></tr>
+    <tr><td>Warning</td><td>#FEF3C7</td><td>#92400E</td><td>Pending, needs attention</td></tr>
+    <tr><td>Info</td><td>#DBEAFE</td><td>#1E40AF</td><td>Informational</td></tr>
+    <tr><td>Destructive</td><td>#FEE2E2</td><td>#991B1B</td><td>Error, rejected, overdue</td></tr>
+  </tbody>
+</table>
+
+---
+
+## Typography
+
+### Font Families
+
+<table>
+  <thead>
+    <tr><th>Font</th><th>CSS Variable</th><th>Usage</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Geist</strong></td><td><code>--font-geist</code></td><td>Primary UI font (all text)</td></tr>
+    <tr><td><strong>Geist Mono</strong></td><td><code>--font-geist-mono</code></td><td>Code snippets, monospace data</td></tr>
+    <tr><td><strong>Indie Flower</strong></td><td>Google Fonts import</td><td>Decorative annotations only</td></tr>
+  </tbody>
+</table>
+
+### Type Scale
+
+The default body text size in Arda is **14px** (`text-sm`), not 16px. Most UI labels, table content, and form text use `text-sm`.
+
+<table>
+  <thead>
+    <tr><th>Style</th><th>Size</th><th>Weight</th><th>Tailwind</th><th>Usage</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Display</td><td>72px</td><td>Bold (700)</td><td><code>text-7xl font-bold leading-none</code></td><td>Hero / splash only</td></tr>
+    <tr><td>Heading XL</td><td>48px</td><td>Medium (500)</td><td><code>text-5xl font-medium</code></td><td>Page titles (rarely used)</td></tr>
+    <tr><td>Heading LG</td><td>20px</td><td>Extrabold (800)</td><td><code>text-xl font-extrabold leading-none</code></td><td>Section headers</td></tr>
+    <tr><td>text-lg</td><td>18px</td><td>Semibold (600)</td><td><code>text-lg font-semibold</code></td><td>Subheadings, card titles</td></tr>
+    <tr><td>text-base</td><td>16px</td><td>Normal / Medium / Semibold</td><td><code>text-base</code></td><td>Body text, form labels</td></tr>
+    <tr><td><strong>text-sm</strong></td><td>14px</td><td>Normal / Medium / Semibold / Bold</td><td><code>text-sm</code></td><td><strong>Default UI text</strong>, table cells, inputs</td></tr>
+    <tr><td>text-xs</td><td>12px</td><td>Normal / Semibold</td><td><code>text-xs</code></td><td>Captions, helper text, timestamps</td></tr>
+  </tbody>
+</table>
+
+### Weight Usage
+
+<table>
+  <thead>
+    <tr><th>Weight</th><th>Tailwind</th><th>Usage</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>400 (Normal)</td><td><code>font-normal</code></td><td>Body text, descriptions</td></tr>
+    <tr><td>500 (Medium)</td><td><code>font-medium</code></td><td>Labels, navigation items, form labels</td></tr>
+    <tr><td>600 (Semibold)</td><td><code>font-semibold</code></td><td>Emphasized text, active states, card titles</td></tr>
+    <tr><td>700 (Bold)</td><td><code>font-bold</code></td><td>Headings, strong emphasis</td></tr>
+    <tr><td>800 (Extrabold)</td><td><code>font-extrabold</code></td><td>Display headings only</td></tr>
+  </tbody>
+</table>
+
+---
+
+## Spacing, Radius, and Shadows
+
+### Spacing (4px base unit)
+
+<table>
+  <thead>
+    <tr><th>Token</th><th>Value</th><th>Tailwind</th><th>Common Pattern</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>--spacing-1</code></td><td>4px</td><td><code>p-1</code>, <code>gap-1</code></td><td>&#8212;</td></tr>
+    <tr><td><code>--spacing-2</code></td><td>8px</td><td><code>p-2</code>, <code>gap-2</code></td><td>Inline element gap</td></tr>
+    <tr><td><code>--spacing-3</code></td><td>12px</td><td><code>p-3</code>, <code>gap-3</code></td><td>&#8212;</td></tr>
+    <tr><td><code>--spacing-4</code></td><td>16px</td><td><code>p-4</code>, <code>gap-4</code></td><td>Card padding, form field gap</td></tr>
+    <tr><td><code>--spacing-5</code></td><td>20px</td><td><code>p-5</code>, <code>gap-5</code></td><td>&#8212;</td></tr>
+    <tr><td><code>--spacing-6</code></td><td>24px</td><td><code>p-6</code>, <code>gap-6</code></td><td>Section gap, page padding</td></tr>
+  </tbody>
+</table>
+
+### Border Radius
+
+<table>
+  <thead>
+    <tr><th>Token</th><th>Value</th><th>Tailwind</th><th>Usage</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>--radius-sm</code></td><td>6px</td><td><code>rounded-sm</code></td><td>Badges, chips</td></tr>
+    <tr><td><code>--radius-md</code></td><td>8px</td><td><code>rounded-md</code></td><td>Buttons, inputs</td></tr>
+    <tr><td><code>--radius-lg</code></td><td>10px</td><td><code>rounded-lg</code></td><td>Cards, panels</td></tr>
+    <tr><td><code>--radius-xl</code></td><td>14px</td><td><code>rounded-xl</code></td><td>Large cards, modals</td></tr>
+  </tbody>
+</table>
+
+### Shadows
+
+<table>
+  <thead>
+    <tr><th>Style</th><th>Tailwind</th><th>Usage</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>shadow/xs</td><td><code>shadow-xs</code></td><td>Subtle depth (inputs, small elements)</td></tr>
+    <tr><td>shadow/sm</td><td><code>shadow-sm</code></td><td>Card elevation, list items</td></tr>
+    <tr><td>shadow/md</td><td><code>shadow-md</code></td><td>Elevated cards, dropdowns</td></tr>
+    <tr><td>shadow/lg</td><td><code>shadow-lg</code></td><td>Modals, dialogs, popovers</td></tr>
+    <tr><td>drop-shadow/sm</td><td><code>drop-shadow-sm</code></td><td>Floating elements</td></tr>
+  </tbody>
+</table>
+
+---
+
+## Page Layout
+
+### Overall Structure
+
+Every authenticated page follows this layout:
+
+```
++--------------------------------------------------+
+| Sidebar (fixed)  |        Content Area            |
+| w-[240px] or     | +----------------------------+ |
+| w-[56px]         | | Page Header (breadcrumb +   | |
+| collapsed        | | title + actions)            | |
+|                  | +----------------------------+ |
+| Dark bg #0A0A0A  | | Tab Navigation (optional)   | |
+|                  | +----------------------------+ |
+| - Logo           | |                            | |
+| - Nav items      | |  Page Content              | |
+| - User footer    | |  (tables, cards, forms...) | |
+|                  | |                            | |
++------------------+----------------------------+---+
+```
+
+### Sidebar
+
+- **Width:** 240px expanded, 56px collapsed
+- **Background:** #0A0A0A with subtle gradient overlay
+- **Position:** Fixed, full viewport height
+- **Nav item default:** `text-white/70 hover:bg-white/10`
+- **Nav item active:** `bg-white/10 text-white` with `border-l-2 border-[#FC5A29]`
+
+### Page Header
+
+Breadcrumb (`text-sm text-muted-foreground`) + page title (`text-xl font-extrabold`) + right-aligned action buttons.
+
+### Tab Navigation
+
+Horizontal tabs below the page header. Active tab has a primary-orange bottom border with `font-semibold`.
+
+### Side Drawers
+
+Slide-in panels from the right (400&#8211;600px wide) with header, close button, and backdrop overlay.
+
+---
+
+## Component Inventory
+
+### Figma Component Sets (Top 50 of 158)
+
+<table>
+  <thead>
+    <tr><th>Category</th><th>Component Set</th><th>Figma Link</th></tr>
+  </thead>
+  <tbody>
+    <tr><td rowSpan="6">Navigation</td><td>Sidebar</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=386-39758">Open</a></td></tr>
+    <tr><td>Breadcrumb</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=3865-164551">Open</a></td></tr>
+    <tr><td>Page Header</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=3868-54273">Open</a></td></tr>
+    <tr><td>Tab Nav Link</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=3868-48747">Open</a></td></tr>
+    <tr><td>Menubar</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=3868-48555">Open</a></td></tr>
+    <tr><td>Table of Contents</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=3016-243209">Open</a></td></tr>
+    <tr><td rowSpan="7">Form Controls</td><td>Button</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=3865-164626">Open</a></td></tr>
+    <tr><td>Split Button</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=3865-164597">Open</a></td></tr>
+    <tr><td>Input</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=4347-45602">Open</a></td></tr>
+    <tr><td>Select</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=3865-165225">Open</a></td></tr>
+    <tr><td>Combobox</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=3868-51266">Open</a></td></tr>
+    <tr><td>Switch</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=3868-51065">Open</a></td></tr>
+    <tr><td>Textarea</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=3868-50670">Open</a></td></tr>
+    <tr><td rowSpan="6">Data Display</td><td>Badge</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=3868-50552">Open</a></td></tr>
+    <tr><td>Avatar</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=3865-161591">Open</a></td></tr>
+    <tr><td>Card</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=54-8512">Open</a></td></tr>
+    <tr><td>Alert</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=3868-50812">Open</a></td></tr>
+    <tr><td>Toast</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=3868-50803">Open</a></td></tr>
+    <tr><td>Separator</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=3868-51261">Open</a></td></tr>
+    <tr><td rowSpan="5">Arda-Specific</td><td>Item Form</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=604-74341">Open</a></td></tr>
+    <tr><td>Side Drawer / Item</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=604-72507">Open</a></td></tr>
+    <tr><td>Card Items</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=4601-12311">Open</a></td></tr>
+    <tr><td>Puddles (empty states)</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=1340-135283">Open</a></td></tr>
+    <tr><td>Sheet</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=3868-53938">Open</a></td></tr>
+  </tbody>
+</table>
+
+### Buttons
+
+Four variants defined in Figma:
+
+<table>
+  <thead>
+    <tr><th>Variant</th><th>Background</th><th>Text</th><th>Usage</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>primary</td><td>#FC5A29 (orange)</td><td>White</td><td>Primary CTA, form submit</td></tr>
+    <tr><td>secondary</td><td>White</td><td>Dark</td><td>Secondary actions</td></tr>
+    <tr><td>ghost</td><td>Transparent</td><td>Dark</td><td>Tertiary actions, toolbars</td></tr>
+    <tr><td>destructive</td><td>#DC2626 (red)</td><td>White</td><td>Delete, remove</td></tr>
+  </tbody>
+</table>
+
+Three sizes: sm (32px), md (36px), lg (40px). All use `rounded-md` (8px).
+
+---
+
+## Icon System
+
+The design system uses **Lucide React** (`lucide-react`) &#8212; tree-shakeable, consistent 24&#215;24 viewBox SVG icons.
+
+### Standard Icons
+
+<table>
+  <thead>
+    <tr><th>Context</th><th>Icon</th><th>Context</th><th>Icon</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Dashboard</td><td><code>LayoutDashboard</code></td><td>Items</td><td><code>Package</code></td></tr>
+    <tr><td>Receiving</td><td><code>PackageOpen</code></td><td>Order Queue</td><td><code>ShoppingCart</code></td></tr>
+    <tr><td>Suppliers</td><td><code>Building2</code></td><td>Reports</td><td><code>BarChart3</code></td></tr>
+    <tr><td>Settings</td><td><code>Settings</code></td><td>Search</td><td><code>Search</code></td></tr>
+    <tr><td>Add / Create</td><td><code>Plus</code></td><td>Edit</td><td><code>Edit</code></td></tr>
+    <tr><td>Delete</td><td><code>Trash</code></td><td>Filter</td><td><code>Filter</code></td></tr>
+    <tr><td>Download</td><td><code>Download</code></td><td>Upload</td><td><code>Upload</code></td></tr>
+    <tr><td>Confirm</td><td><code>Check</code></td><td>Close</td><td><code>X</code></td></tr>
+    <tr><td>Warning</td><td><code>AlertTriangle</code></td><td>Info</td><td><code>Info</code></td></tr>
+    <tr><td>Notifications</td><td><code>Bell</code></td><td>User</td><td><code>User</code></td></tr>
+    <tr><td>Calendar</td><td><code>Calendar</code></td><td>Logout</td><td><code>LogOut</code></td></tr>
+  </tbody>
+</table>
+
+### Icon Sizes
+
+<table>
+  <thead>
+    <tr><th>Token</th><th>Pixels</th><th>Tailwind</th><th>Usage</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>--icon-xxs</code></td><td>14px</td><td><code>w-3.5 h-3.5</code></td><td>Inline with small text</td></tr>
+    <tr><td><code>--icon-xs</code></td><td>16px</td><td><code>w-4 h-4</code></td><td>Small buttons, compact UI</td></tr>
+    <tr><td><code>--icon-s</code></td><td>18px</td><td><code>w-[18px] h-[18px]</code></td><td>Default inline with text</td></tr>
+    <tr><td><code>--icon-m</code></td><td>20px</td><td><code>w-5 h-5</code></td><td>Standard buttons</td></tr>
+    <tr><td><code>--icon-l</code></td><td>24px</td><td><code>w-6 h-6</code></td><td>Prominent, standalone</td></tr>
+    <tr><td><code>--icon-xl</code></td><td>32px</td><td><code>w-8 h-8</code></td><td>Feature sections</td></tr>
+    <tr><td><code>--icon-xxl</code></td><td>48px</td><td><code>w-12 h-12</code></td><td>Empty states, hero</td></tr>
+  </tbody>
+</table>
+
+---
+
+## Screen Patterns
+
+### Authentication (Unauthenticated)
+
+Centered card on full-page background (no sidebar). Includes Sign In, Account Creation, Password Reset, Confirm Email, and Email Verified screens. Error states use inline field validation with red border.
+
+<table>
+  <thead>
+    <tr><th>Screen</th><th>Figma Link</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Sign In</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=226-39620">Open</a></td></tr>
+    <tr><td>Account Creation</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=236-39900">Open</a></td></tr>
+    <tr><td>Reset Password</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=237-39600">Open</a></td></tr>
+  </tbody>
+</table>
+
+### Manage Items
+
+Tab-based filtering (All / Draft / Recently Imported), data table as primary content, empty state with Puddles illustration, side drawer for item details.
+
+<table>
+  <thead>
+    <tr><th>Screen</th><th>Figma Link</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Manage Items</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=583-42052">Open</a></td></tr>
+    <tr><td>Empty State</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=979-73066">Open</a></td></tr>
+    <tr><td>Add New Item</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=99-15236">Open</a></td></tr>
+  </tbody>
+</table>
+
+### Order Queue
+
+Items grouped by supplier in cards. Includes "Email sent" toast, add-to-queue animation.
+
+<table>
+  <thead>
+    <tr><th>Screen</th><th>Figma Link</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Order Queue</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=827-137426">Open</a></td></tr>
+    <tr><td>Grouped View</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=1672-158565">Open</a></td></tr>
+    <tr><td>Recently Ordered</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=1558-292390">Open</a></td></tr>
+  </tbody>
+</table>
+
+### Additional Screens
+
+<table>
+  <thead>
+    <tr><th>Screen</th><th>Figma Link</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Homepage</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=706-69194">Open</a></td></tr>
+    <tr><td>Receiving</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=1567-292958">Open</a></td></tr>
+    <tr><td>Purchase Orders</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=3326-490169">Open</a></td></tr>
+    <tr><td>Admin / Account Profile</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=2310-98582">Open</a></td></tr>
+    <tr><td>Desktop Scanning</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=827-62087">Open</a></td></tr>
+    <tr><td>Mobile Scanning</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=3092-99016">Open</a></td></tr>
+  </tbody>
+</table>
+
+---
+
+## Brand Assets
+
+Located at `public/images/arda/`:
+
+<table>
+  <thead>
+    <tr><th>Asset</th><th>File</th><th>Usage</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Primary logo (white)</td><td><code>ArdaLogoV1.svg</code></td><td>Expanded sidebar</td></tr>
+    <tr><td>Mobile / icon logo</td><td><code>ArdaLogoMobileV1.svg</code></td><td>Collapsed sidebar</td></tr>
+    <tr><td>Black logo</td><td><code>ArdaLogoBlack.svg</code></td><td>Auth pages, light backgrounds</td></tr>
+    <tr><td>QR code</td><td><code>QRC.svg</code></td><td>Item card QR display</td></tr>
+    <tr><td>Puddle shapes (1&#8211;4)</td><td><code>Puddle1.svg</code> &#8211; <code>Puddle4.svg</code></td><td>Decorative empty states</td></tr>
+    <tr><td>Sidebar footer</td><td><code>SidebarFooter.svg</code></td><td>Sidebar bottom decoration</td></tr>
+  </tbody>
+</table>
+
+---
+
+## Figma Quick Access
+
+<table>
+  <thead>
+    <tr><th>Section</th><th>Link</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Full file</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups">Open</a></td></tr>
+    <tr><td>MVP 2.0 (main design page)</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=0-1">Open</a></td></tr>
+    <tr><td>Components page</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=14-5755">Open</a></td></tr>
+    <tr><td>Sign In</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=226-39620">Open</a></td></tr>
+    <tr><td>Homepage</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=706-69194">Open</a></td></tr>
+    <tr><td>Manage Items</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=583-42052">Open</a></td></tr>
+    <tr><td>Order Queue</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=827-137426">Open</a></td></tr>
+    <tr><td>Receiving</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=1567-292958">Open</a></td></tr>
+    <tr><td>Admin Profile</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=2310-98582">Open</a></td></tr>
+    <tr><td>Purchase Orders</td><td><a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=3326-490169">Open</a></td></tr>
+  </tbody>
+</table>
+
+### Companion Documents
+
+The full extracted Figma data lives in `workspace/projects/z-completed/ad-hoc/front-end/figma-exploration/`:
+
+- **arda-style-guide.md** &#8212; Complete design system guide with tokens, layout patterns, component conventions, and implementation examples
+- **figma-reference.md** &#8212; Organized overview with deep links to all screens and component sections
+- **figma-components.md** &#8212; Full dump of 717 components and 158 component sets
+- **figma-styles.md** &#8212; Complete 92 styles (text, fill, effect) with Figma IDs
+- **figma-structure.md** &#8212; Full page/frame tree for every page in the file

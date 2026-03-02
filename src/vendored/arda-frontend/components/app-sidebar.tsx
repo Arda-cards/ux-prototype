@@ -44,7 +44,7 @@ import { useOrderQueue } from '@frontend/contexts/OrderQueueContext';
 import { useSidebarVisibility } from '@frontend/store/hooks/useSidebarVisibility';
 import { attemptNavigate } from '@frontend/lib/unsavedNavigation';
 
-const mainMenuItems = [
+export const mainMenuItems = [
   {
     id: 'dashboard' as const,
     label: 'Dashboard',
@@ -75,7 +75,7 @@ const mainMenuItems = [
   },
 ];
 
-export function AppSidebar() {
+export function AppSidebar({ menuItems }: { menuItems?: typeof mainMenuItems } = {}) {
   const [openItems, setOpenItems] = React.useState<Record<string, boolean>>({});
   const [isMobileOpen, setIsMobileOpen] = React.useState(false);
   const { state } = useSidebar();
@@ -94,17 +94,20 @@ export function AppSidebar() {
   // Get sidebar visibility state
   const { visibility } = useSidebarVisibility();
 
-  // Filter menu items based on visibility and production environment
-  const visibleMenuItems = mainMenuItems.filter((item) => {
-    // Hide dashboard in production
-    if (
-      process.env.NEXT_PUBLIC_DEPLOY_ENV === 'PRODUCTION' &&
-      item.id === 'dashboard'
-    ) {
-      return false;
-    }
-    return visibility[item.id];
-  });
+  // Filter menu items based on visibility and production environment.
+  // When custom menuItems are provided, skip the Redux visibility filter.
+  const itemsSource = menuItems ?? mainMenuItems;
+  const visibleMenuItems = menuItems
+    ? itemsSource
+    : itemsSource.filter((item) => {
+        if (
+          process.env.NEXT_PUBLIC_DEPLOY_ENV === 'PRODUCTION' &&
+          item.id === 'dashboard'
+        ) {
+          return false;
+        }
+        return visibility[item.id];
+      });
 
   // Function to check if a menu item is active based on current pathname
   const isMenuItemActive = (itemUrl: string) => {

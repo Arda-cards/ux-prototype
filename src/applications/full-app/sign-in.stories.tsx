@@ -3,7 +3,7 @@ import { expect, within } from 'storybook/test';
 import SignInPage from '@frontend/app/signin/page';
 
 const meta: Meta<typeof SignInPage> = {
-  title: 'Full App/Sign In',
+  title: 'Dev Witness/Sign In',
   component: SignInPage,
   tags: ['app-route:/signin'],
   parameters: {

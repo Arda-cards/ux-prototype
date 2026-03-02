@@ -3,7 +3,7 @@ import { expect, within } from 'storybook/test';
 import ScanPage from '@frontend/app/scan/page';
 
 const meta: Meta<typeof ScanPage> = {
-  title: 'Full App/Scan',
+  title: 'Dev Witness/Scan',
   component: ScanPage,
   tags: ['app-route:/scan'],
   parameters: {

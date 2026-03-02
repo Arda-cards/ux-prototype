@@ -3,7 +3,7 @@ import { expect, within } from 'storybook/test';
 import KanbanCardPage from '@frontend/app/kanban/cards/[cardId]/page';
 
 const meta: Meta<typeof KanbanCardPage> = {
-  title: 'Full App/Kanban Card',
+  title: 'Dev Witness/Kanban Card',
   component: KanbanCardPage,
   tags: ['app-route:/kanban/cards/[cardId]'],
   parameters: {

@@ -119,4 +119,21 @@ prettierConfig, // ── TypeScript strict rules ──────────
       },
     ],
   },
+}, // ── Subpath boundaries: stable code must not import from canary or extras ──
+{
+  files: ['src/components/**/*.ts', 'src/components/**/*.tsx', 'src/types/**/*.ts', 'src/types/**/*.tsx', 'src/lib/**/*.ts', 'src/lib/**/*.tsx'],
+  rules: {
+    'no-restricted-imports': ['error', {
+      patterns: [
+        {
+          group: ['**/canary/*', '**/canary/**', '@/canary/*', '@/canary/**'],
+          message: 'Stable code must not import from canary. Promote the component first.',
+        },
+        {
+          group: ['**/extras/*', '**/extras/**', '@/extras/*', '@/extras/**'],
+          message: 'Stable code must not import from extras. Promote the component first.',
+        },
+      ],
+    }],
+  },
 }, ...storybook.configs["flat/recommended"]];

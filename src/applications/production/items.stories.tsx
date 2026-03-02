@@ -3,9 +3,9 @@ import { expect, within } from 'storybook/test';
 import { useState } from 'react';
 import { Search, Filter, Plus } from 'lucide-react';
 
-import { ArdaButton } from '@/components/atoms/button/button';
-import { ArdaItemsDataGrid } from '@/components/organisms/reference/items/items-data-grid/items-data-grid';
-import { mockPublishedItems } from '@/components/molecules/data-grid/presets/items/items-mock-data';
+import { ArdaButton } from '@/extras/components/atoms/button/button';
+import { ArdaItemsDataGrid } from '@/extras/components/organisms/reference/items/items-data-grid/items-data-grid';
+import { mockPublishedItems } from '@/extras/components/molecules/data-grid/presets/items/items-mock-data';
 import { AppLayout } from '@/applications/shared/app-layout';
 
 const meta: Meta = {

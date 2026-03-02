@@ -1,14 +1,14 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Docs/Full App Contributing" />
+<Meta title="Docs/Dev Witness Contributing" />
 
-# Full App Contributing Guide
+# Dev Witness Contributing Guide
 
-This page covers how to add new page stories, override MSW handlers, run the sync script locally, and debug common issues with the Full App integration.
+This page covers how to add new page stories, override MSW handlers, run the sync script locally, and debug common issues with the Dev Witness integration.
 
 ## Adding a New Page Story
 
-Each Full App page story lives in `src/applications/full-app/` and follows a consistent template.
+Each Dev Witness page story lives in `src/applications/full-app/` and follows a consistent template.
 
 ### 1. Create the Story File
 
@@ -18,7 +18,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import MyPage from '@frontend/app/my-page/page';
 
 const meta: Meta<typeof MyPage> = {
-  title: 'Full App/My Page',
+  title: 'Dev Witness/My Page',
   component: MyPage,
   tags: ['app-route:/my-page'],
   parameters: {
@@ -39,7 +39,7 @@ export const Default: Story = {};
 
 Key points:
 
-- The `title` must start with `Full App/` so the `withFullAppProviders` decorator activates.
+- The `title` must start with `Dev Witness/` so the `withFullAppProviders` decorator activates.
 - The `tags` array should include `app-route:<path>` for route traceability.
 - Set `pathname` in `args` to match the application route. For dynamic routes, provide a concrete value (e.g., `/item/mock-item-001`).
 
@@ -222,11 +222,11 @@ The script is idempotent: it deletes the target directory before copying. After 
 
 ### Runtime Error: Story Shows Sign-In Page
 
-**Symptom:** A Full App story renders the sign-in page instead of the expected page.
+**Symptom:** A Dev Witness story renders the sign-in page instead of the expected page.
 
 **Cause:** The auth guard detected missing or invalid auth state and redirected to `/signin`.
 
-**Fix:** Verify the story title starts with `Full App/` (case-sensitive). The `withFullAppProviders` decorator only activates for titles matching that prefix. If the title is correct, check that `MockAuthProvider` and the Redux store pre-loading are working by inspecting the browser console for auth-related errors.
+**Fix:** Verify the story title starts with `Dev Witness/` (case-sensitive). The `withFullAppProviders` decorator only activates for titles matching that prefix. If the title is correct, check that `MockAuthProvider` and the Redux store pre-loading are working by inspecting the browser console for auth-related errors.
 
 ### Runtime Error: API Calls Return Empty Data
 
@@ -246,7 +246,7 @@ The script is idempotent: it deletes the target directory before copying. After 
 
 ## Updating VRT Baselines
 
-After making intentional visual changes to a Full App page, update the Playwright screenshot baselines:
+After making intentional visual changes to a Dev Witness page, update the Playwright screenshot baselines:
 
 ```bash
 # Build Storybook first
