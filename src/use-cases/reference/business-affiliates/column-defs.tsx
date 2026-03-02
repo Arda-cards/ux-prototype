@@ -10,8 +10,7 @@ import {
   SelectAllHeaderComponent,
   SelectionCheckboxCell,
 } from '@/extras/components/molecules/data-grid/presets/common/common-cell-renderers';
-import type { BusinessAffiliateWithRoles } from './types';
-import type { BusinessRoleType } from './types';
+import type { BusinessAffiliateWithRoles, BusinessRoleType } from './types';
 
 const roleBadgeColors: Record<BusinessRoleType, string> = {
   VENDOR: 'bg-blue-100 text-blue-800',
@@ -62,9 +61,7 @@ export const suppliersColumnDefs: ColDef<BusinessAffiliateWithRoles>[] = [
       return (
         <div className="flex flex-col leading-tight py-1">
           <span className="text-sm font-medium">{contact.name}</span>
-          {contact.email && (
-            <span className="text-xs text-muted-foreground">{contact.email}</span>
-          )}
+          {contact.email && <span className="text-xs text-muted-foreground">{contact.email}</span>}
         </div>
       );
     },

@@ -18,9 +18,7 @@ function generateUUID(): string {
 
 const now = Date.now();
 
-function wrapAsResult(
-  payload: BusinessAffiliateWithRoles,
-): ArdaResult<BusinessAffiliateWithRoles> {
+function wrapAsResult(payload: BusinessAffiliateWithRoles): ArdaResult<BusinessAffiliateWithRoles> {
   return {
     rId: generateUUID(),
     asOf: { effective: now, recorded: now },
@@ -51,7 +49,11 @@ const sampleAffiliates: BusinessAffiliateWithRoles[] = [
   {
     eId: generateUUID(),
     name: 'Healthcare Direct',
-    legal: { name: 'Healthcare Direct Inc.', taxId: '98-7654321', website: 'https://healthcaredirect.com' },
+    legal: {
+      name: 'Healthcare Direct Inc.',
+      taxId: '98-7654321',
+      website: 'https://healthcaredirect.com',
+    },
     contact: { name: 'Michael Chen', email: 'mchen@healthcaredirect.com', phone: '(555) 200-3000' },
     mainAddress: {
       addressLine1: '250 Pharma Blvd',
@@ -94,7 +96,11 @@ const sampleAffiliates: BusinessAffiliateWithRoles[] = [
   {
     eId: generateUUID(),
     name: 'GlobalMed',
-    legal: { name: 'GlobalMed International', taxId: '77-9876543', website: 'https://globalmed.com' },
+    legal: {
+      name: 'GlobalMed International',
+      taxId: '77-9876543',
+      website: 'https://globalmed.com',
+    },
     contact: { name: 'Ana Rodriguez', email: 'arodriguez@globalmed.com', phone: '(555) 500-6000' },
     mainAddress: {
       addressLine1: '1200 International Plaza',
@@ -122,7 +128,11 @@ const sampleAffiliates: BusinessAffiliateWithRoles[] = [
   {
     eId: generateUUID(),
     name: 'BioTech Instruments',
-    legal: { name: 'BioTech Instruments Ltd.', taxId: '33-4567890', website: 'https://biotechinst.com' },
+    legal: {
+      name: 'BioTech Instruments Ltd.',
+      taxId: '33-4567890',
+      website: 'https://biotechinst.com',
+    },
     contact: { name: 'Emily Watson', email: 'ewatson@biotechinst.com', phone: '(555) 700-8000' },
     mainAddress: {
       addressLine1: '3300 Innovation Drive',
@@ -164,8 +174,16 @@ const sampleAffiliates: BusinessAffiliateWithRoles[] = [
   {
     eId: generateUUID(),
     name: 'Precision Surgical',
-    legal: { name: 'Precision Surgical Inc.', taxId: '44-5678901', website: 'https://precisionsurgical.com' },
-    contact: { name: 'Karen Martinez', email: 'kmartinez@precisionsurgical.com', phone: '(555) 111-2222' },
+    legal: {
+      name: 'Precision Surgical Inc.',
+      taxId: '44-5678901',
+      website: 'https://precisionsurgical.com',
+    },
+    contact: {
+      name: 'Karen Martinez',
+      email: 'kmartinez@precisionsurgical.com',
+      phone: '(555) 111-2222',
+    },
     mainAddress: {
       addressLine1: '600 Surgical Instruments Blvd',
       city: 'Minneapolis',

@@ -43,9 +43,7 @@ export const businessAffiliateHandlers = [
       results: page as ArdaResult<BusinessAffiliateWithRoles>[],
     };
 
-    console.log(
-      `[MSW] Returning ${page.length} business affiliates (page ${paginate.index})`,
-    );
+    console.log(`[MSW] Returning ${page.length} business affiliates (page ${paginate.index})`);
 
     return HttpResponse.json({ ok: true, status: 200, data: response });
   }),

@@ -12,8 +12,7 @@ export interface StableMoleculePlaceholderStaticConfig {
 
 /** Combined props for StableMoleculePlaceholder. */
 export interface StableMoleculePlaceholderProps
-  extends StableMoleculePlaceholderStaticConfig,
-    React.HTMLAttributes<HTMLDivElement> {}
+  extends StableMoleculePlaceholderStaticConfig, React.HTMLAttributes<HTMLDivElement> {}
 
 export function StableMoleculePlaceholder({
   title = 'Stable Molecule Placeholder',

@@ -32,7 +32,7 @@ export function ImportSuppliersModal({ isOpen, onClose }: ImportSuppliersModalPr
   }, [isOpen]);
 
   const isUnsupportedFile =
-    file != null && file.type !== 'text/csv' && !file.name.endsWith('.csv');
+    file !== null && file.type !== 'text/csv' && !file.name.endsWith('.csv');
 
   const handleFileSelect = useCallback((selectedFile: File) => {
     if (selectedFile.type !== 'text/csv' && !selectedFile.name.endsWith('.csv')) {
@@ -142,8 +142,8 @@ export function ImportSuppliersModal({ isOpen, onClose }: ImportSuppliersModalPr
           <div>
             <h2 style={{ fontSize: 18, fontWeight: 600 }}>Import suppliers</h2>
             <p style={{ fontSize: 14, color: '#737373' }}>
-              You can create a batch of suppliers at once by importing a .CSV
-              file. Fill out a CSV with supplier data, then drop it here.
+              You can create a batch of suppliers at once by importing a .CSV file. Fill out a CSV
+              with supplier data, then drop it here.
             </p>
           </div>
         )}
@@ -161,9 +161,7 @@ export function ImportSuppliersModal({ isOpen, onClose }: ImportSuppliersModalPr
               }}
             >
               <PlusCircle size={22} strokeWidth={2} />
-              <span style={{ fontSize: 14, fontWeight: 500 }}>
-                {addedCount} suppliers added.
-              </span>
+              <span style={{ fontSize: 14, fontWeight: 500 }}>{addedCount} suppliers added.</span>
             </div>
           </div>
         )}
@@ -192,10 +190,7 @@ export function ImportSuppliersModal({ isOpen, onClose }: ImportSuppliersModalPr
           >
             <div style={{ width: 54, height: 54 }}>
               {isUnsupportedFile ? (
-                <FileText
-                  className="h-12 w-12"
-                  style={{ color: 'var(--base-muted-foreground)' }}
-                />
+                <FileText className="h-12 w-12" style={{ color: 'var(--base-muted-foreground)' }} />
               ) : state === 'uploading' ? (
                 <div className="relative">
                   <FileText className="h-12 w-12 text-primary" />
@@ -254,9 +249,7 @@ export function ImportSuppliersModal({ isOpen, onClose }: ImportSuppliersModalPr
             )}
 
             {state === 'error' && (
-              <p style={{ color: 'var(--base-destructive)', fontSize: 14 }}>
-                {errorMessage}
-              </p>
+              <p style={{ color: 'var(--base-destructive)', fontSize: 14 }}>{errorMessage}</p>
             )}
 
             {(state === 'idle' || state === 'dragging') && !file && (
@@ -294,11 +287,7 @@ export function ImportSuppliersModal({ isOpen, onClose }: ImportSuppliersModalPr
                 className="absolute top-2 right-2"
                 aria-label="Remove file"
               >
-                {isUnsupportedFile ? (
-                  <X className="w-4 h-4" />
-                ) : (
-                  <Trash2 className="w-4 h-4" />
-                )}
+                {isUnsupportedFile ? <X className="w-4 h-4" /> : <Trash2 className="w-4 h-4" />}
               </button>
             )}
           </div>

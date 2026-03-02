@@ -10,8 +10,7 @@ export interface StableAtomPlaceholderStaticConfig {
 
 /** Combined props for StableAtomPlaceholder. */
 export interface StableAtomPlaceholderProps
-  extends StableAtomPlaceholderStaticConfig,
-    React.HTMLAttributes<HTMLDivElement> {}
+  extends StableAtomPlaceholderStaticConfig, React.HTMLAttributes<HTMLDivElement> {}
 
 export function StableAtomPlaceholder({
   label = 'Stable Atom Placeholder',
