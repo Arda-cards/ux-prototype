@@ -33,7 +33,8 @@ export const Default: Story = {
     const mobileOption = await canvas.findByText('Is mobile device', { exact: true }, { timeout: 10000 });
     await expect(mobileOption).toBeVisible();
 
-    const desktopOption = await canvas.findByText(/desktop/i);
+    // Use exact match to avoid ambiguity: the card also has a subtitle "If user is on a desktop browser".
+    const desktopOption = await canvas.findByText('Is desktop browser', { exact: true });
     await expect(desktopOption).toBeVisible();
   },
 };
