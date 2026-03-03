@@ -13,7 +13,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
 - **Component:** ArdaDetailField (C1 from design-session-1, decision D10)
 - **Classification:** Atom &#8212; Display and Layout
 - **Source pattern:** Five identical `flex flex-col gap-1` blocks in `vendored/arda-frontend/components/items/ItemDetailsPanel.tsx` lines 1161-1204
-- **Canary Refactor target:** `Canary Refactor / Items / Item Detail`
+- **Canary Refactor target:** `Canary Refactor / Reference / Items / Item Detail`
 
 ## Phase 1: Discovery &amp; Definition (Manual)
 
@@ -88,7 +88,7 @@ following the fork chain pattern.
 - RuntimeConfig: `value` (string | undefined), `children` (ReactNode for custom value rendering)
 - Upstream analog: shadcn: none, AG Grid: N/A
 - Vendored source: `src/vendored/arda-frontend/components/items/ItemDetailsPanel.tsx` lines 1161-1204
-- Canary Refactor target: `Canary Refactor/Items/Item Detail`
+- Canary Refactor target: `Canary Refactor/Reference/Items/Item Detail`
 
 **IMPORTANT: Read these reference documents FIRST before writing any code:**
 - Full workflow: `workspace/projects/ad-hoc/ux-prototype/component-workflow-support/how-to-create-new-canary-components.md`
@@ -144,7 +144,7 @@ You must fork the ENTIRE chain. Create these files in `src/canary-refactor/compo
 
 4. **Create the story -- `src/canary-refactor/item-detail.stories.tsx`**:
    - Import the FORKED `ItemDetailPage` from `./components/ItemDetailPage`
-   - Title: `Canary Refactor/Items/Item Detail`
+   - Title: `Canary Refactor/Reference/Items/Item Detail`
    - SAME args shape as Dev Witness
    - SAME play function testing for heading
    - SAME parameters (layout: fullscreen, etc.)
@@ -310,7 +310,7 @@ In `ItemDetailsPanel.tsx` (forked):
 
 After fixing the relative imports, both stories were verified using the Playwright MCP browser tools.
 
-### Dev Witness: `Dev Witness / Items / Item Detail / Default`
+### Dev Witness: `Dev Witness / Reference / Items / Item Detail / Default`
 
 URL: `http://localhost:6006/?path=/story/dev-witness-items-item-detail--default`
 
@@ -318,7 +318,7 @@ Screenshot: `scratch/dev-witness-item-detail.png`
 
 Result: Full Items page renders with "Items" heading, description, search bar, and AG Grid. The detail panel does not open because `mock-item-001` is not in the MSW mock data (returns 404). MSW mocks, Redux store, and routing all initialize correctly via `withFullAppProviders`.
 
-### Canary Refactor: `Canary Refactor / Items / Item Detail / Default`
+### Canary Refactor: `Canary Refactor / Reference / Items / Item Detail / Default`
 
 URL: `http://localhost:6006/?path=/story/canary-refactor-items-item-detail--default`
 
