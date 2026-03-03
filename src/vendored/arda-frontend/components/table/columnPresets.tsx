@@ -14,6 +14,7 @@ import { flyToTarget } from '@frontend/lib/fly-to-target';
 import { useOrderQueueToast } from '@frontend/hooks/useOrderQueueToast';
 import { useOrderQueue } from '@frontend/contexts/OrderQueueContext';
 import { toast } from 'sonner';
+import { ALLOWED_ORDER_QUEUE_STATUSES } from '@frontend/lib/cardStateUtils';
 import { NoteModal } from '@frontend/components/common/NoteModal';
 import {
   cardSizeOptions,
@@ -166,56 +167,51 @@ const QuickActionsCell = ({ item }: { item: items.Item }) => {
           return;
         }
 
-        // Query for the oldest FULFILLED card for this item
-        const requestBody: any = {
-          filter: {
-            eq: 'FULFILLED',
-            locator: 'status',
-          },
-          paginate: {
-            index: 0,
-            size: 50,
-          },
-        };
-
-        const response = await fetch(
-          `/api/arda/kanban/kanban-card/query`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${jwtToken}`,
-            },
-            body: JSON.stringify(requestBody),
-            signal,
-          }
-        );
-
-        if (signal?.aborted) return;
-
-        if (response.ok) {
-          const data = await response.json();
-          if (signal?.aborted || !mountedRef.current) return;
-          if (data.ok && data.data?.results) {
-            const itemCards = data.data.results.filter(
+        // Query cards for each allowed status in parallel; return [] on any failure
+        // so a single failing request never drops results from the other statuses
+        const queryStatus = async (status: string) => {
+          try {
+            const response = await fetch(`/api/arda/kanban/kanban-card/query`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${jwtToken}`,
+              },
+              body: JSON.stringify({
+                filter: { eq: status, locator: 'status' },
+                paginate: { index: 0, size: 50 },
+              }),
+              signal,
+            });
+            if (!response.ok) return [];
+            const data = await response.json();
+            if (!data.ok || !data.data?.results) return [];
+            return data.data.results.filter(
               (card: any) =>
                 card.payload?.item?.eId === item.entityId ||
                 card.payload?.itemDetails?.eId === item.entityId
             );
-
-            if (itemCards.length > 0) {
-              itemCards.sort((a: any, b: any) => {
-                const aEffective = a.asOf?.effective || 0;
-                const bEffective = b.asOf?.effective || 0;
-                return aEffective - bEffective;
-              });
-              if (mountedRef.current) setCandidateCard(itemCards[0]);
-            } else {
-              if (mountedRef.current) setCandidateCard(null);
-            }
-          } else {
-            if (mountedRef.current) setCandidateCard(null);
+          } catch {
+            return [];
           }
+        };
+
+        const results = await Promise.all(
+          ALLOWED_ORDER_QUEUE_STATUSES.map(queryStatus)
+        );
+
+        if (signal?.aborted || !mountedRef.current) return;
+
+        // Merge all candidates and pick the single oldest one
+        const allCandidates = results.flat();
+
+        if (allCandidates.length > 0) {
+          allCandidates.sort((a: any, b: any) => {
+            const aEffective = a.asOf?.effective || 0;
+            const bEffective = b.asOf?.effective || 0;
+            return aEffective - bEffective;
+          });
+          if (mountedRef.current) setCandidateCard(allCandidates[0]);
         } else {
           if (mountedRef.current) setCandidateCard(null);
         }

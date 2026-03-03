@@ -644,16 +644,9 @@ export function MobileScanView({
     setScannedItems((prev) => prev.filter((item) => item.id !== id));
   };
 
-  // Helper function to check if Add to order queue button should be disabled
-  const isAddToOrderQueueDisabled = (
-    cardData: KanbanCardData | null,
-  ): boolean => {
-    if (!cardData?.payload?.status) {
-      return false; // Default to enabled if status is missing
-    }
-
-    const disabledStatuses = ['REQUESTED', 'IN_PROCESS', 'REQUESTING'];
-    return disabledStatuses.includes(cardData.payload.status);
+  const isAddToOrderQueueDisabled = (cardData: KanbanCardData | null): boolean => {
+    if (!cardData?.payload?.status) return false;
+    return !canAddToOrderQueue(cardData.payload.status);
   };
 
   // Map ScannedItem to ItemCard format for ItemDetailsPanel

@@ -18,6 +18,13 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [1.17.0] - 2026-03-03
+
+### Added
+
+- Sync vendored code from arda-frontend-app@c53f03d
+  - 12 file(s) modified
+
 ## [1.16.0] - 2026-03-02
 
 ### Added
