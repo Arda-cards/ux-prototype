@@ -21,26 +21,30 @@ Stories in this project use **CSS `@layer`** to manage theme overrides. This all
 | Story type | CSS to import | Notes |
 |---|---|---|
 | Component stories (extras) | None &#8212; uses the global default from `preview.ts` | Base theme is already loaded |
-| Dev Witness page stories | Vendored CSS override | Must match the real app appearance |
+| Dev Witness page stories | `@/styles/extras/vendored-theme.css` | Must match the real app appearance |
 | Canary component stories | `@/styles/canary/globals.css` (when available) | For canary-specific theming |
 
 ### Example: Dev Witness Story with Theme Override
 
 ```tsx
-// src/dev-witness/my-page.stories.tsx
+// src/dev-witness/<section>/my-page.stories.tsx
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import MyPage from '@frontend/app/my-page/page';
 
 // Override base theme with vendored app styles
-import '@frontend/app/globals.css';
+import '@/styles/extras/vendored-theme.css';
 
 const meta: Meta<typeof MyPage> = {
-  title: 'Dev Witness/My Page',
+  title: 'Dev Witness/Section/My Page',
   component: MyPage,
+  tags: ['app-route:/my-page'],
   parameters: {
     layout: 'fullscreen',
     appRoute: '/my-page',
     appComponent: 'app/my-page/page.tsx',
+  },
+  args: {
+    pathname: '/my-page',
   },
 };
 

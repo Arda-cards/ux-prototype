@@ -13,12 +13,13 @@ Each Dev Witness page story lives in `src/dev-witness/` and follows a consistent
 ### 1. Create the Story File
 
 ```tsx
-// src/dev-witness/my-page.stories.tsx
+// src/dev-witness/<section>/my-page.stories.tsx
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import MyPage from '@frontend/app/my-page/page';
+import '@/styles/extras/vendored-theme.css';
 
 const meta: Meta<typeof MyPage> = {
-  title: 'Dev Witness/My Page',
+  title: 'Dev Witness/Section/My Page',
   component: MyPage,
   tags: ['app-route:/my-page'],
   parameters: {
@@ -39,18 +40,19 @@ export const Default: Story = {};
 
 Key points:
 
-- The `title` must start with `Dev Witness/` so the `withFullAppProviders` decorator activates.
+- The `title` must start with `Dev Witness/` so the `withFullAppProviders` decorator activates. Use a minimum three-level title (`Dev Witness/Section/Page`) matching the application&#8217;s navigation structure. See the [Page Inventory](?path=/docs/docs-storybook-structure-dev-witness-integration--docs#page-inventory) for the section taxonomy.
 - The `tags` array should include `app-route:<path>` for route traceability.
-- Set `pathname` in `args` to match the application route. For dynamic routes, provide a concrete value (e.g., `/item/mock-item-001`).
+- Import `@/styles/extras/vendored-theme.css` to apply the production application&#8217;s CSS custom properties.
+- Set `pathname` in `args` to match the application route. For dynamic routes, provide a concrete value (e.g., `/item/item-001`).
 
 ### 2. Handle Dynamic Routes
 
-For pages with URL parameters (like `[itemId]`), pass `params` in the story args:
+For pages with URL parameters (like `[itemId]`), pass `params` in the story args. Use a concrete mock entity ID that exists in the MSW mock data &#8212; for example, `item-001` through `item-005` are the seeded item IDs:
 
 ```tsx
 args: {
-  pathname: '/item/mock-item-001',
-  params: { itemId: 'mock-item-001' },
+  pathname: '/item/item-001',
+  params: { itemId: 'item-001' },
 },
 ```
 
@@ -226,7 +228,7 @@ The script is idempotent: it deletes the target directory before copying. After 
 
 **Cause:** The auth guard detected missing or invalid auth state and redirected to `/signin`.
 
-**Fix:** Verify the story title starts with `Dev Witness/` (case-sensitive). The `withFullAppProviders` decorator only activates for titles matching that prefix. If the title is correct, check that `MockAuthProvider` and the Redux store pre-loading are working by inspecting the browser console for auth-related errors.
+**Fix:** Verify the story title starts with `Dev Witness/` or `Canary Refactor/` (case-sensitive). The `withFullAppProviders` decorator activates for both prefixes. If the title is correct, check that `MockAuthProvider` and the Redux store pre-loading are working by inspecting the browser console for auth-related errors.
 
 ### Runtime Error: API Calls Return Empty Data
 

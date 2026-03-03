@@ -110,11 +110,10 @@ Reference documentation for contributors and consumers of the library. You are h
     </tr>
     <tr>
       <td>
-        <strong>Applications</strong>
+        <strong>Creating Stories</strong>
       </td>
       <td>
-        How to create full-page application mocks and promote local components to the shared
-        library.
+        CSS theming conventions, Dev Witness story file template, and component story conventions.
       </td>
     </tr>
     <tr>
@@ -218,15 +217,9 @@ Design tokens and foundational styles extracted from the Figma source of truth:
 - **Icons** &#8212; Icon inventory from Lucide.
 - **Assets** &#8212; Logos and brand assets.
 
-### Applications
+### Archive
 
-Full-page application mocks that simulate how components appear in a real product context. Each mock comes in three variants:
-
-- **Production** &#8212; Mirrors the real application layout and behavior.
-- **Development** &#8212; Adds debug overlays and feature banners.
-- **Design** &#8212; Adds dotted structural borders for design review sessions.
-
-Application mocks compose library components into realistic pages (e.g., items data grid with tab navigation, search, and pagination). See the **Applications** docs page for how to create new mocks and promote local components to the shared library.
+Superseded full-page application mocks from earlier design and development phases, preserved for historical reference. Each mock is available in three variants (Production, Development, Design). These mocks compose library components into realistic pages and were the precursors to the vendored Dev Witness pages. New page coverage is added to Dev Witness rather than to this section.
 
 ### Dev Witness
 
@@ -261,7 +254,7 @@ Component names use the `Arda` prefix (e.g., `ArdaButton`, `ArdaDataGrid`, `Arda
 
 - **New here?** Start with the **Getting Started** page.
 - **Building a component?** Read the **Component Guidelines**.
-- **Creating a full-page mock?** See **Applications**.
+- **Adding a vendored page story?** See **Dev Witness Contributing**.
 - **Defining a user workflow?** Follow the **Use Cases** guide.
 - **Working with vendored pages?** Read the **Dev Witness Integration** overview and the **Dev Witness Contributing** guide.
 - **Migrating components to canary?** Check the **Canary Refactor** section for side-by-side comparison pages.
