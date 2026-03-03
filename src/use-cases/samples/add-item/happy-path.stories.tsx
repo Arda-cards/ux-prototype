@@ -362,7 +362,7 @@ function AddItemWizard(props: WizardProps<ItemFormData>) {
    ================================================================ */
 
 const meta = {
-  title: 'Use Cases/Examples/Add Item (Sample Only)/Happy Path',
+  title: 'Use Cases/Samples/Add Item (Sample Only)/Happy Path',
   parameters: { layout: 'centered' },
 } satisfies Meta;
 
