@@ -59,8 +59,8 @@ export const AddItemForm: Story = {
     const addButton = await canvas.findByRole('button', { name: /add item/i });
     await userEvent.click(addButton);
 
-    // Verify the form panel opened with form fields
-    const nameField = await canvas.findByLabelText(/name/i, {}, { timeout: 5000 });
-    await expect(nameField).toBeVisible();
+    // Verify the form panel opened (ItemFormPanel heading)
+    const formHeading = await canvas.findByRole('heading', { name: /add new item/i }, { timeout: 5000 });
+    await expect(formHeading).toBeVisible();
   },
 };

@@ -37,10 +37,8 @@ export const Account: Story = {
     await expect(heading).toBeVisible();
 
     // Verify Account tab is active (default).
-    // Scope to the sidebar nav to avoid matching the "Account" section heading in the content area.
-    const nav = canvasElement.querySelector('nav, [role="navigation"]') as HTMLElement;
-    const navCanvas = within(nav ?? canvasElement);
-    const accountButton = await navCanvas.findByRole('button', { name: /Account/i });
+    // Use exact string match to avoid matching "Update account" button in the content area.
+    const accountButton = await canvas.findByRole('button', { name: 'Account', exact: true });
     await expect(accountButton).toBeVisible();
   },
 };
