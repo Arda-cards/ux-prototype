@@ -198,7 +198,7 @@ Before writing any component code, **always check the upstream catalogs first**:
 1. Browse [shadcn/ui Components](https://ui.shadcn.com/docs/components) for a matching or similar component.
 2. If a match exists at 70%+ coverage:
    - Run `npx shadcn@latest add <component-name>` to add the base component to `src/components/ui/`.
-   - Create the Arda wrapper in the target track directory (e.g., `src/canary/components/atoms/<name>/`).
+   - Create the Arda wrapper in the target track directory (e.g., `src/components/canary/atoms/<name>/`).
    - Import and extend the shadcn primitive, applying Arda naming, tokens, and interface separation.
 3. If a partial match exists (similar pattern but different structure):
    - Copy the shadcn source into the Arda component directory.
@@ -211,7 +211,7 @@ Before writing any component code, **always check the upstream catalogs first**:
 2. If the component is fundamentally a row/column data display (sortable table, filterable grid, editable cells, row grouping):
    - Use `AgGridReact` from the existing `ag-grid-react` dependency as the rendering core.
    - Create an Arda wrapper that provides Arda-specific `ColDef` defaults, theme tokens, and the StaticConfig/RuntimeConfig interface split.
-   - See the existing `createArdaEntityDataGrid` factory in `src/extras/components/organisms/shared/entity-data-grid/` for the established pattern.
+   - See the existing `createArdaEntityDataGrid` factory in `src/components/extras/organisms/shared/entity-data-grid/` for the established pattern.
 3. If only a sub-feature is needed (e.g., cell renderer, status bar panel):
    - Implement it as a custom AG Grid component following the [AG Grid Component docs](https://www.ag-grid.com/react-data-grid/components/).
 
@@ -876,13 +876,13 @@ Where:
     </tr>
     <tr>
       <td>Canary</td>
-      <td><code>src/canary/components/&#123;level&#125;/&#123;name&#125;/</code></td>
+      <td><code>src/components/canary/&#123;level&#125;/&#123;name&#125;/</code></td>
       <td><code>Components/Canary/&#123;Level&#125;/&#123;Name&#125;</code></td>
       <td><code>./canary</code></td>
     </tr>
     <tr>
       <td>Extras</td>
-      <td><code>src/extras/components/&#123;level&#125;/&#123;name&#125;/</code></td>
+      <td><code>src/components/extras/&#123;level&#125;/&#123;name&#125;/</code></td>
       <td><code>Components/Extras/&#123;Level&#125;/&#123;Name&#125;</code></td>
       <td><code>./extras</code></td>
     </tr>
@@ -1241,7 +1241,7 @@ When creating or updating a component, deliver:
     </tr>
     <tr>
       <td>R8-R10</td>
-      <td><code>ux-prototype/src/extras/components/&#123;atoms,molecules,organisms&#125;/*-guide.mdx</code></td>
+      <td><code>ux-prototype/src/components/extras/&#123;atoms,molecules,organisms&#125;/*-guide.mdx</code></td>
       <td>Per-level in-tree guides</td>
     </tr>
     <tr>

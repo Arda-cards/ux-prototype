@@ -9,7 +9,7 @@ import type { ColDef, ICellRendererParams } from 'ag-grid-community';
 import {
   SelectAllHeaderComponent,
   SelectionCheckboxCell,
-} from '@/extras/components/molecules/data-grid/presets/common/common-cell-renderers';
+} from '@/components/extras/molecules/data-grid/presets/common/common-cell-renderers';
 import type { BusinessAffiliateWithRoles, BusinessRoleType } from './types';
 
 const roleBadgeColors: Record<BusinessRoleType, string> = {

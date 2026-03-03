@@ -104,7 +104,7 @@ following the fork chain pattern.
 
 ## Phase 2: Component Creation
 1. No upstream match -- build from scratch.
-2. Create directory: `src/canary/components/atoms/detail-field/`
+2. Create directory: `src/components/canary/atoms/detail-field/`
 3. Create `detail-field.tsx`:
    - CVA variants at top (default + compact)
    - StaticConfig extends VariantProps
@@ -130,11 +130,11 @@ The Dev Witness story renders `ItemDetailPage` which has this import chain:
         -> ItemDetailsPanel (vendored: components/items/ItemDetailsPanel.tsx, 1274 lines)
           <- 5 inline detail field blocks at lines 1161-1204
 
-You must fork the ENTIRE chain. Create these files in `src/applications/canary-refactor/components/`:
+You must fork the ENTIRE chain. Create these files in `src/canary-refactor/components/`:
 
 1. **Fork the leaf -- `ItemDetailsPanel.tsx`**: Copy the vendored file. Replace the 5 inline
    blocks (lines 1161-1204) with `<ArdaDetailField>` calls. Import ArdaDetailField from
-   `@/canary/components/atoms/detail-field/detail-field`. Keep ALL other code identical.
+   `@/components/canary/atoms/detail-field/detail-field`. Keep ALL other code identical.
 
 2. **Fork the middle -- `ItemsPage.tsx`**: Copy the vendored file. Change ONLY the import of
    `ItemDetailsPanel` to point to the forked version. Keep ALL other code identical.
@@ -142,7 +142,7 @@ You must fork the ENTIRE chain. Create these files in `src/applications/canary-r
 3. **Fork the root -- `ItemDetailPage.tsx`**: Copy the vendored file. Change ONLY the import
    of `ItemsPage` to point to the forked version. Keep ALL other code identical.
 
-4. **Create the story -- `src/applications/canary-refactor/item-detail.stories.tsx`**:
+4. **Create the story -- `src/canary-refactor/item-detail.stories.tsx`**:
    - Import the FORKED `ItemDetailPage` from `./components/ItemDetailPage`
    - Title: `Canary Refactor/Items/Item Detail`
    - SAME args shape as Dev Witness
@@ -153,7 +153,7 @@ You must fork the ENTIRE chain. Create these files in `src/applications/canary-r
 render `ItemDetailPage` (the forked version) to be visually comparable with Dev Witness.
 
 ## Phase 4: Verify
-1. Run the unit tests: `cd ux-prototype && npx vitest run src/canary/components/atoms/detail-field/`
+1. Run the unit tests: `cd ux-prototype && npx vitest run src/components/canary/atoms/detail-field/`
 2. List all created files and confirm the fork chain is complete.
 
 **Key vendored import paths:**
@@ -173,7 +173,7 @@ The agent (`front-end-engineer`, `mode: bypassPermissions`) completed in ~232 se
 
 ### Files Created
 
-**Phase 2 &#8212; Canary component** (`src/canary/components/atoms/detail-field/`):
+**Phase 2 &#8212; Canary component** (`src/components/canary/atoms/detail-field/`):
 
 <table>
   <thead>
@@ -202,7 +202,7 @@ The agent (`front-end-engineer`, `mode: bypassPermissions`) completed in ~232 se
   </tbody>
 </table>
 
-**Phase 3 &#8212; Fork chain** (`src/applications/canary-refactor/`):
+**Phase 3 &#8212; Fork chain** (`src/canary-refactor/`):
 
 <table>
   <thead>

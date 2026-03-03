@@ -1,0 +1,80 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Workflows/Creating Stories" />
+
+# How to Create New Stories
+
+This guide covers the conventions for creating Storybook stories in this project, including CSS theming, Dev Witness page stories, and component stories.
+
+## CSS Theming with Layers
+
+Stories in this project use **CSS `@layer`** to manage theme overrides. This allows each story to declare which visual theme it needs while keeping a predictable cascade order.
+
+### How It Works
+
+1. **Global default** &#8212; `preview.ts` imports the base CSS from `src/styles/extras/globals.css`, which defines CSS custom properties (e.g., `--base-primary-dark`) at a base layer priority.
+2. **Story override** &#8212; A story that needs a different theme (e.g., the vendored app theme or a canary theme) imports a higher-priority layer CSS file that redefines those custom properties.
+3. **Layer precedence** &#8212; CSS `@layer` ensures that overrides always win regardless of import order, so stories can be viewed in any sequence without style leakage.
+
+### Which CSS File to Import
+
+| Story type | CSS to import | Notes |
+|---|---|---|
+| Component stories (extras) | None &#8212; uses the global default from `preview.ts` | Base theme is already loaded |
+| Dev Witness page stories | Vendored CSS override | Must match the real app appearance |
+| Canary component stories | `@/styles/canary/globals.css` (when available) | For canary-specific theming |
+
+### Example: Dev Witness Story with Theme Override
+
+```tsx
+// src/dev-witness/my-page.stories.tsx
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import MyPage from '@frontend/app/my-page/page';
+
+// Override base theme with vendored app styles
+import '@frontend/app/globals.css';
+
+const meta: Meta<typeof MyPage> = {
+  title: 'Dev Witness/My Page',
+  component: MyPage,
+  parameters: {
+    layout: 'fullscreen',
+    appRoute: '/my-page',
+    appComponent: 'app/my-page/page.tsx',
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof MyPage>;
+
+export const Default: Story = {};
+```
+
+### Example: Component Story (No Override Needed)
+
+```tsx
+// src/components/extras/atoms/my-atom/my-atom.stories.tsx
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { MyAtom } from './my-atom';
+
+// No CSS import needed — uses global default from preview.ts
+
+const meta: Meta<typeof MyAtom> = {
+  title: 'Components/Extras/Atoms/My Atom',
+  component: MyAtom,
+};
+
+export default meta;
+type Story = StoryObj<typeof MyAtom>;
+
+export const Default: Story = {};
+```
+
+## Story File Conventions
+
+*(This section will be expanded as conventions are finalized.)*
+
+## Dev Witness Stories
+
+For detailed guidance on creating Dev Witness page stories, see the
+[Dev Witness Contributing Guide](?path=/docs/docs-storybook-structure-dev-witness-contributing--docs).

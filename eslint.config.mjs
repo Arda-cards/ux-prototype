@@ -11,7 +11,7 @@ import noHardcodedColors from './tools/eslint-rules/no-hardcoded-colors.js';
 
 export default [// ── Global ignores ──────────────────────────────────────────────────
 {
-  ignores: ['dist/**', 'node_modules/**', 'public/**', 'storybook-static/**', 'coverage/**', 'src/vendored/**', 'src/shims/**', 'src/decorators/**', 'src/applications/full-app/**', 'src/applications/dev-witness/**', 'src/applications/canary-refactor/components/**', 'src/use-cases/reference/business-affiliates/**', 'tests/**', 'playwright.config.ts', 'scratch/**'],
+  ignores: ['dist/**', 'node_modules/**', 'public/**', 'storybook-static/**', 'coverage/**', 'src/vendored/**', 'src/shims/**', 'src/decorators/**', 'src/dev-witness/**', 'src/canary-refactor/components/**', 'src/use-cases/reference/business-affiliates/**', 'tests/**', 'playwright.config.ts', 'scratch/**'],
 }, // ── Prettier (disable conflicting format rules) ───────────────────
 prettierConfig, // ── TypeScript strict rules ─────────────────────────────────────────
 {
@@ -108,10 +108,10 @@ prettierConfig, // ── TypeScript strict rules ──────────
     'src/components/molecules/data-grid/**/*.tsx',
     'src/components/organisms/shared/entity-data-grid/**/*.ts',
     'src/components/organisms/shared/entity-data-grid/**/*.tsx',
-    'src/extras/components/molecules/data-grid/**/*.ts',
-    'src/extras/components/molecules/data-grid/**/*.tsx',
-    'src/extras/components/organisms/shared/entity-data-grid/**/*.ts',
-    'src/extras/components/organisms/shared/entity-data-grid/**/*.tsx',
+    'src/components/extras/molecules/data-grid/**/*.ts',
+    'src/components/extras/molecules/data-grid/**/*.tsx',
+    'src/components/extras/organisms/shared/entity-data-grid/**/*.ts',
+    'src/components/extras/organisms/shared/entity-data-grid/**/*.tsx',
   ],
   rules: {
     '@typescript-eslint/no-explicit-any': 'off',
@@ -133,15 +133,16 @@ prettierConfig, // ── TypeScript strict rules ──────────
 }, // ── Subpath boundaries: stable code must not import from canary or extras ──
 {
   files: ['src/components/**/*.ts', 'src/components/**/*.tsx', 'src/types/**/*.ts', 'src/types/**/*.tsx', 'src/lib/**/*.ts', 'src/lib/**/*.tsx'],
+  ignores: ['src/components/canary/**', 'src/components/extras/**', 'src/types/extras/**', 'src/styles/extras/**'],
   rules: {
     'no-restricted-imports': ['error', {
       patterns: [
         {
-          group: ['**/canary/*', '**/canary/**', '@/canary/*', '@/canary/**'],
+          group: ['**/canary/*', '**/canary/**', '@/components/canary/*', '@/components/canary/**'],
           message: 'Stable code must not import from canary. Promote the component first.',
         },
         {
-          group: ['**/extras/*', '**/extras/**', '@/extras/*', '@/extras/**'],
+          group: ['**/extras/*', '**/extras/**', '@/components/extras/*', '@/components/extras/**'],
           message: 'Stable code must not import from extras. Promote the component first.',
         },
       ],
