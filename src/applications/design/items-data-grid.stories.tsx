@@ -14,7 +14,7 @@ import {
 import type { Item } from '@/extras/types/reference/items/item-domain';
 
 const meta: Meta = {
-  title: 'Applications/Design/Items Data Grid',
+  title: 'Archive/Applications/Design/Items Data Grid',
   parameters: {
     layout: 'fullscreen',
   },

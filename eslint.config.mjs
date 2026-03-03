@@ -11,7 +11,7 @@ import noHardcodedColors from './tools/eslint-rules/no-hardcoded-colors.js';
 
 export default [// ── Global ignores ──────────────────────────────────────────────────
 {
-  ignores: ['dist/**', 'node_modules/**', 'public/**', 'storybook-static/**', 'coverage/**', 'src/vendored/**', 'src/shims/**', 'src/decorators/**', 'src/applications/full-app/**', 'src/applications/dev-witness/**', 'tests/**', 'playwright.config.ts', 'scratch/**'],
+  ignores: ['dist/**', 'node_modules/**', 'public/**', 'storybook-static/**', 'coverage/**', 'src/vendored/**', 'src/shims/**', 'src/decorators/**', 'src/applications/full-app/**', 'src/applications/dev-witness/**', 'src/applications/canary-refactor/components/**', 'tests/**', 'playwright.config.ts', 'scratch/**'],
 }, // ── Prettier (disable conflicting format rules) ───────────────────
 prettierConfig, // ── TypeScript strict rules ─────────────────────────────────────────
 {

@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
-import ItemDetailPage from '@frontend/app/item/[itemId]/page';
+import ItemDetailPage from './components/ItemDetailPage';
 
 const meta: Meta<typeof ItemDetailPage> = {
-  title: 'Dev Witness/Items/Item Detail',
+  title: 'Canary Refactor/Items/Item Detail',
   component: ItemDetailPage,
   tags: ['app-route:/item/[itemId]'],
   parameters: {
@@ -21,10 +21,14 @@ export default meta;
 type Story = StoryObj<typeof ItemDetailPage>;
 
 /**
- * Default Item Detail view.
+ * Canary Refactor: Item Detail view with ArdaDetailField replacing inline blocks.
  * Exercises UC-ITEM-003: View item detail panel.
- * The ItemDetailPage renders ItemsPage which auto-detects the itemId
- * from the pathname and opens the details panel.
+ *
+ * Intentional deviations from Dev Witness (vendored):
+ * - Label color: `text-[#737373]` -> `text-muted-foreground` (design token)
+ * - Value color: `text-[#0a0a0a]` -> `text-foreground` (design token)
+ * - "Number of cards" value: `text-sm` -> `text-base` (consistent with other values)
+ * - Link fallback: muted/normal -> foreground/semibold (consistent with other fallbacks)
  */
 export const Default: Story = {
   play: async ({ canvasElement }) => {

@@ -9,7 +9,7 @@ import { mockPublishedItems } from '@/extras/components/molecules/data-grid/pres
 import { AppLayout } from '@/applications/shared/app-layout';
 
 const meta: Meta = {
-  title: 'Applications/Development/Order Queue',
+  title: 'Archive/Applications/Development/Order Queue',
   parameters: {
     layout: 'fullscreen',
   },

@@ -18,6 +18,7 @@ const config: StorybookConfig = {
     '../src/components/**/*.mdx',
     '../src/components/**/*.stories.@(ts|tsx)',
     '../src/visual-elements/**/*.stories.@(ts|tsx|mdx)',
+    '../src/applications/**/*.mdx',
     '../src/applications/**/*.stories.@(ts|tsx)',
     '../src/use-cases/**/*.mdx',
     '../src/use-cases/**/*.stories.@(ts|tsx)',

@@ -10,7 +10,7 @@ import { mockSuppliers } from '@/extras/components/molecules/data-grid/presets/s
 import { AppLayout } from '@/applications/shared/app-layout';
 
 const meta: Meta = {
-  title: 'Applications/Design/Suppliers',
+  title: 'Archive/Applications/Design/Suppliers',
   parameters: {
     layout: 'fullscreen',
   },

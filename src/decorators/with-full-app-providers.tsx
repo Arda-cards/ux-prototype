@@ -117,8 +117,8 @@ function ensureSingletonStoreHasAuth() {
 }
 
 export const withFullAppProviders: Decorator = (Story, context) => {
-  // Wrap Dev Witness stories automatically, plus any story that opts in via parameter
-  const isFullApp = context.title.startsWith('Dev Witness');
+  // Wrap Dev Witness and Canary Refactor stories automatically, plus any story that opts in via parameter
+  const isFullApp = context.title.startsWith('Dev Witness') || context.title.startsWith('Canary Refactor');
   const optsIn = context.parameters.fullAppProviders === true;
   if (!isFullApp && !optsIn) {
     return <Story />;

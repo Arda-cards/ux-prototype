@@ -1,0 +1,1431 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Components/Guidelines" />
+
+# Consolidated Component Guidelines
+
+> How to create configurable, production-quality Arda UI components.
+>
+> This is the single reference for building components in any track (stable, canary, extras) of the `ux-prototype` Storybook library. It consolidates and supersedes the per-topic guides listed in the [References](#references) section.
+
+---
+
+## 1. Philosophy
+
+Arda components follow an **existing-library-first** approach, drawing primarily from two upstream sources:
+
+- **shadcn/ui** -- General-purpose UI primitives (buttons, inputs, dialogs, selects, popovers, badges, etc.). Built on Radix UI + Tailwind CSS.
+- **AG Grid** -- Data grid and tabular display components. Already a project dependency (`ag-grid-community` + `ag-grid-react` v34). Used for entity grids, sortable/filterable tables, and any component whose core is a row/column data layout.
+
+For each new component, determine which upstream source (if any) is the best starting point, then follow this preference order:
+
+1. **Import and extend** the upstream component when one exists. Add it as a project dependency (or use the existing one), then wrap or extend it with Arda-specific props, tokens, and behavior.
+2. **Copy and adapt** the upstream source when the component needs deeper structural changes that wrapping cannot achieve. Copy the source into the component directory, then refactor.
+3. **Use as visual/API reference** when the upstream provides a similar but not directly reusable component. Follow its naming, prop conventions, and accessibility patterns.
+4. **Build from scratch** only when no upstream analog exists and the component is domain-specific or structurally novel.
+
+Always check the [shadcn/ui component catalog](https://ui.shadcn.com/docs/components) and the [AG Grid component catalog](https://www.ag-grid.com/react-data-grid/) before creating a new component. If an upstream component covers 70%+ of the requirement, prefer options 1 or 2 over building from scratch.
+
+### Core Principles
+
+- **Accessibility first.** Use Radix UI primitives for complex interactive patterns (dialogs, selects, popovers, tooltips). Never hand-roll focus traps, ARIA state management, or keyboard navigation when a Radix primitive exists.
+- **Token-driven styling.** All colors, spacing, and typography reference design tokens from `globals.css`. No hardcoded hex values.
+- **Type-safe variants.** Use CVA (class-variance-authority) for components with variant dimensions. Export `VariantProps` for consumer type safety.
+- **Separated lifecycle interfaces.** Split props by when they change: StaticConfig (design-time), RuntimeConfig (dynamic), InitConfig (mount-time, optional).
+
+---
+
+## 2. Technology Stack
+
+<table>
+  <thead>
+    <tr>
+      <th>Layer</th>
+      <th>Technology</th>
+      <th>Import</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Framework</td>
+      <td>React 19 + TypeScript</td>
+      <td>--</td>
+    </tr>
+    <tr>
+      <td>Component base</td>
+      <td>shadcn/ui primitives</td>
+      <td><code>@radix-ui/react-*</code></td>
+    </tr>
+    <tr>
+      <td>Data grids</td>
+      <td>AG Grid Community</td>
+      <td><code>ag-grid-community</code>, <code>ag-grid-react</code></td>
+    </tr>
+    <tr>
+      <td>Styling</td>
+      <td>Tailwind CSS v4</td>
+      <td>Utility classes</td>
+    </tr>
+    <tr>
+      <td>Variant management</td>
+      <td>CVA (class-variance-authority)</td>
+      <td><code>class-variance-authority</code></td>
+    </tr>
+    <tr>
+      <td>Class composition</td>
+      <td><code>cn()</code> (clsx + tailwind-merge)</td>
+      <td><code>@/lib/utils</code></td>
+    </tr>
+    <tr>
+      <td>Icons</td>
+      <td>Lucide React</td>
+      <td><code>lucide-react</code></td>
+    </tr>
+    <tr>
+      <td>Animations</td>
+      <td>tw-animate-css</td>
+      <td>Tailwind plugin</td>
+    </tr>
+    <tr>
+      <td>Documentation</td>
+      <td>Storybook 10 + MDX</td>
+      <td><code>@storybook/react-vite</code></td>
+    </tr>
+    <tr>
+      <td>Testing</td>
+      <td>Vitest + Testing Library</td>
+      <td><code>@testing-library/jest-dom/vitest</code></td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## 3. Starting from an Upstream Library
+
+### 3.1 Adding a shadcn Component
+
+When the shadcn catalog has a component that matches your need:
+
+```bash
+# Add the shadcn component to the project
+npx shadcn@latest add <component-name>
+
+# This places the source in src/components/ui/<component-name>.tsx
+```
+
+This gives you a working component with:
+- Radix UI primitives for accessibility
+- CVA variant definitions
+- `cn()` class composition
+- `data-slot` attributes for CSS targeting
+- TypeScript types via `VariantProps`
+
+### 3.2 Wrapping a shadcn Component (Preferred)
+
+Create an Arda wrapper that imports the shadcn primitive and extends it:
+
+```tsx
+import { Button as ShadcnButton, type buttonVariants } from '@/components/ui/button';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '@/lib/utils';
+
+// Arda-specific variant extensions
+const ardaButtonVariants = cva(
+  'transition-all', // base
+  {
+    variants: {
+      variant: {
+        primary: 'bg-primary text-primary-foreground shadow-xs hover:bg-primary/90',
+        secondary: 'bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80',
+        ghost: 'hover:bg-accent hover:text-accent-foreground',
+        destructive: 'bg-destructive text-white shadow-xs hover:bg-destructive/90',
+      },
+      size: {
+        sm: 'h-8 rounded-md px-3 text-xs',
+        md: 'h-9 rounded-md px-4 text-sm',
+        lg: 'h-10 rounded-md px-6 text-sm',
+      },
+    },
+    defaultVariants: { variant: 'primary', size: 'md' },
+  }
+);
+
+/** Design-time configuration. */
+export interface ArdaButtonStaticConfig
+  extends VariantProps<typeof ardaButtonVariants> {}
+
+/** Runtime configuration. */
+export interface ArdaButtonRuntimeConfig {
+  /** Whether the button shows a loading spinner. */
+  loading?: boolean;
+}
+
+/** Combined props. */
+export interface ArdaButtonProps
+  extends ArdaButtonStaticConfig,
+    ArdaButtonRuntimeConfig,
+    React.ButtonHTMLAttributes<HTMLButtonElement> {}
+
+export function ArdaButton({
+  variant,
+  size,
+  loading = false,
+  className,
+  disabled,
+  children,
+  ...props
+}: ArdaButtonProps) {
+  return (
+    <button
+      className={cn(ardaButtonVariants({ variant, size }), className)}
+      disabled={disabled || loading}
+      {...props}
+    >
+      {loading && <Spinner className="size-4 animate-spin" />}
+      {children}
+    </button>
+  );
+}
+```
+
+### 3.3 Explicit Upstream Library Check Step
+
+Before writing any component code, **always check the upstream catalogs first**:
+
+**A. Check shadcn/ui** (for general UI primitives):
+
+1. Browse [shadcn/ui Components](https://ui.shadcn.com/docs/components) for a matching or similar component.
+2. If a match exists at 70%+ coverage:
+   - Run `npx shadcn@latest add <component-name>` to add the base component to `src/components/ui/`.
+   - Create the Arda wrapper in the target track directory (e.g., `src/canary/components/atoms/<name>/`).
+   - Import and extend the shadcn primitive, applying Arda naming, tokens, and interface separation.
+3. If a partial match exists (similar pattern but different structure):
+   - Copy the shadcn source into the Arda component directory.
+   - Refactor: rename, apply Arda conventions, replace styling with Arda tokens.
+   - Add a comment noting the shadcn origin URL.
+
+**B. Check AG Grid** (for data grids and tabular layouts):
+
+1. Browse [AG Grid React Features](https://www.ag-grid.com/react-data-grid/) for a matching feature or component pattern.
+2. If the component is fundamentally a row/column data display (sortable table, filterable grid, editable cells, row grouping):
+   - Use `AgGridReact` from the existing `ag-grid-react` dependency as the rendering core.
+   - Create an Arda wrapper that provides Arda-specific `ColDef` defaults, theme tokens, and the StaticConfig/RuntimeConfig interface split.
+   - See the existing `createArdaEntityDataGrid` factory in `src/extras/components/organisms/shared/entity-data-grid/` for the established pattern.
+3. If only a sub-feature is needed (e.g., cell renderer, status bar panel):
+   - Implement it as a custom AG Grid component following the [AG Grid Component docs](https://www.ag-grid.com/react-data-grid/components/).
+
+**C. If no upstream match exists:**
+
+- Check whether the component's interactive pattern has a **Radix UI primitive** (e.g., dialog, popover, tabs) even if shadcn doesn't wrap it the way you need.
+- Build from scratch only as a last resort.
+
+This step applies to all tracks (stable, canary, extras) and is part of step 1.4 in the Component Extraction Workflow.
+
+### 3.4 When to Copy and Adapt vs. Wrap
+
+<table>
+  <thead>
+    <tr>
+      <th>Situation</th>
+      <th>Approach</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>shadcn/AG Grid component meets needs with minor additions</td>
+      <td><strong>Wrap/extend</strong></td>
+    </tr>
+    <tr>
+      <td>Need to change the DOM structure or slot layout</td>
+      <td><strong>Copy/adapt</strong></td>
+    </tr>
+    <tr>
+      <td>Need to remove parts of the upstream component</td>
+      <td><strong>Copy/adapt</strong></td>
+    </tr>
+    <tr>
+      <td>No upstream analog exists</td>
+      <td><strong>Reference or from scratch</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+When copying, place the adapted source directly in the Arda component directory (not in `components/ui/`). Add a comment at the top noting the upstream origin:
+
+```tsx
+/**
+ * ArdaSelect — adapted from shadcn/ui Select.
+ * Origin: https://ui.shadcn.com/docs/components/select
+ * Changes: Arda token styling, StaticConfig/RuntimeConfig split, custom empty state.
+ */
+```
+
+For AG Grid wrappers, note the AG Grid features used:
+
+```tsx
+/**
+ * ArdaEntityDataGrid — wraps AG Grid React.
+ * Origin: https://www.ag-grid.com/react-data-grid/
+ * AG Grid features: row sorting, column filtering, cell renderers, row selection.
+ * Changes: Arda theme tokens, factory pattern, StaticConfig/RuntimeConfig split.
+ */
+```
+
+---
+
+## 4. Component API Design
+
+### 4.1 Interface Separation by Lifecycle Phase
+
+Split component props into distinct TypeScript interfaces based on **when they change**. Only include interfaces that are relevant to the component.
+
+#### StaticConfig (Design Time)
+
+Properties chosen when the component is placed in a layout. These never change after composition.
+
+```tsx
+/** Design-time configuration for ArdaWidget. */
+export interface ArdaWidgetStaticConfig extends VariantProps<typeof widgetVariants> {
+  /* --- View / Layout / Controller --- */
+  /** Display label shown above the widget. */
+  label?: string;
+  /** Accessibility label when no visible label is present. */
+  'aria-label'?: string;
+}
+```
+
+Includes: labels, titles, variant/size, structural variations, accessibility identifiers.
+
+#### RuntimeConfig (Dynamic)
+
+Properties driven by application state that may change during the component's lifetime.
+
+```tsx
+/** Runtime configuration for ArdaWidget. */
+export interface ArdaWidgetRuntimeConfig {
+  /* --- Model / Data Binding --- */
+  /** Current value (controlled mode). */
+  value?: string;
+  /** Called when the value changes. */
+  onChange?: (value: string) => void;
+
+  /* --- View / Layout / Controller --- */
+  /** Whether the widget is in a loading state. */
+  loading?: boolean;
+  /** Whether the widget is disabled. */
+  disabled?: boolean;
+}
+```
+
+Includes: dynamic state (loading, disabled, active), event handlers, controlled values, validation errors, conditional rendering flags.
+
+#### InitConfig (Mount Time) -- Optional
+
+Properties that execute once when the component mounts. **Only include when the component actually has mount-time behavior** (async data fetching, one-time computations). Most components do not need this.
+
+```tsx
+/** Mount-time configuration for ArdaWidget. */
+export interface ArdaWidgetInitConfig {
+  /** Fetches initial data when the widget mounts. */
+  getInitialData?: () => Promise<WidgetData>;
+  /** Initial value for uncontrolled mode. */
+  defaultValue?: string;
+}
+```
+
+#### Combined Props Interface
+
+```tsx
+/** Combined props for ArdaWidget. */
+export interface ArdaWidgetProps
+  extends ArdaWidgetStaticConfig,
+    ArdaWidgetRuntimeConfig,
+    React.HTMLAttributes<HTMLDivElement> {}
+```
+
+Guidelines:
+- HTML attribute passthrough (`extends React.HTMLAttributes<...>`) goes on the **combined** interface, not the sub-interfaces.
+- Export all sub-interfaces so consumers can use them for partial typing.
+- Add JSDoc comments to every interface and every property.
+- Purely presentational components (e.g., Badge) may only need `StaticConfig`.
+- Omit `InitConfig` if the component has no mount-time behavior.
+
+### 4.2 Model/Data vs. View/Controller Separation
+
+Within each interface, separate props into two semantic groups using JSDoc section comments:
+
+```tsx
+export interface ArdaDataGridStaticConfig<T> {
+  /* --- Model / Data Binding --- */
+  /** Column definitions describing the data shape. */
+  columnDefs: ColDef<T>[];
+
+  /* --- View / Layout / Controller --- */
+  /** Height of the grid container. */
+  height?: string | number;
+  /** Additional CSS classes. */
+  className?: string;
+}
+```
+
+**Model/Data Binding** props relate to domain data, state values, data sources, and data callbacks.
+**View/Layout/Controller** props relate to visual presentation, layout flags, styling, and UI event handlers.
+
+### 4.3 Controlled/Uncontrolled Pattern
+
+When a component manages a value that can optionally be controlled by a parent:
+
+```tsx
+export function ArdaInput({ value: controlledValue, defaultValue, onChange, ...props }: ArdaInputProps) {
+  const [internalValue, setInternalValue] = useState(defaultValue ?? '');
+  const value = controlledValue ?? internalValue;
+  const isControlled = controlledValue !== undefined;
+
+  function handleChange(newValue: string) {
+    if (!isControlled) setInternalValue(newValue);
+    onChange?.(newValue);
+  }
+
+  return <input value={value} onChange={(e) => handleChange(e.target.value)} {...props} />;
+}
+```
+
+---
+
+## 5. Variant Management with CVA
+
+Use CVA (class-variance-authority) for all components with variant dimensions. This provides type-safe variant props and matches the shadcn convention.
+
+### 5.1 Defining Variants
+
+```tsx
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '@/lib/utils';
+
+const badgeVariants = cva(
+  // Base classes (always applied)
+  'inline-flex items-center rounded-sm border px-2 py-0.5 text-xs font-medium transition-colors',
+  {
+    variants: {
+      variant: {
+        default:     'bg-status-default-bg text-status-default-text border-status-default-border',
+        success:     'bg-status-success-bg text-status-success-text border-status-success-border',
+        warning:     'bg-status-warning-bg text-status-warning-text border-status-warning-border',
+        info:        'bg-status-info-bg text-status-info-text border-status-info-border',
+        destructive: 'bg-status-destructive-bg text-status-destructive-text border-status-destructive-border',
+        outline:     'bg-transparent text-muted-foreground border-border',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+    },
+  }
+);
+
+// Export for external composition
+export { badgeVariants };
+```
+
+### 5.2 Typing with VariantProps
+
+```tsx
+export interface ArdaBadgeStaticConfig extends VariantProps<typeof badgeVariants> {
+  /** Show a colored dot indicator. */
+  dot?: boolean;
+}
+
+export interface ArdaBadgeProps
+  extends ArdaBadgeStaticConfig,
+    React.HTMLAttributes<HTMLDivElement> {}
+
+export function ArdaBadge({ variant, dot, className, children, ...props }: ArdaBadgeProps) {
+  return (
+    <div className={cn(badgeVariants({ variant }), className)} {...props}>
+      {dot && <span className="size-1.5 rounded-full bg-current shrink-0" />}
+      {children}
+    </div>
+  );
+}
+```
+
+### 5.3 Compound Variants
+
+When variant combinations need special treatment:
+
+```tsx
+const buttonVariants = cva('...base...', {
+  variants: {
+    variant: { primary: '...', ghost: '...' },
+    size: { sm: '...', md: '...', lg: '...' },
+  },
+  compoundVariants: [
+    // Ghost buttons at small size get less padding
+    { variant: 'ghost', size: 'sm', className: 'px-1.5' },
+  ],
+  defaultVariants: { variant: 'primary', size: 'md' },
+});
+```
+
+### 5.4 When CVA is Overkill
+
+For components with zero or one variant dimension and no size axis, a simple conditional with `cn()` suffices:
+
+```tsx
+// OK for a simple boolean variant
+<div className={cn('base-classes', active && 'bg-primary text-white', className)} />
+```
+
+Use CVA when there are **2+ variant dimensions** or **3+ values in a single dimension**.
+
+---
+
+## 6. Styling
+
+### 6.1 General Rules
+
+1. **Tailwind utility classes** are the primary styling mechanism.
+2. **`cn()` from `@/lib/utils`** for all conditional class composition. Never string-concatenate class names manually.
+3. **CVA** for variant-driven class selection.
+4. **Accept a `className` prop** on every component for consumer overrides.
+5. **CSS files** (`.css`) only when Tailwind alone is insufficient (keyframe animations, complex pseudo-element styles). Use `arda-` prefixed class names in CSS files.
+6. **Never use inline `style` objects** except for truly dynamic computed values (e.g., `` style={{ width: `${percentage}%` }} ``).
+
+### 6.2 Color Tokens -- No Hardcoded Colors
+
+**Never use hardcoded hex color values.** All colors must reference design tokens defined in `globals.css`.
+
+Correct:
+```tsx
+className="bg-primary text-foreground border-border"
+className="bg-status-success-bg text-status-success-text"
+className="bg-[var(--accent-blue)]"   // when no Tailwind class exists
+```
+
+Incorrect:
+```tsx
+className="bg-[#3B82F6] text-[#0A0A0A]"   // hardcoded hex
+className="text-gray-500 bg-red-600"        // Tailwind palette (use semantic tokens)
+```
+
+**Token categories:**
+
+<table>
+  <thead>
+    <tr>
+      <th>Category</th>
+      <th>Example classes</th>
+      <th>Usage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Brand</td>
+      <td><code>bg-primary</code>, <code>text-foreground</code>, <code>bg-secondary</code></td>
+      <td>Primary actions, body text</td>
+    </tr>
+    <tr>
+      <td>Status</td>
+      <td><code>bg-status-success-bg</code>, <code>text-status-warning-text</code></td>
+      <td>Badges, alerts, indicators</td>
+    </tr>
+    <tr>
+      <td>Sidebar</td>
+      <td><code>bg-sidebar-bg</code>, <code>text-sidebar-text</code></td>
+      <td>Navigation chrome</td>
+    </tr>
+    <tr>
+      <td>Table</td>
+      <td><code>bg-table-header-bg</code>, <code>hover:bg-table-row-hover</code></td>
+      <td>Data grid/table styling</td>
+    </tr>
+    <tr>
+      <td>Neutral</td>
+      <td><code>text-muted-foreground</code>, <code>border-border</code>, <code>bg-background</code></td>
+      <td>Secondary text, dividers, canvas</td>
+    </tr>
+  </tbody>
+</table>
+
+### 6.3 Typography Scale
+
+Use only the standard Tailwind type scale. Default body text is `text-sm` (14px).
+
+<table>
+  <thead>
+    <tr>
+      <th>Class</th>
+      <th>Size</th>
+      <th>Usage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>text-3xs</code></td>
+      <td>8px</td>
+      <td>QR labels, decorative micro-text only</td>
+    </tr>
+    <tr>
+      <td><code>text-2xs</code></td>
+      <td>10px</td>
+      <td>Secondary metadata, compact indicators</td>
+    </tr>
+    <tr>
+      <td><code>text-xs</code></td>
+      <td>12px</td>
+      <td>Captions, badges, helper text</td>
+    </tr>
+    <tr>
+      <td><code>text-sm</code></td>
+      <td>14px</td>
+      <td><strong>Default body text</strong>, form labels</td>
+    </tr>
+    <tr>
+      <td><code>text-base</code></td>
+      <td>16px</td>
+      <td>Emphasized body text</td>
+    </tr>
+    <tr>
+      <td><code>text-lg</code></td>
+      <td>18px</td>
+      <td>Card titles, section sub-headers</td>
+    </tr>
+    <tr>
+      <td><code>text-xl</code></td>
+      <td>20px</td>
+      <td>Section headers</td>
+    </tr>
+    <tr>
+      <td><code>text-2xl</code></td>
+      <td>24px</td>
+      <td>Page titles, hero numbers</td>
+    </tr>
+  </tbody>
+</table>
+
+**Do not use arbitrary pixel sizes** like `text-[13px]`. Map to the nearest standard size.
+
+**Font weight conventions:**
+
+<table>
+  <thead>
+    <tr>
+      <th>Weight</th>
+      <th>Tailwind</th>
+      <th>Usage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>400 (Normal)</td>
+      <td><code>font-normal</code></td>
+      <td>Body text, descriptions</td>
+    </tr>
+    <tr>
+      <td>500 (Medium)</td>
+      <td><code>font-medium</code></td>
+      <td>Labels, navigation items</td>
+    </tr>
+    <tr>
+      <td>600 (Semibold)</td>
+      <td><code>font-semibold</code></td>
+      <td>Emphasized text, card titles</td>
+    </tr>
+    <tr>
+      <td>700 (Bold)</td>
+      <td><code>font-bold</code></td>
+      <td>Headings, strong emphasis</td>
+    </tr>
+    <tr>
+      <td>800 (Extrabold)</td>
+      <td><code>font-extrabold</code></td>
+      <td>Display headings only</td>
+    </tr>
+  </tbody>
+</table>
+
+### 6.4 Spacing
+
+Based on a 4px base unit. Common patterns from the Figma mockups:
+
+<table>
+  <thead>
+    <tr>
+      <th>Pattern</th>
+      <th>Class</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Card padding</td>
+      <td><code>p-4</code></td>
+      <td>16px</td>
+    </tr>
+    <tr>
+      <td>Section gap</td>
+      <td><code>gap-6</code></td>
+      <td>24px</td>
+    </tr>
+    <tr>
+      <td>Inline element gap</td>
+      <td><code>gap-2</code></td>
+      <td>8px</td>
+    </tr>
+    <tr>
+      <td>Form field gap</td>
+      <td><code>gap-4</code></td>
+      <td>16px</td>
+    </tr>
+    <tr>
+      <td>Page content padding</td>
+      <td><code>p-6</code></td>
+      <td>24px</td>
+    </tr>
+  </tbody>
+</table>
+
+### 6.5 Border Radius
+
+<table>
+  <thead>
+    <tr>
+      <th>Token</th>
+      <th>Tailwind</th>
+      <th>Value</th>
+      <th>Usage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>--radius-sm</code></td>
+      <td><code>rounded-sm</code></td>
+      <td>6px</td>
+      <td>Badges, chips</td>
+    </tr>
+    <tr>
+      <td><code>--radius-md</code></td>
+      <td><code>rounded-md</code></td>
+      <td>8px</td>
+      <td>Buttons, inputs</td>
+    </tr>
+    <tr>
+      <td><code>--radius-lg</code></td>
+      <td><code>rounded-lg</code></td>
+      <td>10px</td>
+      <td>Cards, panels</td>
+    </tr>
+    <tr>
+      <td><code>--radius-xl</code></td>
+      <td><code>rounded-xl</code></td>
+      <td>14px</td>
+      <td>Large cards, modals</td>
+    </tr>
+  </tbody>
+</table>
+
+### 6.6 Icons
+
+Use **Lucide React** (`lucide-react`). Icons inherit text color.
+
+Preferred (token-based):
+```tsx
+<Search className="size-[var(--icon-m)]" />    // 20px
+<Package className="size-[var(--icon-l)]" />    // 24px
+```
+
+Acceptable alternative:
+```tsx
+<Search className="w-5 h-5" />   // 20px
+```
+
+---
+
+## 7. Accessibility
+
+### 7.1 Radix UI Primitives
+
+For any interactive pattern that requires complex accessibility (focus management, keyboard navigation, ARIA state), use the corresponding Radix UI primitive:
+
+<table>
+  <thead>
+    <tr>
+      <th>Pattern</th>
+      <th>Radix Primitive</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Dialog / Modal</td>
+      <td><code>@radix-ui/react-dialog</code></td>
+    </tr>
+    <tr>
+      <td>Select / Dropdown</td>
+      <td><code>@radix-ui/react-select</code></td>
+    </tr>
+    <tr>
+      <td>Popover</td>
+      <td><code>@radix-ui/react-popover</code></td>
+    </tr>
+    <tr>
+      <td>Tooltip</td>
+      <td><code>@radix-ui/react-tooltip</code></td>
+    </tr>
+    <tr>
+      <td>Tabs</td>
+      <td><code>@radix-ui/react-tabs</code></td>
+    </tr>
+    <tr>
+      <td>Accordion</td>
+      <td><code>@radix-ui/react-accordion</code></td>
+    </tr>
+    <tr>
+      <td>Toggle / Switch</td>
+      <td><code>@radix-ui/react-toggle</code></td>
+    </tr>
+    <tr>
+      <td>Alert Dialog</td>
+      <td><code>@radix-ui/react-alert-dialog</code></td>
+    </tr>
+  </tbody>
+</table>
+
+### 7.2 Implementation Checklist
+
+- Use `useId()` for unique DOM IDs connecting labels to inputs.
+- Include `aria-label` when there is no visible text label.
+- Map validation state to `aria-invalid` and `aria-describedby`.
+- Ensure all interactive elements are keyboard-navigable.
+- Test with screen reader assertions in play functions where feasible.
+
+---
+
+## 8. File Layout and Naming
+
+### 8.1 Directory Structure
+
+```
+src/{track}/components/{level}/{component-name}/
+  {component-name}.tsx           Component implementation
+  {component-name}.stories.tsx   Storybook stories
+  {component-name}.test.tsx      Unit tests (Vitest)
+  {component-name}.mdx           Documentation
+  {component-name}.css           Styles (optional, only when needed)
+```
+
+Where:
+- **track**: `components` (stable), `canary`, or `extras`
+- **level**: `atoms`, `molecules`, or `organisms`
+
+### 8.2 Naming Conventions
+
+<table>
+  <thead>
+    <tr>
+      <th>Item</th>
+      <th>Convention</th>
+      <th>Example</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>File names</td>
+      <td>kebab-case</td>
+      <td><code>detail-field.tsx</code></td>
+    </tr>
+    <tr>
+      <td>Component names</td>
+      <td>PascalCase with <code>Arda</code> prefix</td>
+      <td><code>ArdaDetailField</code></td>
+    </tr>
+    <tr>
+      <td>CSS classes</td>
+      <td><code>arda-</code> prefix (BEM when needed)</td>
+      <td><code>arda-detail-field</code></td>
+    </tr>
+    <tr>
+      <td>Type exports</td>
+      <td><code>Arda&#123;Name&#125;Props</code>, <code>...StaticConfig</code>, <code>...RuntimeConfig</code></td>
+      <td><code>ArdaDetailFieldProps</code></td>
+    </tr>
+    <tr>
+      <td>CVA exports</td>
+      <td><code>&#123;name&#125;Variants</code></td>
+      <td><code>detailFieldVariants</code></td>
+    </tr>
+  </tbody>
+</table>
+
+### 8.3 Track-Specific Paths and Story Titles
+
+<table>
+  <thead>
+    <tr>
+      <th>Track</th>
+      <th>Component directory</th>
+      <th>Story title prefix</th>
+      <th>Package export</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Stable</td>
+      <td><code>src/components/&#123;level&#125;/&#123;name&#125;/</code></td>
+      <td><code>Components/&#123;Level&#125;/&#123;Subcategory&#125;/&#123;Name&#125;</code></td>
+      <td><code>.</code></td>
+    </tr>
+    <tr>
+      <td>Canary</td>
+      <td><code>src/canary/components/&#123;level&#125;/&#123;name&#125;/</code></td>
+      <td><code>Components/Canary/&#123;Level&#125;/&#123;Name&#125;</code></td>
+      <td><code>./canary</code></td>
+    </tr>
+    <tr>
+      <td>Extras</td>
+      <td><code>src/extras/components/&#123;level&#125;/&#123;name&#125;/</code></td>
+      <td><code>Components/Extras/&#123;Level&#125;/&#123;Name&#125;</code></td>
+      <td><code>./extras</code></td>
+    </tr>
+  </tbody>
+</table>
+
+### 8.4 Import Rules
+
+<table>
+  <thead>
+    <tr>
+      <th>From \ To</th>
+      <th>Stable</th>
+      <th>Canary</th>
+      <th>Extras</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Stable</strong></td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td><strong>Canary</strong></td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td><strong>Extras</strong></td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>Yes</td>
+    </tr>
+  </tbody>
+</table>
+
+- Canary components may import from stable but **never** from extras.
+- Extras components may import from stable but **never** from canary.
+- Stable components never import from canary or extras.
+
+---
+
+## 9. Component Classification
+
+Use the Atomic Design hierarchy:
+
+### Atoms
+
+Smallest, most fundamental UI building blocks. Standalone, no dependencies on other Arda components.
+
+**Criteria:**
+- Contains no domain logic or business rules
+- Does not import other Arda atoms, molecules, or organisms
+- Generally maps to a single HTML element or a thin wrapper around a Radix primitive
+- Highly reusable across different contexts
+
+**Subcategories:** General, Display and Layout, Form, Grid, Other.
+
+### Molecules
+
+Compositions of atoms serving a specific UI pattern. Domain-agnostic.
+
+**Criteria:**
+- Composed of multiple atoms or native elements
+- Minimal domain knowledge
+- Reusable across multiple features or domains
+
+### Organisms
+
+Complex components with business logic, often domain-specific.
+
+**Criteria:**
+- Contains domain-specific logic or data structures
+- Often connects to APIs or state management
+- Composed of multiple molecules and/or atoms
+
+**Sub-types:** Shared organisms (`organisms/shared/`) are configurable across domains. Reference organisms (`organisms/reference/&#123;domain&#125;/`) are tied to a specific business domain.
+
+### Decision Flowchart
+
+1. Does this component import other Arda components? **No** -> Atom. **Yes** -> step 2.
+2. Does it contain domain-specific logic? **Yes** -> Organism. **No** -> step 3.
+3. Is it reusable across multiple domains? **Yes** -> Molecule. **No** -> Organism.
+
+---
+
+## 10. Storybook Integration
+
+### 10.1 Meta Configuration
+
+Every story file **must** set `meta.component` to enable auto-generated Controls.
+
+```tsx
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { fn } from 'storybook/test';
+import { ArdaWidget } from './widget';
+
+const meta: Meta<typeof ArdaWidget> = {
+  title: 'Components/Atoms/General/Widget',
+  component: ArdaWidget,
+  parameters: {
+    docs: {
+      description: {
+        component: 'A brief description of what the component does.',
+      },
+    },
+  },
+  argTypes: {
+    // Group by lifecycle phase
+    variant: {
+      control: 'select',
+      options: ['default', 'compact'],
+      description: 'Visual style variant.',
+      table: { category: 'Static' },
+    },
+    loading: {
+      control: 'boolean',
+      description: 'Whether the widget is loading.',
+      table: { category: 'Runtime' },
+    },
+    onChange: {
+      action: 'changed',
+      description: 'Called when the value changes.',
+      table: { category: 'Events' },
+    },
+  },
+  args: {
+    onChange: fn(),  // Creates spy for play function assertions
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof ArdaWidget>;
+```
+
+**argTypes categories:** `Static`, `Runtime`, `Events`, `Initialization`.
+
+Do **not** use `tags: ['autodocs']` when the component has a dedicated `.mdx` documentation file.
+
+### 10.2 Required Stories
+
+<table>
+  <thead>
+    <tr>
+      <th>Story Type</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Default</strong></td>
+      <td>Minimal required props. Include a play function verifying initial render.</td>
+    </tr>
+    <tr>
+      <td><strong>Static Variations</strong></td>
+      <td>One story per visual variant (Primary, Secondary, Ghost, etc.).</td>
+    </tr>
+    <tr>
+      <td><strong>Runtime States</strong></td>
+      <td>Stories for loading, disabled, active, error states.</td>
+    </tr>
+    <tr>
+      <td><strong>Composition</strong></td>
+      <td>Render story showing multiple instances together (AllVariants).</td>
+    </tr>
+    <tr>
+      <td><strong>Interactive</strong></td>
+      <td>At least one story with a play function exercising interaction.</td>
+    </tr>
+    <tr>
+      <td><strong>Playground</strong></td>
+      <td>Args-only story (no render function) for Controls panel exploration. Last story in file.</td>
+    </tr>
+  </tbody>
+</table>
+
+### 10.3 Play Functions
+
+Every story file must have **at least one story with a play function**.
+
+```tsx
+import { expect, userEvent, within } from 'storybook/test';
+
+export const ClickInteraction: Story = {
+  args: { label: 'Submit' },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    const button = canvas.getByRole('button', { name: 'Submit' });
+    await userEvent.click(button);
+    await expect(args.onClick).toHaveBeenCalledTimes(1);
+  },
+};
+```
+
+- Use `within(canvasElement)` to scope queries.
+- Use accessibility-friendly queries: `getByRole`, `getByText`, `getByLabelText`.
+- Assert event handler calls using `fn()` spies from `meta.args`.
+
+### 10.4 Event Spies
+
+Every event handler prop must have both an `action` in argTypes and an `fn()` spy in `meta.args`:
+
+```tsx
+argTypes: {
+  onClick:  { action: 'clicked',  table: { category: 'Events' } },
+  onChange: { action: 'changed',  table: { category: 'Events' } },
+},
+args: {
+  onClick: fn(),
+  onChange: fn(),
+},
+```
+
+### 10.5 MDX Documentation
+
+Every component must have a `.mdx` file alongside its story file:
+
+1. **Title and description** -- What the component does and when to use it.
+2. **Configuration Lifecycle** -- StaticConfig, RuntimeConfig (and InitConfig if applicable) with bullet-point descriptions.
+3. **Usage** -- `<Canvas>` blocks rendering key stories.
+4. **Props** -- `<ArgTypes>` auto-generated table.
+5. **Accessibility** -- ARIA attributes, keyboard navigation, screen reader notes.
+6. **Upstream Origin** -- If adapted from shadcn/ui or AG Grid, note the origin and what was changed.
+7. **Related Components** -- Links to related atoms/molecules/organisms.
+
+**MDX Gotchas:**
+- Use HTML `<table>` elements, not markdown tables.
+- Use numeric entities (`&#8212;` not `&mdash;`).
+- Avoid bare curly braces in text (interpreted as JSX expressions).
+
+---
+
+## 11. Testing
+
+### 11.1 Unit Tests (Vitest + Testing Library)
+
+Every component must have a `.test.tsx` file.
+
+```tsx
+import { render, screen } from '@testing-library/react';
+import { ArdaBadge } from './badge';
+
+describe('ArdaBadge', () => {
+  it('renders with default variant', () => {
+    render(<ArdaBadge>Active</ArdaBadge>);
+    expect(screen.getByText('Active')).toBeInTheDocument();
+  });
+
+  it('applies variant classes', () => {
+    const { container } = render(<ArdaBadge variant="success">Done</ArdaBadge>);
+    expect(container.firstChild).toHaveClass('bg-status-success-bg');
+  });
+});
+```
+
+**Import:** `@testing-library/jest-dom/vitest` (not `@testing-library/jest-dom`).
+
+### 11.2 Required Test Scenarios
+
+1. **Initial render** -- verify default state and output.
+2. **Each variant** -- verify correct classes/DOM per variant.
+3. **Runtime state changes** -- loading, disabled, error.
+4. **User interaction** -- clicks, typing, focus.
+5. **Accessibility** -- ARIA attributes present, keyboard navigation works.
+6. **Edge cases** -- empty values, long text, missing optional props.
+
+---
+
+## 12. Delivery Checklist
+
+When creating or updating a component, deliver:
+
+- [ ] Component file (`.tsx`) with separated interface definitions and JSDoc comments
+- [ ] CVA variant definitions (when applicable) with exported `VariantProps`
+- [ ] `className` prop accepted for consumer overrides
+- [ ] Proper accessibility attributes (ARIA, `useId()`, keyboard support)
+- [ ] Storybook stories file (`.stories.tsx`) with:
+  - [ ] `meta.component` set
+  - [ ] `argTypes` with `table.category` grouping
+  - [ ] `fn()` spies for all event handlers
+  - [ ] Default story with play function
+  - [ ] Static variation stories
+  - [ ] At least one interactive play function
+  - [ ] Playground story (last, args-only)
+- [ ] MDX documentation file (`.mdx`)
+- [ ] Unit test file (`.test.tsx`)
+- [ ] Zero hardcoded hex colors (use design tokens)
+- [ ] Typography using only the standard type scale
+- [ ] Upstream origin noted (if adapted from shadcn/ui or AG Grid)
+
+---
+
+## 13. Anti-Patterns
+
+1. **Don't** mix lifecycle concerns in a single interface without clear separation.
+2. **Don't** hand-roll focus traps or ARIA state when a Radix primitive exists.
+3. **Don't** use hardcoded hex colors -- always use design tokens.
+4. **Don't** use arbitrary pixel font sizes -- use the standard type scale.
+5. **Don't** manage parent state inside the component (single source of truth).
+6. **Don't** skip the `className` prop -- every component must accept it.
+7. **Don't** create stories without play functions for interactive behaviors.
+8. **Don't** force empty `InitConfig` or `RuntimeConfig` interfaces when a component doesn't need them.
+9. **Don't** build from scratch when a shadcn/ui or AG Grid component can be imported and extended.
+10. **Don't** import from `extras/` in canary components or from `canary/` in stable components.
+
+---
+
+## References
+
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Source</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>R1</td>
+      <td><code>workspace/instructions/claude/skills/ui-component/SKILL.md</code></td>
+      <td>Agent skill: interface separation, Storybook conventions, output checklist</td>
+    </tr>
+    <tr>
+      <td>R2</td>
+      <td><code>ux-prototype/src/docs/component-guidelines.mdx</code></td>
+      <td>In-Storybook companion: file layout, interfaces, styling rules, typography</td>
+    </tr>
+    <tr>
+      <td>R3</td>
+      <td><code>ux-prototype/src/docs/component-classification.mdx</code></td>
+      <td>Atom/Molecule/Organism criteria and decision flowchart</td>
+    </tr>
+    <tr>
+      <td>R4</td>
+      <td><code>ux-prototype/src/docs/arda-style-guide.mdx</code></td>
+      <td>Design tokens, typography, page layout, component visual specs</td>
+    </tr>
+    <tr>
+      <td>R5</td>
+      <td><code>ux-prototype/src/docs/getting-started.mdx</code></td>
+      <td>Project structure, stable/canary/extras distinction</td>
+    </tr>
+    <tr>
+      <td>R6</td>
+      <td><code>ux-prototype/src/docs/developer-workflow.mdx</code></td>
+      <td>Development cycle, CI pipeline</td>
+    </tr>
+    <tr>
+      <td>R7</td>
+      <td><code>ux-prototype/src/docs/patterns/creating-entity-viewers.mdx</code></td>
+      <td>Entity viewer factory pattern</td>
+    </tr>
+    <tr>
+      <td>R8-R10</td>
+      <td><code>ux-prototype/src/extras/components/&#123;atoms,molecules,organisms&#125;/*-guide.mdx</code></td>
+      <td>Per-level in-tree guides</td>
+    </tr>
+    <tr>
+      <td>R11</td>
+      <td><code>workspace/instructions/claude/skills/unit-tests-frontend/SKILL.md</code></td>
+      <td>Frontend testing conventions</td>
+    </tr>
+    <tr>
+      <td>R13</td>
+      <td><a href="https://ui.shadcn.com/docs/installation">shadcn/ui Installation</a></td>
+      <td>shadcn distribution model, Radix + Tailwind foundation</td>
+    </tr>
+    <tr>
+      <td>R14</td>
+      <td><a href="https://ui.shadcn.com/docs/components">shadcn/ui Components</a></td>
+      <td>Full component catalog (60+ components)</td>
+    </tr>
+    <tr>
+      <td>R15</td>
+      <td><a href="https://www.ag-grid.com/react-data-grid/">AG Grid React</a></td>
+      <td>Data grid component library -- sorting, filtering, cell renderers, row grouping. Already a dependency (<code>ag-grid-community</code> + <code>ag-grid-react</code> v34).</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Appendix A: What is CVA (Class Variance Authority)?
+
+### Overview
+
+**CVA** ([class-variance-authority](https://cva.style/docs)) is a small TypeScript library for managing CSS class variants in a type-safe way. It is the standard variant management tool used by shadcn/ui and is already a dependency in the `ux-prototype` project.
+
+CVA solves a specific problem: when a component has multiple visual dimensions (variant, size, state) that each map to different sets of CSS classes, the combinatorial logic of selecting the right classes becomes error-prone. CVA provides a declarative, type-safe way to define these mappings.
+
+### The Problem CVA Solves
+
+Without CVA, variant logic typically looks like this:
+
+```tsx
+// Manual approach — error-prone, no type safety on variant values
+function Badge({ variant = 'default', size = 'md', className }: BadgeProps) {
+  const variantClasses: Record<string, string> = {
+    default: 'bg-gray-100 text-gray-800',
+    success: 'bg-green-100 text-green-800',
+    warning: 'bg-yellow-100 text-yellow-800',
+  };
+  const sizeClasses: Record<string, string> = {
+    sm: 'text-xs px-1.5 py-0.5',
+    md: 'text-sm px-2 py-0.5',
+  };
+
+  return (
+    <span className={cn(
+      'inline-flex items-center rounded-sm font-medium',
+      variantClasses[variant],   // no autocomplete, no compile-time check
+      sizeClasses[size],
+      className,
+    )}>
+      ...
+    </span>
+  );
+}
+```
+
+Issues: no TypeScript enforcement that `variant` values match the keys, no way to express compound variants (e.g., "ghost + sm needs different padding"), and the variant logic is mixed into the component body.
+
+### How CVA Works
+
+CVA separates variant definitions from the component, and generates both the class-selection function and the TypeScript types:
+
+```tsx
+import { cva, type VariantProps } from 'class-variance-authority';
+
+// 1. DEFINE — variant-to-class mapping, separate from the component
+const badgeVariants = cva(
+  // Base classes (always applied regardless of variant)
+  'inline-flex items-center rounded-sm font-medium transition-colors',
+  {
+    // Variant dimensions — each key is a prop name, each value is a class string
+    variants: {
+      variant: {
+        default: 'bg-status-default-bg text-status-default-text border-status-default-border',
+        success: 'bg-status-success-bg text-status-success-text border-status-success-border',
+        warning: 'bg-status-warning-bg text-status-warning-text border-status-warning-border',
+      },
+      size: {
+        sm: 'text-xs px-1.5 py-0.5',
+        md: 'text-sm px-2 py-0.5',
+        lg: 'text-base px-2.5 py-1',
+      },
+    },
+    // Compound variants — special classes for specific combinations
+    compoundVariants: [
+      { variant: 'default', size: 'sm', className: 'border' },
+    ],
+    // Defaults when props are not provided
+    defaultVariants: {
+      variant: 'default',
+      size: 'md',
+    },
+  }
+);
+
+// 2. TYPE — extract prop types automatically from the definition
+//    VariantProps<typeof badgeVariants> = { variant?: 'default' | 'success' | 'warning'; size?: 'sm' | 'md' | 'lg' }
+type BadgeVariantProps = VariantProps<typeof badgeVariants>;
+
+// 3. USE — call the function with variant props to get the resolved class string
+function ArdaBadge({ variant, size, className, children }: BadgeVariantProps & { className?: string; children: React.ReactNode }) {
+  return (
+    <span className={cn(badgeVariants({ variant, size }), className)}>
+      {children}
+    </span>
+  );
+}
+```
+
+### Key Concepts
+
+<table>
+  <thead>
+    <tr>
+      <th>Concept</th>
+      <th>What it does</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Base classes</strong></td>
+      <td>First argument to <code>cva()</code>. Always applied, regardless of which variants are active.</td>
+    </tr>
+    <tr>
+      <td><strong>Variants</strong></td>
+      <td>Named dimensions (e.g., <code>variant</code>, <code>size</code>). Each dimension maps its possible values to class strings.</td>
+    </tr>
+    <tr>
+      <td><strong>Default variants</strong></td>
+      <td>Which value to use when a variant prop is not provided.</td>
+    </tr>
+    <tr>
+      <td><strong>Compound variants</strong></td>
+      <td>Special class overrides for specific combinations of variant values.</td>
+    </tr>
+    <tr>
+      <td><strong>`VariantProps&lt;T&gt;`</strong></td>
+      <td>TypeScript utility type that extracts the prop types from a <code>cva()</code> definition. Use this in your interface to get autocomplete and compile-time checking.</td>
+    </tr>
+  </tbody>
+</table>
+
+### How It Integrates with Arda Conventions
+
+In Arda components, CVA definitions go at the top of the component file, above the interface definitions:
+
+```tsx
+// 1. CVA definition (variant logic)
+const widgetVariants = cva('...base...', { variants: { ... }, defaultVariants: { ... } });
+
+// 2. StaticConfig extends VariantProps (variant props are design-time choices)
+export interface ArdaWidgetStaticConfig extends VariantProps<typeof widgetVariants> {
+  label?: string;
+}
+
+// 3. RuntimeConfig (dynamic props, independent of CVA)
+export interface ArdaWidgetRuntimeConfig {
+  loading?: boolean;
+  onChange?: (value: string) => void;
+}
+
+// 4. Combined props
+export interface ArdaWidgetProps
+  extends ArdaWidgetStaticConfig, ArdaWidgetRuntimeConfig, React.HTMLAttributes<HTMLDivElement> {}
+
+// 5. Component uses cn(variants({ ... }), className) for class composition
+export function ArdaWidget({ variant, size, loading, className, ...props }: ArdaWidgetProps) {
+  return <div className={cn(widgetVariants({ variant, size }), loading && 'opacity-50', className)} {...props} />;
+}
+```
+
+The pattern is: **CVA owns the variant-to-class mapping, `VariantProps` owns the types, `cn()` merges everything together.**
+
+### When CVA is Not Needed
+
+- Components with **no variant dimensions** (e.g., a simple container or layout wrapper).
+- Components with a **single boolean toggle** (just use `cn('base', active && 'active-class')`).
+- Components where all styling is **inherited from a wrapped shadcn component** (the shadcn component already has its own CVA definition).
