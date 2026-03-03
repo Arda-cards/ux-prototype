@@ -1,9 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 import SignInPage from '@frontend/app/signin/page';
+import '@/styles/extras/vendored-theme.css';
 
 const meta: Meta<typeof SignInPage> = {
-  title: 'Dev Witness/Sign In',
+  title: 'Dev Witness/System/Authentication/Sign In',
   component: SignInPage,
   tags: ['app-route:/signin'],
   parameters: {
@@ -22,6 +23,10 @@ type Story = StoryObj<typeof SignInPage>;
 /**
  * UC-AUTH-001: Sign in with valid credentials.
  * Verifies the sign-in form renders with email/password fields and submit button.
+ *
+ * R3-19 Note: Social sign-in buttons (GitHub, Google, Apple) are visible in
+ * this story because the mock environment is non-production. In the deployed
+ * production app these buttons are hidden via an environment check.
  */
 export const Default: Story = {
   play: async ({ canvasElement }) => {

@@ -4,7 +4,7 @@ import ResetPasswordPage from '@frontend/app/reset-password/page';
 import '@/styles/extras/vendored-theme.css';
 
 const meta: Meta<typeof ResetPasswordPage> = {
-  title: 'Dev Witness/Reset Password',
+  title: 'Dev Witness/System/Authentication/Reset Password',
   component: ResetPasswordPage,
   tags: ['app-route:/reset-password'],
   parameters: {
