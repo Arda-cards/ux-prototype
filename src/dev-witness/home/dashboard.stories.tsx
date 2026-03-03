@@ -1,9 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, within } from 'storybook/test';
+import { expect, within, userEvent } from 'storybook/test';
 import DashboardPage from '@frontend/app/dashboard/page';
+import '@/styles/extras/vendored-theme.css';
 
 const meta: Meta<typeof DashboardPage> = {
-  title: 'Dev Witness/Dashboard',
+  title: 'Dev Witness/Home/Dashboard',
   component: DashboardPage,
   tags: ['app-route:/dashboard'],
   parameters: {
@@ -50,5 +51,47 @@ export const Default: Story = {
     // Verify the "Get started" panel
     const getStarted = await canvas.findByText('Get started with Arda');
     await expect(getStarted).toBeVisible();
+  },
+};
+
+/**
+ * R3-22: Notification Panel interaction.
+ * Clicks the notification bell and verifies the NotificationPanel slide-over opens.
+ */
+export const NotificationPanel: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    // Wait for the dashboard to render
+    await canvas.findByText(/Hiya,/i, {}, { timeout: 10000 });
+
+    // Click the notification bell icon button
+    const bellButton = await canvas.findByRole('button', { name: /notification/i });
+    await userEvent.click(bellButton);
+
+    // Verify the notification panel opens
+    const panelHeading = await canvas.findByText(/notification/i, {}, { timeout: 5000 });
+    await expect(panelHeading).toBeVisible();
+  },
+};
+
+/**
+ * R3-23: Help Panel interaction.
+ * Clicks the help icon and verifies the HelpPanel slide-over opens.
+ */
+export const HelpPanel: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    // Wait for the dashboard to render
+    await canvas.findByText(/Hiya,/i, {}, { timeout: 10000 });
+
+    // Click the help icon button
+    const helpButton = await canvas.findByRole('button', { name: /help/i });
+    await userEvent.click(helpButton);
+
+    // Verify the help panel opens
+    const helpContent = await canvas.findByText(/help/i, {}, { timeout: 5000 });
+    await expect(helpContent).toBeVisible();
   },
 };
