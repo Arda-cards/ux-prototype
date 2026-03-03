@@ -13,8 +13,8 @@ const meta: Meta<typeof ItemDetailPage> = {
     appComponent: 'app/item/[itemId]/page.tsx',
   },
   args: {
-    pathname: '/item/mock-item-001',
-    params: { itemId: 'mock-item-001' },
+    pathname: '/item/item-001',
+    params: { itemId: 'item-001' },
   },
 };
 

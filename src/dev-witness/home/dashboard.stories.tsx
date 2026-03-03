@@ -65,12 +65,12 @@ export const NotificationPanel: Story = {
     // Wait for the dashboard to render
     await canvas.findByText(/Hiya,/i, {}, { timeout: 10000 });
 
-    // Click the notification bell icon button
-    const bellButton = await canvas.findByRole('button', { name: /notification/i });
-    await userEvent.click(bellButton);
+    // The bell icon is a bare SVG with no accessible name — query by CSS class.
+    const bellIcon = canvasElement.querySelector('.lucide-bell') as HTMLElement;
+    await userEvent.click(bellIcon);
 
-    // Verify the notification panel opens
-    const panelHeading = await canvas.findByText(/notification/i, {}, { timeout: 5000 });
+    // Verify the notification panel opens (h2 heading rendered by NotificationPanel)
+    const panelHeading = await canvas.findByRole('heading', { name: /notifications/i }, { timeout: 5000 });
     await expect(panelHeading).toBeVisible();
   },
 };
@@ -86,12 +86,12 @@ export const HelpPanel: Story = {
     // Wait for the dashboard to render
     await canvas.findByText(/Hiya,/i, {}, { timeout: 10000 });
 
-    // Click the help icon button
-    const helpButton = await canvas.findByRole('button', { name: /help/i });
-    await userEvent.click(helpButton);
+    // The help icon is a bare SVG with no accessible name — query by CSS class.
+    const helpIcon = canvasElement.querySelector('.lucide-circle-question-mark') as HTMLElement;
+    await userEvent.click(helpIcon);
 
-    // Verify the help panel opens
-    const helpContent = await canvas.findByText(/help/i, {}, { timeout: 5000 });
-    await expect(helpContent).toBeVisible();
+    // Verify the help panel opens (h2 heading "Need help?" rendered by HelpPanel)
+    const helpHeading = await canvas.findByRole('heading', { name: /need help/i }, { timeout: 5000 });
+    await expect(helpHeading).toBeVisible();
   },
 };
