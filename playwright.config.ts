@@ -8,8 +8,8 @@ import { defineConfig, devices } from '@playwright/test';
  * snapshots with a 1 % pixel-diff tolerance.
  */
 export default defineConfig({
-  testDir: './tests/vrt',
-  outputDir: './tests/vrt/test-results',
+  testDir: './tests',
+  outputDir: './tests/test-results',
 
   /* Platform-independent snapshot names so baselines work on macOS and Linux. */
   snapshotPathTemplate:
@@ -37,6 +37,16 @@ export default defineConfig({
   projects: [
     {
       name: 'vrt',
+      testDir: './tests/vrt',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1280, height: 900 },
+      },
+    },
+    {
+      name: 'smoke',
+      testDir: './tests/smoke',
+      timeout: 300000, // 5 min — iterates all stories in a single test
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1280, height: 900 },

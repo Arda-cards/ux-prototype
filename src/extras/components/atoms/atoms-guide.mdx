@@ -1,0 +1,103 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Components/Extras/Atoms/Guide" />
+
+# Atoms
+
+Atoms are the smallest, most fundamental UI building blocks. They are standalone components that do not depend on other custom components and can be used anywhere in the application.
+
+## Criteria
+
+- Contains no domain logic or business rules
+- Does not import other Arda atoms, molecules, or organisms
+- Highly reusable across different contexts
+- Generally maps to a single HTML element or a thin wrapper around a library primitive
+- Focuses on presentation and basic interaction patterns
+
+## Subcategories
+
+Atoms are organized into subcategories based on their purpose. The subcategory determines the Storybook sidebar path.
+
+<table>
+  <thead>
+    <tr>
+      <th>Category</th>
+      <th>Story title prefix</th>
+      <th>Purpose</th>
+      <th>Current components</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>General</strong></td>
+      <td><code>Components/Extras/Atoms/General/</code></td>
+      <td>Common UI primitives for user interaction and status display</td>
+      <td>Button</td>
+    </tr>
+    <tr>
+      <td><strong>Display and Layout</strong></td>
+      <td><code>Components/Extras/Atoms/Display and Layout/</code></td>
+      <td>Components for structuring and presenting content</td>
+      <td>Badge</td>
+    </tr>
+    <tr>
+      <td><strong>Form</strong></td>
+      <td><code>Components/Extras/Atoms/Form/</code></td>
+      <td>Input controls and form primitives</td>
+      <td>Typeahead</td>
+    </tr>
+    <tr>
+      <td><strong>Grid</strong></td>
+      <td><code>Components/Extras/Atoms/Grid/</code></td>
+      <td>AG Grid cell editors and renderers</td>
+      <td>SelectCellEditor, TypeaheadCellEditor</td>
+    </tr>
+    <tr>
+      <td><strong>Other</strong></td>
+      <td><code>Components/Extras/Atoms/Other/</code></td>
+      <td>Specialized atoms that don't fit other categories</td>
+      <td>ConfirmDialog</td>
+    </tr>
+  </tbody>
+</table>
+
+## File structure
+
+Each atom lives in its own directory under `src/components/atoms/`:
+
+```
+atoms/
+  badge/
+    badge.tsx            # Component implementation
+    badge.stories.tsx    # Stories
+    badge.mdx            # Docs (optional, uses Meta of={Stories})
+    badge.test.tsx       # Tests (if applicable)
+  button/
+    ...
+```
+
+## Adding a new atom
+
+1. **Create the directory** at `src/components/atoms/{component-name}/`.
+2. **Implement the component** in `{component-name}.tsx`.
+3. **Choose the subcategory** (General, Display and Layout, Form, Grid, or Other) based on the component's purpose.
+4. **Create stories** in `{component-name}.stories.tsx` with the title `Components/Extras/Atoms/{Subcategory}/{ComponentName}`.
+5. **Optionally create docs** in `{component-name}.mdx` using `<Meta of={Stories} />` to attach to the story.
+6. **Export from** `src/index.ts` if the component is part of the public API.
+
+### Story title example
+
+```tsx
+const meta: Meta<typeof MyComponent> = {
+  title: 'Components/Extras/Atoms/Form/MyComponent',
+  component: MyComponent,
+};
+```
+
+### Deciding the subcategory
+
+- Does it handle user input? &#8594; **Form**
+- Is it an AG Grid cell editor or renderer? &#8594; **Grid**
+- Does it primarily display information or structure layout? &#8594; **Display and Layout**
+- Is it a common interactive primitive (buttons, toggles, dialogs)? &#8594; **General**
+- None of the above? &#8594; **Other**

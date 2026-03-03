@@ -3,7 +3,7 @@ import { expect, within } from 'storybook/test';
 import CompanySettingsPage from '@frontend/app/company-settings/page';
 
 const meta: Meta<typeof CompanySettingsPage> = {
-  title: 'Full App/Company Settings',
+  title: 'Dev Witness/Company Settings',
   component: CompanySettingsPage,
   tags: ['app-route:/company-settings'],
   parameters: {

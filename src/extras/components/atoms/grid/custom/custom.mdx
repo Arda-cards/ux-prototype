@@ -1,0 +1,89 @@
+import { Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as CustomStories from './custom.stories';
+
+<Meta of={CustomStories} />
+
+# Custom Cell
+
+Compact custom display and editing components for AG Grid cells. Delegates ALL rendering to a parent-provided `render` prop.
+
+## Render Prop Contract
+
+The `render` function receives only field-level context (R1.09 isolation):
+
+```tsx
+render(
+  value: unknown,        // Current field value
+  mode: AtomMode,        // 'display' | 'edit' | 'error'
+  onChange: (original, current) => void,  // Change callback
+  errors?: string[]      // Validation errors (error mode only)
+) => ReactNode
+```
+
+<table>
+  <thead>
+    <tr>
+      <th>Mode</th>
+      <th>Behaviour</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>display</code></td>
+      <td>Read-only presentation for the grid cell.</td>
+    </tr>
+    <tr>
+      <td><code>edit</code></td>
+      <td>Editable inputs within the cell.</td>
+    </tr>
+    <tr>
+      <td><code>error</code></td>
+      <td>Editable inputs with error messages.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Variants
+
+### Display
+
+Read-only custom rendering in a grid cell.
+
+<Canvas of={CustomStories.Display} />
+
+### Editor
+
+AG Grid cell editor that delegates to the render prop. Exposes `getValue()` via ref for AG Grid integration.
+
+<Canvas of={CustomStories.Editor} />
+
+### Interactive
+
+Switches between display and edit/error modes based on the `mode` prop.
+
+<Canvas of={CustomStories.InteractiveEdit} />
+
+## Configuration
+
+### Static Configuration (Design Time)
+
+- **render** &#8212; The render function that produces the cell UI
+
+### Runtime Configuration
+
+- **value** &#8212; The field value
+- **onChange** &#8212; Called when value changes with (original, current)
+- **stopEditing** &#8212; AG Grid callback to exit edit mode (editor only)
+
+## Factory Helper
+
+Use `createCustomCellEditor()` to create a pre-configured editor for AG Grid column definitions:
+
+```ts
+import { createCustomCellEditor } from '@/extras/components/atoms/grid/custom';
+
+const colDef = {
+  field: 'status',
+  cellEditor: createCustomCellEditor({ render: myRenderFn }),
+};
+```

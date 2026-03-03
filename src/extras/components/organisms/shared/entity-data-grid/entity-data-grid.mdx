@@ -1,0 +1,511 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Components/Extras/Organisms/Shared/Entity Data Grid/Guide" />
+
+# Entity Data Grid Factory
+
+`createArdaEntityDataGrid<T>()` is a generic factory function that produces a fully typed, feature-rich data grid component for any entity type. It encapsulates the column pipeline, dirty tracking, cell editing, pagination, and row selection so that domain-specific grids (Items, Suppliers, etc.) are thin wrappers with no duplicated logic.
+
+## Architecture Overview
+
+The factory separates configuration into three temporal phases, each with a distinct role:
+
+<table>
+  <thead>
+    <tr>
+      <th>Phase</th>
+      <th>When</th>
+      <th>What it controls</th>
+      <th>Interface</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Design</strong></td>
+      <td>Module load (top-level call)</td>
+      <td>Entity shape, columns, identity, editing rules</td>
+      <td><code>EntityDataGridConfig&lt;T&gt;</code></td>
+    </tr>
+    <tr>
+      <td><strong>Initialization</strong></td>
+      <td>Organism wrapper definition</td>
+      <td>Entity-specific prop naming, static type aliases</td>
+      <td>Wrapper component + custom Props/Ref interfaces</td>
+    </tr>
+    <tr>
+      <td><strong>Runtime</strong></td>
+      <td>Every render</td>
+      <td>Data, visibility, editing, pagination, callbacks</td>
+      <td><code>EntityDataGridProps&lt;T&gt;</code> (Model + View)</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Phase 1 &#8212; Design Time (`EntityDataGridConfig<T>`)
+
+The design-time configuration is passed once when you call the factory at module scope. It defines everything that is **fixed for the entity type** and never changes at runtime.
+
+```tsx
+import { createArdaEntityDataGrid } from '@/extras/components/organisms/shared/entity-data-grid';
+import { myColumnDefs, myDefaultColDef, enhanceEditable } from './my-presets';
+import type { MyEntity } from '@/extras/types/my-entity';
+
+const { Component: BaseMyEntityGrid } = createArdaEntityDataGrid<MyEntity>({
+  displayName: 'MyEntityGrid',
+  persistenceKeyPrefix: 'arda-my-entity-grid',
+  columnDefs: myColumnDefs,
+  defaultColDef: myDefaultColDef,
+  getEntityId: (entity) => entity.id,
+  enhanceEditableColumnDefs: enhanceEditable,
+});
+```
+
+### Config properties
+
+<table>
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Type</th>
+      <th>Required</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>displayName</code></td>
+      <td><code>string</code></td>
+      <td>Yes</td>
+      <td>React DevTools display name for the produced component.</td>
+    </tr>
+    <tr>
+      <td><code>persistenceKeyPrefix</code></td>
+      <td><code>string</code></td>
+      <td>Yes</td>
+      <td>Prefix for AG Grid state persistence keys. Combined with <code>activeTab</code> at runtime to produce the full key (e.g. <code>arda-items-data-grid-published</code>).</td>
+    </tr>
+    <tr>
+      <td><code>columnDefs</code></td>
+      <td><code>ColDef&lt;T&gt;[]</code></td>
+      <td>Yes</td>
+      <td>Base column definitions for the entity. These pass through the column pipeline (visibility &#8594; order &#8594; editing enhancement) at runtime.</td>
+    </tr>
+    <tr>
+      <td><code>defaultColDef</code></td>
+      <td><code>ColDef&lt;T&gt;</code></td>
+      <td>Yes</td>
+      <td>Default column properties applied to every column (sortable, resizable, etc.). Use <code>COMMON_DEFAULT_COL_DEF</code> from the common presets for the standard Arda defaults.</td>
+    </tr>
+    <tr>
+      <td><code>getEntityId</code></td>
+      <td><code>(entity: T) =&gt; string</code></td>
+      <td>Yes</td>
+      <td>Extracts a stable, unique string identifier from an entity instance. Used for dirty-tracking and reconciliation.</td>
+    </tr>
+    <tr>
+      <td><code>enhanceEditableColumnDefs</code></td>
+      <td><code>(defs, options) =&gt; ColDef&lt;T&gt;[]</code></td>
+      <td>No</td>
+      <td>Optional function that augments column defs with editing capabilities (editable flag, value getters/setters, cell editors). Called only when <code>enableCellEditing</code> is true at runtime.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Column presets
+
+Column definitions and their editing enhancements live in the **molecules** layer under `data-grid/presets/`:
+
+```
+molecules/data-grid/presets/
+  common/                        # Entity-agnostic utilities
+    common-cell-renderers.tsx     # SelectAllHeader, SelectionCheckbox, NotesIcon, QuickActions
+    common-column-utils.tsx       # COMMON_DEFAULT_COL_DEF, createSelectColumn, createNotesColumn, createQuickActionsColumn
+  items/                          # Items-specific presets
+    items-column-presets.tsx       # itemsColumnDefs, itemsDefaultColDef, enhanceEditableColumnDefs
+    items-cell-renderers.tsx       # CardCountCell, QuickActionsCell, NotesCell
+    items-options.ts               # Dropdown option arrays
+  suppliers/                      # Suppliers-specific presets
+    suppliers-column-presets.tsx
+    suppliers-cell-renderers.tsx
+```
+
+The **common column utilities** provide factory functions for standard columns shared across all entity grids:
+
+- `createSelectColumn<T>()` &#8212; checkbox selection column with select-all header
+- `createNotesColumn<T>(notesAccessor)` &#8212; notes icon column with a configurable accessor
+- `createQuickActionsColumn<T>()` &#8212; placeholder actions column
+
+### Editing enhancement pattern
+
+The `enhanceEditableColumnDefs` function follows a consistent pattern:
+
+1. Define an `EDITABLE_FIELDS` set listing which `colId`/`field` values support editing.
+2. Map over column defs; for each editable column, add `editable: true`, a `valueGetter`, a `valueSetter`, and optionally a `cellEditor`.
+3. Use `createSelectCellEditor(options)` or `createTypeaheadCellEditor({ dataSource })` from the atoms layer for structured editors.
+
+```tsx
+export const EDITABLE_FIELDS = new Set(['name', 'contact.email', 'notes']);
+
+export function enhanceEditableMyColumnDefs(
+  defs: ColDef<MyEntity>[],
+  options?: { enabled?: boolean },
+): ColDef<MyEntity>[] {
+  if (options?.enabled === false) return defs;
+
+  return defs.map((col) => {
+    const key = (col.colId as string) || (col.field as string);
+    if (!key || !EDITABLE_FIELDS.has(key)) return col;
+
+    return {
+      ...col,
+      editable: true,
+      valueGetter: (params) => { /* extract value from entity */ },
+      valueSetter: (params) => { /* set value on entity, return true */ },
+      // Optional: custom cell editor
+      // cellEditor: createSelectCellEditor(myOptions),
+    };
+  });
+}
+```
+
+---
+
+## Phase 2 &#8212; Initialization (Organism Wrapper)
+
+The factory returns a generic `Component` that accepts `EntityDataGridProps<T>`. Domain organisms wrap this component to provide **entity-specific prop names** and re-export narrowed type aliases.
+
+This phase is where you define the public API that application code consumes.
+
+```tsx
+import React, { forwardRef } from 'react';
+import {
+  createArdaEntityDataGrid,
+  type EntityDataGridRef,
+  type EntityDataGridProps,
+} from '@/extras/components/organisms/shared/entity-data-grid';
+
+// Phase 1 &#8212; design-time config (see above)
+const { Component: BaseMyEntityGrid } = createArdaEntityDataGrid<MyEntity>({ ... });
+
+// Phase 2 &#8212; entity-specific prop interface
+export interface MyEntityDataGridProps
+  extends Omit<EntityDataGridProps<MyEntity>, 'data' | 'onEntityUpdated'> {
+  /** Domain-named data prop */
+  myEntities: MyEntity[];
+  /** Domain-named update callback */
+  onMyEntityUpdated?: (entity: MyEntity) => void;
+}
+
+export interface MyEntityDataGridRef extends EntityDataGridRef {}
+
+// Thin wrapper: maps domain names to generic names
+export const MyEntityDataGrid = forwardRef<MyEntityDataGridRef, MyEntityDataGridProps>(
+  function MyEntityDataGrid({ myEntities, onMyEntityUpdated, ...rest }, ref) {
+    return (
+      <BaseMyEntityGrid
+        ref={ref}
+        data={myEntities}
+        onEntityUpdated={onMyEntityUpdated}
+        {...rest}
+      />
+    );
+  },
+);
+
+MyEntityDataGrid.displayName = 'MyEntityDataGrid';
+```
+
+### Key conventions
+
+- **Rename `data` and `onEntityUpdated`** to entity-specific names (`items`/`onItemUpdated`, `suppliers`/`onSupplierUpdated`). All other props pass through unchanged.
+- **Re-export `EntityDataGridRef`** as a domain-named type alias for consumer clarity.
+- The wrapper adds **no logic** &#8212; it is purely a prop-mapping layer.
+- Place the organism at `organisms/reference/{domain}/{component-name}/`.
+
+### Real examples
+
+**Items Data Grid** (`organisms/reference/items/items-data-grid/`):
+
+```tsx
+const { Component: BaseItemsDataGrid } = createArdaEntityDataGrid<Item>({
+  displayName: 'ArdaItemsDataGrid',
+  persistenceKeyPrefix: 'arda-items-data-grid',
+  columnDefs: itemsColumnDefs,
+  defaultColDef: itemsDefaultColDef,
+  getEntityId: (item) => item.entityId,
+  enhanceEditableColumnDefs,
+});
+```
+
+**Suppliers Data Grid** (`organisms/reference/business-affiliates/suppliers-data-grid/`):
+
+```tsx
+const { Component: BaseSupplierDataGrid } = createArdaEntityDataGrid<BusinessAffiliate>({
+  displayName: 'ArdaSupplierDataGrid',
+  persistenceKeyPrefix: 'arda-suppliers-data-grid',
+  columnDefs: suppliersColumnDefs,
+  defaultColDef: suppliersDefaultColDef,
+  getEntityId: (supplier) => supplier.eId,
+  enhanceEditableColumnDefs: enhanceEditableSupplierColumnDefs,
+});
+```
+
+---
+
+## Phase 3 &#8212; Runtime (`EntityDataGridProps<T>`)
+
+Runtime props are passed on every render by the consuming application or story. They are split into **Model/Data** and **View/Controller** categories following the project's property separation convention.
+
+### Model / Data Binding (`EntityDataGridModelProps<T>`)
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>data</code></td>
+      <td><code>T[]</code></td>
+      <td>&#8212;</td>
+      <td>The array of entity objects to display as rows. Updating this array re-renders the grid.</td>
+    </tr>
+    <tr>
+      <td><code>onEntityUpdated</code></td>
+      <td><code>(entity: T) =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Fires after a cell edit is committed. Receives the full entity object with the updated value. Typically renamed in the wrapper (e.g. <code>onItemUpdated</code>).</td>
+    </tr>
+    <tr>
+      <td><code>onUnsavedChangesChange</code></td>
+      <td><code>(has: boolean) =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Fires whenever the dirty state changes. Use to show a "You have unsaved changes" warning or enable/disable a Save button.</td>
+    </tr>
+  </tbody>
+</table>
+
+### View / Layout / Controller (`EntityDataGridViewProps<T>`)
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>loading</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Shows a loading overlay on the grid.</td>
+    </tr>
+    <tr>
+      <td><code>enableCellEditing</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Activates cell editing. When true, the column pipeline calls <code>enhanceEditableColumnDefs</code> (if provided at design time).</td>
+    </tr>
+    <tr>
+      <td><code>activeTab</code></td>
+      <td><code>string</code></td>
+      <td><code>'default'</code></td>
+      <td>Appended to the persistence key prefix to scope AG Grid column state per tab/view.</td>
+    </tr>
+    <tr>
+      <td><code>columnVisibility</code></td>
+      <td><code>Record&lt;string, boolean&gt;</code></td>
+      <td><code>{}</code></td>
+      <td>Map of <code>colId</code> &#8594; visibility. Columns default to visible; set a key to <code>false</code> to hide. Columns not in the map remain visible.</td>
+    </tr>
+    <tr>
+      <td><code>columnOrder</code></td>
+      <td><code>string[]</code></td>
+      <td>&#8212;</td>
+      <td>Array of <code>colId</code> values defining display order. Columns not listed are appended at the end.</td>
+    </tr>
+    <tr>
+      <td><code>onRowClick</code></td>
+      <td><code>(entity: T) =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Fires when a row is clicked. Receives the full entity object.</td>
+    </tr>
+    <tr>
+      <td><code>onSelectionChange</code></td>
+      <td><code>(entities: T[]) =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Fires when checkbox selection changes. Receives the full array of currently selected entities.</td>
+    </tr>
+    <tr>
+      <td><code>paginationData</code></td>
+      <td><code>PaginationData</code></td>
+      <td>&#8212;</td>
+      <td>Server-side pagination state (page number, page size, total count). When provided, the grid renders pagination controls.</td>
+    </tr>
+    <tr>
+      <td><code>onNextPage</code></td>
+      <td><code>() =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Pagination callback: navigate to next page.</td>
+    </tr>
+    <tr>
+      <td><code>onPreviousPage</code></td>
+      <td><code>() =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Pagination callback: navigate to previous page.</td>
+    </tr>
+    <tr>
+      <td><code>onFirstPage</code></td>
+      <td><code>() =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Pagination callback: navigate to first page.</td>
+    </tr>
+    <tr>
+      <td><code>emptyStateComponent</code></td>
+      <td><code>ReactNode</code></td>
+      <td>&#8212;</td>
+      <td>Custom component rendered when <code>data</code> is empty and <code>loading</code> is false.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Imperative Ref API (`EntityDataGridRef`)
+
+The component exposes an imperative ref for programmatic control of dirty state:
+
+<table>
+  <thead>
+    <tr>
+      <th>Method</th>
+      <th>Return</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>saveAllDrafts()</code></td>
+      <td><code>void</code></td>
+      <td>Clears all dirty tracking state (optimistic save). Call after a successful API save.</td>
+    </tr>
+    <tr>
+      <td><code>getHasUnsavedChanges()</code></td>
+      <td><code>boolean</code></td>
+      <td>Returns whether any entities have been edited but not saved.</td>
+    </tr>
+    <tr>
+      <td><code>discardAllDrafts()</code></td>
+      <td><code>void</code></td>
+      <td>Clears dirty state and force-refreshes all cells to revert visual changes.</td>
+    </tr>
+  </tbody>
+</table>
+
+```tsx
+const gridRef = useRef<MyEntityDataGridRef>(null);
+
+// After successful save
+gridRef.current?.saveAllDrafts();
+
+// Before navigation
+if (gridRef.current?.getHasUnsavedChanges()) {
+  // show confirmation dialog
+}
+
+// On cancel
+gridRef.current?.discardAllDrafts();
+```
+
+---
+
+## Column Pipeline
+
+At every render, the factory applies a three-stage pipeline to the base `columnDefs`:
+
+1. **Visibility** &#8212; Hides columns where `columnVisibility[colId] === false`.
+2. **Ordering** &#8212; Reorders columns to match the `columnOrder` array, appending unlisted columns at the end.
+3. **Editing** &#8212; If `enableCellEditing` is true and `enhanceEditableColumnDefs` was provided, augments eligible columns with `editable: true`, value getters/setters, and cell editors.
+
+The pipeline is memoized and only recomputes when its inputs change.
+
+---
+
+## Complete Example: Adding a New Entity Grid
+
+Below is a checklist for creating a grid for a hypothetical `WorkOrder` entity.
+
+### 1. Define column presets
+
+Create `molecules/data-grid/presets/work-orders/`:
+
+```tsx
+// work-orders-column-presets.tsx
+import type { ColDef } from 'ag-grid-community';
+import type { WorkOrder } from '@/extras/types/work-order';
+import { createSelectColumn, createNotesColumn, createQuickActionsColumn }
+  from '../common';
+
+export const workOrderColumnDefs: ColDef<WorkOrder>[] = [
+  createSelectColumn<WorkOrder>(),
+  { field: 'orderNumber', headerName: 'Order #', width: 140 },
+  { field: 'description', headerName: 'Description', width: 300 },
+  { field: 'status', headerName: 'Status', width: 120 },
+  { field: 'priority', headerName: 'Priority', width: 100 },
+  createNotesColumn<WorkOrder>((wo) => wo.notes),
+  createQuickActionsColumn<WorkOrder>(),
+];
+
+export const workOrderDefaultColDef: ColDef<WorkOrder> = {
+  sortable: true, filter: false, resizable: true, suppressMovable: false,
+};
+```
+
+### 2. Call the factory
+
+Create `organisms/reference/work-orders/work-orders-data-grid/`:
+
+```tsx
+// work-orders-data-grid.tsx
+const { Component: BaseGrid } = createArdaEntityDataGrid<WorkOrder>({
+  displayName: 'WorkOrdersDataGrid',
+  persistenceKeyPrefix: 'arda-work-orders-grid',
+  columnDefs: workOrderColumnDefs,
+  defaultColDef: workOrderDefaultColDef,
+  getEntityId: (wo) => wo.id,
+});
+
+export interface WorkOrdersDataGridProps
+  extends Omit<EntityDataGridProps<WorkOrder>, 'data' | 'onEntityUpdated'> {
+  workOrders: WorkOrder[];
+  onWorkOrderUpdated?: (wo: WorkOrder) => void;
+}
+
+export const WorkOrdersDataGrid = forwardRef<EntityDataGridRef, WorkOrdersDataGridProps>(
+  function WorkOrdersDataGrid({ workOrders, onWorkOrderUpdated, ...rest }, ref) {
+    return <BaseGrid ref={ref} data={workOrders} onEntityUpdated={onWorkOrderUpdated} {...rest} />;
+  },
+);
+```
+
+### 3. Use in application code
+
+```tsx
+<WorkOrdersDataGrid
+  workOrders={data}
+  loading={isLoading}
+  activeTab="open"
+  enableCellEditing={userCanEdit}
+  columnVisibility={{ priority: showPriority }}
+  onWorkOrderUpdated={handleSave}
+  onSelectionChange={setSelected}
+  onRowClick={(wo) => navigate(`/work-orders/${wo.id}`)}
+/>
+```

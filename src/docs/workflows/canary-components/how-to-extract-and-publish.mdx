@@ -1,0 +1,824 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Workflows/Canary Components/How to Extract and Publish" />
+
+# How to Create New Canary Components
+
+> A step-by-step guide for extracting reusable components from vendored production code into the canary track. Intended for both human developers and AI agents.
+
+**Prerequisites:**
+- [Consolidated Component Guidelines](consolidated-component-guidelines.md) &#8212; component API design, styling, CVA, Storybook conventions
+- [VRT Setup Notes](vrt-setup-notes.md) &#8212; visual regression testing infrastructure and manual inspection procedures
+- Storybook running locally (`cd ux-prototype && npm run dev`)
+
+---
+
+## Overview
+
+The canary component extraction workflow has four phases:
+
+```
+Phase 1: Discovery & Definition
+  Identify a pattern -> Define the component concept -> Classify (atom/molecule/organism)
+
+Phase 2: Component Creation
+  Check upstream libraries (shadcn/ui, AG Grid) -> Create component + CVA variants -> Stories -> Tests -> MDX docs
+
+Phase 3: Adoption in Canary Refactor
+  Fork import chain -> Replace vendored inline code -> Visual comparison -> Iterate -> Update tests/docs
+
+Phase 4: Publication
+  Branch -> PR -> Review -> Merge
+```
+
+Each phase is detailed below with exact file paths, commands, and decision criteria.
+
+---
+
+## Phase 1: Discovery &amp; Definition
+
+### Step 1.1: Identify Component
+
+**Goal:** Find a recurring visual, interaction, or coding pattern that is a candidate for abstraction and reuse.
+
+**Sources** (any of the following):
+- Vendored production code (`src/vendored/arda-frontend/`)
+- Figma mockups ([Arda MVP 2.0](https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ))
+- Dev Witness Storybook stories
+- Use-case stories
+- Extras experiments
+- New feature designs
+
+**Tell-tale signs:**
+- 3+ identical or near-identical code fragments in pages or components
+- Similar JSX blocks differing only in label text, data bindings, or variant props
+- Repeated Tailwind class patterns across files
+- Similar Playwright test assertions or screenshot regions
+- Figma component sets with consistent structure across pages
+
+**Example &#8212; DetailFieldRow (C1 from Round 2):**
+
+In `vendored/arda-frontend/components/items/ItemDetailsPanel.tsx` lines 1161-1204, five identical blocks:
+
+```tsx
+<div className='flex flex-col gap-1'>
+  <span className='text-sm text-[#737373] font-medium'>SKU</span>
+  <span className='text-base text-[#0a0a0a] font-semibold break-all'>
+    {item.sku || 'No SKU available'}
+  </span>
+</div>
+```
+
+Same pattern appears in other vendored panels (supplier details, order details), with only the label, value, and fallback text varying.
+
+**Output:** A short description of the pattern, where it occurs, and how many instances exist.
+
+### Step 1.2: Define the Component
+
+**Goal:** Define what the component represents and what configurability it needs.
+
+Document the following:
+
+<table>
+  <thead>
+    <tr>
+      <th>Aspect</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Name</strong></td>
+      <td>`ArdaDetailField` (PascalCase with Arda prefix)</td>
+    </tr>
+    <tr>
+      <td><strong>Concept</strong></td>
+      <td>A read-only label/value pair for entity detail views</td>
+    </tr>
+    <tr>
+      <td><strong>StaticConfig</strong> (design-time)</td>
+      <td>`label` (string), `fallback` (string, default "---"), `variant` (default/link/currency)</td>
+    </tr>
+    <tr>
+      <td><strong>RuntimeConfig</strong> (dynamic)</td>
+      <td>`value` (string or undefined), `children` (ReactNode, for custom value rendering)</td>
+    </tr>
+    <tr>
+      <td><strong>InitConfig</strong> (mount-time)</td>
+      <td>None needed for this component</td>
+    </tr>
+    <tr>
+      <td><strong>Upstream analog</strong></td>
+      <td>shadcn: None directly. AG Grid: N/A (not a tabular/grid pattern). This is a domain-specific display pattern &#8212; build from scratch.</td>
+    </tr>
+    <tr>
+      <td><strong>Extras analog</strong></td>
+      <td>`FieldLabel` + `TextFieldDisplay` in extras (similar concept, different styling)</td>
+    </tr>
+  </tbody>
+</table>
+
+### Step 1.3: Classify
+
+Use the decision flowchart from the [Consolidated Component Guidelines, Section 9](consolidated-component-guidelines.md#9-component-classification):
+
+1. Does it import other Arda components? **No** &#8594; Atom.
+2. Does it contain domain logic? **No** &#8594; confirmed Atom.
+3. Subcategory? **Display and Layout** (read-only label/value display).
+
+**Output:** Classification decision with rationale.
+
+---
+
+## Phase 2: Component Creation
+
+### Step 2.1: Check Upstream Libraries
+
+**Always do this first** (see [Consolidated Guidelines, Section 3.3](consolidated-component-guidelines.md#33-explicit-upstream-library-check-step)):
+
+**A. Check shadcn/ui** (general UI primitives):
+1. Browse [shadcn/ui Components](https://ui.shadcn.com/docs/components) for a match.
+2. If a match exists (70%+ coverage): `npx shadcn@latest add <component-name>`, then wrap/extend.
+3. If partial match: copy and adapt the shadcn source.
+
+**B. Check AG Grid** (data grids and tabular layouts):
+1. Browse [AG Grid React Features](https://www.ag-grid.com/react-data-grid/) for a match.
+2. If the component is fundamentally a row/column data display: wrap `AgGridReact` with Arda conventions (see the `createArdaEntityDataGrid` factory in `src/extras/components/organisms/shared/entity-data-grid/`).
+
+**C. If no upstream match exists:** check for a Radix UI primitive, or build from scratch.
+
+**For DetailFieldRow:** No shadcn or AG Grid analog exists. This is a simple display atom &#8212; build from scratch.
+
+### Step 2.2: Create the Component File
+
+**Directory:** `src/canary/components/atoms/{component-name}/`
+
+```bash
+mkdir -p src/canary/components/atoms/detail-field
+```
+
+**File:** `detail-field.tsx`
+
+Follow the structure from the [Consolidated Guidelines, Section 4](consolidated-component-guidelines.md#4-component-api-design):
+
+```tsx
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '@/lib/utils';
+
+// --- CVA variant definition ---
+
+const detailFieldVariants = cva(
+  'flex flex-col gap-1',  // base
+  {
+    variants: {
+      variant: {
+        default: '',
+        compact: 'gap-0.5',
+      },
+    },
+    defaultVariants: { variant: 'default' },
+  }
+);
+
+// --- Interfaces ---
+
+/** Design-time configuration. */
+export interface ArdaDetailFieldStaticConfig
+  extends VariantProps<typeof detailFieldVariants> {
+  /** The field label displayed above the value. */
+  label: string;
+  /** Text shown when value is undefined/empty. */
+  fallback?: string;
+}
+
+/** Runtime configuration. */
+export interface ArdaDetailFieldRuntimeConfig {
+  /* --- Model / Data Binding --- */
+  /** The field value to display. */
+  value?: string;
+  /** Custom value rendering (overrides value + fallback). */
+  children?: React.ReactNode;
+}
+
+/** Combined props. */
+export interface ArdaDetailFieldProps
+  extends ArdaDetailFieldStaticConfig,
+    ArdaDetailFieldRuntimeConfig,
+    React.HTMLAttributes<HTMLDivElement> {}
+
+// --- Component ---
+
+export function ArdaDetailField({
+  label,
+  value,
+  fallback = '\u2014',
+  variant,
+  children,
+  className,
+  ...props
+}: ArdaDetailFieldProps) {
+  const display = children ?? (value || fallback);
+
+  return (
+    <div className={cn(detailFieldVariants({ variant }), className)} {...props}>
+      <span className="text-sm text-muted-foreground font-medium">
+        {label}
+      </span>
+      <span className="text-base text-foreground font-semibold break-all">
+        {display}
+      </span>
+    </div>
+  );
+}
+
+export { detailFieldVariants };
+```
+
+**Key checks:**
+- [ ] Uses design tokens (`text-muted-foreground`, `text-foreground`), not hardcoded hex
+- [ ] Accepts `className` prop for consumer overrides
+- [ ] CVA for variants (even if only one dimension for now)
+- [ ] `VariantProps` in StaticConfig
+- [ ] JSDoc on every interface and property
+- [ ] Model/Data vs View/Controller comments in interfaces
+
+### Step 2.3: Create Stories
+
+**File:** `detail-field.stories.tsx`
+
+```tsx
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, within } from 'storybook/test';
+import { ArdaDetailField } from './detail-field';
+
+const meta: Meta<typeof ArdaDetailField> = {
+  title: 'Components/Canary/Atoms/Detail Field',
+  component: ArdaDetailField,
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'A read-only label/value pair for entity detail views. ' +
+          'Displays a label above a value with consistent typography.',
+      },
+    },
+  },
+  argTypes: {
+    label:    { control: 'text', table: { category: 'Static' } },
+    fallback: { control: 'text', table: { category: 'Static' } },
+    variant:  { control: 'select', options: ['default', 'compact'], table: { category: 'Static' } },
+    value:    { control: 'text', table: { category: 'Runtime' } },
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof ArdaDetailField>;
+
+/** Default rendering with a label and value. */
+export const Default: Story = {
+  args: { label: 'SKU', value: 'ITEM-001-A' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('SKU')).toBeVisible();
+    await expect(canvas.getByText('ITEM-001-A')).toBeVisible();
+  },
+};
+
+/** Displays the fallback when value is undefined. */
+export const EmptyValue: Story = {
+  args: { label: 'GL Code', value: undefined },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('\u2014')).toBeVisible();
+  },
+};
+
+/** Custom fallback text. */
+export const CustomFallback: Story = {
+  args: { label: 'Link', value: undefined, fallback: 'No link available' },
+};
+
+/** Compact variant with reduced gap. */
+export const Compact: Story = {
+  args: { label: 'Unit Price', value: '$12.50', variant: 'compact' },
+};
+
+/** Multiple fields composed together, mimicking a detail panel section. */
+export const Composition: Story = {
+  render: () => (
+    <div className="w-[400px] space-y-3 p-4">
+      <ArdaDetailField label="SKU" value="ITEM-001-A" />
+      <ArdaDetailField label="General Ledger Code" value="4200-100" />
+      <ArdaDetailField label="Unit Price" value="$12.50" />
+      <ArdaDetailField label="Link" fallback="No link available" />
+      <ArdaDetailField label="Number of Cards" value="3" />
+    </div>
+  ),
+};
+
+/** Interactive playground: use the Controls panel to experiment. */
+export const Playground: Story = {
+  args: { label: 'Field Label', value: 'Field Value' },
+};
+```
+
+### Step 2.4: Create Tests
+
+**File:** `detail-field.test.tsx`
+
+```tsx
+import { render, screen } from '@testing-library/react';
+import { ArdaDetailField } from './detail-field';
+
+describe('ArdaDetailField', () => {
+  it('renders label and value', () => {
+    render(<ArdaDetailField label="SKU" value="ABC-123" />);
+    expect(screen.getByText('SKU')).toBeInTheDocument();
+    expect(screen.getByText('ABC-123')).toBeInTheDocument();
+  });
+
+  it('renders fallback when value is undefined', () => {
+    render(<ArdaDetailField label="Code" />);
+    expect(screen.getByText('\u2014')).toBeInTheDocument();
+  });
+
+  it('renders custom fallback', () => {
+    render(<ArdaDetailField label="Link" fallback="No link" />);
+    expect(screen.getByText('No link')).toBeInTheDocument();
+  });
+
+  it('renders children instead of value', () => {
+    render(
+      <ArdaDetailField label="Custom">
+        <a href="#">Click here</a>
+      </ArdaDetailField>
+    );
+    expect(screen.getByText('Click here')).toBeInTheDocument();
+  });
+
+  it('applies className prop', () => {
+    const { container } = render(
+      <ArdaDetailField label="Test" value="Val" className="my-custom" />
+    );
+    expect(container.firstChild).toHaveClass('my-custom');
+  });
+});
+```
+
+### Step 2.5: Create MDX Documentation
+
+**File:** `detail-field.mdx`
+
+Follow the structure from [Consolidated Guidelines, Section 10.5](consolidated-component-guidelines.md#105-mdx-documentation). Include:
+1. Title and description
+2. Configuration Lifecycle (StaticConfig, RuntimeConfig)
+3. Usage with `<Canvas>` blocks
+4. Props with `<ArgTypes>`
+5. Accessibility notes
+6. Upstream origin &#8212; shadcn/ui, AG Grid, or "None &#8212; built from scratch"
+7. Related components
+
+---
+
+## Phase 3: Adoption in Canary Refactor
+
+### Step 3.1: Identify Replacement Points
+
+Review each Canary Refactor story for places where the new component should replace inline vendored code.
+
+For DetailFieldRow in the Item Detail Canary Refactor story:
+- The five `flex flex-col gap-1` blocks at lines 1161-1204 of `ItemDetailsPanel.tsx` are the replacement targets.
+
+### Step 3.2: Create the Canary Refactor Story (if not already present)
+
+If a Canary Refactor version of the Dev Witness story doesn't exist yet, create one.
+
+**Critical rule:** The Canary Refactor story must render the **same top-level component** as the Dev Witness story. If the Dev Witness story renders a page component (e.g., `ItemDetailPage`), the Canary Refactor story must also render a page component &#8212; never a lower-level panel or section directly. This ensures the Canary Refactor output is visually comparable with the Dev Witness original.
+
+Steps:
+1. Read the Dev Witness story and note which component it imports (the "story root component").
+2. Copy the Dev Witness story file to `src/applications/canary-refactor/`.
+3. Change the title to `Canary Refactor/{Section}/{Page}`.
+4. The `withFullAppProviders` decorator auto-wraps stories with `Canary Refactor` title prefix (configured in Round 3).
+5. Keep the same args shape and play functions. At this point the story should render identically to Dev Witness.
+
+**Anti-pattern:** Do NOT change the story to render a different component than the Dev Witness version. For example, if Dev Witness renders `ItemDetailPage`, the Canary Refactor must NOT render `ItemDetailsPanel` directly &#8212; that produces a completely different visual output and defeats the purpose of side-by-side comparison.
+
+### Step 3.3: Fork the Import Chain and Replace Inline Code
+
+To modify vendored code without affecting the Dev Witness story, fork the **entire import chain** from the story root component down to the component containing the inline pattern.
+
+**The fork chain concept:**
+
+If the Dev Witness story renders `PageComponent` which imports `PanelComponent` which contains the inline pattern:
+
+```
+Dev Witness story
+  -> imports PageComponent (from vendored)
+    -> imports PanelComponent (from vendored) <- inline pattern here
+
+Canary Refactor story
+  -> imports PageComponent (FORKED)
+    -> imports PanelComponent (FORKED) <- canary component replaces inline pattern
+```
+
+**Steps:**
+1. **Identify the chain.** Trace imports from the story root component to the component containing the inline code. List every component in that chain.
+2. **Fork the leaf.** Copy the vendored component that contains the inline pattern into `src/applications/canary-refactor/components/`. Replace inline code with the new canary component.
+3. **Fork each parent in the chain.** For each component between the story root and the leaf, create a fork that is identical to the vendored version except it imports the forked child instead of the vendored child.
+4. **Update the story import.** Change the Canary Refactor story to import the forked story root component.
+5. **Verify.** At this point, the Canary Refactor story should render identically to Dev Witness except for the intentional canary component changes.
+
+**Example &#8212; DetailFieldRow in ItemDetailsPanel:**
+
+```
+Dev Witness: item-detail.stories.tsx
+  -> imports ItemDetailPage from '@frontend/app/item/[itemId]/page'
+    -> imports ItemsPage
+      -> imports ItemDetailsPanel <- 5 inline detail field blocks
+
+Canary Refactor: item-detail.stories.tsx
+  -> imports ItemDetailPage from './components/ItemDetailPage'  (FORKED)
+    -> imports ItemsPage from './components/ItemsPage'  (FORKED)
+      -> imports ItemDetailsPanel from './components/ItemDetailsPanel'  (FORKED)
+        <- ArdaDetailField replaces 5 inline blocks
+```
+
+Each forked file is identical to the vendored original except for the changed import path pointing to the next fork in the chain.
+
+**Fixing relative imports in forks:** When a vendored file is copied to `canary-refactor/components/`, any **relative imports to sibling vendored files** (e.g., `'./ManageCardsPanel'`) will break because those siblings don't exist in the new directory. Convert these to absolute `@frontend/...` paths pointing back to the original vendored location:
+
+```diff
+# In the forked file (canary-refactor/components/ItemDetailsPanel.tsx)
+- import { ManageCardsPanel } from './ManageCardsPanel';
++ import { ManageCardsPanel } from '@frontend/components/items/ManageCardsPanel';
+```
+
+Only change the import for the **next file in the fork chain** to a relative path (e.g., `'./ItemDetailsPanel'`). All other imports should use `@frontend/...` to resolve back to vendored originals.
+
+**Note:** `@frontend` is a Vite alias configured in `.storybook/main.ts`, not in `tsconfig.json`. TypeScript will show "Cannot find module" errors for `@frontend/...` imports, but Storybook resolves them correctly at runtime.
+
+**Shortcut:** If the story root component directly imports the target component (chain length = 1), only one fork is needed.
+
+**Alternative &#8212; Approach B: Wrapper component.** Create a thin wrapper that renders the vendored component but patches its output (less clean, more fragile). Not recommended.
+
+### Step 3.4: Visual Comparison
+
+Compare the Canary Refactor output against the Dev Witness original. This step is mandatory &#8212; do not skip it.
+
+**Method A: Automated VRT (if baselines exist)**
+```bash
+npm run test:vrt
+```
+
+**Method B: Playwright MCP (recommended for agent workflows)**
+
+If a Playwright MCP server is available, use it to verify that the Canary Refactor story loads and renders correctly. This catches import errors, runtime exceptions, and structural rendering problems that unit tests cannot detect.
+
+Steps:
+1. Navigate to the Dev Witness story:
+   ```
+   browser_navigate: http://localhost:6006/?path=/story/{dev-witness-story-id}--default
+   ```
+2. Wait for the story iframe content to load (look for a known heading or element inside the iframe):
+   ```js
+   const frame = page.frameLocator('iframe#storybook-preview-iframe');
+   await frame.getByRole('heading', { name: /ExpectedHeading/i }).waitFor({ timeout: 30000 });
+   ```
+3. Take a screenshot of the Dev Witness version:
+   ```
+   browser_take_screenshot: scratch/dev-witness-{page-name}.png
+   ```
+4. Navigate to the Canary Refactor story:
+   ```
+   browser_navigate: http://localhost:6006/?path=/story/{canary-refactor-story-id}--default
+   ```
+5. Wait for the iframe content and take a screenshot:
+   ```
+   browser_take_screenshot: scratch/canary-refactor-{page-name}.png
+   ```
+6. Compare the two screenshots. They should be visually identical at the page level. Any differences should be limited to the intentional canary component changes.
+
+**Common failures caught by Playwright verification:**
+- "Failed to fetch dynamically imported module" &#8212; broken import in a forked file (usually a relative import that wasn't converted to `@frontend/...`)
+- Blank iframe &#8212; the story renders but the component tree fails silently
+- Different page structure &#8212; the story renders a different component than Dev Witness (e.g., panel directly instead of full page)
+
+**Method C: Manual inspection (fallback)**
+
+1. Open Storybook (`npm run dev`)
+2. Open `Dev Witness / Items / Item Detail / Default` in one browser tab
+3. Open `Canary Refactor / Items / Item Detail / Default` in another tab
+4. Compare visually, paying attention to:
+   - Layout and spacing (gap sizes, padding)
+   - Typography (font size, weight, color &#8212; the vendored code uses hardcoded hex like `#737373`, the canary component uses `text-muted-foreground`)
+   - Border radius and shadows
+   - Interactive states
+5. Document any intentional deviations (e.g., "label color now uses design token instead of hardcoded hex")
+
+See [VRT Setup Notes](vrt-setup-notes.md) for detailed manual inspection and Playwright-based comparison procedures.
+
+### Step 3.5: Iterate
+
+Based on the visual comparison:
+
+1. **Adjust the component** if the deviation is unintentional (wrong spacing, wrong font weight).
+2. **Accept the deviation** if it's an intentional improvement (using design tokens instead of hardcoded hex).
+3. **Document deviations** in the component's MDX file under a "Deviations from Vendored" section.
+4. Re-run visual comparison after each adjustment until settled.
+
+### Step 3.6: Extend to Additional Stories
+
+Review other Dev Witness stories for the same pattern:
+
+1. Identify Dev Witness stories that contain the same inline pattern.
+2. If a Canary Refactor copy doesn't exist, create one (Step 3.2).
+3. Apply the component replacement (Step 3.3) and visual comparison (Step 3.4).
+4. Update the VRT spec to include the new Canary Refactor stories.
+
+### Step 3.7: Update Tests and Documentation
+
+1. Add the Canary Refactor stories to `tests/vrt/full-app-pages.spec.ts` (or a new `canary-refactor-comparison.spec.ts`).
+2. Update the component's MDX documentation with adoption examples.
+3. Run `npm run test` to ensure all unit tests pass.
+
+---
+
+## Phase 4: Publication
+
+### Step 4.1: Create Branch and Commit
+
+```bash
+git checkout -b jmpicnic/canary-detail-field
+git add src/canary/components/atoms/detail-field/
+git add src/applications/canary-refactor/
+git add tests/vrt/
+git commit -m "Add ArdaDetailField canary atom and Canary Refactor adoption"
+```
+
+### Step 4.2: Create Pull Request
+
+```bash
+gh pr create \
+  --title "Add ArdaDetailField canary atom" \
+  --body "## Summary
+- New canary atom: ArdaDetailField (label/value pair for detail views)
+- Adopted in Canary Refactor / Items / Item Detail (replaces 5 inline blocks)
+- Stories, tests, and MDX documentation included
+
+## Verification
+- [ ] Storybook: Components/Canary/Atoms/Detail Field renders correctly
+- [ ] Canary Refactor / Items / Item Detail matches Dev Witness visually
+- [ ] Unit tests pass: npm run test
+- [ ] VRT comparison: npm run test:vrt (if baselines exist)"
+```
+
+### Step 4.3: Review and Merge
+
+- Reviewer checks: component API, styling (tokens not hex), story coverage, test coverage, MDX docs.
+- Merge to `main` after approval.
+
+---
+
+## AI Agent Prompt Templates
+
+### Template A: Discovery-First (Starting from Dev Witness Stories)
+
+Use this when the goal is to explore one or more Dev Witness stories and identify components to extract.
+
+```
+You are a front-end engineer working in the `ux-prototype` Storybook component library.
+
+**Task:** Analyze the following Dev Witness stories and identify reusable components
+that can be extracted into the canary track.
+
+**Stories to analyze:**
+- Dev Witness / Items / Item Detail / Default
+- Dev Witness / Items / Items Grid / Default
+[Add or replace with target stories]
+
+**Instructions:**
+1. Read the vendored source files rendered by each story. Trace from the story file
+   to the page component to the panel/section components.
+2. For each story, catalog all visual patterns that appear 2+ times within the story
+   or across the listed stories. For each pattern, note:
+   - What it renders (label/value pair, tab bar, empty state, etc.)
+   - Where it appears (file, line numbers)
+   - How many instances exist
+   - What varies between instances (label text, data, styling)
+3. Rank candidates by: frequency x reusability x extraction effort.
+4. For the top 3 candidates, produce a definition following the template:
+   - Name (ArdaXxx)
+   - Concept (1 sentence)
+   - Classification (atom/molecule/organism)
+   - StaticConfig props
+   - RuntimeConfig props
+   - Upstream analog: shadcn/ui and/or AG Grid (if any)
+   - Estimated effort (low/medium/high)
+
+**References:**
+- Component Guidelines: workspace/projects/ad-hoc/ux-prototype/component-workflow-support/consolidated-component-guidelines.md
+- Classification: ux-prototype/src/docs/component-classification.mdx
+- Style Guide: ux-prototype/src/docs/arda-style-guide.mdx
+- shadcn catalog: https://ui.shadcn.com/docs/components
+- AG Grid catalog: https://www.ag-grid.com/react-data-grid/
+
+**Output:** A ranked candidate table and definition for the top 3, ready for the
+human to select which one(s) to proceed with.
+```
+
+### Template B: Component Identified (Starting from a Defined Component)
+
+Use this when the component to extract has already been identified and defined (e.g., from a design session or Template A output).
+
+```
+You are a front-end engineer working in the `ux-prototype` Storybook component library.
+
+**Task:** Create a new canary component and adopt it in a Canary Refactor story.
+
+**Component definition:**
+- Name: Arda{ComponentName}
+- Concept: {1-2 sentence description}
+- Classification: {atom|molecule|organism}
+- StaticConfig: {list of design-time props}
+- RuntimeConfig: {list of dynamic props}
+- Upstream analog: shadcn: {component name or "none"}, AG Grid: {feature or "N/A"}
+- Vendored source: {file path and line range}
+- Canary Refactor target: {story title where this will be adopted}
+
+**Instructions -- follow these phases in order:**
+
+**Phase 2: Component Creation**
+1. Check upstream catalogs for a base component:
+   - shadcn/ui: If one exists, run `npx shadcn@latest add` and wrap/extend it.
+   - AG Grid: If the component is a data grid/table, wrap `AgGridReact` with Arda conventions.
+   - If no upstream match, build from scratch.
+2. Create the component directory: `src/canary/components/{level}/{name}/`
+3. Create `{name}.tsx` following the Consolidated Component Guidelines:
+   - CVA variants at the top
+   - StaticConfig extends VariantProps
+   - RuntimeConfig for dynamic props
+   - Model/Data vs View/Controller comments
+   - Design tokens only (no hardcoded hex)
+   - Accept className prop
+4. Create `{name}.stories.tsx` with: Default, variants, runtime states,
+   Composition, and Playground stories. At least one play function.
+5. Create `{name}.test.tsx` with unit tests for each variant and edge case.
+6. Create `{name}.mdx` documentation.
+
+**Phase 3: Adoption in Canary Refactor**
+1. If the Canary Refactor story doesn't exist, create it as a copy of the
+   Dev Witness story (title prefix: `Canary Refactor/`).
+   CRITICAL: The story must render the SAME top-level component as the Dev
+   Witness story (e.g., if Dev Witness renders a page, Canary Refactor must
+   also render a page -- never a lower-level panel or section directly).
+2. Trace the import chain from the story root component down to the
+   component containing the inline pattern. Fork EVERY component in that
+   chain into `src/applications/canary-refactor/components/`.
+3. In the leaf fork, replace inline code with the new canary component.
+   Each parent fork is identical to the vendored original except it imports
+   the forked child instead of the vendored child.
+4. Update the Canary Refactor story to import the forked story root component.
+5. IMPORTANT: In every forked file, scan for relative imports (`'./SiblingFile'`).
+   Convert any relative import that points to a vendored sibling (NOT part of
+   the fork chain) to an absolute `@frontend/...` path. Only the fork-chain
+   imports should use relative paths between forked files.
+6. Document any intentional deviations (e.g., design token vs hardcoded hex).
+
+**Phase 4: Self-Check (mandatory before completing)**
+1. Run unit tests: `cd ux-prototype && npx vitest run src/canary/components/{level}/{name}/`
+2. Verify the Canary Refactor story loads in Storybook using Playwright MCP:
+   a. Navigate to the Dev Witness story URL:
+      `http://localhost:6006/?path=/story/{dev-witness-story-id}--default`
+   b. Wait for the story iframe to load (use `page.frameLocator('iframe#storybook-preview-iframe')`
+      and wait for a known heading or element).
+   c. Take a screenshot: `scratch/dev-witness-{page-name}.png`
+   d. Navigate to the Canary Refactor story URL:
+      `http://localhost:6006/?path=/story/{canary-refactor-story-id}--default`
+   e. Wait for the iframe to load. If it fails with "Failed to fetch dynamically
+      imported module", check for broken relative imports in the forked files.
+   f. Take a screenshot: `scratch/canary-refactor-{page-name}.png`
+   g. Confirm both screenshots show the same page-level layout.
+3. Report: list all files created, the fork chain, test results, and any deviations.
+
+**References:**
+- Full workflow: workspace/projects/ad-hoc/ux-prototype/component-workflow-support/how-to-create-new-canary-components.md
+- Component Guidelines: workspace/projects/ad-hoc/ux-prototype/component-workflow-support/consolidated-component-guidelines.md
+- VRT procedures: workspace/projects/ad-hoc/ux-prototype/component-workflow-support/vrt-setup-notes.md
+- Worked example: ux-prototype/src/docs/workflows/canary-components/example.mdx
+
+**Output:** All files created, Storybook rendering verified via Playwright screenshots,
+visual comparison documented.
+```
+
+### Template C: VRT Comparison Run
+
+Use this after adoption to run or prepare visual regression tests.
+
+```
+You are a test engineer working in the `ux-prototype` Storybook component library.
+
+**Task:** Run visual regression tests comparing the Canary Refactor story against
+the Dev Witness original.
+
+**Stories to compare:**
+- Dev Witness: {Dev Witness story title} (story ID: {id})
+- Canary Refactor: {Canary Refactor story title} (story ID: {id})
+
+**Instructions:**
+
+**Step 1: Playwright MCP smoke test (always do this first)**
+Before running VRT, verify that both stories load and render correctly:
+1. Navigate to the Dev Witness story:
+   `http://localhost:6006/?path=/story/{dev-witness-story-id}--default`
+2. Wait for the story iframe to load:
+   ```js
+   const frame = page.frameLocator('iframe#storybook-preview-iframe');
+   await frame.getByRole('heading', { name: /ExpectedHeading/i }).waitFor({ timeout: 30000 });
+   ```
+3. Take a screenshot: `scratch/dev-witness-{page-name}.png`
+4. Navigate to the Canary Refactor story:
+   `http://localhost:6006/?path=/story/{canary-refactor-story-id}--default`
+5. Wait for the iframe to load (same pattern). If this fails with
+   "Failed to fetch dynamically imported module", report the broken import path.
+6. Take a screenshot: `scratch/canary-refactor-{page-name}.png`
+7. Compare the two screenshots. They should show the same page-level layout.
+   Report any structural differences.
+
+**Step 2: VRT baselines**
+1. Check if VRT baselines exist: `ls tests/vrt/__snapshots__/`
+2. If baselines exist:
+   - Add the Canary Refactor story to the VRT spec (either `full-app-pages.spec.ts`
+     or a new `canary-refactor-comparison.spec.ts`)
+   - Run `npm run test:vrt`
+   - Report pass/fail and any pixel diffs
+3. If baselines do NOT exist:
+   - Generate baselines: `bash tools/generate-vrt-baselines.sh`
+   - Or use the Playwright MCP screenshots from Step 1 as a manual baseline
+   - Document findings with screenshots
+
+**References:**
+- VRT config: ux-prototype/playwright.config.ts
+- VRT spec: ux-prototype/tests/vrt/full-app-pages.spec.ts
+- VRT setup: workspace/projects/ad-hoc/ux-prototype/component-workflow-support/vrt-setup-notes.md
+- Worked example: ux-prototype/src/docs/workflows/canary-components/example.mdx
+```
+
+---
+
+## Quick Reference: File Paths
+
+<table>
+  <thead>
+    <tr>
+      <th>Artifact</th>
+      <th>Path</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Canary component directory</td>
+      <td>`src/canary/components/{level}/{name}/`</td>
+    </tr>
+    <tr>
+      <td>Canary Refactor stories</td>
+      <td>`src/applications/canary-refactor/`</td>
+    </tr>
+    <tr>
+      <td>Dev Witness stories</td>
+      <td>`src/applications/full-app/`</td>
+    </tr>
+    <tr>
+      <td>Vendored source</td>
+      <td>`src/vendored/arda-frontend/`</td>
+    </tr>
+    <tr>
+      <td>VRT specs</td>
+      <td>`tests/vrt/`</td>
+    </tr>
+    <tr>
+      <td>VRT baselines</td>
+      <td>`tests/vrt/__snapshots__/`</td>
+    </tr>
+    <tr>
+      <td>shadcn base components</td>
+      <td>`src/components/ui/`</td>
+    </tr>
+    <tr>
+      <td>AG Grid wrapper example</td>
+      <td>`src/extras/components/organisms/shared/entity-data-grid/`</td>
+    </tr>
+    <tr>
+      <td>Consolidated Guidelines</td>
+      <td>`workspace/projects/ad-hoc/ux-prototype/component-workflow-support/consolidated-component-guidelines.md`</td>
+    </tr>
+    <tr>
+      <td>VRT Setup Notes</td>
+      <td>`workspace/projects/ad-hoc/ux-prototype/component-workflow-support/vrt-setup-notes.md`</td>
+    </tr>
+    <tr>
+      <td>Design Session</td>
+      <td>`workspace/projects/ad-hoc/ux-prototype/component-workflow-support/design-session-1.md`</td>
+    </tr>
+  </tbody>
+</table>

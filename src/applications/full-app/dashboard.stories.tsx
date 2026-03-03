@@ -3,7 +3,7 @@ import { expect, within } from 'storybook/test';
 import DashboardPage from '@frontend/app/dashboard/page';
 
 const meta: Meta<typeof DashboardPage> = {
-  title: 'Full App/Dashboard',
+  title: 'Dev Witness/Dashboard',
   component: DashboardPage,
   tags: ['app-route:/dashboard'],
   parameters: {

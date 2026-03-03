@@ -3,6 +3,9 @@ const REALM = 'Arda Prototypes';
 
 export default function expressMiddleware(app) {
   app.use((req, res, next) => {
+    // TODO: Re-enable basic auth after design session
+    return next();
+
     const header = req.headers.authorization;
 
     if (header) {
