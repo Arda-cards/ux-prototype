@@ -2,10 +2,18 @@
 import { ArdaItem, ArdaItemPayload } from '@frontend/types/arda-api';
 import { MOCK_TENANT_ID } from './mockUser';
 
-// Helper to generate UUIDs
+// Seeded PRNG (LCG) — produces deterministic sequences for reproducible mock data.
+// Visual regression tests and screenshots will be stable across page loads.
+let _seed = 42;
+function seededRandom(): number {
+  _seed = (_seed * 1664525 + 1013904223) & 0x7fffffff;
+  return _seed / 0x7fffffff;
+}
+
+// Helper to generate UUIDs (deterministic)
 function generateUUID(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
+    const r = (seededRandom() * 16) | 0;
     const v = c === 'x' ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
@@ -90,9 +98,9 @@ export function generateMockItem(overrides?: Partial<ArdaItem>): ArdaItem {
   const eId = generateUUID();
   const rId = generateUUID();
   const now = Date.now();
-  const sampleIndex = Math.floor(Math.random() * sampleItems.length);
+  const sampleIndex = Math.floor(seededRandom() * sampleItems.length);
   const sample = sampleItems[sampleIndex];
-  const supplierIndex = Math.floor(Math.random() * suppliers.length);
+  const supplierIndex = Math.floor(seededRandom() * suppliers.length);
 
   const payload: ArdaItemPayload = {
     type: 'Item',
@@ -111,12 +119,12 @@ export function generateMockItem(overrides?: Partial<ArdaItem>): ArdaItem {
     primarySupply: {
       supplier: suppliers[supplierIndex],
       sku: `SUP-${sample.internalSKU}`,
-      orderMethod: orderMethods[Math.floor(Math.random() * orderMethods.length)],
+      orderMethod: orderMethods[Math.floor(seededRandom() * orderMethods.length)],
       url: 'https://example.com/order',
       minimumQuantity: { amount: 5, unit: 'each' },
       orderQuantity: { amount: 100, unit: 'each' },
-      unitCost: { value: Math.floor(Math.random() * 50) + 5, currency: 'USD' },
-      averageLeadTime: { length: Math.floor(Math.random() * 7) + 1, unit: 'Days' },
+      unitCost: { value: Math.floor(seededRandom() * 50) + 5, currency: 'USD' },
+      averageLeadTime: { length: Math.floor(seededRandom() * 7) + 1, unit: 'Days' },
     },
     cardSize: sample.cardSize || 'STANDARD',
     labelSize: sample.labelSize || 'SMALL',

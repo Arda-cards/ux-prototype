@@ -1,0 +1,52 @@
+/*
+ * Vendored App Theme Override
+ *
+ * Import this CSS in Dev Witness stories to override the ux-prototype base
+ * theme with the real app's CSS custom properties. This ensures Dev Witness
+ * pages visually match the deployed application.
+ *
+ * Usage:  import '@/styles/extras/vendored-theme.css';
+ *
+ * The @layer directive ensures these overrides always win over the base
+ * theme regardless of import order.
+ *
+ * See: src/docs/workflows/creating-stories.mdx for full documentation.
+ */
+
+@layer theme-override {
+  :root {
+    /* Sidebar uses dark charcoal/black in the real app, not Arda orange */
+    --base-primary-dark: #000000;
+
+    /* Additional vendored app values that differ from ux-prototype defaults */
+    --base-background-dark: #000000;
+    --base-foreground-dark: #fafafa;
+
+    /* Sidebar gradient colors — dark palette in the real app */
+    --sidebar-gradient-dark: rgba(0, 0, 0, 0.95);
+    --sidebar-gradient-light: rgba(255, 255, 255, 0.05);
+    --sidebar-gradient-overlay-opacity: 0.8;
+    --sidebar-base-overlay-opacity: 0.3;
+
+    /* Selection colors */
+    --selection-dark: #000000;
+    --selection-white-opacity: rgba(255, 255, 255, 0.2);
+    --selection-gradient-opacity: 0.15;
+
+    /* Form colors from vendored app */
+    --form-separator: #e5e5e5;
+    --form-text-primary: #0a0a0a;
+    --form-text-secondary: #737373;
+    --form-background: #ffffff;
+    --form-background-secondary: #f3f4f6;
+    --form-border: #e5e5e5;
+    --form-switch-active: #fc5a29;
+    --form-switch-inactive: #e5e5e5;
+
+    /* Accent */
+    --accent-light: #fef7f5;
+
+    /* Hover */
+    --hover-color: #282828;
+  }
+}

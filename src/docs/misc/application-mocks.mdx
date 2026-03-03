@@ -39,14 +39,14 @@ Each application mock comes in three versions:
   </tbody>
 </table>
 
-Mocks live in `src/applications/` and are organized by application area (e.g., dashboard, settings, onboarding).
+Mocks live in `src/dev-witness/` and are organized by application area (e.g., dashboard, settings, onboarding).
 
 ## How to Add a Page
 
-1. **Create a directory** under `src/applications/`:
+1. **Create a directory** under `src/dev-witness/`:
 
 ```
-src/applications/my-page/
+src/dev-witness/my-page/
   MyPage.tsx
   MyPage.stories.tsx
 ```
@@ -54,8 +54,8 @@ src/applications/my-page/
 2. **Build the page component** using library components:
 
 ```tsx
-import { Button } from '@/extras/components/atoms/Button/Button';
-import { Card } from '@/extras/components/molecules/Card/Card';
+import { Button } from '@/components/extras/atoms/Button/Button';
+import { Card } from '@/components/extras/molecules/Card/Card';
 
 export function MyPage() {
   return (
@@ -95,7 +95,7 @@ export const Default: Story = {};
 Sometimes a page mock needs a component that does not (yet) exist in the library. You can define it locally within the application mock directory:
 
 ```
-src/applications/my-page/
+src/dev-witness/my-page/
   MyPage.tsx
   MyPage.stories.tsx
   components/

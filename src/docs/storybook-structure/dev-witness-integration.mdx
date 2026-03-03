@@ -100,7 +100,7 @@ Because the vendored code was written for Next.js, several framework APIs need S
 
 ### Provider Stack
 
-The `withFullAppProviders` decorator in `src/decorators/withFullAppProviders.tsx` wraps every story whose title starts with `Dev Witness`. It composes the same provider hierarchy used in the production application:
+The `withFullAppProviders` decorator in `src/decorators/with-full-app-providers.tsx` wraps every story whose title starts with `Dev Witness` or `Canary Refactor`. It composes the same provider hierarchy used in the production application:
 
 <table>
   <thead>
@@ -137,7 +137,7 @@ The `withFullAppProviders` decorator in `src/decorators/withFullAppProviders.tsx
   </tbody>
 </table>
 
-Non-Full-App stories pass through the decorator unchanged.
+Stories in the `Canary Refactor` section use the same provider stack as Dev Witness, enabling side-by-side parity comparison with no additional setup. Non-full-app stories pass through the decorator unchanged.
 
 ### MSW Request Handlers
 
@@ -184,11 +184,12 @@ Handlers use in-memory mock stores (`mockItems.ts`, `mockKanbanCards.ts`) that s
 
 ## Page Inventory
 
-The Dev Witness section contains 10 page stories with 14 total variants:
+The Dev Witness section contains 12 story files with 22 total variants, organized into five sections that mirror the application&#8217;s navigation structure:
 
 <table>
   <thead>
     <tr>
+      <th>Section</th>
       <th>Story Title</th>
       <th>App Route</th>
       <th>Variants</th>
@@ -196,53 +197,68 @@ The Dev Witness section contains 10 page stories with 14 total variants:
   </thead>
   <tbody>
     <tr>
-      <td>Dev Witness/Sign In</td>
-      <td><code>/signin</code></td>
-      <td>Default, InvalidCredentials</td>
-    </tr>
-    <tr>
-      <td>Dev Witness/Dashboard</td>
+      <td rowspan="1"><strong>Home</strong></td>
+      <td>Dev Witness/Home/Dashboard</td>
       <td><code>/dashboard</code></td>
-      <td>Default</td>
+      <td>Default, NotificationPanel, HelpPanel</td>
     </tr>
     <tr>
-      <td>Dev Witness/Items Grid</td>
+      <td rowspan="2"><strong>Reference</strong></td>
+      <td>Dev Witness/Reference/Items/Items Grid</td>
       <td><code>/items</code></td>
       <td>Default, EmptyState</td>
     </tr>
     <tr>
-      <td>Dev Witness/Item Detail</td>
+      <td>Dev Witness/Reference/Items/Item Detail</td>
       <td><code>/item/[itemId]</code></td>
-      <td>Default</td>
+      <td>Default, AddItemForm</td>
     </tr>
     <tr>
-      <td>Dev Witness/Kanban Card</td>
+      <td rowspan="3"><strong>Resources</strong></td>
+      <td>Dev Witness/Resources/Kanban Cards/Kanban Card</td>
       <td><code>/kanban/cards/[cardId]</code></td>
+      <td>Default, CardNotFound</td>
+    </tr>
+    <tr>
+      <td>Dev Witness/Resources/Kanban Cards/Mobile Device Check</td>
+      <td><code>/mobile-device-check</code></td>
       <td>Default</td>
     </tr>
     <tr>
-      <td>Dev Witness/Order Queue</td>
-      <td><code>/order-queue</code></td>
-      <td>Default, EmptyQueue</td>
-    </tr>
-    <tr>
-      <td>Dev Witness/Receiving</td>
-      <td><code>/receiving</code></td>
-      <td>Default</td>
-    </tr>
-    <tr>
-      <td>Dev Witness/Scan</td>
+      <td>Dev Witness/Resources/Kanban Cards/Scan</td>
       <td><code>/scan</code></td>
       <td>Default</td>
     </tr>
     <tr>
-      <td>Dev Witness/Company Settings</td>
-      <td><code>/company-settings</code></td>
+      <td rowspan="4"><strong>System</strong></td>
+      <td>Dev Witness/System/Authentication/Sign In</td>
+      <td><code>/signin</code></td>
+      <td>Default, InvalidCredentials</td>
+    </tr>
+    <tr>
+      <td>Dev Witness/System/Authentication/Sign Up</td>
+      <td><code>/signup</code></td>
       <td>Default</td>
     </tr>
     <tr>
-      <td>Dev Witness/Account Profile</td>
-      <td><code>/account-profile</code></td>
+      <td>Dev Witness/System/Authentication/Reset Password</td>
+      <td><code>/reset-password</code></td>
+      <td>Default</td>
+    </tr>
+    <tr>
+      <td>Dev Witness/System/Settings</td>
+      <td><code>/settings</code></td>
+      <td>Account, Companies, Appearance, Display</td>
+    </tr>
+    <tr>
+      <td rowspan="2"><strong>Transactions</strong></td>
+      <td>Dev Witness/Transactions/Orders/Order Queue</td>
+      <td><code>/order-queue</code></td>
+      <td>Default, EmptyQueue</td>
+    </tr>
+    <tr>
+      <td>Dev Witness/Transactions/Receiving</td>
+      <td><code>/receiving</code></td>
       <td>Default</td>
     </tr>
   </tbody>
@@ -266,7 +282,7 @@ An automated pipeline keeps vendored code in sync with the production applicatio
 2. A GitHub Actions workflow (`sync-to-storybook.yml`) triggers on push to `dev`.
 3. The workflow checks out both repositories, runs `tools/sync-frontend-app.sh`, and pushes the updated vendored code to the `app-sync` branch of `ux-prototype`.
 4. A PR is created (or updated) from `app-sync` to `main` in `ux-prototype`.
-5. The `ux-prototype` CI validates the PR: Storybook build, test runner (347 tests), and visual regression tests (10 baselines).
+5. The `ux-prototype` CI validates the PR: Storybook build, test runner (all story play functions), and visual regression tests.
 6. On green CI, the PR auto-merges to `main`.
 7. Vercel deploys the updated Storybook from `main`.
 
@@ -298,12 +314,12 @@ The Dev Witness stories are covered by three layers of automated testing:
     <tr>
       <td>Interaction tests</td>
       <td>Storybook test runner</td>
-      <td>Play functions execute assertions against rendered pages (347 tests across all stories)</td>
+      <td>Play functions execute assertions against rendered pages (all Dev Witness and Canary Refactor story variants)</td>
     </tr>
     <tr>
       <td>Visual regression</td>
       <td>Playwright</td>
-      <td>Pixel-level comparison of 10 Dev Witness page screenshots against baselines (1% diff threshold)</td>
+      <td>Pixel-level comparison of Dev Witness page screenshots against baselines (1% diff threshold)</td>
     </tr>
     <tr>
       <td>Build validation</td>
@@ -313,12 +329,32 @@ The Dev Witness stories are covered by three layers of automated testing:
   </tbody>
 </table>
 
-## Future: Migration Workbench
+## Canary Refactor: Migration Workbench
 
-The vendored code establishes the foundation for a component migration project. When migration begins:
+The vendored code establishes the foundation for a component migration project. The **Canary Refactor** section (`src/canary-refactor/`) is the active working area where vendored page components are progressively refactored to use canary-stage library components instead of inline production components.
 
-1. A `src/migration/` directory will contain forked page components that progressively replace `@frontend/components/ui/*` imports with `@/components/atoms/*` (native library components).
-2. A **Dev Witness (Migrated)** story section will provide side-by-side comparison with the original vendored pages.
-3. Playwright tests will compare original vs. migrated stories for visual and functional parity.
+### How it works
 
-This infrastructure is not built yet &#8212; it is a future project that builds on the base established here.
+1. A page is forked from its vendored counterpart in `src/dev-witness/` into a matching path under `src/canary-refactor/`.
+2. Vendored sub-components are replaced one-by-one with canary equivalents (e.g., `ArdaDetailField` replacing inline `flex flex-col gap-1` blocks).
+3. Intentional deviations from the Dev Witness baseline are documented in the story JSDoc comment with a **Intentional deviations from Dev Witness** block listing before/after values.
+4. The `withFullAppProviders` decorator wraps Canary Refactor stories automatically &#8212; no additional setup is required.
+
+Story files follow the same path and title structure as their Dev Witness counterparts, with `Dev Witness` replaced by `Canary Refactor`:
+
+<table>
+  <thead>
+    <tr>
+      <th>Dev Witness original</th>
+      <th>Canary Refactor mirror</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>src/dev-witness/reference/items/item-detail.stories.tsx</code></td>
+      <td><code>src/canary-refactor/reference/items/item-detail.stories.tsx</code></td>
+    </tr>
+  </tbody>
+</table>
+
+Playwright tests compare original vs. migrated stories for visual and functional parity.

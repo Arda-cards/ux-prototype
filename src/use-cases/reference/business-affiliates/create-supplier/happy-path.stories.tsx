@@ -1,13 +1,13 @@
 import type { Meta } from '@storybook/react-vite';
 import { expect, userEvent } from 'storybook/test';
 
-import { ArdaBadge } from '@/extras/components/atoms/badge/badge';
-import { ArdaSupplierForm } from '@/extras/components/organisms/reference/business-affiliates/supplier-form/supplier-form';
+import { ArdaBadge } from '@/components/extras/atoms/badge/badge';
+import { ArdaSupplierForm } from '@/components/extras/organisms/reference/business-affiliates/supplier-form/supplier-form';
 import type {
   BusinessAffiliate,
   BusinessRole,
   BusinessRoleType,
-} from '@/extras/types/reference/business-affiliates/business-affiliate';
+} from '@/types/extras/reference/business-affiliates/business-affiliate';
 import {
   createUseCaseStories,
   UseCaseShell,

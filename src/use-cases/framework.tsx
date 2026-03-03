@@ -11,7 +11,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { StoryObj } from '@storybook/react-vite';
 import { within } from 'storybook/test';
-import { ArdaButton } from '@/extras/components/atoms/button/button';
+import { ArdaButton } from '@/components/extras/atoms/button/button';
 
 /* ================================================================
    TYPES

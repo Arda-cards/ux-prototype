@@ -59,52 +59,52 @@ export const Gallery: Story = {
       <AssetGroup
         title="Logos"
         assets={[
-          { src: '/images/arda/ArdaLogoV1.svg', label: 'ArdaLogoV1.svg' },
-          { src: '/images/arda/ArdaLogoBlack.svg', label: 'ArdaLogoBlack.svg' },
-          { src: '/images/arda/ArdaLogoMobileV1.svg', label: 'ArdaLogoMobileV1.svg' },
-          { src: '/images/arda/ArdaLogoBlackMobile.svg', label: 'ArdaLogoBlackMobile.svg' },
-          { src: '/images/arda/ArdaTempLogo.svg', label: 'ArdaTempLogo.svg' },
-          { src: '/images/arda/ArdaTempLogoMobile.svg', label: 'ArdaTempLogoMobile.svg' },
-          { src: '/images/arda/LogoArdaGris.svg', label: 'LogoArdaGris.svg' },
-          { src: '/images/arda/LogoArdaGrisShort.svg', label: 'LogoArdaGrisShort.svg' },
-          { src: '/images/arda/LogoArdaGrisv2.svg', label: 'LogoArdaGrisv2.svg' },
-          { src: '/images/arda/logoArdaCards.svg', label: 'logoArdaCards.svg' },
-          { src: '/images/arda/ShadcnDesignLogo.svg', label: 'ShadcnDesignLogo.svg' },
+          { src: '/images/ArdaLogoV1.svg', label: 'ArdaLogoV1.svg' },
+          { src: '/images/ArdaLogoBlack.svg', label: 'ArdaLogoBlack.svg' },
+          { src: '/images/ArdaLogoMobileV1.svg', label: 'ArdaLogoMobileV1.svg' },
+          { src: '/images/ArdaLogoBlackMobile.svg', label: 'ArdaLogoBlackMobile.svg' },
+          { src: '/images/ArdaTempLogo.svg', label: 'ArdaTempLogo.svg' },
+          { src: '/images/ArdaTempLogoMobile.svg', label: 'ArdaTempLogoMobile.svg' },
+          { src: '/images/LogoArdaGris.svg', label: 'LogoArdaGris.svg' },
+          { src: '/images/LogoArdaGrisShort.svg', label: 'LogoArdaGrisShort.svg' },
+          { src: '/images/LogoArdaGrisv2.svg', label: 'LogoArdaGrisv2.svg' },
+          { src: '/images/logoArdaCards.svg', label: 'logoArdaCards.svg' },
+          { src: '/images/ShadcnDesignLogo.svg', label: 'ShadcnDesignLogo.svg' },
         ]}
       />
 
       <AssetGroup
         title="Theme Indicators"
         assets={[
-          { src: '/images/arda/theme-light.svg', label: 'theme-light.svg' },
-          { src: '/images/arda/theme-dark.svg', label: 'theme-dark.svg' },
-          { src: '/images/arda/theme-system.svg', label: 'theme-system.svg' },
+          { src: '/images/theme-light.svg', label: 'theme-light.svg' },
+          { src: '/images/theme-dark.svg', label: 'theme-dark.svg' },
+          { src: '/images/theme-system.svg', label: 'theme-system.svg' },
         ]}
       />
 
       <AssetGroup
         title="Branding"
         assets={[
-          { src: '/images/arda/QRC.svg', label: 'QRC.svg' },
-          { src: '/images/arda/SidebarFooter.svg', label: 'SidebarFooter.svg' },
-          { src: '/images/arda/imageExampleCard.png', label: 'imageExampleCard.png' },
-          { src: '/images/arda/PlaceholderVideo.svg', label: 'PlaceholderVideo.svg' },
+          { src: '/images/QRC.svg', label: 'QRC.svg' },
+          { src: '/images/SidebarFooter.svg', label: 'SidebarFooter.svg' },
+          { src: '/images/imageExampleCard.png', label: 'imageExampleCard.png' },
+          { src: '/images/PlaceholderVideo.svg', label: 'PlaceholderVideo.svg' },
         ]}
       />
 
       <AssetGroup
         title="Decorative"
         assets={[
-          { src: '/images/arda/Puddle1.svg', label: 'Puddle1.svg' },
-          { src: '/images/arda/Puddle2.svg', label: 'Puddle2.svg' },
-          { src: '/images/arda/Puddle3.svg', label: 'Puddle3.svg' },
-          { src: '/images/arda/Puddle4.svg', label: 'Puddle4.svg' },
+          { src: '/images/Puddle1.svg', label: 'Puddle1.svg' },
+          { src: '/images/Puddle2.svg', label: 'Puddle2.svg' },
+          { src: '/images/Puddle3.svg', label: 'Puddle3.svg' },
+          { src: '/images/Puddle4.svg', label: 'Puddle4.svg' },
           {
-            src: '/images/arda/Addtoorderqueueanimation.svg',
+            src: '/images/Addtoorderqueueanimation.svg',
             label: 'Addtoorderqueueanimation.svg',
           },
           {
-            src: '/images/arda/Variant=Overlapping boxes.svg',
+            src: '/images/Variant=Overlapping boxes.svg',
             label: 'Variant=Overlapping boxes.svg',
           },
         ]}
