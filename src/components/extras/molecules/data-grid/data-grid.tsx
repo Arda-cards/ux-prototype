@@ -15,15 +15,15 @@ import {
 } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
-import '@/styles/ag-theme-arda.css';
-import type { PaginationData } from '@/extras/types/model';
+import '@/styles/extras/ag-theme-arda.css';
+import type { PaginationData } from '@/types/extras/model';
 import { useColumnPersistence } from './use-column-persistence';
 
 // Register AG-Grid modules
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 // Re-export PaginationData from the canonical location
-export type { PaginationData } from '@/extras/types/model';
+export type { PaginationData } from '@/types/extras/model';
 
 export interface ArdaDataGridStaticConfig<T> {
   /* --- Model / Data Binding --- */

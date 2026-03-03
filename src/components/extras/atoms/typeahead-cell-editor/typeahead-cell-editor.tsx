@@ -1,6 +1,6 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useState } from 'react';
 
-import { ArdaTypeahead, TypeaheadOption } from '@/extras/components/atoms/typeahead/typeahead';
+import { ArdaTypeahead, TypeaheadOption } from '@/components/extras/atoms/typeahead/typeahead';
 
 export interface TypeaheadCellEditorStaticConfig {
   /* --- Model / Data Binding --- */

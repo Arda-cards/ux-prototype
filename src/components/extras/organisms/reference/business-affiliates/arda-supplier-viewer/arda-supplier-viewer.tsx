@@ -1,12 +1,12 @@
 import type { AtomProps } from '@/lib/data-types/atom-types';
-import type { BusinessAffiliate } from '@/extras/types/reference/business-affiliates/business-affiliate';
+import type { BusinessAffiliate } from '@/types/extras/reference/business-affiliates/business-affiliate';
 import {
   createArdaEntityViewer,
   type DesignConfig,
   type FieldDescriptor,
-} from '@/extras/components/organisms/shared/entity-viewer';
-import { ArdaTextFieldInteractive } from '@/extras/components/atoms/form/text';
-import { ArdaCustomFieldInteractive } from '@/extras/components/atoms/form/custom';
+} from '@/components/extras/organisms/shared/entity-viewer';
+import { ArdaTextFieldInteractive } from '@/components/extras/atoms/form/text';
+import { ArdaCustomFieldInteractive } from '@/components/extras/atoms/form/custom';
 
 import {
   validateBusinessAffiliate,

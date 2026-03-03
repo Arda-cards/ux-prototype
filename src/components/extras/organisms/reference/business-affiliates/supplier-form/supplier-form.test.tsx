@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 
-import { sampleAffiliates } from '@/extras/types/reference/business-affiliates/business-affiliate';
+import { sampleAffiliates } from '@/types/extras/reference/business-affiliates/business-affiliate';
 
 import { ArdaSupplierForm } from './supplier-form';
 

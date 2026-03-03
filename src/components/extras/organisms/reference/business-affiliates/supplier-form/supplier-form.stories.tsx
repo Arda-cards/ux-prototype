@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { sampleAffiliates } from '@/extras/types/reference/business-affiliates/business-affiliate';
+import { sampleAffiliates } from '@/types/extras/reference/business-affiliates/business-affiliate';
 
 import { ArdaSupplierForm } from './supplier-form';
 

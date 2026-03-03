@@ -70,7 +70,7 @@ export function ArdaItemCard({
           <h2 className="font-extrabold text-2xl text-foreground leading-7 truncate">{title}</h2>
         </div>
         <img
-          src="/images/arda/QRC.svg"
+          src="/images/QRC.svg"
           alt="QR"
           className="w-10 h-10 object-contain ml-3 flex-shrink-0"
         />
@@ -126,11 +126,7 @@ export function ArdaItemCard({
 
       {/* Footer Branding */}
       <div className="text-center py-1">
-        <img
-          src="/images/arda/logoArdaCards.svg"
-          alt="Arda"
-          className="mx-auto h-6 w-auto opacity-80"
-        />
+        <img src="/images/logoArdaCards.svg" alt="Arda" className="mx-auto h-6 w-auto opacity-80" />
       </div>
     </div>
   );

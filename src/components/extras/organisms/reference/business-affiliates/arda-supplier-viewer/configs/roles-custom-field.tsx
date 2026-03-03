@@ -2,9 +2,9 @@ import type { AtomMode, AtomProps } from '@/lib/data-types/atom-types';
 import type {
   BusinessRole,
   BusinessRoleType,
-} from '@/extras/types/reference/business-affiliates/business-affiliate';
-import type { FieldDescriptor } from '@/extras/components/organisms/shared/entity-viewer';
-import { ArdaCustomFieldInteractive } from '@/extras/components/atoms/form/custom';
+} from '@/types/extras/reference/business-affiliates/business-affiliate';
+import type { FieldDescriptor } from '@/components/extras/organisms/shared/entity-viewer';
+import { ArdaCustomFieldInteractive } from '@/components/extras/atoms/form/custom';
 
 // ============================================================================
 // Constants

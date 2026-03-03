@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import type { ColDef } from 'ag-grid-community';
 import { createArdaEntityDataGrid } from './create-entity-data-grid';
-import { COMMON_DEFAULT_COL_DEF } from '@/extras/components/molecules/data-grid/presets/common';
+import { COMMON_DEFAULT_COL_DEF } from '@/components/extras/molecules/data-grid/presets/common';
 
 /* ------------------------------------------------------------------ */
 /*  Demo Entity — a minimal type to showcase the factory               */

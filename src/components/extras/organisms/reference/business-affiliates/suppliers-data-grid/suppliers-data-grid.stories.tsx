@@ -3,8 +3,8 @@ import { expect, fn, userEvent, within } from 'storybook/test';
 import { useState } from 'react';
 
 import { ArdaSupplierDataGrid } from './suppliers-data-grid';
-import { mockSuppliers } from '@/extras/components/molecules/data-grid/presets/suppliers/suppliers-mock-data';
-import type { BusinessAffiliate } from '@/extras/types/reference/business-affiliates/business-affiliate';
+import { mockSuppliers } from '@/components/extras/molecules/data-grid/presets/suppliers/suppliers-mock-data';
+import type { BusinessAffiliate } from '@/types/extras/reference/business-affiliates/business-affiliate';
 
 const meta: Meta<typeof ArdaSupplierDataGrid> = {
   title: 'Components/Extras/Organisms/Reference/Business Affiliates/Suppliers Data Grid',

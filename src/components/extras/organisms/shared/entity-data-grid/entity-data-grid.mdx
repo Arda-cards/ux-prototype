@@ -48,9 +48,9 @@ The factory separates configuration into three temporal phases, each with a dist
 The design-time configuration is passed once when you call the factory at module scope. It defines everything that is **fixed for the entity type** and never changes at runtime.
 
 ```tsx
-import { createArdaEntityDataGrid } from '@/extras/components/organisms/shared/entity-data-grid';
+import { createArdaEntityDataGrid } from '@/components/extras/organisms/shared/entity-data-grid';
 import { myColumnDefs, myDefaultColDef, enhanceEditable } from './my-presets';
-import type { MyEntity } from '@/extras/types/my-entity';
+import type { MyEntity } from '@/types/my-entity';
 
 const { Component: BaseMyEntityGrid } = createArdaEntityDataGrid<MyEntity>({
   displayName: 'MyEntityGrid',
@@ -184,7 +184,7 @@ import {
   createArdaEntityDataGrid,
   type EntityDataGridRef,
   type EntityDataGridProps,
-} from '@/extras/components/organisms/shared/entity-data-grid';
+} from '@/components/extras/organisms/shared/entity-data-grid';
 
 // Phase 1 &#8212; design-time config (see above)
 const { Component: BaseMyEntityGrid } = createArdaEntityDataGrid<MyEntity>({ ... });
@@ -449,7 +449,7 @@ Create `molecules/data-grid/presets/work-orders/`:
 ```tsx
 // work-orders-column-presets.tsx
 import type { ColDef } from 'ag-grid-community';
-import type { WorkOrder } from '@/extras/types/work-order';
+import type { WorkOrder } from '@/types/work-order';
 import { createSelectColumn, createNotesColumn, createQuickActionsColumn }
   from '../common';
 

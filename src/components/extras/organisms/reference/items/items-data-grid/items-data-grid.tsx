@@ -4,13 +4,13 @@ import {
   createArdaEntityDataGrid,
   type EntityDataGridRef,
   type EntityDataGridProps,
-} from '@/extras/components/organisms/shared/entity-data-grid';
+} from '@/components/extras/organisms/shared/entity-data-grid';
 import {
   itemsColumnDefs,
   itemsDefaultColDef,
   enhanceEditableColumnDefs,
-} from '@/extras/components/molecules/data-grid/presets/items/items-column-presets';
-import type { Item } from '@/extras/types/reference/items/item-domain';
+} from '@/components/extras/molecules/data-grid/presets/items/items-column-presets';
+import type { Item } from '@/types/extras/reference/items/item-domain';
 
 // ============================================================================
 // Factory Instance

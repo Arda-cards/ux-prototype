@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 import { ArdaItemsDataGrid, type ArdaItemsDataGridRef } from './items-data-grid';
-import { mockPublishedItems } from '@/extras/components/molecules/data-grid/presets/items/items-mock-data';
+import { mockPublishedItems } from '@/components/extras/molecules/data-grid/presets/items/items-mock-data';
 import { useRef } from 'react';
 
 describe('ArdaItemsDataGrid', () => {

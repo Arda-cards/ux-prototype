@@ -7,11 +7,11 @@ import type {
   LabelSize,
   BreadcrumbSize,
   OrderMechanism,
-} from '@/extras/types/reference/items/item-domain';
-import type { Money } from '@/extras/types/model';
+} from '@/types/extras/reference/items/item-domain';
+import type { Money } from '@/types/extras/model';
 
-import { createSelectCellEditor } from '@/extras/components/atoms/select-cell-editor/select-cell-editor';
-import { createTypeaheadCellEditor } from '@/extras/components/atoms/typeahead-cell-editor/typeahead-cell-editor';
+import { createSelectCellEditor } from '@/components/extras/atoms/select-cell-editor/select-cell-editor';
+import { createTypeaheadCellEditor } from '@/components/extras/atoms/typeahead-cell-editor/typeahead-cell-editor';
 
 import {
   cardSizeOptions,

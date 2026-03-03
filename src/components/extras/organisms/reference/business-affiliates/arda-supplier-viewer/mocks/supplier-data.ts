@@ -1,8 +1,8 @@
-import type { BusinessAffiliate } from '@/extras/types/reference/business-affiliates/business-affiliate';
+import type { BusinessAffiliate } from '@/types/extras/reference/business-affiliates/business-affiliate';
 import type {
   ValidationResult,
   UpdateResult,
-} from '@/extras/components/organisms/shared/entity-viewer';
+} from '@/components/extras/organisms/shared/entity-viewer';
 
 // ============================================================================
 // Mock Data

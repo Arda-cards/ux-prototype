@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, within } from 'storybook/test';
 import { useState } from 'react';
 
-import { sampleAffiliates } from '@/extras/types/reference/business-affiliates/business-affiliate';
+import { sampleAffiliates } from '@/types/extras/reference/business-affiliates/business-affiliate';
 
 import { ArdaSupplierDrawer, type SupplierDrawerMode } from './supplier-drawer';
 

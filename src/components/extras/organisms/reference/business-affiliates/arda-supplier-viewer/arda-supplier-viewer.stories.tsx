@@ -4,8 +4,8 @@ import { userEvent, within } from 'storybook/test';
 import {
   createArdaEntityViewer,
   type DesignConfig,
-} from '@/extras/components/organisms/shared/entity-viewer';
-import type { BusinessAffiliate } from '@/extras/types/reference/business-affiliates/business-affiliate';
+} from '@/components/extras/organisms/shared/entity-viewer';
+import type { BusinessAffiliate } from '@/types/extras/reference/business-affiliates/business-affiliate';
 
 import { ArdaSupplierViewer, supplierFieldDescriptors } from './arda-supplier-viewer';
 import { supplierTabs } from './configs/stepped-layout';

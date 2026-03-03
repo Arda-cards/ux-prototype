@@ -1,8 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import type { TypeaheadOption } from '@/extras/components/atoms/typeahead/typeahead';
-import { sampleItemSupplies } from '@/extras/types/reference/business-affiliates/item-supply';
+import type { TypeaheadOption } from '@/components/extras/atoms/typeahead/typeahead';
+import { sampleItemSupplies } from '@/types/extras/reference/business-affiliates/item-supply';
 
 import { ArdaItemSupplyFormDialog } from './item-supply-form-dialog';
 

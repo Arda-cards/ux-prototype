@@ -1,4 +1,4 @@
-import type { BusinessAffiliate } from '@/extras/types/reference/business-affiliates/business-affiliate';
+import type { BusinessAffiliate } from '@/types/extras/reference/business-affiliates/business-affiliate';
 
 export const mockSuppliers: BusinessAffiliate[] = [
   {

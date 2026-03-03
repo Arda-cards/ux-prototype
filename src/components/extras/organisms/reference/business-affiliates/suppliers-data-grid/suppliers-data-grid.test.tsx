@@ -4,7 +4,7 @@ import '@testing-library/jest-dom/vitest';
 import { useRef } from 'react';
 
 import { ArdaSupplierDataGrid, type ArdaSupplierDataGridRef } from './suppliers-data-grid';
-import { mockSuppliers } from '@/extras/components/molecules/data-grid/presets/suppliers/suppliers-mock-data';
+import { mockSuppliers } from '@/components/extras/molecules/data-grid/presets/suppliers/suppliers-mock-data';
 
 describe('ArdaSupplierDataGrid', () => {
   it('renders with supplier data', () => {

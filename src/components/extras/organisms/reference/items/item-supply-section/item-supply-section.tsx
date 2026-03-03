@@ -5,10 +5,10 @@ import { Plus, Package } from 'lucide-react';
 import type {
   ItemSupply,
   SupplyDesignation,
-} from '@/extras/types/reference/business-affiliates/item-supply';
-import type { Money } from '@/extras/types/model/general/money';
-import type { Duration } from '@/extras/types/model/general/time/duration';
-import { ArdaSupplyCard } from '@/extras/components/molecules/reference/items/supply-card/supply-card';
+} from '@/types/extras/reference/business-affiliates/item-supply';
+import type { Money } from '@/types/extras/model/general/money';
+import type { Duration } from '@/types/extras/model/general/time/duration';
+import { ArdaSupplyCard } from '@/components/extras/molecules/reference/items/supply-card/supply-card';
 
 /* ------------------------------------------------------------------ */
 /*  Config Interfaces                                                  */

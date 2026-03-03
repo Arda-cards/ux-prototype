@@ -416,7 +416,7 @@ The component exposes an imperative API via `React.forwardRef`. This provides an
 
 ```tsx
 import { useRef } from 'react';
-import { ArdaDataGrid, ArdaDataGridRef } from '@/extras/components/molecules/data-grid';
+import { ArdaDataGrid, ArdaDataGridRef } from '@/components/extras/molecules/data-grid';
 
 function MyComponent() {
   const gridRef = useRef<ArdaDataGridRef<MyDataType>>(null);
@@ -520,7 +520,7 @@ The state is stored in localStorage and restored when the component mounts with 
 A helper component for rendering images in grid cells with automatic fallback to a placeholder icon.
 
 ```tsx
-import { GridImage } from '@/extras/components/molecules/data-grid';
+import { GridImage } from '@/components/extras/molecules/data-grid';
 
 const columnDefs = [
   {

@@ -2,7 +2,7 @@ import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, within } from 'storybook/test';
 
-import { ArdaBadge } from '@/extras/components/atoms/badge/badge';
+import { ArdaBadge } from '@/components/extras/atoms/badge/badge';
 
 import {
   ArdaTable,

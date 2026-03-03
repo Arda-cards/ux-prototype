@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 
-import { TypeaheadOption } from '@/extras/components/atoms/typeahead/typeahead';
+import { TypeaheadOption } from '@/components/extras/atoms/typeahead/typeahead';
 import {
   ArdaTypeaheadCellEditor,
   createTypeaheadCellEditor,

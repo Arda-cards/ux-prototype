@@ -1,4 +1,4 @@
-import type { TabConfig } from '@/extras/components/organisms/shared/entity-viewer';
+import type { TabConfig } from '@/components/extras/organisms/shared/entity-viewer';
 
 /** 4-tab stepped layout configuration for the ArdaSupplierViewer. */
 export const supplierTabs: readonly TabConfig[] = [

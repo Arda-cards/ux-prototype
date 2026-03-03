@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { ArdaTimeFieldDisplay } from './time-field-display';
 import { ArdaTimeFieldEditor } from './time-field-editor';
 import { ArdaTimeFieldInteractive } from './time-field-interactive';
-import { COMMON_TIMEZONES } from '@/extras/types/model/general/time/timezone';
+import { COMMON_TIMEZONES } from '@/types/extras/model/general/time/timezone';
 
 const meta: Meta<typeof ArdaTimeFieldInteractive> = {
   title: 'Components/Extras/Atoms/Form/Time',

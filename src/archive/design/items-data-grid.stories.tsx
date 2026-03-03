@@ -5,13 +5,13 @@ import { useState, useRef, useMemo } from 'react';
 import {
   ArdaItemsDataGrid,
   ArdaItemsDataGridRef,
-} from '@/extras/components/organisms/reference/items/items-data-grid/items-data-grid';
-import { ArdaConfirmDialog } from '@/extras/components/atoms/confirm-dialog/confirm-dialog';
+} from '@/components/extras/organisms/reference/items/items-data-grid/items-data-grid';
+import { ArdaConfirmDialog } from '@/components/extras/atoms/confirm-dialog/confirm-dialog';
 import {
   mockPublishedItems,
   mockDraftItems,
-} from '@/extras/components/molecules/data-grid/presets/items/items-mock-data';
-import type { Item } from '@/extras/types/reference/items/item-domain';
+} from '@/components/extras/molecules/data-grid/presets/items/items-mock-data';
+import type { Item } from '@/types/extras/reference/items/item-domain';
 
 const meta: Meta = {
   title: 'Archive/Applications/Design/Items Data Grid',

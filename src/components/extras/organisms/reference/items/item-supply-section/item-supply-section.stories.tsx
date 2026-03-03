@@ -6,7 +6,7 @@ import {
   sampleItemSupplies,
   type ItemSupply,
   type SupplyDesignation,
-} from '@/extras/types/reference/business-affiliates/item-supply';
+} from '@/types/extras/reference/business-affiliates/item-supply';
 
 import { ArdaItemSupplySection } from './item-supply-section';
 

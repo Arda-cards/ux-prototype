@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { ArdaBadge } from '@/extras/components/atoms/badge/badge';
+import { ArdaBadge } from '@/components/extras/atoms/badge/badge';
 import {
   UseCaseShell,
   useWizard,

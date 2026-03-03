@@ -1,7 +1,7 @@
 import type { ColDef, ICellRendererParams } from 'ag-grid-community';
 
-import type { BusinessAffiliate } from '@/extras/types/reference/business-affiliates/business-affiliate';
-import { getContactDisplayName } from '@/extras/types/model/assets/contact';
+import type { BusinessAffiliate } from '@/types/extras/reference/business-affiliates/business-affiliate';
+import { getContactDisplayName } from '@/types/extras/model/assets/contact';
 
 import {
   SelectAllHeaderComponent,

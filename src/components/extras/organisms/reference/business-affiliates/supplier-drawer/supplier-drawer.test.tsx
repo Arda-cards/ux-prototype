@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { sampleAffiliates } from '@/extras/types/reference/business-affiliates/business-affiliate';
+import { sampleAffiliates } from '@/types/extras/reference/business-affiliates/business-affiliate';
 
 import { ArdaSupplierDrawer } from './supplier-drawer';
 

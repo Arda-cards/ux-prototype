@@ -9,8 +9,8 @@ import React, {
 } from 'react';
 
 import type { ColDef } from 'ag-grid-community';
-import { ArdaDataGrid, ArdaDataGridRef } from '@/extras/components/molecules/data-grid/data-grid';
-import type { PaginationData } from '@/extras/types/model';
+import { ArdaDataGrid, ArdaDataGridRef } from '@/components/extras/molecules/data-grid/data-grid';
+import type { PaginationData } from '@/types/extras/model';
 
 // ============================================================================
 // Types - Model/Data Binding

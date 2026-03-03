@@ -1,4 +1,4 @@
-import type { Item } from '@/extras/types/reference/items/item-domain';
+import type { Item } from '@/types/extras/reference/items/item-domain';
 
 const now = Date.now();
 

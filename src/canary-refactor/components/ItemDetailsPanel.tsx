@@ -40,7 +40,7 @@ import { toast } from 'sonner';
 import { DeleteConfirmationModal } from '@frontend/components/common/DeleteConfirmationModal';
 import { useAuthErrorHandler } from '@frontend/hooks/useAuthErrorHandler';
 import { extractKanbanRecords } from '@frontend/lib/kanbanResponseParser';
-import { ArdaDetailField } from '@/canary/components/atoms/detail-field/detail-field';
+import { ArdaDetailField } from '@/components/canary/atoms/detail-field/detail-field';
 
 // Types for API response
 interface KanbanCardResult {

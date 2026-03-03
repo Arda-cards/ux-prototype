@@ -1,11 +1,11 @@
 import { useCallback } from 'react';
 
-import { ArdaBadge, type ArdaBadgeVariant } from '@/extras/components/atoms/badge/badge';
+import { ArdaBadge, type ArdaBadgeVariant } from '@/components/extras/atoms/badge/badge';
 import type {
   BusinessAffiliate,
   BusinessRoleType,
-} from '@/extras/types/reference/business-affiliates/business-affiliate';
-import { getContactDisplayName } from '@/extras/types/model/assets/contact';
+} from '@/types/extras/reference/business-affiliates/business-affiliate';
+import { getContactDisplayName } from '@/types/extras/model/assets/contact';
 
 import {
   SelectAllHeaderComponent,

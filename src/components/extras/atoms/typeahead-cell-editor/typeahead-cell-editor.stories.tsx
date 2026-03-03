@@ -6,7 +6,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
 
-import { TypeaheadOption } from '@/extras/components/atoms/typeahead/typeahead';
+import { TypeaheadOption } from '@/components/extras/atoms/typeahead/typeahead';
 import { ArdaTypeaheadCellEditor, createTypeaheadCellEditor } from './typeahead-cell-editor';
 
 const meta = {

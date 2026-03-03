@@ -1,9 +1,9 @@
 'use client';
 
-import type { BusinessAffiliate } from '@/extras/types/reference/business-affiliates/business-affiliate';
-import { ArdaSupplierViewer } from '@/extras/components/organisms/reference/business-affiliates/arda-supplier-viewer';
-import { supplierTabs } from '@/extras/components/organisms/reference/business-affiliates/arda-supplier-viewer/configs/stepped-layout';
-import { supplierFieldOrder } from '@/extras/components/organisms/reference/business-affiliates/arda-supplier-viewer/configs/continuous-scroll-layout';
+import type { BusinessAffiliate } from '@/types/extras/reference/business-affiliates/business-affiliate';
+import { ArdaSupplierViewer } from '@/components/extras/organisms/reference/business-affiliates/arda-supplier-viewer';
+import { supplierTabs } from '@/components/extras/organisms/reference/business-affiliates/arda-supplier-viewer/configs/stepped-layout';
+import { supplierFieldOrder } from '@/components/extras/organisms/reference/business-affiliates/arda-supplier-viewer/configs/continuous-scroll-layout';
 
 export interface ArdaSupplierFormStaticConfig {
   mode?: 'single-scroll' | 'stepped';

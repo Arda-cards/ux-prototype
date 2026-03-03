@@ -4,12 +4,12 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
-import { ArdaTypeahead, type TypeaheadOption } from '@/extras/components/atoms/typeahead/typeahead';
-import { ArdaConfirmDialog } from '@/extras/components/atoms/confirm-dialog/confirm-dialog';
-import type { Currency } from '@/extras/types/model/general/money';
-import type { TimeUnit } from '@/extras/types/model/general/time/duration';
-import type { OrderMechanism, QuantityUnit } from '@/extras/types/reference/items/item-domain';
-import type { ItemSupply } from '@/extras/types/reference/business-affiliates/item-supply';
+import { ArdaTypeahead, type TypeaheadOption } from '@/components/extras/atoms/typeahead/typeahead';
+import { ArdaConfirmDialog } from '@/components/extras/atoms/confirm-dialog/confirm-dialog';
+import type { Currency } from '@/types/extras/model/general/money';
+import type { TimeUnit } from '@/types/extras/model/general/time/duration';
+import type { OrderMechanism, QuantityUnit } from '@/types/extras/reference/items/item-domain';
+import type { ItemSupply } from '@/types/extras/reference/business-affiliates/item-supply';
 
 /* ------------------------------------------------------------------ */
 /*  Form State                                                         */
