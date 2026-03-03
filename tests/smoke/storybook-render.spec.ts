@@ -37,7 +37,7 @@ test.describe('Storybook Render Smoke Tests', () => {
     const data: StoryIndex = await response.json();
     entries = data.entries;
     storyIds = Object.keys(entries)
-      .filter((k) => entries[k].type === 'story' || entries[k].type === 'docs')
+      .filter((k) => entries[k]?.type === 'story' || entries[k]?.type === 'docs')
       .sort();
   });
 
@@ -49,7 +49,7 @@ test.describe('Storybook Render Smoke Tests', () => {
     const pageErrors: { id: string; error: string }[] = [];
 
     for (const id of storyIds) {
-      const entry = entries[id];
+      const entry = entries[id]!;
       const viewMode = entry.type === 'docs' ? 'docs' : 'story';
       const url = `/iframe.html?viewMode=${viewMode}&id=${id}`;
 

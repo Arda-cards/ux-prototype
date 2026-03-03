@@ -55,7 +55,7 @@ export const Default: Story = {
 
 /** Displays the em-dash fallback when value is undefined. */
 export const EmptyValue: Story = {
-  args: { label: 'GL Code', value: undefined },
+  args: { label: 'GL Code' },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByText('GL Code')).toBeVisible();
@@ -66,7 +66,7 @@ export const EmptyValue: Story = {
 
 /** Custom fallback text when the value is absent. */
 export const CustomFallback: Story = {
-  args: { label: 'Link', value: undefined, fallback: 'No link available' },
+  args: { label: 'Link', fallback: 'No link available' },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByText('No link available')).toBeVisible();

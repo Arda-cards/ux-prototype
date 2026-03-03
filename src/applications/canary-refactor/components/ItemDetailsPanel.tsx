@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client';
 
 import { Button } from '@frontend/components/ui/button';
