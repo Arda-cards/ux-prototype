@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
-import ItemDetailPage from './components/ItemDetailPage';
+import ItemDetailPage from '../../components/ItemDetailPage';
 
 const meta: Meta<typeof ItemDetailPage> = {
-  title: 'Canary Refactor/Items/Item Detail',
+  title: 'Canary Refactor/Reference/Items/Item Detail',
   component: ItemDetailPage,
   tags: ['app-route:/item/[itemId]'],
   parameters: {
