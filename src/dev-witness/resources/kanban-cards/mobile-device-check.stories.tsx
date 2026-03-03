@@ -28,8 +28,9 @@ export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    // Verify both device option cards are rendered
-    const mobileOption = await canvas.findByText(/mobile device/i, {}, { timeout: 10000 });
+    // Verify both device option cards are rendered.
+    // Use exact match to avoid ambiguity: the card also has a subtitle "Use this path if user is on mobile device".
+    const mobileOption = await canvas.findByText('Is mobile device', { exact: true }, { timeout: 10000 });
     await expect(mobileOption).toBeVisible();
 
     const desktopOption = await canvas.findByText(/desktop/i);
