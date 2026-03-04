@@ -38,7 +38,7 @@ for (const pair of PAIRS) {
     );
     await disableAnimationsAndSettle(page);
     await expect(page).toHaveScreenshot(`${pair.name}--dev-witness.png`, {
-      fullPage: true,
+      clip: { x: 0, y: 0, width: 1280, height: 900 },
     });
   });
 
@@ -49,7 +49,7 @@ for (const pair of PAIRS) {
     );
     await disableAnimationsAndSettle(page);
     await expect(page).toHaveScreenshot(`${pair.name}--canary.png`, {
-      fullPage: true,
+      clip: { x: 0, y: 0, width: 1280, height: 900 },
     });
   });
 }

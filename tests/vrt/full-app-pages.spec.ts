@@ -36,9 +36,10 @@ for (const story of STORIES) {
 
     await disableAnimationsAndSettle(page);
 
-    // Full-page screenshot comparison.
+    // Viewport-only screenshot (1280×900) — deterministic across macOS and Linux.
+    // fullPage: true captures scroll bounds which vary by platform font rendering.
     await expect(page).toHaveScreenshot(`${story.id}.png`, {
-      fullPage: true,
+      clip: { x: 0, y: 0, width: 1280, height: 900 },
     });
   });
 }
