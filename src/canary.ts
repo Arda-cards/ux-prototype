@@ -1,4 +1,4 @@
-// Canary exports — experimental components not yet promoted to stable.
+// Canary exports — in-development components not yet promoted to stable.
 // Consumers: import { ... } from '@arda-cards/ui-components/canary';
 
 export { CanaryAtomPlaceholder } from './components/canary/atoms/canary-placeholder/canary-placeholder';
