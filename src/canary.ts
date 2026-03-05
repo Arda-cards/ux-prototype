@@ -21,7 +21,10 @@ export type {
 
 // --- Atoms ---
 
-export { ArdaDetailField, detailFieldVariants } from './components/canary/atoms/detail-field/detail-field';
+export {
+  ArdaDetailField,
+  detailFieldVariants,
+} from './components/canary/atoms/detail-field/detail-field';
 export type {
   ArdaDetailFieldProps,
   ArdaDetailFieldStaticConfig,
