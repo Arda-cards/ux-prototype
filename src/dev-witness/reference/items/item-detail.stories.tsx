@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within, userEvent } from 'storybook/test';
 import ItemDetailPage from '@frontend/app/item/[itemId]/page';
-import '@/styles/extras/vendored-theme.css';
+import '@/styles/vendored/globals.css';
 
 const meta: Meta<typeof ItemDetailPage> = {
   title: 'Dev Witness/Reference/Items/Item Detail',

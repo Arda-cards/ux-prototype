@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 import KanbanCardPage from '@frontend/app/kanban/cards/[cardId]/page';
-import '@/styles/extras/vendored-theme.css';
+import '@/styles/vendored/globals.css';
 
 const meta: Meta<typeof KanbanCardPage> = {
   title: 'Dev Witness/Resources/Kanban Cards/Kanban Card',

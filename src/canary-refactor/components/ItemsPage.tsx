@@ -1277,7 +1277,7 @@ export default function ItemsPage() {
     eid: '02938402-1930-1092',
     title: 'M8 × 1 - 50',
     supplier: 'Amazon',
-    image: '/images/imageExampleCard.png',
+    image: '/canary/images/imageExampleCard.png',
     link: 'https://amazon.com',
     sku: '02938402-1930-1092',
     unitPrice: 0.02,
@@ -2594,7 +2594,7 @@ export default function ItemsPage() {
                         <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center p-2 relative">
                           <div className="absolute inset-0 flex items-center justify-center z-0">
                             <Image
-                              src="/images/Puddle1.svg"
+                              src="/canary/images/Puddle1.svg"
                               alt=""
                               width={75}
                               height={48.6}

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 import MobileDeviceCheckPage from '@frontend/app/mobile-device-check/page';
-import '@/styles/extras/vendored-theme.css';
+import '@/styles/vendored/globals.css';
 
 const meta: Meta<typeof MobileDeviceCheckPage> = {
   title: 'Dev Witness/Resources/Kanban Cards/Mobile Device Check',

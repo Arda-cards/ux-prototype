@@ -1,4 +1,4 @@
-# @arda-cards/ui-components
+# @arda-cards/design-system
 
 ![CI](https://github.com/Arda-cards/ux-prototype/actions/workflows/ci.yml/badge.svg)
 ![Deploy](https://github.com/Arda-cards/ux-prototype/actions/workflows/deploy-pages.yml/badge.svg)
@@ -67,17 +67,17 @@ make clean            # Remove build artifacts and node_modules
 
 ```
 src/
-  index.ts            # Stable entry point
+  index.ts            # Nominal entry point
   canary.ts           # Canary entry point
   extras.ts           # Extras entry point
-  components/         # Stable components
+  components/         # Nominal components (production-ready)
     atoms/            #   Buttons, inputs, badges, etc.
     molecules/        #   Cards, form groups, nav items, etc.
     organisms/        #   Headers, sidebars, data tables, etc.
-  canary/             # Experimental components (canary → stable OK, not reverse)
-    components/       #   atoms/, molecules/, organisms/
-  extras/             # Supplementary components (extras → stable OK, not reverse)
-    components/       #   atoms/, molecules/, organisms/
+    canary/           # Canary components (being developed/tested)
+      atoms/, molecules/, organisms/
+    extras/           # Off-maturity-track examples/reference
+      atoms/, molecules/, organisms/
   visual-elements/    # Design tokens, colors, typography
   applications/       # Full-page application mocks
   use-cases/          # User workflow scenarios
@@ -88,16 +88,16 @@ src/
 
 ## Published Package
 
-The library is published to GitHub Packages as `@arda-cards/ui-components`. It is built with Vite 6 in library mode (ESM + CJS) from three entry points: `src/index.ts` (stable), `src/canary.ts` (experimental), and `src/extras.ts` (supplementary).
+The library is published to GitHub Packages as `@arda-cards/design-system`. It is built with Vite 6 in library mode (ESM + CJS) from three entry points: `src/index.ts` (stable), `src/canary.ts` (experimental), and `src/extras.ts` (supplementary).
 
 ### Export Paths
 
 | Export | Resolves to | Description |
 |---|---|---|
-| `@arda-cards/ui-components` | `dist/index.js` (ESM) / `dist/index.cjs` (CJS) | Stable components, types, and utilities |
-| `@arda-cards/ui-components/canary` | `dist/canary.js` (ESM) / `dist/canary.cjs` (CJS) | Experimental components (API may change) |
-| `@arda-cards/ui-components/extras` | `dist/extras.js` (ESM) / `dist/extras.cjs` (CJS) | Supplementary components |
-| `@arda-cards/ui-components/styles` | `dist/styles/globals.css` | Tailwind CSS v4 stylesheet |
+| `@arda-cards/design-system` | `dist/index.js` (ESM) / `dist/index.cjs` (CJS) | Nominal components, types, and utilities |
+| `@arda-cards/design-system/canary` | `dist/canary.js` (ESM) / `dist/canary.cjs` (CJS) | Experimental components (API may change) |
+| `@arda-cards/design-system/extras` | `dist/extras.js` (ESM) / `dist/extras.cjs` (CJS) | Supplementary components |
+| `@arda-cards/design-system/styles` | `dist/styles/globals.css` | Tailwind CSS v4 stylesheet |
 
 ### Exported Components
 
@@ -127,7 +127,7 @@ The `./canary` subpath contains experimental components that are not yet part of
 
 ```typescript
 // Consumer usage
-import { CanaryAtomPlaceholder } from '@arda-cards/ui-components/canary';
+import { CanaryAtomPlaceholder } from '@arda-cards/design-system/canary';
 ```
 
 **Dependency direction**: canary components may import from stable (`@/components/`, `@/lib/`), but stable code must never import from `@/canary/`. This is enforced by an ESLint `no-restricted-imports` rule.
@@ -140,7 +140,7 @@ The `./extras` subpath contains supplementary components that extend the core li
 
 ```typescript
 // Consumer usage
-import { ExtrasAtomPlaceholder } from '@arda-cards/ui-components/extras';
+import { ExtrasAtomPlaceholder } from '@arda-cards/design-system/extras';
 ```
 
 **Dependency direction**: extras components may import from stable (`@/components/`, `@/lib/`), but stable code must never import from `@/extras/`. This is enforced by an ESLint `no-restricted-imports` rule.

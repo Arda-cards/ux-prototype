@@ -326,7 +326,7 @@ export function ItemDetailsPanel({
         await flyToTarget({
           fromEl,
           toEl,
-          imageSrc: '/images/Addtoorderqueueanimation.svg',
+          imageSrc: '/canary/images/Addtoorderqueueanimation.svg',
           duration: 1500,
           size: 1208,
           endOffsetX: -180,

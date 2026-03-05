@@ -1,5 +1,5 @@
 // Canary exports — in-development components not yet promoted to stable.
-// Consumers: import { ... } from '@arda-cards/ui-components/canary';
+// Consumers: import { ... } from '@arda-cards/design-system/canary';
 
 export { CanaryAtomPlaceholder } from './components/canary/atoms/canary-placeholder/canary-placeholder';
 export type {
@@ -18,3 +18,12 @@ export type {
   CanaryOrganismPlaceholderProps,
   CanaryOrganismPlaceholderStaticConfig,
 } from './components/canary/organisms/canary-placeholder/canary-placeholder';
+
+// --- Atoms ---
+
+export { ArdaDetailField, detailFieldVariants } from './components/canary/atoms/detail-field/detail-field';
+export type {
+  ArdaDetailFieldProps,
+  ArdaDetailFieldStaticConfig,
+  ArdaDetailFieldRuntimeConfig,
+} from './components/canary/atoms/detail-field/detail-field';

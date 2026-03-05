@@ -1,0 +1,390 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Workflows/Using the Design System" />
+
+# Using the Design System
+
+How to consume the `@arda-cards/design-system` package in your application, including setup, importing components, applying styles, and choosing between Nominal and Canary versions.
+
+---
+
+## Installation
+
+### 1. Configure the registry
+
+Create or update `.npmrc` in your project root:
+
+```
+@arda-cards:registry=https://npm.pkg.github.com
+```
+
+### 2. Authenticate
+
+Set a personal access token (PAT) with `read:packages` scope:
+
+```bash
+npm login --scope=@arda-cards --registry=https://npm.pkg.github.com
+```
+
+### 3. Install the package
+
+```bash
+npm install @arda-cards/design-system
+```
+
+---
+
+## Package Exports
+
+The package provides five export paths:
+
+<table>
+  <thead>
+    <tr>
+      <th>Import path</th>
+      <th>Category</th>
+      <th>Contents</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>@arda-cards/design-system</code></td>
+      <td>Nominal</td>
+      <td>Production-ready components, types, and utilities</td>
+    </tr>
+    <tr>
+      <td><code>@arda-cards/design-system/canary</code></td>
+      <td>Canary</td>
+      <td>In-development components (API may change)</td>
+    </tr>
+    <tr>
+      <td><code>@arda-cards/design-system/extras</code></td>
+      <td>Extras</td>
+      <td>Off-maturity-track reference implementations</td>
+    </tr>
+    <tr>
+      <td><code>@arda-cards/design-system/styles</code></td>
+      <td>Styles</td>
+      <td>Nominal CSS design tokens (<code>globals.css</code>)</td>
+    </tr>
+    <tr>
+      <td><code>@arda-cards/design-system/assets/*</code></td>
+      <td>Assets</td>
+      <td>Brand logos, icons, and imagery</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Importing Styles
+
+### Nominal theme (default)
+
+Import the base design tokens at the root of your application. This provides all CSS custom properties (colors, spacing, typography) and the Tailwind theme:
+
+```tsx
+// app/layout.tsx or similar entry point
+import '@arda-cards/design-system/styles';
+```
+
+### AG Grid theme
+
+If your application uses AG Grid, import the Arda AG Grid theme alongside the base styles:
+
+```tsx
+import '@arda-cards/design-system/styles';
+import '@arda-cards/design-system/styles/ag-theme-arda.css';
+```
+
+### Canary theme overrides
+
+If you are testing Canary components that require different design tokens, import the Canary CSS **after** the Nominal styles. The Canary CSS uses the `theme-override` CSS layer, so its tokens take precedence regardless of import order:
+
+```tsx
+import '@arda-cards/design-system/styles';
+import '@arda-cards/design-system/styles/canary/globals.css';
+```
+
+See the [CSS Layer System](?path=/docs/docs-css-layer-system--docs) for details on how the `base` and `theme-override` layers interact.
+
+---
+
+## Importing Components
+
+### Nominal components
+
+Nominal components are production-ready and follow a stable API. Use these for any production development:
+
+```tsx
+import { cn } from '@arda-cards/design-system';
+```
+
+### Canary components
+
+Canary components are being actively developed and tested. Their API may change between releases. Use them when you want to adopt new components early or contribute feedback:
+
+```tsx
+import { CanaryAtomPlaceholder } from '@arda-cards/design-system/canary';
+```
+
+> **Warning:** Canary component APIs are not guaranteed to be stable across minor versions. Pin your dependency version if you need predictability.
+
+### Extras components
+
+Extras components are off the maturity promotion track. They exist as reference implementations and examples. Use them for rapid prototyping or when no Nominal or Canary equivalent exists:
+
+```tsx
+import { ArdaButton, ArdaDataGrid } from '@arda-cards/design-system/extras';
+import type { ArdaButtonProps } from '@arda-cards/design-system/extras';
+```
+
+> **Note:** Extras components are not actively maintained toward promotion. If you depend on an Extras component in production, consider requesting its extraction into the Canary track.
+
+---
+
+## Importing Assets
+
+Brand logos, theme indicators, and decorative images are available under the `assets` path:
+
+```tsx
+import logo from '@arda-cards/design-system/assets/images/ArdaLogoV1.svg';
+import mobileLogo from '@arda-cards/design-system/assets/images/ArdaLogoMobileV1.svg';
+```
+
+Canary-specific assets are under the `canary` subdirectory:
+
+```tsx
+import canaryLogo from '@arda-cards/design-system/assets/canary/images/ArdaLogoV1.svg';
+```
+
+---
+
+## Choosing Between Nominal and Canary
+
+<table>
+  <thead>
+    <tr>
+      <th>Consideration</th>
+      <th>Nominal</th>
+      <th>Canary</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>API stability</td>
+      <td>Stable &#8212; follows semver</td>
+      <td>May change between releases</td>
+    </tr>
+    <tr>
+      <td>Production use</td>
+      <td>Recommended</td>
+      <td>Use with caution; pin version</td>
+    </tr>
+    <tr>
+      <td>Design tokens</td>
+      <td>Base theme (<code>globals.css</code>)</td>
+      <td>Override theme (<code>canary/globals.css</code>)</td>
+    </tr>
+    <tr>
+      <td>Dependency direction</td>
+      <td>Cannot import from Canary or Extras</td>
+      <td>Can import from Nominal</td>
+    </tr>
+    <tr>
+      <td>Promotion</td>
+      <td>Final destination</td>
+      <td>Promoted to Nominal when stable</td>
+    </tr>
+  </tbody>
+</table>
+
+### Typical application setup
+
+Most applications should import only Nominal components and the base styles:
+
+```tsx
+// app/layout.tsx
+import '@arda-cards/design-system/styles';
+import '@arda-cards/design-system/styles/ag-theme-arda.css';
+```
+
+```tsx
+// app/components/my-page.tsx
+import { cn } from '@arda-cards/design-system';
+```
+
+### Adopting a Canary component
+
+When a Canary component is ready for early adoption:
+
+1. Import the component from the `canary` path.
+2. Optionally import Canary styles if the component requires different tokens.
+3. Test thoroughly &#8212; Canary APIs may change.
+4. When the component is promoted to Nominal, update the import path (a simple find-and-replace).
+
+```tsx
+// Before promotion
+import { ArdaDetailField } from '@arda-cards/design-system/canary';
+
+// After promotion to Nominal
+import { ArdaDetailField } from '@arda-cards/design-system';
+```
+
+---
+
+## Peer Dependencies
+
+The package expects these as peer dependencies in your application:
+
+- `react` &#8805; 18
+- `react-dom` &#8805; 18
+
+Bundled dependencies (included in the package, no need to install separately): AG Grid, Lucide icons, `class-variance-authority`, `clsx`, `tailwind-merge`.
+
+---
+
+{/* AUTO-GENERATED:START — do not edit manually. Run: node tools/update-package-contents.js */}
+
+## Current Content as of 2026-03-05
+
+### Components (JS/TS)
+
+Each entry point ships as ESM (`.js`), CJS (`.cjs`), and TypeScript declarations (`.d.ts`).
+
+#### `@arda-cards/design-system` &#8212; Nominal (stable)
+
+<table>
+  <thead>
+    <tr><th>Layer</th><th>Exports</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Atoms</td>
+      <td><code>StableAtomPlaceholder</code></td>
+    </tr>
+    <tr>
+      <td>Molecules</td>
+      <td><code>StableMoleculePlaceholder</code></td>
+    </tr>
+    <tr>
+      <td>Organisms</td>
+      <td><code>StableOrganismPlaceholder</code></td>
+    </tr>
+    <tr>
+      <td>Utilities</td>
+      <td><code>cn</code>, <code>getBrowserTimezone</code>, <code>getTimezoneAbbreviation</code></td>
+    </tr>
+  </tbody>
+</table>
+
+#### `@arda-cards/design-system/canary` &#8212; In-development
+
+<table>
+  <thead>
+    <tr><th>Layer</th><th>Exports</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Components</td>
+      <td><code>CanaryAtomPlaceholder</code>, <code>CanaryMoleculePlaceholder</code>, <code>CanaryOrganismPlaceholder</code></td>
+    </tr>
+    <tr>
+      <td>Atoms</td>
+      <td><code>ArdaDetailField</code>, <code>detailFieldVariants</code></td>
+    </tr>
+  </tbody>
+</table>
+
+#### `@arda-cards/design-system/extras` &#8212; Supplementary
+
+<table>
+  <thead>
+    <tr><th>Layer</th><th>Exports</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Placeholders</td>
+      <td><code>ExtrasAtomPlaceholder</code>, <code>ExtrasMoleculePlaceholder</code>, <code>ExtrasOrganismPlaceholder</code></td>
+    </tr>
+    <tr>
+      <td>Atoms</td>
+      <td><code>ArdaBadge</code>, <code>ArdaButton</code>, <code>ArdaConfirmDialog</code>, <code>ArdaTypeahead</code></td>
+    </tr>
+    <tr>
+      <td>Molecules</td>
+      <td><code>ArdaItemCard</code>, <code>ArdaTable</code>, <code>ArdaTableHeader</code>, <code>ArdaTableBody</code>, <code>ArdaTableRow</code>, <code>ArdaTableHead</code>, <code>ArdaTableCell</code>, <code>ArdaSupplyCard</code></td>
+    </tr>
+    <tr>
+      <td>Organisms</td>
+      <td><code>ArdaSidebar</code>, <code>ArdaItemDrawer</code>, <code>sampleItem</code>, <code>emptyItem</code>, <code>defaultMoney</code>, <code>defaultQuantity</code>, <code>ArdaItemSupplySection</code>, <code>ArdaItemSupplyFormDialog</code>, <code>ArdaSupplierForm</code>, <code>ArdaSupplierDrawer</code>, <code>ArdaItemsDataGrid</code>, <code>ArdaSupplierDataGrid</code>, <code>createArdaEntityDataGrid</code></td>
+    </tr>
+    <tr>
+      <td>Types — Model</td>
+      <td><code>getContactDisplayName</code></td>
+    </tr>
+    <tr>
+      <td>Types — Reference</td>
+      <td><code>sampleAffiliates</code>, <code>sampleItemSupplies</code></td>
+    </tr>
+    <tr>
+      <td>Utilities</td>
+      <td><code>cn</code>, <code>getBrowserTimezone</code>, <code>getTimezoneAbbreviation</code></td>
+    </tr>
+  </tbody>
+</table>
+
+### Styles (CSS)
+
+<table>
+  <thead>
+    <tr><th>Import path</th><th>Content</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>./styles (or ./styles/globals.css)</code></td>
+      <td>Nominal theme &#8212; Tailwind, CSS custom properties, sidebar/typography/layout tokens</td>
+    </tr>
+    <tr>
+      <td><code>./styles/ag-theme-arda.css</code></td>
+      <td>AG Grid theme</td>
+    </tr>
+    <tr>
+      <td><code>./styles/canary/ag-theme-arda.css</code></td>
+      <td>Canary AG Grid theme</td>
+    </tr>
+    <tr>
+      <td><code>./styles/canary/globals.css</code></td>
+      <td>Canary theme overrides</td>
+    </tr>
+  </tbody>
+</table>
+
+### Assets (images)
+
+<table>
+  <thead>
+    <tr><th>Import path</th><th>Content</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>./assets/images/*</code></td>
+      <td>25 files &#8212; brand logos, decorative elements, theme icons</td>
+    </tr>
+    <tr>
+      <td><code>./assets/canary/images/*</code></td>
+      <td>25 files &#8212; Canary-branded equivalents</td>
+    </tr>
+  </tbody>
+</table>
+
+{/* AUTO-GENERATED:END */}
+
+---
+
+## Related Documentation
+
+- [CSS Layer System](?path=/docs/docs-css-layer-system--docs) &#8212; How `base` and `theme-override` layers control the CSS cascade
+- [Arda Style Guide](?path=/docs/docs-arda-style-guide--docs) &#8212; Design tokens defined in `globals.css`
+- [Publishing](?path=/docs/docs-workflows-publishing--docs) &#8212; How the package is versioned and published
+- [Creating Stories](?path=/docs/docs-workflows-creating-stories--docs) &#8212; How to create stories in the Storybook

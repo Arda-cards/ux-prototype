@@ -13,9 +13,7 @@ import {
   type CellValueChangedEvent,
   type RowClickedEvent,
 } from 'ag-grid-community';
-import 'ag-grid-community/styles/ag-grid.css';
-import 'ag-grid-community/styles/ag-theme-alpine.css';
-import '@/styles/extras/ag-theme-arda.css';
+import '@/styles/ag-theme-arda.css';
 import type { PaginationData } from '@/types/extras/model';
 import { useColumnPersistence } from './use-column-persistence';
 

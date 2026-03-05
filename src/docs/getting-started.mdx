@@ -4,7 +4,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 # Getting Started
 
-Welcome to `@arda-cards/ui-components` — the shared component library and prototype gallery for Arda.
+Welcome to `@arda-cards/design-system` — the shared component library and prototype gallery for Arda.
 
 ## Prerequisites
 
@@ -46,28 +46,31 @@ Then open [http://localhost:6006](http://localhost:6006) in your browser.
 
 ```
 src/
-  components/         # Stable components (promoted from canary/extras)
-    atoms/            # Placeholders — new stable components go here
+  components/              # Nominal components (production-ready)
+    atoms/                 # Placeholders — new Nominal components go here
     molecules/
     organisms/
-  canary/             # Experimental canary components
-    components/
+    canary/                # Canary components (being developed/tested)
       atoms/
       molecules/
       organisms/
-  extras/             # Supplementary components (previously stable)
-    components/
-      atoms/          # Buttons, inputs, badges, cell editors, etc.
-      molecules/      # Cards, form groups, data grids, etc.
-      organisms/      # Sidebars, drawers, data grids, entity viewers, etc.
-    types/            # Domain types (model, reference)
-  visual-elements/    # Design tokens, colors, typography
-  applications/       # Full-page application mocks + canary refactor
-  use-cases/          # User workflow scenarios
-  docs/               # Documentation (these pages)
-  lib/                # Shared utilities (cn, formatters, etc.)
-  styles/             # Global CSS and Tailwind config
+    extras/                # Off-maturity-track examples/reference only
+      atoms/               # Buttons, inputs, badges, cell editors, etc.
+      molecules/           # Cards, form groups, data grids, etc.
+      organisms/           # Sidebars, drawers, data grids, entity viewers, etc.
+      types/               # Domain types (model, reference)
+  visual-elements/         # Design tokens, colors, typography
+  applications/            # Full-page application mocks + canary refactor
+  use-cases/               # User workflow scenarios
+  docs/                    # Documentation (these pages)
+  lib/                     # Shared utilities (cn, formatters, etc.)
+  styles/                  # Global CSS and Tailwind config
+    vendored/              # Vendored app CSS overrides (theme-override layer)
+    canary/                # Canary CSS overrides (theme-override layer)
+  vendored/                # Vendored production code (auto-synced, do not edit)
 ```
+
+> **Directory convention:** The root directory of each element type (components, styles, images) corresponds to the **Nominal** category. Subdirectories named `canary/`, `extras/`, or `vendored/` hold the respective variant.
 
 ## Quick Start: Create Your First Component
 

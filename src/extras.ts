@@ -1,5 +1,5 @@
 // Extras exports — supplementary components that extend the core library.
-// Consumers: import { ... } from '@arda-cards/ui-components/extras';
+// Consumers: import { ... } from '@arda-cards/design-system/extras';
 
 // --- Extras Placeholders ---
 
