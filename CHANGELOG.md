@@ -18,6 +18,48 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [1.17.0] - 2026-03-04
+
+### Added
+
+- CSS architecture: three-theme system (Nominal, Canary, Vendored) with dedicated `src/styles/` directories
+  and CSS layer system (`base` and `theme-override` layers)
+- CSS Layer System documentation page explaining the cascade architecture
+- Canary visual elements: Colors, Icons, and Assets stories mirroring vendored versions
+- Vendored visual elements: Colors, Icons, and Assets stories separated from nominal
+- Canary and vendored image assets under `public/canary/images/` and `public/vendored/images/`
+- Using the Design System documentation page: installation, exports, styles, assets, and
+  auto-generated "Current Content" inventory
+- `tools/update-package-contents.js`: script to regenerate the package contents inventory
+  from barrel files, styles, and assets
+- `tools/copy-dist-assets.js`: post-build script to copy styles and assets into `dist/`
+- Package exports for styles (`./styles`, `./styles/*`) and assets (`./assets/*`)
+- ArdaDetailField exported from `src/canary.ts` barrel (first real canary component export)
+- Publishing workflow: barrel export instructions, package contents regeneration guide,
+  concrete code example for adding canary exports
+- Canary components workflow: Phase 4 now includes barrel file export step with
+  `update-package-contents.js` regeneration
+- Canary components example: Phase 4 barrel export section and lesson learned about
+  the barrel export gap
+- Layout integrity smoke tests: sidebar visibility (5 stories) and AG Grid data
+  visibility (2 stories) using `elementFromPoint`
+- Storybook render smoke tests: batched into groups of 20 for better timeout handling
+
+### Fixed
+
+- Suppliers List View: AG Grid zero-height rows caused by flex chain break
+  (`min-h-0 overflow-hidden` on parent containers)
+- Suppliers List View: invisible sidebar caused by missing vendored CSS import
+- Smoke test timeout: increased from 5 to 10 minutes, stories batched to avoid
+  single-test timeout
+- AG Grid theme: added `--ag-row-hover-color` token for row hover styling
+- Storybook preview: normalized decorator to use Nominal theme by default
+- Renamed `src/styles/extras/` to track-specific directories (`src/styles/`,
+  `src/styles/canary/`, `src/styles/vendored/`)
+- Dev Witness stories: consistent `@/styles/vendored/globals.css` imports
+- Documentation terminology: standardized "stable" to "Nominal" across all docs
+- Package name references: updated to `@arda-cards/design-system` in docs
+
 ## [1.16.0] - 2026-03-02
 
 ### Added

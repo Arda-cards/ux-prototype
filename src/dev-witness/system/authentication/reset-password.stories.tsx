@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 import ResetPasswordPage from '@frontend/app/reset-password/page';
-import '@/styles/extras/vendored-theme.css';
+import '@/styles/vendored/globals.css';
 
 const meta: Meta<typeof ResetPasswordPage> = {
   title: 'Dev Witness/System/Authentication/Reset Password',

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 import SignUpPage from '@frontend/app/signup/page';
-import '@/styles/extras/vendored-theme.css';
+import '@/styles/vendored/globals.css';
 
 const meta: Meta<typeof SignUpPage> = {
   title: 'Dev Witness/System/Authentication/Sign Up',

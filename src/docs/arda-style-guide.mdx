@@ -8,6 +8,161 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 This guide defines the visual language, layout patterns, and component conventions for the Arda application. It is intended for both human front-end engineers and AI coding agents building UI in the `ux-prototype` Storybook component library.
 
+
+## Definition of **Visual Style Guide** in Arda.
+
+A **Visual Style Guide** is the aesthetic rulebook of Arda's products. It translates Arda's core identity into interface rules. It dictates exactly *how* a product looks visually—focusing purely on aesthetics rather than functional logic or code—ensuring that every screen shares a cohesive look and feel, regardless of who designed it.
+
+It should include:
+
+**1. Color System**
+
+- Brand Colors: The primary and secondary colors that define the product's core identity.
+- Semantic Colors: Standardized colors used to communicate system states (e.g., Red for errors, Green for success, Yellow for warnings).
+- Neutral Palette: The grayscale spectrum used for text, backgrounds, borders, and subtle UI elements.
+- Contrast Rules: Documentation ensuring specific foreground-to-background color pairings pass accessibility standards (WCAG).
+
+**2. Typography System**
+
+- Typefaces: The designated primary, secondary, and fallback font families.
+- Typographic Scale: A strict hierarchy of pre-defined text sizes (e.g., H1, H2, Body text, Captions).
+- Styling Rules: Specific constraints for font weights (boldness), line heights (spacing between lines), and letter spacing (tracking) for every level in the scale.
+
+**3. Iconography**
+
+- The Icon Library: The actual collection of approved, branded icons (usually in SVG format).
+- Styling Constraints: Rules dictating the visual style of the icons, such as line thickness (stroke weight), solid vs. outlined styles, and corner roundness.
+- Sizing Grids: Standardized bounding boxes for icons to ensure they align properly (e.g., restricted to 16x16, 24x24, or 32x32 pixels).
+
+**4. Space and Layout**
+
+- Grid System: The foundational framework dictating column counts, outer margins, and the space between columns (gutters) across mobile, tablet, and desktop screens.
+- Spacing Scale: A standardized set of values (often based on an 8-point or 4-point grid) used strictly for margins and padding between elements.
+
+**5. Visual Effects and Elevation**
+
+- Shadows (Elevation): A scale of drop shadows used to indicate depth and spatial hierarchy (e.g., how high a modal floats above the background vs. a button).
+- Corner Radii: Standardized rounding measurements for the corners of cards, buttons, and input fields.
+- Opacity: Rules for applying transparency to layers, backgrounds, or disabled text.
+
+**6. Imagery and Media**
+
+- Photography Guidelines: Rules on the tone, lighting, subject matter, and composition of photos used in the UI.
+- Illustration Style: Guidelines for custom artwork, dictating color usage, stroke styles, and the level of detail.
+
+### Visual Style Guide Artifacts
+
+For Arda products, the *Visual Style Guide* is implemented in:
+
+<table>
+  <thead>
+    <tr>
+      <th>Category</th>
+      <th>Sub-category</th>
+      <th>Artifact</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td rowSpan="4">1. Color System</td>
+      <td>Brand Colors</td>
+      <td><code>globals.css</code></td>
+      <td>Implemented</td>
+    </tr>
+    <tr>
+      <td>Semantic Colors</td>
+      <td><code>globals.css</code></td>
+      <td>Implemented</td>
+    </tr>
+    <tr>
+      <td>Neutral Palette</td>
+      <td><code>globals.css</code></td>
+      <td>Implemented</td>
+    </tr>
+    <tr>
+      <td>Contrast Rules</td>
+      <td>&#8212;</td>
+      <td>Not implemented (no WCAG contrast documentation)</td>
+    </tr>
+    <tr>
+      <td rowSpan="3">2. Typography System</td>
+      <td>Typefaces</td>
+      <td><code>globals.css</code></td>
+      <td>Implemented</td>
+    </tr>
+    <tr>
+      <td>Typographic Scale</td>
+      <td>&#8212;</td>
+      <td>Not implemented (no H1/H2/Body/Caption scale)</td>
+    </tr>
+    <tr>
+      <td>Styling Rules</td>
+      <td>&#8212;</td>
+      <td>Not implemented (no weight/line-height/tracking specs)</td>
+    </tr>
+    <tr>
+      <td rowSpan="3">3. Iconography</td>
+      <td>Icon Library</td>
+      <td><code>icons.stories.tsx</code></td>
+      <td>Implemented</td>
+    </tr>
+    <tr>
+      <td>Sizing Grids</td>
+      <td><code>icons.stories.tsx</code></td>
+      <td>Implemented</td>
+    </tr>
+    <tr>
+      <td>Styling Constraints</td>
+      <td>Implicit via <code>lucide-react</code> defaults (stroke style, 24px default size)</td>
+      <td>Partial</td>
+    </tr>
+    <tr>
+      <td rowSpan="2">4. Space &#38; Layout</td>
+      <td>Spacing Scale</td>
+      <td><code>globals.css</code></td>
+      <td>Implemented</td>
+    </tr>
+    <tr>
+      <td>Grid System</td>
+      <td>&#8212;</td>
+      <td>Not implemented (no column/gutter/breakpoint docs)</td>
+    </tr>
+    <tr>
+      <td rowSpan="3">5. Visual Effects &#38; Elevation</td>
+      <td>Corner Radii</td>
+      <td><code>globals.css</code></td>
+      <td>Implemented</td>
+    </tr>
+    <tr>
+      <td>Shadows (Elevation)</td>
+      <td>&#8212;</td>
+      <td>Not implemented (no shadow scale)</td>
+    </tr>
+    <tr>
+      <td>Opacity</td>
+      <td>&#8212;</td>
+      <td>Not implemented</td>
+    </tr>
+    <tr>
+      <td rowSpan="3">6. Imagery &#38; Media</td>
+      <td>Brand Assets</td>
+      <td><code>assets.stories.tsx</code></td>
+      <td>Implemented</td>
+    </tr>
+    <tr>
+      <td>Photography Guidelines</td>
+      <td>&#8212;</td>
+      <td>Not implemented</td>
+    </tr>
+    <tr>
+      <td>Illustration Style</td>
+      <td>&#8212;</td>
+      <td>Not implemented</td>
+    </tr>
+  </tbody>
+</table>
+
 ---
 
 ## 1. Technology Stack
@@ -33,7 +188,7 @@ This guide defines the visual language, layout patterns, and component conventio
 
 ## 2. Design Tokens
 
-All tokens are defined as CSS custom properties in `src/styles/globals.css`. Tailwind consumes them via the `@theme inline` block.
+All tokens are defined as CSS custom properties in `globals.css` (the **Nominal** design token source). Tailwind consumes them via the `@theme inline` block. Vendored and Canary variants override these tokens using the `theme-override` CSS layer. See the [CSS Layer System](?path=/docs/docs-css-layer-system--docs) for how layers control the cascade.
 
 ### 2.1 Colors
 

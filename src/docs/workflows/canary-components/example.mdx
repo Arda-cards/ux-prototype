@@ -276,6 +276,31 @@ Were replaced with:
 
 ---
 
+## Phase 4: Barrel Export and Package Contents
+
+After the agent completed Phases 2&#8211;3, the component was added to the canary barrel file (`src/canary.ts`) under the `// --- Atoms ---` section:
+
+```tsx
+export { ArdaDetailField, detailFieldVariants } from './components/canary/atoms/detail-field/detail-field';
+export type {
+  ArdaDetailFieldProps,
+  ArdaDetailFieldStaticConfig,
+  ArdaDetailFieldRuntimeConfig,
+} from './components/canary/atoms/detail-field/detail-field';
+```
+
+Then the package contents docs were regenerated:
+
+```bash
+node tools/update-package-contents.js
+```
+
+This updated the auto-generated "Current Content" section in `using-the-design-system.mdx` to list `ArdaDetailField` under the canary entry point.
+
+> **Note:** Without this step, the component exists in the source tree but is not importable by consumers of the published package. Always update the barrel file before publishing.
+
+---
+
 ## Post-Agent Fix: Broken Relative Imports
 
 The agent correctly forked the import chain (story &#8594; page &#8594; page &#8594; panel) and correctly changed the chain imports. However, the forked files retained **relative imports** to sibling vendored files that no longer exist at the fork location.
@@ -377,3 +402,5 @@ The two screenshots are visually identical at the page level. The canary compone
 4. **MSW mock data gap.** The story uses `pathname: '/item/mock-item-001'` but this ID doesn't exist in the MSW mock handlers. Both Dev Witness and Canary Refactor show the same behavior (item not found, redirects to `/items`). To see the detail panel with canary components, you'd need to click a grid row for an item that exists in the mock data (e.g., `item-001`).
 
 5. **Playwright verification is essential.** Visual comparison via Playwright screenshots caught the broken fork chain issue immediately. This step should be part of every agent's self-check before completing.
+
+6. **Barrel export is a separate step.** The agent created the component and adopted it in the canary refactor, but did not add it to `src/canary.ts`. Without the barrel export, the component cannot be imported by consumers of the published package. This step was performed manually after the agent completed. Future agent prompts should include the barrel export as part of Phase 4.

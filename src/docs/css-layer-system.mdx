@@ -1,0 +1,65 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/CSS Layer System" />
+
+# CSS Layer System
+
+This document defines how the Arda Storybook manages CSS cascade ordering using CSS `@layer`. It is the single source of truth for how design system themes are layered and overridden across stories.
+
+## Layers
+
+Two layers are declared in `src/styles/globals.css`:
+
+```css
+@layer base, theme-override;
+```
+
+**`base`** &#8212; The Nominal design system. All design tokens, component styles, and AG Grid theming defined in `src/styles/globals.css` and `src/styles/ag-theme-arda.css` belong to this layer.
+
+**`theme-override`** &#8212; Used by Vendored and Canary story variants to override Nominal tokens. CSS files in `src/styles/vendored/` and `src/styles/canary/` import the base styles wrapped in this layer.
+
+Because `theme-override` is declared after `base`, its rules always win in the cascade regardless of import order.
+
+## How It Works
+
+1. **Global default** &#8212; `.storybook/preview.ts` imports the base CSS from `src/styles/globals.css` and `src/styles/ag-theme-arda.css`, which define CSS custom properties (e.g., `--base-primary-dark`) at `base` layer priority.
+2. **Story override** &#8212; A story that needs a different theme (e.g., the Vendored app theme or a Canary theme) imports a higher-priority layer CSS file that redefines those custom properties.
+3. **Layer precedence** &#8212; CSS `@layer` ensures that overrides always win regardless of import order, so stories can be viewed in any sequence without style leakage.
+
+> **Warning:** Currently Tailwind utility classes are outside the layering system, which may lead to unexpected cascade behaviors.
+
+## Which CSS File to Import
+
+| Story type | CSS to import | Notes |
+|---|---|---|
+| Component stories (Nominal) | None &#8212; uses the global default from `preview.ts` | Base theme is already loaded |
+| Dev Witness page stories | `@/styles/vendored/globals.css` | Must match the real app appearance |
+| Canary component stories | `@/styles/canary/globals.css` | For canary-specific theming |
+
+## CSS File Structure
+
+```
+src/styles/
+  globals.css              # Nominal design tokens (@layer base, theme-override declaration)
+  ag-theme-arda.css        # AG Grid Arda theme (wrapped in @layer base)
+  vendored/
+    globals.css            # Imports vendored app CSS (unlayered, pending #793)
+    ag-theme-arda.css      # Imports ag-theme-arda in theme-override layer
+  canary/
+    globals.css            # Imports vendored app CSS (will diverge)
+    ag-theme-arda.css      # Imports ag-theme-arda in theme-override layer
+```
+
+## Known Limitation: Tailwind Directives and Layers
+
+Tailwind v4 directives (`@import 'tailwindcss'`, `@tailwind utilities`) expand to `@utility` internally, which **cannot be nested inside CSS layers**. This means:
+
+- `globals.css` itself cannot be fully wrapped in `@layer base` because it contains Tailwind directives.
+- The Vendored app's `globals.css` also contains Tailwind directives, so it cannot be imported with `layer(theme-override)`.
+- Ticket [#793](https://github.com/Arda-cards/management/issues/793) tracks wrapping the Vendored app's `globals.css` in `@layer base` upstream, which would enable proper layer ordering in the future.
+
+## Related Documentation
+
+- [Creating Stories](?path=/docs/docs-workflows-creating-stories--docs) &#8212; Story conventions including CSS import patterns
+- [Arda Style Guide](?path=/docs/docs-arda-style-guide--docs) &#8212; Design tokens defined in `globals.css`
+- [Dev Witness Contributing](?path=/docs/docs-storybook-structure-dev-witness-contributing--docs) &#8212; Vendored page story conventions

@@ -4,8 +4,8 @@ import { withFullAppProviders } from '../src/decorators/with-full-app-providers'
 import { initialize, mswLoader } from 'msw-storybook-addon';
 import { handlers } from '@frontend/mocks/handlers';
 
-import '../src/styles/extras/globals.css';
-import '../src/styles/extras/ag-theme-arda.css';
+import '../src/styles/globals.css';
+import '../src/styles/ag-theme-arda.css';
 
 // MSW initialization — runs once before any story mounts
 initialize({ onUnhandledRequest: 'bypass' });
@@ -58,6 +58,15 @@ const preview: Preview = {
             '*',
           ],
           'Visual Elements',
+          [
+            'Brand Assets',
+            'Colors',
+            'Icons',
+            'Vendored',
+            ['Brand Assets', 'Colors', 'Icons'],
+            'Canary',
+            ['Brand Assets', 'Colors', 'Icons'],
+          ],
           'Dev Witness',
           'Canary Refactor',
           'Use Cases',

@@ -2,7 +2,18 @@
  * Ported from arda-frontend-app/src/components/table/ArdaGrid.css
  * Dark mode support removed (out of scope for initial extraction).
  * See https://github.com/Arda-cards/management/issues/715 for Tailwind migration.
+ *
+ * This file bundles the AG Grid structural CSS and the Alpine base theme
+ * so consumers only need: import '@/styles/ag-theme-arda.css';
+ *
+ * Note: Some components (typeahead-cell-editor, select-cell-editor) use
+ * ag-theme-quartz instead and import ag-grid.css + ag-theme-quartz.css directly.
  */
+
+@import 'ag-grid-community/styles/ag-grid.css' layer(base);
+@import 'ag-grid-community/styles/ag-theme-alpine.css' layer(base);
+
+@layer base {
 
 /* ========================================================================
  * CSS Custom Properties
@@ -953,3 +964,5 @@ body .ag-dnd-ghost * {
     margin: 0 10px;
   }
 }
+
+} /* @layer base */

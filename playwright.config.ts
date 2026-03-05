@@ -46,7 +46,7 @@ export default defineConfig({
     {
       name: 'smoke',
       testDir: './tests/smoke',
-      timeout: 300000, // 5 min — iterates all stories in a single test
+      timeout: 600000, // 10 min per batch — stories are split into batches of ~20
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1280, height: 900 },

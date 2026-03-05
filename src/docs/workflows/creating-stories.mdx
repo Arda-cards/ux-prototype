@@ -6,23 +6,41 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 This guide covers the conventions for creating Storybook stories in this project, including CSS theming, Dev Witness page stories, and component stories.
 
-## CSS Theming with Layers
+## Intent
 
-Stories in this project use **CSS `@layer`** to manage theme overrides. This allows each story to declare which visual theme it needs while keeping a predictable cascade order.
+This storybook needs to support 2 main goals:
 
-### How It Works
+1. Develoment of new Stories and components, using the existing design system in the application.
+2. Evolution of the design system itself, including the evolution of components (through the [Canary Components Process](canary-components/how-to-extract-and-publish.mdx)) and the design tokens themselves.
 
-1. **Global default** &#8212; `preview.ts` imports the base CSS from `src/styles/extras/globals.css`, which defines CSS custom properties (e.g., `--base-primary-dark`) at a base layer priority.
-2. **Story override** &#8212; A story that needs a different theme (e.g., the vendored app theme or a canary theme) imports a higher-priority layer CSS file that redefines those custom properties.
-3. **Layer precedence** &#8212; CSS `@layer` ensures that overrides always win regardless of import order, so stories can be viewed in any sequence without style leakage.
+The Current design system is imported from the [Arda frontend application](https://github.com/Arda-cards/arda-frontend-app), [Arda Application Preview](https://arda-mock-demo.vercel.app) in the [vendored](../../vendored/) directory. This is the one that needs to be used for any component or activity that is intended to be part of the final product.
 
-### Which CSS File to Import
+Arda's Design System elements are defined in 3 versions:
 
-| Story type | CSS to import | Notes |
-|---|---|---|
-| Component stories (extras) | None &#8212; uses the global default from `preview.ts` | Base theme is already loaded |
-| Dev Witness page stories | `@/styles/extras/vendored-theme.css` | Must match the real app appearance |
-| Canary component stories | `@/styles/canary/globals.css` (when available) | For canary-specific theming |
+1. **Nominal**: These are the components, styles, images, etc. that are expected to be used in any development in the product. They are defined in:
+  - [Components](../components/)
+  - [Styles](../styles/)
+  - [Images](../../../public)
+
+2. **Vendored**: These are the components and styles currently being used in the Arda frontend application. Over time, these and the nominal ones will converge as the existing application adopts the new design system (Nominal).
+
+3. **Canary**: These are the components and styles that are being developed and tested in this project. Over time, these will be merged into the nominal design system.
+
+> <h3>**Warning:**</h3>
+>
+> **Canary** and **Vendored** artifacts are allowed to depend on `Nominal` artifacts, but not the other way around. No design elements should depend on **Vendored** artifacts.
+
+## Comnponent Usage
+
+A story can choose the components from `Nominal`, `Vendored` or `Canary` using standard typescript imports and is responsible for
+resolving any naming conflicts.
+
+## CSS Theming
+
+`Storybook` applies a default theme to all its stories. This theme is the `Nominal` theme, which is an extended copy of the current
+style of the `arda-frontend-app` codebase. Over time these may diverge, but eventually the `arda-frontend-app` will simply import the nominal `globals.css` and won't implement its own.
+
+We define two CSS layers (`base` and `theme-override`) to control the cascade. See the [CSS Layer System](?path=/docs/docs-css-layer-system--docs) page for full details on how layers work, which CSS file to import, and known limitations.
 
 ### Example: Dev Witness Story with Theme Override
 
@@ -32,7 +50,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import MyPage from '@frontend/app/my-page/page';
 
 // Override base theme with vendored app styles
-import '@/styles/extras/vendored-theme.css';
+import '@/styles/vendored/globals.css';
 
 const meta: Meta<typeof MyPage> = {
   title: 'Dev Witness/Section/My Page',

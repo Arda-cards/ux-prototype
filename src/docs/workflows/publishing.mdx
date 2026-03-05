@@ -4,7 +4,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 # Publishing
 
-The `@arda-cards/ui-components` package is published to **GitHub Packages** on every push to `main`.
+The `@arda-cards/design-system` package is published to **GitHub Packages** on every push to `main`.
 
 ## GitHub Packages Setup
 
@@ -80,15 +80,78 @@ npm login --scope=@arda-cards --registry=https://npm.pkg.github.com
 3. **Install the package**:
 
 ```bash
-npm install @arda-cards/ui-components
+npm install @arda-cards/design-system
 ```
 
 4. **Import and use components**:
 
 ```tsx
-import { Button } from '@arda-cards/ui-components';
-import '@arda-cards/ui-components/styles';
+import { Button } from '@arda-cards/design-system';
+import '@arda-cards/design-system/styles';
 ```
+
+## Pre-publish: Update Barrel Exports and Package Contents Docs
+
+### 1. Update barrel exports
+
+When you add a new component, you must export it from the appropriate barrel file so consumers can import it:
+
+<table>
+  <thead>
+    <tr>
+      <th>Track</th>
+      <th>Barrel file</th>
+      <th>When to update</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Nominal (stable)</td>
+      <td><code>src/index.ts</code></td>
+      <td>Component promoted from Canary, or new stable utility</td>
+    </tr>
+    <tr>
+      <td>Canary (in-development)</td>
+      <td><code>src/canary.ts</code></td>
+      <td>New canary component created (see <a href="?path=/docs/docs-workflows-canary-components-how-to-extract-and-publish--docs">How to Create New Canary Components</a>)</td>
+    </tr>
+    <tr>
+      <td>Extras (supplementary)</td>
+      <td><code>src/extras.ts</code></td>
+      <td>New extras component or reference implementation</td>
+    </tr>
+  </tbody>
+</table>
+
+Each barrel file uses `// --- Section Name ---` comments to group exports by layer (Atoms, Molecules, Organisms, etc.). Add your export in the appropriate section, including both the value export and the type export:
+
+```tsx
+// In src/canary.ts, under // --- Atoms ---
+export { ArdaDetailField, detailFieldVariants } from './components/canary/atoms/detail-field/detail-field';
+export type {
+  ArdaDetailFieldProps,
+  ArdaDetailFieldStaticConfig,
+  ArdaDetailFieldRuntimeConfig,
+} from './components/canary/atoms/detail-field/detail-field';
+```
+
+### 2. Regenerate package contents docs
+
+After updating barrel exports, regenerate the "Current Content" inventory in the [Using the Design System](?path=/docs/docs-workflows-using-the-design-system--docs) page:
+
+```bash
+node tools/update-package-contents.js
+```
+
+This script reads the entry points (`src/index.ts`, `src/canary.ts`, `src/extras.ts`), style files, and asset directories, then rewrites the auto-generated section in `src/docs/workflows/using-the-design-system.mdx` with the current date and an accurate inventory of every exported component, style sheet, and asset.
+
+Run this script whenever you:
+
+- Add, remove, or rename an exported component or type
+- Add or remove a CSS file under `src/styles/`
+- Add or remove assets under `public/images/` or `public/canary/images/`
+
+The script is idempotent &#8212; running it twice produces the same output.
 
 ## Secrets Checklist
 
