@@ -32,16 +32,13 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
 - Coverage thresholds enforced via Vitest: statements 85%, branches 75%, functions 65%, lines 85%
 - `coverage:summary` script and `make coverage-summary` target
 
-### Changed
-
-- Moved `ag-grid-community`, `ag-grid-react`, and `lucide-react` from `dependencies` to
-  `peerDependencies` (kept in `devDependencies` for local Storybook development)
-- Added `ag-grid-community`, `ag-grid-react`, and `lucide-react` to Vite `rollupOptions.external`
-- Extras bundle size reduced ~90% (extras.js 1,607 kB to 162 kB) by externalizing peer dependencies
-- Coverage reporter list expanded to include `lcov` for CI integration
-
 ### Fixed
 
+- Moved `ag-grid-community`, `ag-grid-react`, and `lucide-react` from `dependencies` to
+  `peerDependencies` to prevent version conflicts with consuming applications
+  (kept in `devDependencies` for local Storybook development)
+- Externalized `ag-grid-community`, `ag-grid-react`, and `lucide-react` in Vite build —
+  extras bundle reduced ~90% (extras.js 1,607 kB to 162 kB)
 - `ArdaDetailField` `fallback` prop JSDoc now clarifies it has no effect when `children` is provided
 
 ## [1.17.0] - 2026-03-04
