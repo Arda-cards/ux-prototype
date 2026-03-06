@@ -222,6 +222,12 @@ function generateSection() {
     { file: 'src/index.ts', subpath: '' },
     { file: 'src/canary.ts', subpath: '/canary' },
     { file: 'src/extras.ts', subpath: '/extras' },
+    { file: 'src/types/index.ts', subpath: '/types' },
+    { file: 'src/types/canary.ts', subpath: '/types/canary' },
+    { file: 'src/types/extras.ts', subpath: '/types/extras' },
+    { file: 'src/types/date-time.ts', subpath: '/types/date-time' },
+    { file: 'src/types/canary-date-time.ts', subpath: '/types/canary-date-time' },
+    { file: 'src/types/extras-date-time.ts', subpath: '/types/extras-date-time' },
   ];
 
   for (const ep of entryPoints) {

@@ -6,10 +6,7 @@ import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ArdaTypeahead, type TypeaheadOption } from '@/components/extras/atoms/typeahead/typeahead';
 import { ArdaConfirmDialog } from '@/components/extras/atoms/confirm-dialog/confirm-dialog';
-import type { Currency } from '@/types/extras/model/general/money';
-import type { TimeUnit } from '@/types/extras/model/general/time/duration';
-import type { OrderMechanism, QuantityUnit } from '@/types/extras/reference/items/item-domain';
-import type { ItemSupply } from '@/types/extras/reference/business-affiliates/item-supply';
+import type { Currency, TimeUnit, OrderMechanism, QuantityUnit, ItemSupply } from '@/types/extras';
 
 /* ------------------------------------------------------------------ */
 /*  Form State                                                         */

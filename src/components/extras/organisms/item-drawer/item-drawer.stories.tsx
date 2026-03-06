@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
 
-import { sampleItemSupplies } from '@/types/extras/reference/business-affiliates/item-supply';
+import { sampleItemSupplies } from '@/components/extras/organisms/reference/items/mocks/sample-item-supplies';
 
 import { ArdaItemDrawer, sampleItem } from './item-drawer';
 

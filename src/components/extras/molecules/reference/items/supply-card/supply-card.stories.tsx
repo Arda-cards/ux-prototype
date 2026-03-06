@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, within } from 'storybook/test';
 import { useState } from 'react';
 
-import type { SupplyDesignation } from '@/types/extras/reference/business-affiliates/item-supply';
+import type { SupplyDesignation } from '@/types/extras';
 
 import { ArdaSupplyCard } from './supply-card';
 

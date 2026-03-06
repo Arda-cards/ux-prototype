@@ -10,7 +10,7 @@ import {
   suppliersDefaultColDef,
   enhanceEditableSupplierColumnDefs,
 } from '@/components/extras/molecules/data-grid/presets/suppliers/suppliers-column-presets';
-import type { BusinessAffiliate } from '@/types/extras/reference/business-affiliates/business-affiliate';
+import type { BusinessAffiliate } from '@/types/extras';
 
 // ============================================================================
 // Factory Instance

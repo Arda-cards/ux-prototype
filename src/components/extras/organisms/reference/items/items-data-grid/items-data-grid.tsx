@@ -10,7 +10,7 @@ import {
   itemsDefaultColDef,
   enhanceEditableColumnDefs,
 } from '@/components/extras/molecules/data-grid/presets/items/items-column-presets';
-import type { Item } from '@/types/extras/reference/items/item-domain';
+import type { Item } from '@/types/extras';
 
 // ============================================================================
 // Factory Instance

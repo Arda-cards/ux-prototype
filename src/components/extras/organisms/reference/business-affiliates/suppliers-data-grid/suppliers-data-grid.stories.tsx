@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { ArdaSupplierDataGrid } from './suppliers-data-grid';
 import { mockSuppliers } from '@/components/extras/molecules/data-grid/presets/suppliers/suppliers-mock-data';
-import type { BusinessAffiliate } from '@/types/extras/reference/business-affiliates/business-affiliate';
+import type { BusinessAffiliate } from '@/types/extras';
 
 const meta: Meta<typeof ArdaSupplierDataGrid> = {
   title: 'Components/Extras/Organisms/Reference/Business Affiliates/Suppliers Data Grid',

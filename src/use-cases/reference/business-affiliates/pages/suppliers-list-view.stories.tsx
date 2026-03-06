@@ -12,7 +12,7 @@ import { ArdaGrid } from '@frontend/components/table';
 import { Button } from '@frontend/components/ui/button';
 import type { ArdaApiResponse, ArdaQueryResponse } from '@frontend/types/arda-api';
 import { ArdaSupplierDrawer } from '@/components/extras/organisms/reference/business-affiliates/supplier-drawer/supplier-drawer';
-import type { BusinessAffiliate } from '@/types/extras/reference/business-affiliates/business-affiliate';
+import type { BusinessAffiliate } from '@/types/extras';
 import type { BusinessAffiliateWithRoles } from '../types';
 import { suppliersColumnDefs, suppliersDefaultColDef } from '../column-defs';
 import { ImportSuppliersModal } from './import-suppliers-modal';

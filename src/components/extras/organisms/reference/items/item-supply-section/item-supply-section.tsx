@@ -2,12 +2,7 @@
 
 import { Plus, Package } from 'lucide-react';
 
-import type {
-  ItemSupply,
-  SupplyDesignation,
-} from '@/types/extras/reference/business-affiliates/item-supply';
-import type { Money } from '@/types/extras/model/general/money';
-import type { Duration } from '@/types/extras/model/general/time/duration';
+import type { ItemSupply, SupplyDesignation, Money, Duration } from '@/types/extras';
 import { ArdaSupplyCard } from '@/components/extras/molecules/reference/items/supply-card/supply-card';
 
 /* ------------------------------------------------------------------ */

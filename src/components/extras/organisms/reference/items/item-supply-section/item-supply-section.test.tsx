@@ -1,10 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import {
-  sampleItemSupplies,
-  type SupplyDesignation,
-} from '@/types/extras/reference/business-affiliates/item-supply';
+import type { SupplyDesignation } from '@/types/extras';
+import { sampleItemSupplies } from '../mocks/sample-item-supplies';
 
 import { ArdaItemSupplySection } from './item-supply-section';
 
