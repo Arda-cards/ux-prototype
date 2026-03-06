@@ -1,4 +1,4 @@
-.PHONY: help install dev build build-lib lint lint-fix typecheck check test test-coverage serve preview publish clean
+.PHONY: help install dev build build-lib lint lint-fix typecheck check test test-coverage coverage-summary serve preview publish clean
 
 ## -- Local Development -------------------------------------------------------
 
@@ -32,8 +32,11 @@ check: lint typecheck ## Run all checks (lint + typecheck)
 test: ## Run unit tests
 	npm run test
 
-test-coverage: ## Run unit tests with coverage
+test-coverage: ## Run unit tests with coverage (fails if below thresholds)
 	npm run test:coverage
+
+coverage-summary: ## Show coverage summary
+	npm run coverage:summary
 
 ## -- Serving & Publishing ----------------------------------------------------
 

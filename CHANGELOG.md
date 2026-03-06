@@ -18,6 +18,29 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [1.18.0] - 2026-03-05
+
+### Added
+
+- TypeScript declaration files (`.d.ts`) now emitted alongside JS/CJS outputs via `vite-plugin-dts`
+  with rolled-up declarations per entry point (`index.d.ts`, `canary.d.ts`, `extras.d.ts`)
+- `tsconfig.build.json` for library-only declaration generation (excludes stories, tests, vendored)
+- CSS design tokens preset: `styles/tokens.css` (Nominal) and `styles/canary/tokens.css` (Canary)
+  providing minimal CSS custom properties for consumers with their own Tailwind setup
+- Consumer documentation: peer dependencies table, CSS token reference, and token import options
+  in README and Storybook "Using the Design System" workflow page
+- Coverage thresholds enforced via Vitest: statements 85%, branches 75%, functions 65%, lines 85%
+- `coverage:summary` script and `make coverage-summary` target
+
+### Fixed
+
+- Moved `ag-grid-community`, `ag-grid-react`, and `lucide-react` from `dependencies` to
+  `peerDependencies` to prevent version conflicts with consuming applications
+  (kept in `devDependencies` for local Storybook development)
+- Externalized `ag-grid-community`, `ag-grid-react`, and `lucide-react` in Vite build —
+  extras bundle reduced ~90% (extras.js 1,607 kB to 162 kB)
+- `ArdaDetailField` `fallback` prop JSDoc now clarifies it has no effect when `children` is provided
+
 ## [1.17.0] - 2026-03-04
 
 ### Added

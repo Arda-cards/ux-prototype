@@ -20,6 +20,7 @@ const targets = [
   // Nominal styles
   { src: 'src/styles/globals.css', dest: 'dist/styles/globals.css' },
   { src: 'src/styles/ag-theme-arda.css', dest: 'dist/styles/ag-theme-arda.css' },
+  { src: 'src/styles/tokens.css', dest: 'dist/styles/tokens.css' },
   // Canary styles
   { src: 'src/styles/canary', dest: 'dist/styles/canary' },
   // Nominal images

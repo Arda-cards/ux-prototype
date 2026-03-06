@@ -239,8 +239,100 @@ The package expects these as peer dependencies in your application:
 
 - `react` &#8805; 18
 - `react-dom` &#8805; 18
+- `ag-grid-community` &#8805; 34 &#8212; required by Extras data-grid components
+- `ag-grid-react` &#8805; 34 &#8212; required by Extras data-grid components
+- `lucide-react` &#8805; 0.400 &#8212; icon library used by multiple components
 
-Bundled dependencies (included in the package, no need to install separately): AG Grid, Lucide icons, `class-variance-authority`, `clsx`, `tailwind-merge`.
+Bundled dependencies (included in the package, no need to install separately): `class-variance-authority`, `clsx`, `tailwind-merge`.
+
+> **Note:** If you only use Nominal or Canary components that don't reference AG Grid or Lucide, the peer dependency warnings are safe to ignore. Install only what your imports actually require.
+
+---
+
+## CSS Design Tokens
+
+Components use Tailwind utility classes like `text-foreground`, `text-muted-foreground`, `bg-background`, `border-border`, etc. These classes resolve to CSS custom properties that the consumer must define.
+
+### Option A: Import the full theme
+
+Import `globals.css` to get the complete Arda theme (all tokens, Tailwind base, fonts):
+
+```tsx
+import '@arda-cards/design-system/styles';
+```
+
+### Option B: Import only the tokens
+
+If you have your own Tailwind setup and only need the color/radius custom properties, import the minimal tokens preset:
+
+```tsx
+// Nominal tokens
+import '@arda-cards/design-system/styles/tokens.css';
+
+// Or Canary tokens (currently identical; will diverge as Canary evolves)
+import '@arda-cards/design-system/styles/canary/tokens.css';
+```
+
+This defines the core CSS variables (`--foreground`, `--muted-foreground`, `--background`, `--border`, `--primary`, `--secondary`, `--destructive`, `--accent`, `--card`, `--popover`, `--input`, `--ring`, `--radius`) for both light and dark (`.dark`) modes.
+
+### Required tokens reference
+
+<table>
+  <thead>
+    <tr>
+      <th>CSS variable</th>
+      <th>Tailwind class(es)</th>
+      <th>Used by</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>--foreground</code></td>
+      <td><code>text-foreground</code></td>
+      <td>All components (primary text color)</td>
+    </tr>
+    <tr>
+      <td><code>--muted-foreground</code></td>
+      <td><code>text-muted-foreground</code></td>
+      <td>Labels, secondary text</td>
+    </tr>
+    <tr>
+      <td><code>--background</code></td>
+      <td><code>bg-background</code></td>
+      <td>Page/container backgrounds</td>
+    </tr>
+    <tr>
+      <td><code>--border</code></td>
+      <td><code>border-border</code></td>
+      <td>Dividers, form inputs</td>
+    </tr>
+    <tr>
+      <td><code>--primary</code></td>
+      <td><code>bg-primary</code>, <code>text-primary</code></td>
+      <td>Buttons, active states</td>
+    </tr>
+    <tr>
+      <td><code>--secondary</code></td>
+      <td><code>bg-secondary</code></td>
+      <td>Hover states, secondary buttons</td>
+    </tr>
+    <tr>
+      <td><code>--destructive</code></td>
+      <td><code>text-destructive</code></td>
+      <td>Error states, required markers</td>
+    </tr>
+    <tr>
+      <td><code>--ring</code></td>
+      <td><code>focus:ring-ring</code></td>
+      <td>Focus indicators</td>
+    </tr>
+    <tr>
+      <td><code>--radius</code></td>
+      <td><code>rounded-lg</code> etc.</td>
+      <td>Border radius scale</td>
+    </tr>
+  </tbody>
+</table>
 
 ---
 
@@ -346,8 +438,16 @@ Each entry point ships as ESM (`.js`), CJS (`.cjs`), and TypeScript declarations
       <td>Nominal theme &#8212; Tailwind, CSS custom properties, sidebar/typography/layout tokens</td>
     </tr>
     <tr>
+      <td><code>./styles/tokens.css</code></td>
+      <td>Minimal CSS custom properties (colors, radius) &#8212; light + dark</td>
+    </tr>
+    <tr>
       <td><code>./styles/ag-theme-arda.css</code></td>
       <td>AG Grid theme</td>
+    </tr>
+    <tr>
+      <td><code>./styles/canary/tokens.css</code></td>
+      <td>Canary CSS custom properties (colors, radius) &#8212; light + dark</td>
     </tr>
     <tr>
       <td><code>./styles/canary/ag-theme-arda.css</code></td>
