@@ -3,13 +3,19 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import dts from 'vite-plugin-dts';
 
+const isLibBuild = !!process.env.LIB_BUILD;
+
 export default defineConfig({
   plugins: [
     react(),
-    dts({
-      tsconfigPath: './tsconfig.build.json',
-      rollupTypes: true,
-    }),
+    ...(isLibBuild
+      ? [
+          dts({
+            tsconfigPath: './tsconfig.build.json',
+            rollupTypes: true,
+          }),
+        ]
+      : []),
   ],
   resolve: {
     alias: {

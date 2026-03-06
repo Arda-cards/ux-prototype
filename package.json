@@ -46,7 +46,7 @@
     "storybook": "storybook dev -p 6006",
     "install:vendored": "node tools/install-vendored-deps.js",
     "build-storybook": "node tools/install-vendored-deps.js && storybook build",
-    "build:lib": "vite build && node tools/copy-dist-assets.js",
+    "build:lib": "LIB_BUILD=true vite build && node tools/copy-dist-assets.js",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "test": "vitest --run",
