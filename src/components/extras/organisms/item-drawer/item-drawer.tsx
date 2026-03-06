@@ -9,55 +9,26 @@ import { ArdaItemSupplySection } from '@/components/extras/organisms/reference/i
 import type {
   ItemSupply,
   SupplyDesignation,
-} from '@/types/extras/reference/business-affiliates/item-supply';
+  Currency,
+  Money,
+  TimeUnit,
+  Duration,
+  OrderMechanism,
+  ItemClassification,
+  Locator,
+} from '@/types/extras';
 
 /* ------------------------------------------------------------------ */
-/*  Value Types                                                       */
+/*  Component-local Types                                             */
 /* ------------------------------------------------------------------ */
 
-export type Currency = 'USD' | 'CAD' | 'EUR' | 'GBP';
-
-export interface Money {
-  value: number;
-  currency: Currency;
-}
-
-export type TimeUnit = 'HOUR' | 'DAY' | 'WEEK';
-
-export interface Duration {
-  length: number;
-  unit: TimeUnit;
-}
-
+/**
+ * Quantity with free-text unit (more permissive than the domain QuantityUnit).
+ * Used by the item-drawer form to accept arbitrary unit strings.
+ */
 export interface Quantity {
   amount: number;
   unit: string;
-}
-
-export type OrderMechanism =
-  | 'PURCHASE_ORDER'
-  | 'EMAIL'
-  | 'PHONE'
-  | 'IN_STORE'
-  | 'ONLINE'
-  | 'RFQ'
-  | 'PRODUCTION'
-  | 'THIRD_PARTY'
-  | 'OTHER';
-
-/* ------------------------------------------------------------------ */
-/*  Domain Types                                                      */
-/* ------------------------------------------------------------------ */
-
-export interface ItemClassification {
-  type: string;
-  subType?: string;
-}
-
-export interface Locator {
-  facility: string;
-  department?: string;
-  location?: string;
 }
 
 export interface Supply {

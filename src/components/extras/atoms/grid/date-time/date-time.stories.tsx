@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { ArdaDateTimeCellDisplay } from './date-time-cell-display';
 import { ArdaDateTimeCellEditor } from './date-time-cell-editor';
 import { ArdaDateTimeCellInteractive } from './date-time-cell-interactive';
-import { COMMON_TIMEZONES } from '@/types/extras/model/general/time/timezone';
+import { COMMON_TIMEZONES } from '@/types/extras-date-time';
 
 const meta: Meta<typeof ArdaDateTimeCellInteractive> = {
   title: 'Components/Extras/Atoms/Grid/Date Time',

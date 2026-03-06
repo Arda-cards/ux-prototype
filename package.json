@@ -21,6 +21,36 @@
       "import": "./dist/extras.js",
       "require": "./dist/extras.cjs"
     },
+    "./types": {
+      "types": "./dist/types.d.ts",
+      "import": "./dist/types.js",
+      "require": "./dist/types.cjs"
+    },
+    "./types/canary": {
+      "types": "./dist/types-canary.d.ts",
+      "import": "./dist/types-canary.js",
+      "require": "./dist/types-canary.cjs"
+    },
+    "./types/extras": {
+      "types": "./dist/types-extras.d.ts",
+      "import": "./dist/types-extras.js",
+      "require": "./dist/types-extras.cjs"
+    },
+    "./types/date-time": {
+      "types": "./dist/types-date-time.d.ts",
+      "import": "./dist/types-date-time.js",
+      "require": "./dist/types-date-time.cjs"
+    },
+    "./types/canary-date-time": {
+      "types": "./dist/types-canary-date-time.d.ts",
+      "import": "./dist/types-canary-date-time.js",
+      "require": "./dist/types-canary-date-time.cjs"
+    },
+    "./types/extras-date-time": {
+      "types": "./dist/types-extras-date-time.d.ts",
+      "import": "./dist/types-extras-date-time.js",
+      "require": "./dist/types-extras-date-time.cjs"
+    },
     "./styles": "./dist/styles/globals.css",
     "./styles/*": "./dist/styles/*",
     "./assets/*": "./dist/assets/*"
@@ -32,6 +62,24 @@
       ],
       "extras": [
         "./dist/extras.d.ts"
+      ],
+      "types": [
+        "./dist/types.d.ts"
+      ],
+      "types/canary": [
+        "./dist/types-canary.d.ts"
+      ],
+      "types/extras": [
+        "./dist/types-extras.d.ts"
+      ],
+      "types/date-time": [
+        "./dist/types-date-time.d.ts"
+      ],
+      "types/canary-date-time": [
+        "./dist/types-canary-date-time.d.ts"
+      ],
+      "types/extras-date-time": [
+        "./dist/types-extras-date-time.d.ts"
       ]
     }
   },
@@ -66,11 +114,11 @@
     "tailwind-merge": "^3.4.0"
   },
   "peerDependencies": {
-    "react": "^18.0.0 || ^19.0.0",
-    "react-dom": "^18.0.0 || ^19.0.0",
     "ag-grid-community": "^34.0.0",
     "ag-grid-react": "^34.0.0",
-    "lucide-react": ">=0.400.0"
+    "lucide-react": ">=0.400.0",
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
@@ -78,6 +126,7 @@
     "@storybook/react-vite": "^10.2.8",
     "@storybook/test-runner": "^0.24.2",
     "@tailwindcss/postcss": "^4.1.7",
+    "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
@@ -86,11 +135,10 @@
     "@types/react-dom": "19.2.3",
     "@typescript-eslint/eslint-plugin": "^8.55.0",
     "@typescript-eslint/parser": "^8.55.0",
-    "ag-grid-community": "^34.3.1",
-    "ag-grid-react": "^34.3.1",
-    "lucide-react": "^0.563.0",
     "@vitejs/plugin-react": "^4.3.0",
     "@vitest/coverage-v8": "^3.0.0",
+    "ag-grid-community": "^34.3.1",
+    "ag-grid-react": "^34.3.1",
     "agentation": "^2.2.1",
     "concurrently": "^9.1.0",
     "eslint": "^9",
@@ -102,6 +150,7 @@
     "express-basic-auth": "^1.2.1",
     "http-server": "^14.1.1",
     "jsdom": "^26.0.0",
+    "lucide-react": "^0.563.0",
     "msw": "^2.12.10",
     "msw-storybook-addon": "^2.0.6",
     "prettier": "^3.4.0",

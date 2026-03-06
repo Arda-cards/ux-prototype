@@ -133,7 +133,7 @@ prettierConfig, // ── TypeScript strict rules ──────────
 }, // ── Subpath boundaries: stable code must not import from canary or extras ──
 {
   files: ['src/components/**/*.ts', 'src/components/**/*.tsx', 'src/types/**/*.ts', 'src/types/**/*.tsx', 'src/lib/**/*.ts', 'src/lib/**/*.tsx'],
-  ignores: ['src/components/canary/**', 'src/components/extras/**', 'src/types/extras/**', 'src/styles/extras/**'],
+  ignores: ['src/components/canary/**', 'src/components/extras/**', 'src/types/extras/**', 'src/types/extras.ts', 'src/types/extras-date-time.ts', 'src/types/canary.ts', 'src/types/canary-date-time.ts', 'src/styles/extras/**'],
   rules: {
     'no-restricted-imports': ['error', {
       patterns: [

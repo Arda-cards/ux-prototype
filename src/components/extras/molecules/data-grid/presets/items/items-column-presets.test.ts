@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import type { Money } from '@/types/extras/model';
+import type { Money } from '@/types/extras';
 
 import {
   formatCurrency,

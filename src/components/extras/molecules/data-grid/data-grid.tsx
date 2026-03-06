@@ -14,14 +14,14 @@ import {
   type RowClickedEvent,
 } from 'ag-grid-community';
 import '@/styles/ag-theme-arda.css';
-import type { PaginationData } from '@/types/extras/model';
+import type { PaginationData } from '@/types/extras';
 import { useColumnPersistence } from './use-column-persistence';
 
 // Register AG-Grid modules
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 // Re-export PaginationData from the canonical location
-export type { PaginationData } from '@/types/extras/model';
+export type { PaginationData } from '@/types/extras';
 
 export interface ArdaDataGridStaticConfig<T> {
   /* --- Model / Data Binding --- */

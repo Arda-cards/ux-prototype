@@ -2,11 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, within } from 'storybook/test';
 import { useState } from 'react';
 
-import {
-  sampleItemSupplies,
-  type ItemSupply,
-  type SupplyDesignation,
-} from '@/types/extras/reference/business-affiliates/item-supply';
+import type { ItemSupply, SupplyDesignation } from '@/types/extras';
+import { sampleItemSupplies } from '../mocks/sample-item-supplies';
 
 import { ArdaItemSupplySection } from './item-supply-section';
 

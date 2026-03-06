@@ -18,6 +18,47 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [2.0.0] - 2026-03-05
+
+### Added
+
+- Dedicated type barrel entry points following the three-tier maturity model:
+  `types`, `types/canary`, `types/extras`, `types/date-time`, `types/canary-date-time`,
+  `types/extras-date-time` — each with ESM, CJS, and `.d.ts` outputs
+- `package.json` subpath exports and `typesVersions` entries for all six type barrels
+- Vite build entry points for type barrels in `vite.config.ts`
+- "Importing Types" documentation section in the "Using the Design System" workflow page
+- Co-located mock data files for stories and tests under
+  `organisms/reference/business-affiliates/mocks/` and `organisms/reference/items/mocks/`
+
+### Changed
+
+- Domain model types (`BusinessAffiliate`, `Item`, `Money`, `PaginationData`, etc.)
+  are now published from `types/extras` barrel instead of the `extras` component barrel —
+  consumers should import types from `@arda-cards/design-system/types/extras`
+- Timezone utilities (`IANA_TIMEZONES`, `searchTimezones`, etc.) moved to
+  `types/extras-date-time` barrel to avoid bundling ~66 KB of IANA data with basic types
+- All internal component, story, test, and mock imports updated to use type barrels
+  instead of leaf-path imports
+- "Package Exports" documentation reorganized into Components / Types / Styles subsections
+
+### Removed
+
+- `sampleAffiliates` and `sampleItemSupplies` removed from published type files and
+  the `extras` barrel — replaced by co-located mock files for stories/tests
+- `ModelCurrency`, `ModelMoney`, `ModelTimeUnit`, `ModelDuration` aliased re-exports
+  removed from `extras` barrel
+- Duplicate type definitions (`Currency`, `Money`, `TimeUnit`, `Duration`,
+  `OrderMechanism`, `ItemClassification`, `Locator`) removed from `item-drawer.tsx` —
+  now imported from `types/extras` barrel
+- Domain type re-exports removed from `extras` component barrel (types are now in
+  dedicated type barrels only)
+
+### Fixed
+
+- Added missing `@testing-library/dom` dev dependency (peer dependency of
+  `@testing-library/react` that was never installed, causing test file load failures)
+
 ## [1.18.0] - 2026-03-05
 
 ### Added

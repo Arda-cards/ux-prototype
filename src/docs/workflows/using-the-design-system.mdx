@@ -36,13 +36,15 @@ npm install @arda-cards/design-system
 
 ## Package Exports
 
-The package provides five export paths:
+The package organizes exports into components, types, styles, and assets. Each category follows the three-tier maturity model (Nominal, Canary, Extras).
+
+### Components
 
 <table>
   <thead>
     <tr>
       <th>Import path</th>
-      <th>Category</th>
+      <th>Tier</th>
       <th>Contents</th>
     </tr>
   </thead>
@@ -50,7 +52,7 @@ The package provides five export paths:
     <tr>
       <td><code>@arda-cards/design-system</code></td>
       <td>Nominal</td>
-      <td>Production-ready components, types, and utilities</td>
+      <td>Production-ready components and utilities</td>
     </tr>
     <tr>
       <td><code>@arda-cards/design-system/canary</code></td>
@@ -62,14 +64,71 @@ The package provides five export paths:
       <td>Extras</td>
       <td>Off-maturity-track reference implementations</td>
     </tr>
+  </tbody>
+</table>
+
+### Types
+
+Domain model types are published from dedicated type barrels, separate from the component entry points. This keeps type imports lightweight and avoids pulling component code into type-only consumers.
+
+<table>
+  <thead>
+    <tr>
+      <th>Import path</th>
+      <th>Tier</th>
+      <th>Contents</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>@arda-cards/design-system/types</code></td>
+      <td>Nominal</td>
+      <td>Stable domain types (placeholder)</td>
+    </tr>
+    <tr>
+      <td><code>@arda-cards/design-system/types/canary</code></td>
+      <td>Canary</td>
+      <td>In-development domain types (placeholder)</td>
+    </tr>
+    <tr>
+      <td><code>@arda-cards/design-system/types/extras</code></td>
+      <td>Extras</td>
+      <td>Extras domain types &#8212; entities, value objects, enums</td>
+    </tr>
+    <tr>
+      <td><code>@arda-cards/design-system/types/date-time</code></td>
+      <td>Nominal</td>
+      <td>Date/time utilities (placeholder)</td>
+    </tr>
+    <tr>
+      <td><code>@arda-cards/design-system/types/canary-date-time</code></td>
+      <td>Canary</td>
+      <td>Date/time utilities (placeholder)</td>
+    </tr>
+    <tr>
+      <td><code>@arda-cards/design-system/types/extras-date-time</code></td>
+      <td>Extras</td>
+      <td>IANA timezone data, duration types, search utilities</td>
+    </tr>
+  </tbody>
+</table>
+
+### Styles and Assets
+
+<table>
+  <thead>
+    <tr>
+      <th>Import path</th>
+      <th>Contents</th>
+    </tr>
+  </thead>
+  <tbody>
     <tr>
       <td><code>@arda-cards/design-system/styles</code></td>
-      <td>Styles</td>
       <td>Nominal CSS design tokens (<code>globals.css</code>)</td>
     </tr>
     <tr>
       <td><code>@arda-cards/design-system/assets/*</code></td>
-      <td>Assets</td>
       <td>Brand logos, icons, and imagery</td>
     </tr>
   </tbody>
@@ -140,6 +199,41 @@ import type { ArdaButtonProps } from '@arda-cards/design-system/extras';
 ```
 
 > **Note:** Extras components are not actively maintained toward promotion. If you depend on an Extras component in production, consider requesting its extraction into the Canary track.
+
+---
+
+## Importing Types
+
+Domain model types (entities, value objects, enums) are published from dedicated type barrels. Import types from these paths rather than from the component entry points &#8212; this avoids pulling component runtime code into type-only consumers.
+
+### Extras domain types
+
+The `types/extras` barrel exports all domain types used by the extras-track components:
+
+```tsx
+import type {
+  BusinessAffiliate,
+  Item,
+  Money,
+  PaginationData,
+} from '@arda-cards/design-system/types/extras';
+```
+
+### Date/time utilities
+
+Timezone data and duration types are in a separate barrel to avoid bundling the large IANA timezone dataset (~66 KB) when only basic types are needed:
+
+```tsx
+import type { IanaTimezoneInfo } from '@arda-cards/design-system/types/extras-date-time';
+import {
+  COMMON_TIMEZONES,
+  searchTimezones,
+} from '@arda-cards/design-system/types/extras-date-time';
+```
+
+### Nominal and Canary types
+
+The `types` and `types/canary` barrels are currently placeholders. As domain types mature and stabilize, they will be promoted into these barrels following the same tier progression as components.
 
 ---
 
@@ -338,7 +432,7 @@ This defines the core CSS variables (`--foreground`, `--muted-foreground`, `--ba
 
 {/* AUTO-GENERATED:START — do not edit manually. Run: node tools/update-package-contents.js */}
 
-## Current Content as of 2026-03-05
+## Current Content as of 2026-03-06
 
 ### Components (JS/TS)
 
@@ -412,16 +506,76 @@ Each entry point ships as ESM (`.js`), CJS (`.cjs`), and TypeScript declarations
       <td><code>ArdaSidebar</code>, <code>ArdaItemDrawer</code>, <code>sampleItem</code>, <code>emptyItem</code>, <code>defaultMoney</code>, <code>defaultQuantity</code>, <code>ArdaItemSupplySection</code>, <code>ArdaItemSupplyFormDialog</code>, <code>ArdaSupplierForm</code>, <code>ArdaSupplierDrawer</code>, <code>ArdaItemsDataGrid</code>, <code>ArdaSupplierDataGrid</code>, <code>createArdaEntityDataGrid</code></td>
     </tr>
     <tr>
-      <td>Types — Model</td>
-      <td><code>getContactDisplayName</code></td>
-    </tr>
-    <tr>
-      <td>Types — Reference</td>
-      <td><code>sampleAffiliates</code>, <code>sampleItemSupplies</code></td>
-    </tr>
-    <tr>
       <td>Utilities</td>
       <td><code>cn</code>, <code>getBrowserTimezone</code>, <code>getTimezoneAbbreviation</code></td>
+    </tr>
+  </tbody>
+</table>
+
+#### `@arda-cards/design-system/types` &#8212; Nominal (stable)
+
+<table>
+  <thead>
+    <tr><th>Layer</th><th>Exports</th></tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+
+#### `@arda-cards/design-system/types/canary` &#8212; In-development
+
+<table>
+  <thead>
+    <tr><th>Layer</th><th>Exports</th></tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+
+#### `@arda-cards/design-system/types/extras` &#8212; Supplementary
+
+<table>
+  <thead>
+    <tr><th>Layer</th><th>Exports</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Model: Assets</td>
+      <td><code>getContactDisplayName</code></td>
+    </tr>
+  </tbody>
+</table>
+
+#### `@arda-cards/design-system/types/date-time` &#8212; Nominal (stable)
+
+<table>
+  <thead>
+    <tr><th>Layer</th><th>Exports</th></tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+
+#### `@arda-cards/design-system/types/canary-date-time` &#8212; In-development
+
+<table>
+  <thead>
+    <tr><th>Layer</th><th>Exports</th></tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+
+#### `@arda-cards/design-system/types/extras-date-time` &#8212; Supplementary
+
+<table>
+  <thead>
+    <tr><th>Layer</th><th>Exports</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Components</td>
+      <td><code>IANA_TIMEZONES</code>, <code>COMMON_TIMEZONES</code>, <code>findTimezone</code>, <code>formatTimezoneLabel</code>, <code>searchTimezones</code></td>
     </tr>
   </tbody>
 </table>
@@ -438,16 +592,12 @@ Each entry point ships as ESM (`.js`), CJS (`.cjs`), and TypeScript declarations
       <td>Nominal theme &#8212; Tailwind, CSS custom properties, sidebar/typography/layout tokens</td>
     </tr>
     <tr>
-      <td><code>./styles/tokens.css</code></td>
-      <td>Minimal CSS custom properties (colors, radius) &#8212; light + dark</td>
-    </tr>
-    <tr>
       <td><code>./styles/ag-theme-arda.css</code></td>
       <td>AG Grid theme</td>
     </tr>
     <tr>
-      <td><code>./styles/canary/tokens.css</code></td>
-      <td>Canary CSS custom properties (colors, radius) &#8212; light + dark</td>
+      <td><code>./styles/tokens.css</code></td>
+      <td>tokens.css</td>
     </tr>
     <tr>
       <td><code>./styles/canary/ag-theme-arda.css</code></td>
@@ -456,6 +606,10 @@ Each entry point ships as ESM (`.js`), CJS (`.cjs`), and TypeScript declarations
     <tr>
       <td><code>./styles/canary/globals.css</code></td>
       <td>Canary theme overrides</td>
+    </tr>
+    <tr>
+      <td><code>./styles/canary/tokens.css</code></td>
+      <td>Canary tokens.css</td>
     </tr>
   </tbody>
 </table>

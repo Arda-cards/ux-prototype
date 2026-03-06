@@ -1,5 +1,5 @@
 import type { AtomProps } from '@/lib/data-types/atom-types';
-import type { BusinessAffiliate } from '@/types/extras/reference/business-affiliates/business-affiliate';
+import type { BusinessAffiliate } from '@/types/extras';
 import {
   createArdaEntityViewer,
   type DesignConfig,

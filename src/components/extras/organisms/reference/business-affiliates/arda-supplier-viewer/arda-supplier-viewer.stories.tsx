@@ -5,7 +5,7 @@ import {
   createArdaEntityViewer,
   type DesignConfig,
 } from '@/components/extras/organisms/shared/entity-viewer';
-import type { BusinessAffiliate } from '@/types/extras/reference/business-affiliates/business-affiliate';
+import type { BusinessAffiliate } from '@/types/extras';
 
 import { ArdaSupplierViewer, supplierFieldDescriptors } from './arda-supplier-viewer';
 import { supplierTabs } from './configs/stepped-layout';

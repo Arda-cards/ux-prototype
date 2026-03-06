@@ -1,7 +1,5 @@
 import type { AtomProps, AtomMode } from '@/lib/data-types/atom-types';
-import type { CompanyInformation } from '@/types/extras/model/assets/company-information';
-import type { Contact } from '@/types/extras/model/assets/contact';
-import type { PostalAddress, CountrySymbol } from '@/types/extras/model/general/geo/postal-address';
+import type { CompanyInformation, Contact, PostalAddress, CountrySymbol } from '@/types/extras';
 import { ArdaTextFieldInteractive } from '@/components/extras/atoms/form/text';
 import { ArdaEnumFieldInteractive } from '@/components/extras/atoms/form/enum';
 

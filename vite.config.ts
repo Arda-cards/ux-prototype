@@ -23,11 +23,18 @@ export default defineConfig({
     },
   },
   build: {
+    copyPublicDir: !isLibBuild,
     lib: {
       entry: {
         index: resolve(__dirname, 'src/index.ts'),
         canary: resolve(__dirname, 'src/canary.ts'),
         extras: resolve(__dirname, 'src/extras.ts'),
+        types: resolve(__dirname, 'src/types/index.ts'),
+        'types-canary': resolve(__dirname, 'src/types/canary.ts'),
+        'types-extras': resolve(__dirname, 'src/types/extras.ts'),
+        'types-date-time': resolve(__dirname, 'src/types/date-time.ts'),
+        'types-canary-date-time': resolve(__dirname, 'src/types/canary-date-time.ts'),
+        'types-extras-date-time': resolve(__dirname, 'src/types/extras-date-time.ts'),
       },
       formats: ['es', 'cjs'],
       fileName: (format, entryName) => `${entryName}.${format === 'es' ? 'js' : 'cjs'}`,
