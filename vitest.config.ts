@@ -17,9 +17,16 @@ export default defineConfig({
     exclude: ['src/vendored/**', 'node_modules/**'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'json', 'lcov', 'html'],
+      reportsDirectory: 'coverage',
       include: ['src/components/**/*.{ts,tsx}'],
       exclude: ['**/*.stories.{ts,tsx}', '**/*.test.{ts,tsx}', '**/index.ts'],
+      thresholds: {
+        statements: 85,
+        branches: 75,
+        functions: 65,
+        lines: 85,
+      },
     },
   },
 });

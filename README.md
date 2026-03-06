@@ -147,7 +147,24 @@ import { ExtrasAtomPlaceholder } from '@arda-cards/design-system/extras';
 
 ### Peer Dependencies
 
-React 18 or 19 (`react`, `react-dom`). Bundled dependencies include AG Grid, Lucide icons, `class-variance-authority`, `clsx`, and `tailwind-merge`.
+| Package | Version | Required for |
+|---------|---------|-------------|
+| `react` | ^18.0.0 \|\| ^19.0.0 | All components |
+| `react-dom` | ^18.0.0 \|\| ^19.0.0 | All components |
+| `ag-grid-community` | ^34.0.0 | Extras data-grid components |
+| `ag-grid-react` | ^34.0.0 | Extras data-grid components |
+| `lucide-react` | >=0.400.0 | Icon components |
+
+Bundled dependencies (no need to install separately): `class-variance-authority`, `clsx`, `tailwind-merge`.
+
+### CSS Design Tokens
+
+Components use Tailwind classes (`text-foreground`, `text-muted-foreground`, `bg-background`, etc.) that resolve to CSS custom properties the consumer must define. Two options:
+
+- **Full theme**: `import '@arda-cards/design-system/styles'` — Tailwind base, fonts, all tokens
+- **Tokens only**: `import '@arda-cards/design-system/styles/tokens.css'` — minimal custom properties for light/dark
+
+See the Storybook **Using the Design System** doc for the complete token reference.
 
 ## Changelog
 

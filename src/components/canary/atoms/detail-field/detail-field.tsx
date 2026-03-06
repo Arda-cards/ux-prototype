@@ -22,7 +22,8 @@ export interface ArdaDetailFieldStaticConfig extends VariantProps<typeof detailF
   /* --- View / Layout / Controller --- */
   /** The field label displayed above the value. */
   label: string;
-  /** Text shown when value is undefined or empty. Defaults to an em dash. */
+  /** Text shown when value is undefined or empty. Defaults to an em dash.
+   *  Has no effect when `children` is provided — children always take precedence. */
   fallback?: string;
 }
 
