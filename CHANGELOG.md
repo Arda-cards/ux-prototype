@@ -18,7 +18,14 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
-## [2.0.1] - 2026-03-06
+## [2.1.0] - 2026-03-06
+
+### Added
+
+- Procurement use-case documentation pages: Context, References, Orders, and Receiving
+- Persona documentation pages: Alan (Account Admin), David (Purchasing Manager),
+  Irene (Inventory Manager), Keisha (Receiving Clerk), Sam (Shop-Floor Worker)
+- Storybook sidebar ordering for procurement use-case section
 
 ### Fixed
 

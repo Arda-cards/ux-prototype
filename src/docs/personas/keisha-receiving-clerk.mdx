@@ -1,0 +1,130 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Personas/Keisha &#8212; Receiving Clerk" />
+
+# Keisha the Receiving Clerk
+
+> &#8220;If it&#8217;s not checked in by end of shift, it might as well not
+> have arrived.&#8221;
+
+**Name:** Keisha Clerkson
+
+## Professional Background
+
+<table>
+  <thead>
+    <tr>
+      <th>Attribute</th>
+      <th>Details</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Job Title</td>
+      <td>
+        Receiving Clerk (end-user, physical operations). Also called Receiving
+        Associate, Warehouse Associate.
+      </td>
+    </tr>
+    <tr>
+      <td>Company</td>
+      <td>
+        Small to mid-size manufacturing or healthcare supply operation. Works
+        at the receiving dock or warehouse area where deliveries arrive.
+      </td>
+    </tr>
+    <tr>
+      <td>Experience</td>
+      <td>
+        2&#8211;5 years of warehouse operations experience in dedicated roles.
+        In small operations, the Inventory Manager or a general shop worker does
+        receiving as part of their routine.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+The Receiving Clerk works at the physical end of the Kanban loop. Their job is to
+close both the digital and physical loops: mark items as received in Arda and
+return kanban cards to their shelf positions.
+
+**Responsibilities:** Unpacking deliveries, counting items, verifying against
+packing slips, restocking shelves at the correct Location and Sub-Location,
+closing the digital loop by marking items as received (transitioning card state
+through DELIVERED &#8594; RECEIVED &#8594; SHELVED, or directly to FULFILLED in
+streamlined flow), and physically returning kanban cards to their shelf positions.
+Uses breadcrumbs (restocking pointers printed by the Inventory Manager) to know
+exactly where items go.
+
+## Goals and Motivations
+
+- Process every delivery same-day. The Receiving page is empty at end of shift.
+- Cards are back on the shelves before end of day, closing the physical and
+  digital kanban loop.
+- Accurate receipt records so the Order Queue reflects reality: no ghost inventory
+  from unlogged deliveries.
+- Speed and simplicity: the receive action must be fast enough to complete at the
+  dock before moving to the next box.
+- Knowing where to put things: breadcrumbs and shelf labels eliminate the need to
+  call the Inventory Manager for every item.
+
+## Challenges and Pain Points
+
+- Deliveries arrive in bursts (typically morning when trucks come). Processing
+  must happen quickly between physical tasks.
+- The system does not model partial receipt. When a delivery is short, the clerk
+  marks it received anyway and handles the discrepancy offline.
+- Items that arrive without a corresponding digital record (ordered outside the
+  card system) have no breadcrumb and no shelf assignment.
+- Shared workstations near the dock: another user may navigate away, losing
+  in-progress work.
+- USB scanner connectivity issues require fallback to manual text entry.
+- Missing or damaged breadcrumbs: if the Inventory Manager has not printed a
+  breadcrumb for a recently added item, the clerk does not know where it goes.
+
+## Typical Day
+
+1. **9:30am:** Delivery truck arrives. Sign for boxes, wheel them to receiving
+   area. Open Arda&#8217;s Receiving page on the shared terminal.
+2. **For each item:** Open the box, count, verify against packing slip. Click
+   &#8220;Receive&#8221; in Arda. Card transitions to FULFILLED (streamlined
+   flow) or through DELIVERED &#8594; RECEIVED &#8594; SHELVED (full model). Pick
+   up the physical card from the &#8220;Ordered&#8221; bin, check the breadcrumb
+   for the shelf location, restock the item, place the card back at the shelf
+   position.
+3. **Note discrepancies** (short shipments, unexpected items without cards) on
+   the packing slip. Leave notes for the Purchasing Manager or Inventory Manager.
+4. **Afternoon:** Small packages or late deliveries. May use the USB scanner on
+   the Scan page for quick receive actions.
+5. **End of shift:** Verify the Receiving page is clear. Unprocessed items are
+   flagged.
+
+**Session pattern:** Very short, frequent sessions during receiving hours
+(2&#8211;10 minutes each). Interrupted constantly by physical work. On a heavy
+receiving day, in and out of Arda a dozen times.
+
+## Technology and Environment
+
+- Shared workstation near the receiving dock, or a dedicated terminal in larger
+  operations.
+- USB QR scanner is essential.
+- Variable technical proficiency: may only know the specific screens they use
+  (Receiving tab, Scan page) and be unfamiliar with Items or Order Queue.
+- Frequently arrives at Arda via QR code scan (card detail URL) rather than
+  navigating via the sidebar.
+
+**Physical artifacts:**
+- **Breadcrumbs:** The primary navigation aid. Placed near the receiving dock,
+  tells exactly where each item goes (Location / Sub-Location).
+- **Shelf labels:** Fixed to shelves/bins, confirm the clerk is restocking in the
+  right spot.
+- **Kanban cards:** Picked up from the &#8220;Ordered&#8221; bin and physically
+  returned to the shelf position after restocking.
+
+## Personality
+
+Action-oriented, physical, focused on throughput and accuracy. Prefers the
+simplest possible digital interaction to get back to physical tasks. Values a
+system that is easier to follow than to break. Relies on physical artifacts
+(breadcrumbs, shelf labels) more than the software interface. Flags missing
+breadcrumbs or damaged cards to the Inventory Manager for replacement.

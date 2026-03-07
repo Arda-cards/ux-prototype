@@ -1,0 +1,120 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Personas/David &#8212; Purchasing Manager" />
+
+# David the Purchasing Manager
+
+> &#8220;If the queue is empty by noon, it&#8217;s been a good day.&#8221;
+
+**Name:** David Dealsworth
+
+## Professional Background
+
+<table>
+  <thead>
+    <tr>
+      <th>Attribute</th>
+      <th>Details</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Job Title</td>
+      <td>
+        Purchasing Manager (end-user, order executor). Also called Procurement
+        Coordinator.
+      </td>
+    </tr>
+    <tr>
+      <td>Company</td>
+      <td>
+        Small to mid-size manufacturing or healthcare supply operation. Sits at
+        the boundary between internal operations and external suppliers.
+      </td>
+    </tr>
+    <tr>
+      <td>Experience</td>
+      <td>
+        Procurement or operations background. Comfortable with purchasing
+        workflows and vendor portals.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+In small operations, this is the same person as the Inventory Manager. In medium
+to large operations, they are distinct roles: the Inventory Manager decides what
+needs to be ordered (by managing cards and reorder points), and the Purchasing
+Manager decides how and when to place those orders.
+
+**Responsibilities:** Executing purchase orders across four fulfillment
+workflows: Online (supplier portal checkout), In-Store (physical pickup with
+mobile recording), Email/Purchase Order (pre-filled email drafts or generated PDF
+POs), and RFQ (Request for Quote for items requiring supplier pricing before
+ordering). Tracks order status through the card lifecycle states:
+AVAILABLE &#8594; REQUESTED &#8594; INPROCESS &#8594; FULFILLING &#8594;
+DELIVERED.
+
+## Goals and Motivations
+
+- Execute purchase orders efficiently. Get items from &#8220;needs
+  ordering&#8221; to &#8220;supplier has the PO&#8221; as fast as possible.
+- The Order Queue is empty by noon. Every item that workers scanned in the
+  previous 24 hours has been ordered.
+- Supplier confirmations are on file. Items in transit are visible so receiving
+  can be scheduled.
+- A single queue grouped by supplier, with all ordering details attached,
+  replacing the email chaos of manual purchasing.
+- Eliminating duplicate orders and items falling through the cracks.
+- Fast lookup when a supplier calls about a price change or backorder.
+
+## Challenges and Pain Points
+
+- Items missing supplier URLs: the &#8220;Start order&#8221; button is disabled,
+  forcing manual ordering outside the system.
+- Items without supplier configuration require editing the item record (adding
+  Primary Supplier, SKU, supplier URL, Order Method) before the order can be
+  placed.
+- Distinguishing between &#8220;Ready to order&#8221; (REQUESTED state) and
+  &#8220;Recent orders&#8221; (INPROCESS state) tabs requires understanding the
+  card state model.
+- Phone-only suppliers cannot be integrated into the digital workflow; the
+  Purchasing Manager must manually advance card states after placing verbal orders.
+- Items bypassing the card system (&#8220;ordered without a card&#8221;) create
+  blind spots: broken kanban loops, lost inventory visibility, and vanished
+  accountability.
+
+## Typical Day
+
+1. **8:45am:** Open Order Queue. Review items grouped by supplier. Start with
+   suppliers that have configured URLs (one-click to open supplier portal).
+2. **9:00am&#8211;10:30am:** Work through the queue supplier by supplier. Open
+   portal, place order, return to Arda, advance card states from REQUESTED to
+   INPROCESS. For Email/PO suppliers: use pre-filled email draft or generate PDF
+   Purchase Order. For RFQ items: generate Request for Quote, send to suppliers.
+3. **Handle problem items:** suppliers without URLs, phone-only vendors, items
+   with missing data.
+4. **2:30pm:** Respond to supplier calls about backorders or delivery changes.
+   Update card notes, notify the Inventory Manager about delays.
+5. **End of day:** Quick check that the queue is clear. Remaining items flagged
+   for tomorrow.
+
+**Session pattern:** One longer working session per morning (20&#8211;45 minutes)
+to process the day&#8217;s orders, then shorter return visits (2&#8211;5 minutes)
+to check on in-progress items. May have Order Queue open in a pinned tab.
+
+## Technology and Environment
+
+- Office desktop or laptop, dedicated workstation (not shared).
+- Moderate to high technical proficiency. Comfortable with web interfaces and
+  multi-tab workflows.
+- Browser-based supplier portals are a core part of the workflow.
+- Will try to use keyboard shortcuts.
+- Scanner within reach for occasional ad-hoc scans.
+
+## Personality
+
+Efficient, process-driven, comfortable with multi-system workflows, focused on
+throughput and clearing the queue. Values shared standards: everyone follows the
+same process. Appreciates when the Inventory Manager enforces card discipline,
+because every order that bypasses the card creates work and risk downstream.
