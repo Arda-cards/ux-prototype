@@ -40,10 +40,10 @@ coverage-summary: ## Show coverage summary
 
 ## -- Serving & Publishing ----------------------------------------------------
 
-serve: build ## Serve built Storybook with basic auth
+serve: build ## Serve built Storybook locally
 	npm run serve
 
-preview: build ## Build, serve with basic auth, and watch src/ for auto-rebuild
+preview: build ## Build, serve (port 8080), and watch src/ for auto-rebuild
 	node tools/watch-rebuild.js
 
 publish: ## Build library and publish to GitHub Packages

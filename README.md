@@ -10,12 +10,12 @@ A shared React component library and interactive prototype gallery for Arda, bui
 
 The Storybook gallery is deployed to two environments:
 
-| Environment                 | URL                                        | Access                               | Deploys on                   |
-| --------------------------- | ------------------------------------------ | ------------------------------------ | ---------------------------- |
-| **Vercel** (external)       | https://ux-prototype-tau.vercel.app/       | Password-protected (HTTP Basic Auth) | CLI deploy (`vercel --prod`) |
+| Environment                 | URL                                        | Access              | Deploys on                   |
+| --------------------------- | ------------------------------------------ | ------------------- | ---------------------------- |
+| **Vercel** (external)       | https://ux-prototype-tau.vercel.app/       | Public (no auth)    | CLI deploy (`vercel --prod`) |
 | **GitHub Pages** (internal) | https://arda-cards.github.io/ux-prototype/ | Repo collaborators via GitHub login  | Push to `main`               |
 
-**Vercel** is the primary site for sharing with stakeholders. Credentials are stored in **1Password** under the **Arda-SystemsOAM** vault.
+**Vercel** is the primary site for sharing with stakeholders.
 
 **GitHub Pages** is for team-internal use. Access is restricted to repository collaborators who authenticate with their GitHub account (Settings > Pages > visibility).
 
@@ -57,7 +57,7 @@ make check            # Run all checks (lint + typecheck)
 make test             # Run unit tests
 make test-coverage    # Run unit tests with coverage
 make test-storybook   # Run Storybook interaction tests
-make serve            # Serve built Storybook with basic auth
+make serve            # Serve built Storybook locally
 make preview          # Build then serve Storybook
 make publish          # Build library and publish to GitHub Packages
 make clean            # Remove build artifacts and node_modules
