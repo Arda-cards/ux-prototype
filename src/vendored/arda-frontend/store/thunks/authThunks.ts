@@ -13,6 +13,8 @@ import { decodeJWTPayload, getUserDisplayName } from '@frontend/lib/jwt';
 import type { User } from '@frontend/types';
 import type { CognitoJWTPayload } from '@frontend/lib/jwt';
 import type { RootState, AppDispatch } from '../store';
+import { STORAGE_KEYS } from '../constants/storageKeys';
+import { COGNITO_ERRORS } from '../constants/authErrors';
 
 // Cognito client singleton
 let cognitoClient: CognitoIdentityProviderClient | null = null;
@@ -31,12 +33,12 @@ function getCognitoClient(): CognitoIdentityProviderClient {
 // (window.location.href) that tears down React before useEffect cleanup fires.
 function clearLocalStorageTokens(): void {
   if (typeof window === 'undefined') return;
-  localStorage.removeItem('accessToken');
-  localStorage.removeItem('idToken');
-  localStorage.removeItem('refreshToken');
-  localStorage.removeItem('tokenExpiresAt');
-  localStorage.removeItem('userEmail');
-  localStorage.removeItem('persist:auth');
+  localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+  localStorage.removeItem(STORAGE_KEYS.ID_TOKEN);
+  localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+  localStorage.removeItem(STORAGE_KEYS.TOKEN_EXPIRES_AT);
+  localStorage.removeItem(STORAGE_KEYS.USER_EMAIL);
+  localStorage.removeItem(STORAGE_KEYS.PERSIST_AUTH);
 }
 
 // Helper to get user from ID token
@@ -115,7 +117,7 @@ export const signInThunk = createAsyncThunk<
         debugLog('[AUTH] New password required challenge received');
         // Store email temporarily for the challenge response
         if (typeof window !== 'undefined') {
-          localStorage.setItem('userEmail', email);
+          localStorage.setItem(STORAGE_KEYS.USER_EMAIL, email);
         }
         return rejectWithValue({
           requiresNewPassword: true,
@@ -162,11 +164,11 @@ export const signInThunk = createAsyncThunk<
       let errorMessage = 'Sign in failed';
       if (error && typeof error === 'object' && 'name' in error) {
         const cognitoError = error as { name: string; message?: string };
-        if (cognitoError.name === 'NotAuthorizedException') {
+        if (cognitoError.name === COGNITO_ERRORS.NOT_AUTHORIZED) {
           errorMessage = 'Invalid email or password';
-        } else if (cognitoError.name === 'UserNotConfirmedException') {
+        } else if (cognitoError.name === COGNITO_ERRORS.USER_NOT_CONFIRMED) {
           errorMessage = 'Please confirm your email address';
-        } else if (cognitoError.name === 'UserNotFoundException') {
+        } else if (cognitoError.name === COGNITO_ERRORS.USER_NOT_FOUND) {
           errorMessage = 'User not found';
         } else if (cognitoError.message) {
           errorMessage = cognitoError.message;
@@ -247,11 +249,11 @@ export const respondToNewPasswordChallengeThunk = createAsyncThunk<
       let errorMessage = 'Failed to set new password';
       if (error && typeof error === 'object' && 'name' in error) {
         const cognitoError = error as { name: string; message?: string };
-        if (cognitoError.name === 'NotAuthorizedException') {
+        if (cognitoError.name === COGNITO_ERRORS.NOT_AUTHORIZED) {
           errorMessage = 'Session expired. Please sign in again.';
-        } else if (cognitoError.name === 'InvalidPasswordException') {
+        } else if (cognitoError.name === COGNITO_ERRORS.INVALID_PASSWORD) {
           errorMessage = 'Password does not meet requirements';
-        } else if (cognitoError.name === 'InvalidParameterException') {
+        } else if (cognitoError.name === COGNITO_ERRORS.INVALID_PARAMETER) {
           errorMessage = 'Invalid password format';
         } else if (cognitoError.message) {
           errorMessage = cognitoError.message;
@@ -396,9 +398,9 @@ export const refreshTokensThunk = createAsyncThunk<
 
       const errorName = (error as { name?: string })?.name;
       const isPermanentError =
-        errorName === 'NotAuthorizedException' ||
-        errorName === 'InvalidParameterException' ||
-        errorName === 'UserNotFoundException';
+        errorName === COGNITO_ERRORS.NOT_AUTHORIZED ||
+        errorName === COGNITO_ERRORS.INVALID_PARAMETER ||
+        errorName === COGNITO_ERRORS.USER_NOT_FOUND;
 
       if (isPermanentError) {
         debugError('[TOKEN_REFRESH] Permanent error detected:', errorName);
@@ -437,7 +439,9 @@ export const checkAuthThunk = createAsyncThunk<
         return null;
       }
 
-      // Check if token is expired
+      // Check if token is actually expired. Do NOT use the 5-min buffer here —
+      // proactive refresh is the tokenRefreshMiddleware's job. Using a buffer
+      // in checkAuthThunk would sign users out 5 min early on every validation poll.
       const now = Date.now() / 1000;
       if (payload.exp && payload.exp < now) {
         debugLog('[AUTH] Token expired, clearing state');
@@ -487,9 +491,9 @@ export const forgotPasswordThunk = createAsyncThunk<
       let errorMessage = 'Failed to send reset email';
       if (error && typeof error === 'object' && 'name' in error) {
         const cognitoError = error as { name: string; message?: string };
-        if (cognitoError.name === 'UserNotFoundException') {
+        if (cognitoError.name === COGNITO_ERRORS.USER_NOT_FOUND) {
           errorMessage = 'User not found';
-        } else if (cognitoError.name === 'LimitExceededException') {
+        } else if (cognitoError.name === COGNITO_ERRORS.LIMIT_EXCEEDED) {
           errorMessage = 'Too many attempts. Please try again later';
         } else if (cognitoError.message) {
           errorMessage = cognitoError.message;
@@ -531,11 +535,11 @@ export const confirmNewPasswordThunk = createAsyncThunk<
       let errorMessage = 'Failed to reset password';
       if (error && typeof error === 'object' && 'name' in error) {
         const cognitoError = error as { name: string; message?: string };
-        if (cognitoError.name === 'CodeMismatchException') {
+        if (cognitoError.name === COGNITO_ERRORS.CODE_MISMATCH) {
           errorMessage = 'Invalid confirmation code';
-        } else if (cognitoError.name === 'ExpiredCodeException') {
+        } else if (cognitoError.name === COGNITO_ERRORS.EXPIRED_CODE) {
           errorMessage = 'Confirmation code has expired';
-        } else if (cognitoError.name === 'InvalidPasswordException') {
+        } else if (cognitoError.name === COGNITO_ERRORS.INVALID_PASSWORD) {
           errorMessage = 'Password does not meet requirements';
         } else if (cognitoError.message) {
           errorMessage = cognitoError.message;
@@ -580,13 +584,13 @@ export const changePasswordThunk = createAsyncThunk<
       let errorMessage = 'Failed to change password';
       if (error && typeof error === 'object' && 'name' in error) {
         const cognitoError = error as { name: string; message?: string };
-        if (cognitoError.name === 'NotAuthorizedException') {
+        if (cognitoError.name === COGNITO_ERRORS.NOT_AUTHORIZED) {
           errorMessage = 'Current password is incorrect or access token is invalid';
-        } else if (cognitoError.name === 'InvalidPasswordException') {
+        } else if (cognitoError.name === COGNITO_ERRORS.INVALID_PASSWORD) {
           errorMessage = 'New password does not meet requirements';
-        } else if (cognitoError.name === 'LimitExceededException') {
+        } else if (cognitoError.name === COGNITO_ERRORS.LIMIT_EXCEEDED) {
           errorMessage = 'Too many attempts. Please try again later';
-        } else if (cognitoError.name === 'InvalidParameterException') {
+        } else if (cognitoError.name === COGNITO_ERRORS.INVALID_PARAMETER) {
           errorMessage = 'Invalid parameters provided';
         } else if (cognitoError.message) {
           errorMessage = cognitoError.message;

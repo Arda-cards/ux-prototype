@@ -11,6 +11,7 @@ import { handleAuthError } from './authErrorHandler';
 import { isAuthenticationError } from './utils';
 import { store } from '@frontend/store/store';
 import { selectAccessToken, selectIdToken } from '@frontend/store/selectors/authSelectors';
+import { TOKEN_EXPIRY_BUFFER_S } from '@frontend/store/constants/storageKeys';
 
 /**
  * Maps OrderMechanism to the order method string used in the UI
@@ -95,13 +96,12 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
     throw error;
   }
 
-  // Check access token expiration with 2-minute buffer
+  // Check access token expiration with standard 5-minute buffer
   try {
     const accessPayload = JSON.parse(atob(accessToken.split('.')[1]));
     const now = Date.now() / 1000;
-    const twoMinutesBuffer = 2 * 60;
 
-    if (accessPayload.exp && accessPayload.exp < now + twoMinutesBuffer) {
+    if (accessPayload.exp && accessPayload.exp < now + TOKEN_EXPIRY_BUFFER_S) {
       console.warn(
         '[CLIENT] Access token expired or expiring soon, attempting refresh'
       );

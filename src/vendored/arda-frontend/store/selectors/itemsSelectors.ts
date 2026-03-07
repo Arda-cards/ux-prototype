@@ -1,3 +1,4 @@
+import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 
 // Items selectors
@@ -27,8 +28,10 @@ const EMPTY_CARDS: never[] = [];
 const EMPTY_COLUMN_VISIBILITY: Record<string, boolean> = {};
 
 // Derived selectors
-export const selectItemById = (state: RootState, entityId: string) =>
-  state.items.items.find((item: { entityId: string }) => item.entityId === entityId);
+export const selectItemById = createSelector(
+  [selectItems, (_state: RootState, entityId: string) => entityId],
+  (items, entityId) => items.find((item) => item.entityId === entityId)
+);
 
 export const selectItemCards = (state: RootState, entityId: string) =>
   state.items.itemCardsMap[entityId] || EMPTY_CARDS;

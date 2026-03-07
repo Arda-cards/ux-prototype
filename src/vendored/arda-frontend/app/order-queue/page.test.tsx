@@ -32,7 +32,7 @@ jest.mock('@/store/hooks/useJWT', () => ({
 }));
 
 // Mock useOrderQueue
-jest.mock('@/contexts/OrderQueueContext', () => ({
+jest.mock('@/store/hooks/useOrderQueue', () => ({
   useOrderQueue: jest.fn().mockReturnValue({
     readyToOrderCount: 0,
     setReadyToOrderCount: jest.fn(),

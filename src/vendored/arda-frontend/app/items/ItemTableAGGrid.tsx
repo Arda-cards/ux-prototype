@@ -12,7 +12,7 @@ import React, {
   useImperativeHandle,
 } from 'react';
 import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
-import type { ColDef, GridApi, GridState, ICellEditorParams } from 'ag-grid-community';
+import type { ColDef, GridApi, GridState } from 'ag-grid-community';
 import {
   ArdaGrid,
   ArdaGridRef,
@@ -28,6 +28,7 @@ import { ChevronDown } from 'lucide-react';
 import { orderMethodOptions, cardSizeOptions, labelSizeOptions, breadcrumbSizeOptions } from '@frontend/constants/constants';
 import { VIEW_KEY_TO_FIELD } from './itemTableConfig';
 import { SupplierCellEditor } from '@frontend/components/items/SupplierCellEditor';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@frontend/components/ui/select';
 import { UnitCellEditor } from '@frontend/components/items/UnitCellEditor';
 import { TypeCellEditor } from '@frontend/components/items/TypeCellEditor';
 import { SubTypeCellEditor } from '@frontend/components/items/SubTypeCellEditor';
@@ -152,620 +153,78 @@ const COLOR_EDITOR_OPTIONS = [
   { value: 'WHITE', name: 'White' },
 ];
 
-// Custom cell editor for color field
-// Shows a dropdown with color options
-class ColorCellEditor {
-  private eGui: HTMLDivElement | null = null;
-  private selectElement: HTMLSelectElement | null = null;
-  private params: ICellEditorParams | null = null;
-  private currentValue: string = '';
-  private _focusHandler: (() => void) | null = null;
-
-  init(params: ICellEditorParams) {
-    this.params = params;
-    
-    // Get the value from params.value (which comes from valueGetter)
-    // This ensures we use the same value that AG Grid is using
-    const valueFromParams = params.value as string | undefined;
-    
-    const options = COLOR_EDITOR_OPTIONS.map(opt => ({
-      value: opt.value,
-      label: opt.name,
-    }));
-    const validValues = options.map(opt => opt.value);
-    this.currentValue =
-      valueFromParams === '' || (valueFromParams && validValues.includes(valueFromParams))
-        ? (valueFromParams ?? '')
-        : '';
-
-    // Create container
-    this.eGui = document.createElement('div');
-    this.eGui.className = 'flex items-center gap-2 h-full w-full px-2';
-    this.eGui.style.display = 'flex';
-    this.eGui.style.alignItems = 'center';
-    this.eGui.style.gap = '8px';
-    this.eGui.style.padding = '0 8px';
-    this.eGui.style.height = '100%';
-    this.eGui.style.width = '100%';
-
-    // Create select dropdown
-    this.selectElement = document.createElement('select');
-    this.selectElement.className = 'w-full h-8 px-2 border border-gray-300 rounded text-sm';
-    this.selectElement.style.width = '100%';
-    this.selectElement.style.height = '32px';
-    this.selectElement.style.padding = '0 8px';
-    this.selectElement.style.border = '1px solid #d1d5db';
-    this.selectElement.style.borderRadius = '4px';
-    this.selectElement.style.fontSize = '14px';
-    this.selectElement.style.backgroundColor = 'white';
-    this.selectElement.style.cursor = 'pointer';
-    
-    const emptyOpt = document.createElement('option');
-    emptyOpt.value = '';
-    emptyOpt.textContent = '—';
-    this.selectElement?.appendChild(emptyOpt);
-    options.forEach((option) => {
-      const optionEl = document.createElement('option');
-      optionEl.value = option.value;
-      optionEl.textContent = option.label;
-      this.selectElement?.appendChild(optionEl);
-    });
-    this.selectElement.value = this.currentValue;
-    this.selectElement.addEventListener('change', () => {
-      this.currentValue = this.selectElement?.value ?? '';
-      notifyDropdownChange(this.params, 'color', this.currentValue);
-    });
-    this.eGui.appendChild(this.selectElement);
-
-    // Commit the value and stop editing when the user selects an option.
-    // Without this, popupParent:document.body causes the OS dropdown to blur
-    // the cell before the value is committed (stopEditingWhenCellsLoseFocus fires early).
-    this.selectElement.addEventListener('change', () => {
-      if (this.selectElement) {
-        this.currentValue = this.selectElement.value;
-      }
-      this.params?.stopEditing();
-    });
-
-    setTimeout(() => {
-      this.selectElement?.focus();
-    }, 0);
-  }
-
-  getGui() {
-    if (!this.eGui) {
-      this.eGui = document.createElement('div');
-    }
-    return this.eGui;
-  }
-
-  getValue(): string {
-    return this.selectElement?.value ?? this.currentValue;
-  }
-
-  isPopup(): boolean {
-    return true;
-  }
-
-  isCancelBeforeStart() {
-    return false;
-  }
-
-  isCancelAfterEnd() {
-    return false;
-  }
-
-  focusIn() {
-    this.selectElement?.focus();
-  }
-
-  focusOut() {}
-
-  afterGuiAttached() {
-    if (this.selectElement) {
-      this._focusHandler = () => {
-        setTimeout(() => { this.selectElement?.click(); }, 0);
-      };
-      this.selectElement.addEventListener('focus', this._focusHandler);
-    }
-  }
-
-  destroy() {
-    if (this.selectElement && this._focusHandler) {
-      this.selectElement.removeEventListener('focus', this._focusHandler);
-    }
-    this._focusHandler = null;
-    this.selectElement = null;
-    this.eGui = null;
-    this.params = null;
-  }
+// ──────────────────────────────────────────────────────────────────────────────
+// Inline-select cell renderer — replaces the 5 popup/inline cell editors.
+// Renders a <select> directly in the cell; no AG Grid "editing mode" involved.
+// AG Grid guarantees only one OS native dropdown can be open at a time.
+// ──────────────────────────────────────────────────────────────────────────────
+interface DropdownRendererParams {
+  value?: string;
+  data?: items.Item;
+  context?: { setDropdownValueForRow?: (id: string, path: string, v: string) => void };
+  // passed via cellRendererParams:
+  options?: Array<{ value: string; label: string }>;
+  fieldPath?: string;
 }
 
-// Custom cell editor for order mechanism field
-class OrderMechanismCellEditor {
-  private eGui: HTMLDivElement | null = null;
-  private selectElement: HTMLSelectElement | null = null;
-  private params: ICellEditorParams | null = null;
-  private currentValue: string = '';
-  private _focusHandler: (() => void) | null = null;
+function DropdownSelectRenderer(params: DropdownRendererParams) {
+  const [localVal, setLocalVal] = useState(params.value ?? '');
 
-  init(params: ICellEditorParams) {
-    this.params = params;
-    
-    // Get the value from params.value (which comes from valueGetter)
-    // This ensures we use the same value that AG Grid is using
-    const valueFromParams = params.value as string | undefined;
-    
-    const options = orderMethodOptions;
-    const validValues = options.map(opt => opt.value);
-    this.currentValue =
-      valueFromParams === '' || (valueFromParams && validValues.includes(valueFromParams))
-        ? (valueFromParams ?? '')
-        : '';
+  // Sync when AG Grid refreshes the cell with new data
+  useEffect(() => {
+    setLocalVal(params.value ?? '');
+  }, [params.value]);
 
-    this.eGui = document.createElement('div');
-    this.eGui.className = 'flex items-center gap-2 h-full w-full px-2';
-    this.eGui.style.display = 'flex';
-    this.eGui.style.alignItems = 'center';
-    this.eGui.style.gap = '8px';
-    this.eGui.style.padding = '0 8px';
-    this.eGui.style.height = '100%';
-    this.eGui.style.width = '100%';
+  const rowId = params.data?.entityId;
+  const ctx = params.context;
+  const options = params.options ?? [];
 
-    this.selectElement = document.createElement('select');
-    this.selectElement.className = 'w-full h-8 px-2 border border-gray-300 rounded text-sm';
-    const emptyOpt = document.createElement('option');
-    emptyOpt.value = '';
-    emptyOpt.textContent = '—';
-    this.selectElement?.appendChild(emptyOpt);
-    options.forEach((option) => {
-      const optionEl = document.createElement('option');
-      optionEl.value = option.value;
-      optionEl.textContent = option.label;
-      this.selectElement?.appendChild(optionEl);
-    });
-
-    this.selectElement.value = this.currentValue;
-    this.selectElement.addEventListener('change', () => {
-      this.currentValue = this.selectElement?.value ?? '';
-      notifyDropdownChange(this.params, 'primarySupply.orderMechanism', this.currentValue);
-    });
-    this.eGui.appendChild(this.selectElement);
-
-    this.selectElement.addEventListener('change', () => {
-      if (this.selectElement) {
-        this.currentValue = this.selectElement.value;
-      }
-      this.params?.stopEditing();
-    });
-
-    setTimeout(() => {
-      this.selectElement?.focus();
-    }, 0);
-  }
-
-  getGui() {
-    if (!this.eGui) {
-      this.eGui = document.createElement('div');
-    }
-    return this.eGui;
-  }
-
-  getValue(): string {
-    return this.selectElement?.value ?? this.currentValue;
-  }
-
-  isPopup(): boolean {
-    return true;
-  }
-
-  isCancelBeforeStart() {
-    return false;
-  }
-
-  isCancelAfterEnd() {
-    return false;
-  }
-
-  focusIn() {
-    this.selectElement?.focus();
-  }
-
-  focusOut() {}
-
-  afterGuiAttached() {
-    if (this.selectElement) {
-      this._focusHandler = () => {
-        setTimeout(() => { this.selectElement?.click(); }, 0);
-      };
-      this.selectElement.addEventListener('focus', this._focusHandler);
-    }
-  }
-
-  destroy() {
-    if (this.selectElement && this._focusHandler) {
-      this.selectElement.removeEventListener('focus', this._focusHandler);
-    }
-    this._focusHandler = null;
-    this.selectElement = null;
-    this.eGui = null;
-    this.params = null;
-  }
+  return (
+    <Select
+      value={localVal}
+      onValueChange={(v) => {
+        setLocalVal(v);
+        if (rowId && params.fieldPath && ctx?.setDropdownValueForRow) {
+          ctx.setDropdownValueForRow(rowId, params.fieldPath, v);
+        }
+      }}
+    >
+      <SelectTrigger
+        className='ag-dropdown-select h-full w-full rounded-none border-none bg-transparent shadow-none focus-visible:ring-0'
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <SelectValue placeholder='—' />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map((opt) => (
+          <SelectItem key={opt.value} value={opt.value}>
+            {opt.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
 }
 
-function notifyDropdownChange(params: ICellEditorParams | null, fieldPath: string, value: string): void {
-  const rowId = (params?.data as { entityId?: string })?.entityId;
-  const setDropdown = (params?.context as { setDropdownValueForRow?: (id: string, path: string, v: string) => void })?.setDropdownValueForRow;
-  if (rowId && setDropdown) setDropdown(rowId, fieldPath, value);
+function getDropdownOptions(path: string): Array<{ value: string; label: string }> {
+  if (path === 'primarySupply.orderMechanism') return [...orderMethodOptions];
+  if (path === 'cardSize') return [...cardSizeOptions];
+  if (path === 'labelSize') return [...labelSizeOptions];
+  if (path === 'breadcrumbSize') return [...breadcrumbSizeOptions];
+  if (path === 'color') return COLOR_EDITOR_OPTIONS.map((o) => ({ value: o.value, label: o.name }));
+  if (path === 'taxable') return [{ value: 'true', label: 'True' }, { value: 'false', label: 'False' }];
+  return [];
 }
 
-// Custom cell editor for card size field
-class CardSizeCellEditor {
-  private eGui: HTMLDivElement | null = null;
-  private selectElement: HTMLSelectElement | null = null;
-  private params: ICellEditorParams | null = null;
-  private currentValue: string = '';
-  private _focusHandler: (() => void) | null = null;
-
-  init(params: ICellEditorParams) {
-    this.params = params;
-    
-    // Get the value from params.value (which comes from valueGetter)
-    // This ensures we use the same value that AG Grid is using
-    const valueFromParams = params.value as string | undefined;
-    
-    const options = cardSizeOptions;
-    const validValues = options.map(opt => opt.value);
-    this.currentValue =
-      valueFromParams === '' || (valueFromParams && validValues.includes(valueFromParams))
-        ? (valueFromParams ?? '')
-        : '';
-
-    // Create container
-    this.eGui = document.createElement('div');
-    this.eGui.className = 'flex items-center gap-2 h-full w-full px-2';
-    this.eGui.style.display = 'flex';
-    this.eGui.style.alignItems = 'center';
-    this.eGui.style.gap = '8px';
-    this.eGui.style.padding = '0 8px';
-    this.eGui.style.height = '100%';
-    this.eGui.style.width = '100%';
-
-    // Create select dropdown
-    this.selectElement = document.createElement('select');
-    this.selectElement.className = 'w-full h-8 px-2 border border-gray-300 rounded text-sm';
-    this.selectElement.style.width = '100%';
-    this.selectElement.style.height = '32px';
-    this.selectElement.style.padding = '0 8px';
-    this.selectElement.style.border = '1px solid #d1d5db';
-    this.selectElement.style.borderRadius = '4px';
-    this.selectElement.style.fontSize = '14px';
-    this.selectElement.style.backgroundColor = 'white';
-    this.selectElement.style.cursor = 'pointer';
-    
-    const emptyOpt = document.createElement('option');
-    emptyOpt.value = '';
-    emptyOpt.textContent = '—';
-    this.selectElement?.appendChild(emptyOpt);
-    options.forEach((option) => {
-      const optionEl = document.createElement('option');
-      optionEl.value = option.value;
-      optionEl.textContent = option.label;
-      this.selectElement?.appendChild(optionEl);
-    });
-    this.selectElement.value = this.currentValue;
-    this.selectElement.addEventListener('change', () => {
-      this.currentValue = this.selectElement?.value ?? '';
-      notifyDropdownChange(this.params, 'cardSize', this.currentValue);
-    });
-    this.eGui.appendChild(this.selectElement);
-
-    this.selectElement.addEventListener('change', () => {
-      if (this.selectElement) {
-        this.currentValue = this.selectElement.value;
-      }
-      this.params?.stopEditing();
-    });
-
-    setTimeout(() => {
-      this.selectElement?.focus();
-    }, 0);
-  }
-
-  getGui() {
-    if (!this.eGui) {
-      this.eGui = document.createElement('div');
-    }
-    return this.eGui;
-  }
-
-  getValue(): string {
-    return this.selectElement?.value ?? this.currentValue;
-  }
-
-  isPopup(): boolean {
-    return true;
-  }
-
-  isCancelBeforeStart() {
-    return false;
-  }
-
-  isCancelAfterEnd() {
-    return false;
-  }
-
-  focusIn() {
-    this.selectElement?.focus();
-  }
-
-  focusOut() {}
-
-  afterGuiAttached() {
-    if (this.selectElement) {
-      this._focusHandler = () => {
-        setTimeout(() => { this.selectElement?.click(); }, 0);
-      };
-      this.selectElement.addEventListener('focus', this._focusHandler);
-    }
-  }
-
-  destroy() {
-    if (this.selectElement && this._focusHandler) {
-      this.selectElement.removeEventListener('focus', this._focusHandler);
-    }
-    this._focusHandler = null;
-    this.selectElement = null;
-    this.eGui = null;
-    this.params = null;
-  }
-}
-
-// Custom cell editor for label size field
-class LabelSizeCellEditor {
-  private eGui: HTMLDivElement | null = null;
-  private selectElement: HTMLSelectElement | null = null;
-  private params: ICellEditorParams | null = null;
-  private currentValue: string = '';
-  private _focusHandler: (() => void) | null = null;
-
-  init(params: ICellEditorParams) {
-    this.params = params;
-    
-    // Get the value from params.value (which comes from valueGetter)
-    // This ensures we use the same value that AG Grid is using
-    const valueFromParams = params.value as string | undefined;
-    
-    const options = labelSizeOptions;
-    const validValues = options.map(opt => opt.value);
-    this.currentValue =
-      valueFromParams === '' || (valueFromParams && validValues.includes(valueFromParams))
-        ? (valueFromParams ?? '')
-        : '';
-
-    // Create container
-    this.eGui = document.createElement('div');
-    this.eGui.className = 'flex items-center gap-2 h-full w-full px-2';
-    this.eGui.style.display = 'flex';
-    this.eGui.style.alignItems = 'center';
-    this.eGui.style.gap = '8px';
-    this.eGui.style.padding = '0 8px';
-    this.eGui.style.height = '100%';
-    this.eGui.style.width = '100%';
-
-    // Create select dropdown
-    this.selectElement = document.createElement('select');
-    this.selectElement.className = 'w-full h-8 px-2 border border-gray-300 rounded text-sm';
-    this.selectElement.style.width = '100%';
-    this.selectElement.style.height = '32px';
-    this.selectElement.style.padding = '0 8px';
-    this.selectElement.style.border = '1px solid #d1d5db';
-    this.selectElement.style.borderRadius = '4px';
-    this.selectElement.style.fontSize = '14px';
-    this.selectElement.style.backgroundColor = 'white';
-    this.selectElement.style.cursor = 'pointer';
-    
-    const emptyOpt = document.createElement('option');
-    emptyOpt.value = '';
-    emptyOpt.textContent = '—';
-    this.selectElement?.appendChild(emptyOpt);
-    options.forEach((option) => {
-      const optionEl = document.createElement('option');
-      optionEl.value = option.value;
-      optionEl.textContent = option.label;
-      this.selectElement?.appendChild(optionEl);
-    });
-    this.selectElement.value = this.currentValue;
-    this.selectElement.addEventListener('change', () => {
-      this.currentValue = this.selectElement?.value ?? '';
-      notifyDropdownChange(this.params, 'labelSize', this.currentValue);
-    });
-    this.eGui.appendChild(this.selectElement);
-
-    this.selectElement.addEventListener('change', () => {
-      if (this.selectElement) {
-        this.currentValue = this.selectElement.value;
-      }
-      this.params?.stopEditing();
-    });
-
-    setTimeout(() => {
-      this.selectElement?.focus();
-    }, 0);
-  }
-
-  getGui() {
-    if (!this.eGui) {
-      this.eGui = document.createElement('div');
-    }
-    return this.eGui;
-  }
-
-  getValue(): string {
-    return this.selectElement?.value ?? this.currentValue;
-  }
-
-  isPopup(): boolean {
-    return true;
-  }
-
-  isCancelBeforeStart() {
-    return false;
-  }
-
-  isCancelAfterEnd() {
-    return false;
-  }
-
-  focusIn() {
-    this.selectElement?.focus();
-  }
-
-  focusOut() {}
-
-  afterGuiAttached() {
-    if (this.selectElement) {
-      this._focusHandler = () => {
-        setTimeout(() => { this.selectElement?.click(); }, 0);
-      };
-      this.selectElement.addEventListener('focus', this._focusHandler);
-    }
-  }
-
-  destroy() {
-    if (this.selectElement && this._focusHandler) {
-      this.selectElement.removeEventListener('focus', this._focusHandler);
-    }
-    this._focusHandler = null;
-    this.selectElement = null;
-    this.eGui = null;
-    this.params = null;
-  }
-}
-
-// Custom cell editor for breadcrumb size field
-class BreadcrumbSizeCellEditor {
-  private eGui: HTMLDivElement | null = null;
-  private selectElement: HTMLSelectElement | null = null;
-  private params: ICellEditorParams | null = null;
-  private currentValue: string = '';
-  private _focusHandler: (() => void) | null = null;
-
-  init(params: ICellEditorParams) {
-    this.params = params;
-    
-    // Get the value from params.value (which comes from valueGetter)
-    // This ensures we use the same value that AG Grid is using
-    const valueFromParams = params.value as string | undefined;
-    
-    const options = breadcrumbSizeOptions;
-    const validValues = options.map(opt => opt.value);
-    this.currentValue =
-      valueFromParams === '' || (valueFromParams && validValues.includes(valueFromParams))
-        ? (valueFromParams ?? '')
-        : '';
-
-    // Create container
-    this.eGui = document.createElement('div');
-    this.eGui.className = 'flex items-center gap-2 h-full w-full px-2';
-    this.eGui.style.display = 'flex';
-    this.eGui.style.alignItems = 'center';
-    this.eGui.style.gap = '8px';
-    this.eGui.style.padding = '0 8px';
-    this.eGui.style.height = '100%';
-    this.eGui.style.width = '100%';
-
-    this.selectElement = document.createElement('select');
-    this.selectElement.className = 'w-full h-8 px-2 border border-gray-300 rounded text-sm';
-    this.selectElement.style.width = '100%';
-    this.selectElement.style.height = '32px';
-    this.selectElement.style.padding = '0 8px';
-    this.selectElement.style.border = '1px solid #d1d5db';
-    this.selectElement.style.borderRadius = '4px';
-    this.selectElement.style.fontSize = '14px';
-    this.selectElement.style.backgroundColor = 'white';
-    this.selectElement.style.cursor = 'pointer';
-
-    const emptyOpt = document.createElement('option');
-    emptyOpt.value = '';
-    emptyOpt.textContent = '—';
-    this.selectElement?.appendChild(emptyOpt);
-    options.forEach((option) => {
-      const optionEl = document.createElement('option');
-      optionEl.value = option.value;
-      optionEl.textContent = option.label;
-      this.selectElement?.appendChild(optionEl);
-    });
-    this.selectElement.value = this.currentValue;
-    this.selectElement.addEventListener('change', () => {
-      this.currentValue = this.selectElement?.value ?? '';
-      notifyDropdownChange(this.params, 'breadcrumbSize', this.currentValue);
-    });
-    this.eGui.appendChild(this.selectElement);
-
-    // Commit the value and stop editing when the user selects an option.
-    // Without this, popupParent:document.body causes the OS dropdown to blur
-    // the cell before the value is committed (stopEditingWhenCellsLoseFocus fires early).
-    this.selectElement.addEventListener('change', () => {
-      if (this.selectElement) {
-        this.currentValue = this.selectElement.value;
-      }
-      this.params?.stopEditing();
-    });
-
-    setTimeout(() => {
-      this.selectElement?.focus();
-    }, 0);
-  }
-
-  getGui() {
-    if (!this.eGui) {
-      this.eGui = document.createElement('div');
-    }
-    return this.eGui;
-  }
-
-  getValue(): string {
-    return this.selectElement?.value ?? this.currentValue;
-  }
-
-  isPopup(): boolean {
-    return true;
-  }
-
-  isCancelBeforeStart() {
-    return false;
-  }
-
-  isCancelAfterEnd() {
-    return false;
-  }
-
-  focusIn() {
-    this.selectElement?.focus();
-  }
-
-  focusOut() {}
-
-  afterGuiAttached() {
-    if (this.selectElement) {
-      this._focusHandler = () => {
-        setTimeout(() => { this.selectElement?.click(); }, 0);
-      };
-      this.selectElement.addEventListener('focus', this._focusHandler);
-    }
-  }
-
-  destroy() {
-    if (this.selectElement && this._focusHandler) {
-      this.selectElement.removeEventListener('focus', this._focusHandler);
-    }
-    this._focusHandler = null;
-    this.selectElement = null;
-    this.eGui = null;
-    this.params = null;
-  }
-}
+const INLINE_DROPDOWN_PATHS = new Set([
+  'primarySupply.orderMechanism',
+  'color',
+  'cardSize',
+  'labelSize',
+  'breadcrumbSize',
+  'taxable',
+]);
 
 type PendingCellValuesRef = React.MutableRefObject<Record<string, Record<string, unknown>>>;
 
@@ -785,7 +244,7 @@ function enhanceEditableColumnDefs(
     };
 
     const dropdownLabelWithArrow = (
-      params: { value?: unknown; api?: { startEditingCell: (p: { rowIndex: number; colKey: string }) => void }; node?: { rowIndex: number }; column?: { getColId: () => string } },
+      params: { value?: unknown; api?: { startEditingCell: (p: { rowIndex: number; colKey: string }) => void; stopEditing?: () => void }; node?: { rowIndex: number }; column?: { getColId: () => string } },
       label: string
     ) => {
       const onArrowClick = (e: React.MouseEvent) => {
@@ -794,6 +253,10 @@ function enhanceEditableColumnDefs(
         const node = params.node;
         const column = params.column;
         if (api && node != null && column) {
+          // Close any currently open editor before opening this one.
+          // Without this, stopPropagation() above prevents AG Grid from detecting
+          // the cell change, leaving the previous popup editor open.
+          api.stopEditing?.();
           api.startEditingCell({
             rowIndex: node.rowIndex,
             colKey: column.getColId(),
@@ -816,7 +279,7 @@ function enhanceEditableColumnDefs(
     };
 
     const sizeOrColorDisplayRenderer = (
-      params: { value?: unknown; api?: { startEditingCell: (p: { rowIndex: number; colKey: string }) => void }; node?: { rowIndex: number }; column?: { getColId: () => string } }
+      params: { value?: unknown; api?: { startEditingCell: (p: { rowIndex: number; colKey: string }) => void; stopEditing?: () => void }; node?: { rowIndex: number }; column?: { getColId: () => string } }
     ) => {
       const value = String(params.value ?? '').trim();
       if (!value) return <span className='text-black'>-</span>;
@@ -857,10 +320,15 @@ function enhanceEditableColumnDefs(
         ? (col.cellRenderer as ColDef<items.Item>['cellRenderer'])
         : displayRenderer;
 
+    const isInlineDropdown = INLINE_DROPDOWN_PATHS.has(path);
+
     return {
       ...col,
-      cellRenderer,
-      editable: path !== 'notes' && path !== 'cardNotesDefault',
+      cellRenderer: isInlineDropdown ? DropdownSelectRenderer : cellRenderer,
+      ...(isInlineDropdown && {
+        cellRendererParams: { options: getDropdownOptions(path), fieldPath: path },
+      }),
+      editable: isInlineDropdown ? false : path !== 'notes' && path !== 'cardNotesDefault',
       singleClickEdit: false,
       valueGetter: (params) => {
         const d = params.data as items.Item | undefined;
@@ -1028,21 +496,6 @@ function enhanceEditableColumnDefs(
       ...(path === 'orderQuantityUnit' && {
         cellEditor: UnitCellEditor,
       }),
-      ...(path === 'primarySupply.orderMechanism' && {
-        cellEditor: OrderMechanismCellEditor,
-      }),
-      ...(path === 'color' && {
-        cellEditor: ColorCellEditor,
-      }),
-      ...(path === 'cardSize' && {
-        cellEditor: CardSizeCellEditor,
-      }),
-      ...(path === 'labelSize' && {
-        cellEditor: LabelSizeCellEditor,
-      }),
-      ...(path === 'breadcrumbSize' && {
-        cellEditor: BreadcrumbSizeCellEditor,
-      }),
     } as ColDef<items.Item>;
   });
 }
@@ -1061,7 +514,6 @@ function enhanceEditableColumnDefs(
  * `columnVisibility` prop, not by localStorage.
  */
 function buildGridStateFromStorage(raw: string): GridState | undefined {
-  type LegacyCol = { colId?: string; width?: number | null; sort?: string | null };
   try {
     const saved = JSON.parse(raw) as Record<string, unknown>;
 
@@ -1070,6 +522,7 @@ function buildGridStateFromStorage(raw: string): GridState | undefined {
     // the object format was introduced. Handle it so users who haven't
     // reconfigured since then still get their layout restored.
     if (Array.isArray(saved)) {
+      type LegacyCol = { colId?: string; width?: number | null; sort?: string | null };
       const cols = saved as unknown as LegacyCol[];
       const orderedColIds = cols
         .map((c) => c.colId)
@@ -1102,6 +555,7 @@ function buildGridStateFromStorage(raw: string): GridState | undefined {
 
     // Legacy format: { columnState: ColState[], sortModel?: [...] }
     if (Array.isArray(saved.columnState)) {
+      type LegacyCol = { colId?: string; width?: number | null; sort?: string | null };
       const cols = saved.columnState as LegacyCol[];
 
       const orderedColIds = cols
@@ -1733,10 +1187,38 @@ export const ItemTableAGGrid = forwardRef<ItemTableAGGridRef, Props>(function It
       setDropdownValueForRow: (rowId: string, fieldPath: string, value: string) => {
         if (!dropdownValuesByRowRef.current[rowId]) dropdownValuesByRowRef.current[rowId] = {};
         dropdownValuesByRowRef.current[rowId][fieldPath] = value;
+
+        // Optimistically update the node data so the cell re-renders immediately
+        // without waiting for the server round-trip.
+        const api = gridRef.current?.getGridApi?.();
+        const node = api?.getRowNode(rowId);
+        if (node?.data) {
+          const d = node.data as Record<string, unknown>;
+          if (fieldPath === 'primarySupply.orderMechanism') {
+            const current = (node.data as items.Item).primarySupply ?? {};
+            d.primarySupply = { ...current, orderMechanism: (value || undefined) as items.OrderMechanism | undefined };
+          } else if (fieldPath === 'taxable') {
+            setNested(d, fieldPath, value === 'true');
+          } else {
+            setNested(d, fieldPath, value || undefined);
+          }
+          api?.refreshCells({ rowNodes: [node], force: true });
+        }
+
+        // Fallback publish: when popupParent:document.body + stopEditingWhenCellsLoseFocus
+        // fires before the change event (OS dropdown steals focus), AG Grid commits the old
+        // value and never marks the row dirty. We mark it dirty here and schedule a publish.
+        // If the normal stopEditing flow already published (and cleared dirty), publishRow
+        // will be a no-op — safe to call either way.
+        dirtyRowIdsRef.current.add(rowId);
+        onUnsavedChangesChange?.(true);
+        setTimeout(() => {
+          void publishRow(rowId);
+        }, 150);
       },
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [onNotesSave, onCardNotesSave]
+    [onNotesSave, onCardNotesSave, publishRow, onUnsavedChangesChange]
   );
 
   useImperativeHandle(

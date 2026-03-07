@@ -8,7 +8,7 @@ import { AppSidebar } from '@frontend/components/app-sidebar';
 import { AppHeader } from '@frontend/components/common/app-header';
 import { SidebarProvider, SidebarInset } from '@frontend/components/ui/sidebar';
 import { useJWT } from '@frontend/store/hooks/useJWT';
-import { useOrderQueue } from '@frontend/contexts/OrderQueueContext';
+import { useOrderQueue } from '@frontend/store/hooks/useOrderQueue';
 import { useAuth } from '@frontend/store/hooks/useAuth';
 import { Button } from '@frontend/components/ui/button';
 import { Input } from '@frontend/components/ui/input';

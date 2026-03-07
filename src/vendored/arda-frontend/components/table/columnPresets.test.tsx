@@ -27,7 +27,7 @@ jest.mock('@/hooks/useOrderQueueToast', () => ({
   useOrderQueueToast: () => ({ showToast: jest.fn() }),
 }));
 
-jest.mock('@/contexts/OrderQueueContext', () => ({
+jest.mock('@/store/hooks/useOrderQueue', () => ({
   useOrderQueue: () => ({ refreshOrderQueueData: jest.fn() }),
 }));
 
@@ -339,12 +339,13 @@ describe('itemsColumnDefs cell renderers', () => {
     expect(cr(makeMockParams({}))).toBe('-');
   });
 
-  it('classification.type renderer renders type with subtype', () => {
+  it('classification.type renderer renders type only', () => {
     const cr = getCellRenderer('classification.type');
     const { container } = render(
       cr(makeMockParams({ classification: { type: 'Hardware', subType: 'Fasteners' } }))
     );
-    expect(container.textContent).toContain('Hardware - Fasteners');
+    expect(container.textContent).toContain('Hardware');
+    expect(container.textContent).not.toContain('Fasteners');
   });
 
   it('classification.type renderer returns dash when no type', () => {
