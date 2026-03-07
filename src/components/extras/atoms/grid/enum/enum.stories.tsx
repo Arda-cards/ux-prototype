@@ -16,7 +16,7 @@ const orderMechanisms = {
 type OrderMechanism = keyof typeof orderMechanisms;
 
 const meta: Meta<typeof ArdaEnumCellInteractive> = {
-  title: 'Components/Extras/Atoms/Grid/Enum',
+  title: 'Components/Current/Atoms/Grid/Enum',
   component: ArdaEnumCellInteractive,
   parameters: {
     layout: 'centered',

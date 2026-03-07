@@ -1,6 +1,6 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Components/Extras/Molecules/Guide" />
+<Meta title="Components/Current/Molecules/Overview" />
 
 # Molecules
 
@@ -31,13 +31,13 @@ Molecules are organized into two tiers:
     <tr>
       <td><strong>Shared</strong></td>
       <td><code>molecules/&#123;component&#125;/</code></td>
-      <td><code>Components/Extras/Molecules/</code></td>
+      <td><code>Components/Current/Molecules/</code></td>
       <td>Fully generic molecules with no domain coupling. Usable in any context.</td>
     </tr>
     <tr>
       <td><strong>Reference</strong></td>
       <td><code>molecules/reference/&#123;domain&#125;/&#123;component&#125;/</code></td>
-      <td><code>Components/Extras/Molecules/</code></td>
+      <td><code>Components/Current/Molecules/</code></td>
       <td>Molecules that display domain data but contain no business logic. The data shape is domain-aware, but the rendering is generic.</td>
     </tr>
   </tbody>
@@ -104,7 +104,7 @@ molecules/
    - Is it fully generic (no domain types in its interface)? &#8594; `molecules/{component-name}/`
    - Does its interface reference domain types but contain no business logic? &#8594; `molecules/reference/{domain}/{component-name}/`
 2. **Create the directory** and implement the component.
-3. **Create stories** with the title `Components/Extras/Molecules/{ComponentName}`.
+3. **Create stories** with the title `Components/Current/Molecules/{ComponentName}`.
 4. **Optionally create docs** in `{component-name}.mdx` using `<Meta of={Stories} />`.
 5. **Export from** `src/index.ts` if part of the public API.
 

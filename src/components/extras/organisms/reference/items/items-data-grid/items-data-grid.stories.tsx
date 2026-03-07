@@ -7,7 +7,7 @@ import { mockPublishedItems } from '@/components/extras/molecules/data-grid/pres
 import type { Item } from '@/types/extras';
 
 const meta: Meta<typeof ArdaItemsDataGrid> = {
-  title: 'Components/Extras/Organisms/Reference/Items/Items Data Grid',
+  title: 'Components/Current/Organisms/Reference/Items/Items Data Grid',
   component: ArdaItemsDataGrid,
   parameters: {
     layout: 'padded',

@@ -4,7 +4,7 @@ import SettingsPage from '@frontend/app/settings/page';
 import '@/styles/vendored/globals.css';
 
 const meta: Meta<typeof SettingsPage> = {
-  title: 'Dev Witness/System/Settings',
+  title: 'App/Current/System/Settings',
   component: SettingsPage,
   tags: ['app-route:/settings'],
   parameters: {

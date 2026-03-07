@@ -8,7 +8,7 @@ import { ArdaDateFieldInteractive } from './date-field-interactive';
 import { COMMON_TIMEZONES } from '@/types/extras-date-time';
 
 const meta: Meta<typeof ArdaDateFieldInteractive> = {
-  title: 'Components/Extras/Atoms/Form/Date',
+  title: 'Components/Current/Atoms/Form/Date',
   component: ArdaDateFieldInteractive,
   parameters: {
     layout: 'centered',

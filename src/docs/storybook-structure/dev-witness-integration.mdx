@@ -1,16 +1,16 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Docs/Storybook Structure/Dev Witness/Integration" />
+<Meta title="App/Current/Integration" />
 
-# Dev Witness Integration
+# App Current Integration
 
-The **Dev Witness** section in the Storybook sidebar contains live page components vendored from the production `arda-frontend-app` repository. Each page renders against MSW mock services, reproducing the real application behavior without a running backend.
+The **App/Current** section in the Storybook sidebar contains live page components vendored from the production `arda-frontend-app` repository. Each page renders against MSW mock services, reproducing the real application behavior without a running backend.
 
 ## Why Vendor Production Pages?
 
 The existing **Applications** section uses hand-built mocks that compose library components into page-like layouts. Those mocks are useful for design review but diverge from production over time.
 
-The Dev Witness section solves this by syncing actual production source code into `src/vendored/arda-frontend/`. The vendored pages use the same Redux store, auth context, API client, and UI components as the real application. An automated CI pipeline keeps the vendored copy in sync with the `dev` branch of `arda-frontend-app`.
+The `App/Current` section solves this by syncing actual production source code into `src/vendored/arda-frontend/`. The vendored pages use the same Redux store, auth context, API client, and UI components as the real application. An automated CI pipeline keeps the vendored copy in sync with the `dev` branch of `arda-frontend-app`.
 
 This gives three audiences a shared source of truth:
 
@@ -23,15 +23,21 @@ This gives three audiences a shared source of truth:
   </thead>
   <tbody>
     <tr>
-      <td><strong>Designers</strong></td>
+      <td>
+        <strong>Designers</strong>
+      </td>
       <td>Review the actual production UI, not an approximation</td>
     </tr>
     <tr>
-      <td><strong>Developers</strong></td>
+      <td>
+        <strong>Developers</strong>
+      </td>
       <td>Catch regressions early via interaction tests and visual regression testing</td>
     </tr>
     <tr>
-      <td><strong>Product owners</strong></td>
+      <td>
+        <strong>Product owners</strong>
+      </td>
       <td>Validate acceptance criteria against real page components</td>
     </tr>
   </tbody>
@@ -55,33 +61,57 @@ The sync script (`tools/sync-frontend-app.sh`) copies the `src/` directory from 
   </thead>
   <tbody>
     <tr>
-      <td><code>@/</code></td>
-      <td><code>src/</code></td>
+      <td>
+        <code>@/</code>
+      </td>
+      <td>
+        <code>src/</code>
+      </td>
       <td>Native ux-prototype code (existing)</td>
     </tr>
     <tr>
-      <td><code>@frontend/</code></td>
-      <td><code>src/vendored/arda-frontend/</code></td>
+      <td>
+        <code>@frontend/</code>
+      </td>
+      <td>
+        <code>src/vendored/arda-frontend/</code>
+      </td>
       <td>Vendored production code</td>
     </tr>
     <tr>
-      <td><code>next/navigation</code></td>
-      <td><code>src/shims/next-navigation.tsx</code></td>
+      <td>
+        <code>next/navigation</code>
+      </td>
+      <td>
+        <code>src/shims/next-navigation.tsx</code>
+      </td>
       <td>Router shim</td>
     </tr>
     <tr>
-      <td><code>next/image</code></td>
-      <td><code>src/shims/next-image.tsx</code></td>
+      <td>
+        <code>next/image</code>
+      </td>
+      <td>
+        <code>src/shims/next-image.tsx</code>
+      </td>
       <td>Image shim</td>
     </tr>
     <tr>
-      <td><code>next/link</code></td>
-      <td><code>src/shims/next-link.tsx</code></td>
+      <td>
+        <code>next/link</code>
+      </td>
+      <td>
+        <code>src/shims/next-link.tsx</code>
+      </td>
       <td>Link shim</td>
     </tr>
     <tr>
-      <td><code>next/dynamic</code></td>
-      <td><code>src/shims/next-dynamic.tsx</code></td>
+      <td>
+        <code>next/dynamic</code>
+      </td>
+      <td>
+        <code>src/shims/next-dynamic.tsx</code>
+      </td>
       <td>Dynamic import shim</td>
     </tr>
   </tbody>
@@ -100,7 +130,7 @@ Because the vendored code was written for Next.js, several framework APIs need S
 
 ### Provider Stack
 
-The `withFullAppProviders` decorator in `src/decorators/with-full-app-providers.tsx` wraps every story whose title starts with `Dev Witness` or `Canary Refactor`. It composes the same provider hierarchy used in the production application:
+The `withFullAppProviders` decorator in `src/decorators/with-full-app-providers.tsx` wraps every story whose title starts with `App/Current` or `App/Migration`. It composes the same provider hierarchy used in the production application:
 
 <table>
   <thead>
@@ -111,33 +141,45 @@ The `withFullAppProviders` decorator in `src/decorators/with-full-app-providers.
   </thead>
   <tbody>
     <tr>
-      <td><code>NavigationContext</code></td>
+      <td>
+        <code>NavigationContext</code>
+      </td>
       <td>Supplies pathname, search params, and route params from story args</td>
     </tr>
     <tr>
-      <td><code>ReduxProvider</code></td>
+      <td>
+        <code>ReduxProvider</code>
+      </td>
       <td>Fresh Redux store per story, pre-loaded with mock auth state</td>
     </tr>
     <tr>
-      <td><code>MockAuthProvider</code></td>
+      <td>
+        <code>MockAuthProvider</code>
+      </td>
       <td>Auto-logs in with a mock user so auth guards pass</td>
     </tr>
     <tr>
-      <td><code>JWTProvider</code></td>
+      <td>
+        <code>JWTProvider</code>
+      </td>
       <td>Decodes the mock JWT from the Redux store</td>
     </tr>
     <tr>
-      <td><code>SidebarVisibilityProvider</code></td>
+      <td>
+        <code>SidebarVisibilityProvider</code>
+      </td>
       <td>Controls sidebar expand/collapse state</td>
     </tr>
     <tr>
-      <td><code>OrderQueueProvider</code></td>
+      <td>
+        <code>OrderQueueProvider</code>
+      </td>
       <td>Provides badge count polling (disabled by default in stories)</td>
     </tr>
   </tbody>
 </table>
 
-Stories in the `Canary Refactor` section use the same provider stack as Dev Witness, enabling side-by-side parity comparison with no additional setup. Non-full-app stories pass through the decorator unchanged.
+Stories in the `App/Migration` section use the same provider stack as `App/Current`, enabling side-by-side parity comparison with no additional setup. Non-full-app stories pass through the decorator unchanged.
 
 ### MSW Request Handlers
 
@@ -154,27 +196,39 @@ Handler files live in `src/vendored/arda-frontend/mocks/handlers/`:
   </thead>
   <tbody>
     <tr>
-      <td><code>items.ts</code></td>
+      <td>
+        <code>items.ts</code>
+      </td>
       <td>Items CRUD &#8212; query, create, update, draft</td>
     </tr>
     <tr>
-      <td><code>kanban.ts</code></td>
+      <td>
+        <code>kanban.ts</code>
+      </td>
       <td>Kanban cards &#8212; query, detail, events, notes, history</td>
     </tr>
     <tr>
-      <td><code>lookups.ts</code></td>
+      <td>
+        <code>lookups.ts</code>
+      </td>
       <td>Fuzzy lookup endpoints &#8212; suppliers, units, types, facilities, etc.</td>
     </tr>
     <tr>
-      <td><code>auth.ts</code></td>
+      <td>
+        <code>auth.ts</code>
+      </td>
       <td>Auth endpoints &#8212; secret hash</td>
     </tr>
     <tr>
-      <td><code>user.ts</code></td>
+      <td>
+        <code>user.ts</code>
+      </td>
       <td>User profile</td>
     </tr>
     <tr>
-      <td><code>tenant.ts</code></td>
+      <td>
+        <code>tenant.ts</code>
+      </td>
       <td>Tenant queries</td>
     </tr>
   </tbody>
@@ -184,7 +238,7 @@ Handlers use in-memory mock stores (`mockItems.ts`, `mockKanbanCards.ts`) that s
 
 ## Page Inventory
 
-The Dev Witness section contains 12 story files with 22 total variants, organized into five sections that mirror the application&#8217;s navigation structure:
+The `App/Current` section contains 12 story files with 22 total variants, organized into five sections that mirror the application&#8217;s navigation structure:
 
 <table>
   <thead>
@@ -197,68 +251,102 @@ The Dev Witness section contains 12 story files with 22 total variants, organize
   </thead>
   <tbody>
     <tr>
-      <td rowspan="1"><strong>Home</strong></td>
-      <td>Dev Witness/Home/Dashboard</td>
-      <td><code>/dashboard</code></td>
+      <td rowspan="1">
+        <strong>Home</strong>
+      </td>
+      <td>App/Current/Home/Dashboard</td>
+      <td>
+        <code>/dashboard</code>
+      </td>
       <td>Default, NotificationPanel, HelpPanel</td>
     </tr>
     <tr>
-      <td rowspan="2"><strong>Reference</strong></td>
-      <td>Dev Witness/Reference/Items/Items Grid</td>
-      <td><code>/items</code></td>
+      <td rowspan="2">
+        <strong>Reference</strong>
+      </td>
+      <td>App/Current/Reference/Items/Items Grid</td>
+      <td>
+        <code>/items</code>
+      </td>
       <td>Default, EmptyState</td>
     </tr>
     <tr>
-      <td>Dev Witness/Reference/Items/Item Detail</td>
-      <td><code>/item/[itemId]</code></td>
+      <td>App/Current/Reference/Items/Item Detail</td>
+      <td>
+        <code>/item/[itemId]</code>
+      </td>
       <td>Default, AddItemForm</td>
     </tr>
     <tr>
-      <td rowspan="3"><strong>Resources</strong></td>
-      <td>Dev Witness/Resources/Kanban Cards/Kanban Card</td>
-      <td><code>/kanban/cards/[cardId]</code></td>
+      <td rowspan="3">
+        <strong>Resources</strong>
+      </td>
+      <td>App/Current/Resources/Kanban Cards/Kanban Card</td>
+      <td>
+        <code>/kanban/cards/[cardId]</code>
+      </td>
       <td>Default, CardNotFound</td>
     </tr>
     <tr>
-      <td>Dev Witness/Resources/Kanban Cards/Mobile Device Check</td>
-      <td><code>/mobile-device-check</code></td>
+      <td>App/Current/Resources/Kanban Cards/Mobile Device Check</td>
+      <td>
+        <code>/mobile-device-check</code>
+      </td>
       <td>Default</td>
     </tr>
     <tr>
-      <td>Dev Witness/Resources/Kanban Cards/Scan</td>
-      <td><code>/scan</code></td>
+      <td>App/Current/Resources/Kanban Cards/Scan</td>
+      <td>
+        <code>/scan</code>
+      </td>
       <td>Default</td>
     </tr>
     <tr>
-      <td rowspan="4"><strong>System</strong></td>
-      <td>Dev Witness/System/Authentication/Sign In</td>
-      <td><code>/signin</code></td>
+      <td rowspan="4">
+        <strong>System</strong>
+      </td>
+      <td>App/Current/System/Authentication/Sign In</td>
+      <td>
+        <code>/signin</code>
+      </td>
       <td>Default, InvalidCredentials</td>
     </tr>
     <tr>
-      <td>Dev Witness/System/Authentication/Sign Up</td>
-      <td><code>/signup</code></td>
+      <td>App/Current/System/Authentication/Sign Up</td>
+      <td>
+        <code>/signup</code>
+      </td>
       <td>Default</td>
     </tr>
     <tr>
-      <td>Dev Witness/System/Authentication/Reset Password</td>
-      <td><code>/reset-password</code></td>
+      <td>App/Current/System/Authentication/Reset Password</td>
+      <td>
+        <code>/reset-password</code>
+      </td>
       <td>Default</td>
     </tr>
     <tr>
-      <td>Dev Witness/System/Settings</td>
-      <td><code>/settings</code></td>
+      <td>App/Current/System/Settings</td>
+      <td>
+        <code>/settings</code>
+      </td>
       <td>Account, Companies, Appearance, Display</td>
     </tr>
     <tr>
-      <td rowspan="2"><strong>Transactions</strong></td>
-      <td>Dev Witness/Transactions/Orders/Order Queue</td>
-      <td><code>/order-queue</code></td>
+      <td rowspan="2">
+        <strong>Transactions</strong>
+      </td>
+      <td>App/Current/Transactions/Orders/Order Queue</td>
+      <td>
+        <code>/order-queue</code>
+      </td>
       <td>Default, EmptyQueue</td>
     </tr>
     <tr>
-      <td>Dev Witness/Transactions/Receiving</td>
-      <td><code>/receiving</code></td>
+      <td>App/Current/Transactions/Receiving</td>
+      <td>
+        <code>/receiving</code>
+      </td>
       <td>Default</td>
     </tr>
   </tbody>
@@ -266,7 +354,7 @@ The Dev Witness section contains 12 story files with 22 total variants, organize
 
 ## Route Traceability
 
-Every Dev Witness story carries metadata that traces it back to the production application:
+Every `App/Current` story carries metadata that traces it back to the production application:
 
 - **Tag**: `app-route:<path>` &#8212; queryable via Storybook&#8217;s `stories.json` index, allowing external tooling to enumerate all covered routes.
 - **`appRoute` parameter** &#8212; the application route the story represents (e.g., `/items`).
@@ -300,7 +388,7 @@ Vendored dependencies are tracked in `vendored-deps.json` at the repository root
 
 ## Testing
 
-The Dev Witness stories are covered by three layers of automated testing:
+The `App/Current` stories are covered by three layers of automated testing:
 
 <table>
   <thead>
@@ -314,12 +402,18 @@ The Dev Witness stories are covered by three layers of automated testing:
     <tr>
       <td>Interaction tests</td>
       <td>Storybook test runner</td>
-      <td>Play functions execute assertions against rendered pages (all Dev Witness and Canary Refactor story variants)</td>
+      <td>
+        Play functions execute assertions against rendered pages (all `App/Current` and
+        `App/Migration` story variants)
+      </td>
     </tr>
     <tr>
       <td>Visual regression</td>
       <td>Playwright</td>
-      <td>Pixel-level comparison of Dev Witness page screenshots against baselines (1% diff threshold)</td>
+      <td>
+        Pixel-level comparison of `App/Current` page screenshots against baselines (1% diff
+        threshold)
+      </td>
     </tr>
     <tr>
       <td>Build validation</td>
@@ -329,30 +423,34 @@ The Dev Witness stories are covered by three layers of automated testing:
   </tbody>
 </table>
 
-## Canary Refactor: Migration Workbench
+## App/Migration: Migration Workbench
 
-The vendored code establishes the foundation for a component migration project. The **Canary Refactor** section (`src/canary-refactor/`) is the active working area where vendored page components are progressively refactored to use canary-stage library components instead of inline production components.
+The vendored code establishes the foundation for a component migration project. The **App/Migration** section (`src/canary-refactor/`) is the active working area where vendored page components are progressively refactored to use migration-track library components instead of inline production components.
 
 ### How it works
 
 1. A page is forked from its vendored counterpart in `src/dev-witness/` into a matching path under `src/canary-refactor/`.
 2. Vendored sub-components are replaced one-by-one with canary equivalents (e.g., `ArdaDetailField` replacing inline `flex flex-col gap-1` blocks).
-3. Intentional deviations from the Dev Witness baseline are documented in the story JSDoc comment with a **Intentional deviations from Dev Witness** block listing before/after values.
-4. The `withFullAppProviders` decorator wraps Canary Refactor stories automatically &#8212; no additional setup is required.
+3. Intentional deviations from the `App/Current` reference are documented in the story JSDoc comment with an **Intentional deviations from App Current** block listing before/after values.
+4. The `withFullAppProviders` decorator wraps `App/Migration` stories automatically &#8212; no additional setup is required.
 
-Story files follow the same path and title structure as their Dev Witness counterparts, with `Dev Witness` replaced by `Canary Refactor`:
+Story files follow the same path and title structure as their `App/Current` counterparts, with `App/Current` replaced by `App/Migration`:
 
 <table>
   <thead>
     <tr>
-      <th>Dev Witness original</th>
-      <th>Canary Refactor mirror</th>
+      <th>App/Current original</th>
+      <th>App/Migration mirror</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td><code>src/dev-witness/reference/items/item-detail.stories.tsx</code></td>
-      <td><code>src/canary-refactor/reference/items/item-detail.stories.tsx</code></td>
+      <td>
+        <code>src/dev-witness/reference/items/item-detail.stories.tsx</code>
+      </td>
+      <td>
+        <code>src/canary-refactor/reference/items/item-detail.stories.tsx</code>
+      </td>
     </tr>
   </tbody>
 </table>

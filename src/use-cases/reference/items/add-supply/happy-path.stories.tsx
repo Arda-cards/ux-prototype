@@ -363,7 +363,7 @@ function AddSupplyWizard(props: WizardProps<SupplyFormData>) {
    ================================================================ */
 
 const meta = {
-  title: 'Use Cases/Reference/Items/Add Supply/Happy Path',
+  title: 'Prototypes/Reference/Items/Add Supply/Happy Path',
   parameters: { layout: 'centered' },
 } satisfies Meta;
 

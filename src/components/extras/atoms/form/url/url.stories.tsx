@@ -7,7 +7,7 @@ import { ArdaUrlFieldEditor } from './url-field-editor';
 import { ArdaUrlFieldInteractive } from './url-field-interactive';
 
 const meta: Meta<typeof ArdaUrlFieldInteractive> = {
-  title: 'Components/Extras/Atoms/Form/URL',
+  title: 'Components/Current/Atoms/Form/URL',
   component: ArdaUrlFieldInteractive,
   parameters: {
     layout: 'centered',

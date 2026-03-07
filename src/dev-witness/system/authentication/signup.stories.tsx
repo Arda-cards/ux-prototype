@@ -4,7 +4,7 @@ import SignUpPage from '@frontend/app/signup/page';
 import '@/styles/vendored/globals.css';
 
 const meta: Meta<typeof SignUpPage> = {
-  title: 'Dev Witness/System/Authentication/Sign Up',
+  title: 'App/Current/System/Authentication/Sign Up',
   component: SignUpPage,
   tags: ['app-route:/signup'],
   parameters: {

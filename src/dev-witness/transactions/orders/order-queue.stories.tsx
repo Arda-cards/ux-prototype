@@ -5,7 +5,7 @@ import OrderQueuePage from '@frontend/app/order-queue/page';
 import '@/styles/vendored/globals.css';
 
 const meta: Meta<typeof OrderQueuePage> = {
-  title: 'Dev Witness/Transactions/Orders/Order Queue',
+  title: 'App/Current/Transactions/Orders/Order Queue',
   component: OrderQueuePage,
   tags: ['app-route:/order-queue'],
   parameters: {

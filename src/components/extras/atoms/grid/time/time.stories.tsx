@@ -8,7 +8,7 @@ import { ArdaTimeCellInteractive } from './time-cell-interactive';
 import { COMMON_TIMEZONES } from '@/types/extras-date-time';
 
 const meta: Meta<typeof ArdaTimeCellInteractive> = {
-  title: 'Components/Extras/Atoms/Grid/Time',
+  title: 'Components/Current/Atoms/Grid/Time',
   component: ArdaTimeCellInteractive,
   parameters: {
     layout: 'centered',

@@ -8,7 +8,7 @@ import { sampleItemSupplies } from '../mocks/sample-item-supplies';
 import { ArdaItemSupplySection } from './item-supply-section';
 
 const meta: Meta<typeof ArdaItemSupplySection> = {
-  title: 'Components/Extras/Organisms/Reference/Items/Item Supply Section',
+  title: 'Components/Current/Organisms/Reference/Items/Item Supply Section',
   component: ArdaItemSupplySection,
   parameters: {
     layout: 'centered',

@@ -7,7 +7,7 @@ import { ArdaNumberFieldEditor } from './number-field-editor';
 import { ArdaNumberFieldInteractive } from './number-field-interactive';
 
 const meta: Meta<typeof ArdaNumberFieldInteractive> = {
-  title: 'Components/Extras/Atoms/Form/Number',
+  title: 'Components/Current/Atoms/Form/Number',
   component: ArdaNumberFieldInteractive,
   parameters: {
     layout: 'centered',

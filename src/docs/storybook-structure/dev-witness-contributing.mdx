@@ -1,14 +1,14 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Docs/Storybook Structure/Dev Witness/Contributing" />
+<Meta title="App/Current/Contributing" />
 
-# Dev Witness Contributing Guide
+# App Current Contributing Guide
 
-This page covers how to add new page stories, override MSW handlers, run the sync script locally, and debug common issues with the Dev Witness integration.
+This page covers how to add new page stories, override MSW handlers, run the sync script locally, and debug common issues with the `App/Current` integration.
 
 ## Adding a New Page Story
 
-Each Dev Witness page story lives in `src/dev-witness/` and follows a consistent template.
+Each `App/Current` page story lives in `src/dev-witness/` and follows a consistent template. The folder name is historical; the Storybook section label is `App/Current`.
 
 ### 1. Create the Story File
 
@@ -19,7 +19,7 @@ import MyPage from '@frontend/app/my-page/page';
 import '@/styles/vendored/globals.css';
 
 const meta: Meta<typeof MyPage> = {
-  title: 'Dev Witness/Section/My Page',
+  title: 'App/Current/Section/My Page',
   component: MyPage,
   tags: ['app-route:/my-page'],
   parameters: {
@@ -40,7 +40,7 @@ export const Default: Story = {};
 
 Key points:
 
-- The `title` must start with `Dev Witness/` so the `withFullAppProviders` decorator activates. Use a minimum three-level title (`Dev Witness/Section/Page`) matching the application&#8217;s navigation structure. See the [Page Inventory](?path=/docs/docs-storybook-structure-dev-witness-integration--docs#page-inventory) for the section taxonomy.
+- The `title` must start with `App/Current/` so the `withFullAppProviders` decorator activates. Use a minimum three-level title (`App/Current/Section/Page`) matching the application&#8217;s navigation structure. See the [Page Inventory](?path=/docs/app-current-integration--docs#page-inventory) for the section taxonomy.
 - The `tags` array should include `app-route:<path>` for route traceability.
 - Import `@/styles/vendored/globals.css` to apply the production application&#8217;s CSS custom properties. This file uses the `theme-override` CSS layer so vendored tokens take precedence over the Nominal base theme. See the [CSS Layer System](?path=/docs/docs-css-layer-system--docs) for details.
 - Set `pathname` in `args` to match the application route. For dynamic routes, provide a concrete value (e.g., `/item/item-001`).
@@ -68,11 +68,7 @@ import { expect, within } from 'storybook/test';
 export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const heading = await canvas.findByRole(
-      'heading',
-      { name: /My Page/i },
-      { timeout: 10000 },
-    );
+    const heading = await canvas.findByRole('heading', { name: /My Page/i }, { timeout: 10000 });
     await expect(heading).toBeVisible();
   },
 };
@@ -124,11 +120,7 @@ Return an error response:
 export const ServerError: Story = {
   parameters: {
     msw: {
-      handlers: [
-        http.post('/api/arda/items/query', () =>
-          new HttpResponse(null, { status: 500 }),
-        ),
-      ],
+      handlers: [http.post('/api/arda/items/query', () => new HttpResponse(null, { status: 500 }))],
     },
   },
 };
@@ -178,14 +170,22 @@ The script accepts two arguments:
   </thead>
   <tbody>
     <tr>
-      <td><code>SOURCE_REPO</code></td>
+      <td>
+        <code>SOURCE_REPO</code>
+      </td>
       <td>Yes</td>
-      <td>Path to the <code>arda-frontend-app</code> repository root</td>
+      <td>
+        Path to the <code>arda-frontend-app</code> repository root
+      </td>
     </tr>
     <tr>
-      <td><code>TARGET_DIR</code></td>
+      <td>
+        <code>TARGET_DIR</code>
+      </td>
       <td>No</td>
-      <td>Destination directory (default: <code>src/vendored/arda-frontend</code>)</td>
+      <td>
+        Destination directory (default: <code>src/vendored/arda-frontend</code>)
+      </td>
     </tr>
   </tbody>
 </table>
@@ -224,11 +224,11 @@ The script is idempotent: it deletes the target directory before copying. After 
 
 ### Runtime Error: Story Shows Sign-In Page
 
-**Symptom:** A Dev Witness story renders the sign-in page instead of the expected page.
+**Symptom:** An `App/Current` story renders the sign-in page instead of the expected page.
 
 **Cause:** The auth guard detected missing or invalid auth state and redirected to `/signin`.
 
-**Fix:** Verify the story title starts with `Dev Witness/` or `Canary Refactor/` (case-sensitive). The `withFullAppProviders` decorator activates for both prefixes. If the title is correct, check that `MockAuthProvider` and the Redux store pre-loading are working by inspecting the browser console for auth-related errors.
+**Fix:** Verify the story title starts with `App/Current/` or `App/Migration/` (case-sensitive). The `withFullAppProviders` decorator activates for both prefixes. If the title is correct, check that `MockAuthProvider` and the Redux store pre-loading are working by inspecting the browser console for auth-related errors.
 
 ### Runtime Error: API Calls Return Empty Data
 
@@ -248,7 +248,7 @@ The script is idempotent: it deletes the target directory before copying. After 
 
 ## Updating VRT Baselines
 
-After making intentional visual changes to a Dev Witness page, update the Playwright screenshot baselines:
+After making intentional visual changes to an `App/Current` page, update the Playwright screenshot baselines:
 
 ```bash
 # Build Storybook first

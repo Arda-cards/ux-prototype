@@ -7,7 +7,7 @@ import type { SupplyDesignation } from '@/types/extras';
 import { ArdaSupplyCard } from './supply-card';
 
 const meta: Meta<typeof ArdaSupplyCard> = {
-  title: 'Components/Extras/Molecules/Supply Card',
+  title: 'Components/Current/Molecules/Supply Card',
   component: ArdaSupplyCard,
   parameters: {
     layout: 'centered',

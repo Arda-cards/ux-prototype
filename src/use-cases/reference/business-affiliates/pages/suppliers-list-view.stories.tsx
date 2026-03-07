@@ -353,7 +353,7 @@ function SuppliersPageWithDrawer() {
 }
 
 const meta: Meta<typeof SuppliersPage> = {
-  title: 'Use Cases/Reference/Business Affiliates/Pages/Suppliers List View',
+  title: 'Prototypes/Reference/Business Affiliates/Pages/Suppliers List View',
   component: SuppliersPage,
   parameters: {
     layout: 'fullscreen',

@@ -4,7 +4,7 @@ import { expect, fn, userEvent, within } from 'storybook/test';
 import { ArdaConfirmDialog } from './confirm-dialog';
 
 const meta: Meta<typeof ArdaConfirmDialog> = {
-  title: 'Components/Extras/Atoms/Other/ConfirmDialog',
+  title: 'Components/Current/Atoms/ConfirmDialog',
   component: ArdaConfirmDialog,
   parameters: {
     docs: {

@@ -35,7 +35,7 @@ import {
 } from 'lucide-react';
 
 const meta: Meta = {
-  title: 'Visual Elements/Icons',
+  title: 'Foundations/Icons',
 };
 
 export default meta;

@@ -7,7 +7,7 @@ import { ArdaImageCellEditor } from './image-cell-editor';
 import { ArdaImageCellInteractive } from './image-cell-interactive';
 
 const meta: Meta<typeof ArdaImageCellInteractive> = {
-  title: 'Components/Extras/Atoms/Grid/Image',
+  title: 'Components/Current/Atoms/Grid/Image',
   component: ArdaImageCellInteractive,
   parameters: {
     layout: 'centered',

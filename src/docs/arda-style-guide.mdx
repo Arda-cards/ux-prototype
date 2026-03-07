@@ -1,6 +1,6 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Docs/Arda Style Guide" />
+<Meta title="Foundations/Style Guide" />
 
 # Arda Design System and Style Guide
 
@@ -169,18 +169,68 @@ For Arda products, the *Visual Style Guide* is implemented in:
 
 <table>
   <thead>
-    <tr><th>Layer</th><th>Technology</th><th>Notes</th></tr>
+    <tr>
+      <th>Layer</th>
+      <th>Technology</th>
+      <th>Notes</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td>Framework</td><td>React 19 + TypeScript</td><td>Functional components only</td></tr>
-    <tr><td>Styling</td><td>Tailwind CSS v4</td><td>Utility-first, <code>@theme inline</code> block in globals.css</td></tr>
-    <tr><td>Animations</td><td>tw-animate-css</td><td>Via Tailwind plugin</td></tr>
-    <tr><td>Component base</td><td>shadcn/ui primitives</td><td>Adapted with <code>Arda</code> prefix</td></tr>
-    <tr><td>Variant management</td><td>Class Variance Authority (CVA)</td><td>For multi-variant components</td></tr>
-    <tr><td>Class composition</td><td><code>cn()</code> from <code>@/lib/utils</code></td><td>clsx + tailwind-merge</td></tr>
-    <tr><td>Icons</td><td>Lucide React (<code>lucide-react</code>)</td><td>Tree-shakeable SVG icons</td></tr>
-    <tr><td>Documentation</td><td>Storybook 10</td><td>Stories + MDX documentation</td></tr>
-    <tr><td>Testing</td><td>Vitest + Testing Library</td><td>Import <code>@testing-library/jest-dom/vitest</code></td></tr>
+    <tr>
+      <td>Framework</td>
+      <td>React 19 + TypeScript</td>
+      <td>Functional components only</td>
+    </tr>
+    <tr>
+      <td>Styling</td>
+      <td>Tailwind CSS v4</td>
+      <td>
+        Utility-first, <code>@theme inline</code> block in globals.css
+      </td>
+    </tr>
+    <tr>
+      <td>Animations</td>
+      <td>tw-animate-css</td>
+      <td>Via Tailwind plugin</td>
+    </tr>
+    <tr>
+      <td>Component base</td>
+      <td>shadcn/ui primitives</td>
+      <td>
+        Adapted with <code>Arda</code> prefix
+      </td>
+    </tr>
+    <tr>
+      <td>Variant management</td>
+      <td>Class Variance Authority (CVA)</td>
+      <td>For multi-variant components</td>
+    </tr>
+    <tr>
+      <td>Class composition</td>
+      <td>
+        <code>cn()</code> from <code>@/lib/utils</code>
+      </td>
+      <td>clsx + tailwind-merge</td>
+    </tr>
+    <tr>
+      <td>Icons</td>
+      <td>
+        Lucide React (<code>lucide-react</code>)
+      </td>
+      <td>Tree-shakeable SVG icons</td>
+    </tr>
+    <tr>
+      <td>Documentation</td>
+      <td>Storybook 10</td>
+      <td>Stories + MDX documentation</td>
+    </tr>
+    <tr>
+      <td>Testing</td>
+      <td>Vitest + Testing Library</td>
+      <td>
+        Import <code>@testing-library/jest-dom/vitest</code>
+      </td>
+    </tr>
   </tbody>
 </table>
 
@@ -196,13 +246,62 @@ All tokens are defined as CSS custom properties in `globals.css` (the **Nominal*
 
 <table>
   <thead>
-    <tr><th>Token</th><th>Value</th><th>Tailwind</th><th>Usage</th></tr>
+    <tr>
+      <th>Token</th>
+      <th>Value</th>
+      <th>Tailwind</th>
+      <th>Usage</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td><code>--base-primary</code></td><td><code>#fc5a29</code></td><td><code>bg-[var(--base-primary)]</code></td><td>Primary actions, CTA buttons, active indicators</td></tr>
-    <tr><td><code>--base-primary-foreground</code></td><td><code>#fafafa</code></td><td><code>text-[var(--base-primary-foreground)]</code></td><td>Text on primary backgrounds</td></tr>
-    <tr><td><code>--base-secondary</code></td><td><code>#f5f5f5</code></td><td><code>bg-[var(--base-secondary)]</code></td><td>Secondary/subtle backgrounds</td></tr>
-    <tr><td><code>--base-destructive</code></td><td><code>#dc2626</code></td><td><code>text-[var(--base-destructive)]</code></td><td>Error states, delete actions</td></tr>
+    <tr>
+      <td>
+        <code>--base-primary</code>
+      </td>
+      <td>
+        <code>#fc5a29</code>
+      </td>
+      <td>
+        <code>bg-[var(--base-primary)]</code>
+      </td>
+      <td>Primary actions, CTA buttons, active indicators</td>
+    </tr>
+    <tr>
+      <td>
+        <code>--base-primary-foreground</code>
+      </td>
+      <td>
+        <code>#fafafa</code>
+      </td>
+      <td>
+        <code>text-[var(--base-primary-foreground)]</code>
+      </td>
+      <td>Text on primary backgrounds</td>
+    </tr>
+    <tr>
+      <td>
+        <code>--base-secondary</code>
+      </td>
+      <td>
+        <code>#f5f5f5</code>
+      </td>
+      <td>
+        <code>bg-[var(--base-secondary)]</code>
+      </td>
+      <td>Secondary/subtle backgrounds</td>
+    </tr>
+    <tr>
+      <td>
+        <code>--base-destructive</code>
+      </td>
+      <td>
+        <code>#dc2626</code>
+      </td>
+      <td>
+        <code>text-[var(--base-destructive)]</code>
+      </td>
+      <td>Error states, delete actions</td>
+    </tr>
   </tbody>
 </table>
 
@@ -210,15 +309,82 @@ All tokens are defined as CSS custom properties in `globals.css` (the **Nominal*
 
 <table>
   <thead>
-    <tr><th>Token</th><th>Value</th><th>Tailwind</th><th>Usage</th></tr>
+    <tr>
+      <th>Token</th>
+      <th>Value</th>
+      <th>Tailwind</th>
+      <th>Usage</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td><code>--background</code></td><td><code>#ffffff</code></td><td><code>bg-background</code></td><td>Page background</td></tr>
-    <tr><td><code>--foreground</code></td><td><code>#171717</code></td><td><code>text-foreground</code></td><td>Primary text</td></tr>
-    <tr><td><code>--base-background</code></td><td><code>#ffffff</code></td><td>&#8212;</td><td>App-level background</td></tr>
-    <tr><td><code>--base-foreground</code></td><td><code>#0a0a0a</code></td><td>&#8212;</td><td>Strong text</td></tr>
-    <tr><td><code>--base-muted-foreground</code></td><td><code>#737373</code></td><td><code>text-muted-foreground</code></td><td>Secondary/helper text, labels</td></tr>
-    <tr><td><code>--base-accent-foreground</code></td><td><code>#171717</code></td><td><code>text-accent-foreground</code></td><td>Emphasized text</td></tr>
+    <tr>
+      <td>
+        <code>--background</code>
+      </td>
+      <td>
+        <code>#ffffff</code>
+      </td>
+      <td>
+        <code>bg-background</code>
+      </td>
+      <td>Page background</td>
+    </tr>
+    <tr>
+      <td>
+        <code>--foreground</code>
+      </td>
+      <td>
+        <code>#171717</code>
+      </td>
+      <td>
+        <code>text-foreground</code>
+      </td>
+      <td>Primary text</td>
+    </tr>
+    <tr>
+      <td>
+        <code>--base-background</code>
+      </td>
+      <td>
+        <code>#ffffff</code>
+      </td>
+      <td>&#8212;</td>
+      <td>App-level background</td>
+    </tr>
+    <tr>
+      <td>
+        <code>--base-foreground</code>
+      </td>
+      <td>
+        <code>#0a0a0a</code>
+      </td>
+      <td>&#8212;</td>
+      <td>Strong text</td>
+    </tr>
+    <tr>
+      <td>
+        <code>--base-muted-foreground</code>
+      </td>
+      <td>
+        <code>#737373</code>
+      </td>
+      <td>
+        <code>text-muted-foreground</code>
+      </td>
+      <td>Secondary/helper text, labels</td>
+    </tr>
+    <tr>
+      <td>
+        <code>--base-accent-foreground</code>
+      </td>
+      <td>
+        <code>#171717</code>
+      </td>
+      <td>
+        <code>text-accent-foreground</code>
+      </td>
+      <td>Emphasized text</td>
+    </tr>
   </tbody>
 </table>
 
@@ -226,11 +392,38 @@ All tokens are defined as CSS custom properties in `globals.css` (the **Nominal*
 
 <table>
   <thead>
-    <tr><th>Token</th><th>Value</th><th>Tailwind</th><th>Usage</th></tr>
+    <tr>
+      <th>Token</th>
+      <th>Value</th>
+      <th>Tailwind</th>
+      <th>Usage</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td><code>--base-border</code></td><td><code>#e5e5e5</code></td><td><code>border-border</code></td><td>Card borders, dividers</td></tr>
-    <tr><td><code>--base-input</code></td><td><code>#e5e5e5</code></td><td><code>border-input</code></td><td>Input field borders</td></tr>
+    <tr>
+      <td>
+        <code>--base-border</code>
+      </td>
+      <td>
+        <code>#e5e5e5</code>
+      </td>
+      <td>
+        <code>border-border</code>
+      </td>
+      <td>Card borders, dividers</td>
+    </tr>
+    <tr>
+      <td>
+        <code>--base-input</code>
+      </td>
+      <td>
+        <code>#e5e5e5</code>
+      </td>
+      <td>
+        <code>border-input</code>
+      </td>
+      <td>Input field borders</td>
+    </tr>
   </tbody>
 </table>
 
@@ -238,15 +431,55 @@ All tokens are defined as CSS custom properties in `globals.css` (the **Nominal*
 
 <table>
   <thead>
-    <tr><th>Element</th><th>Color</th><th>Usage</th></tr>
+    <tr>
+      <th>Element</th>
+      <th>Color</th>
+      <th>Usage</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td>Sidebar background</td><td><code>#0A0A0A</code></td><td>Near-black sidebar</td></tr>
-    <tr><td>Sidebar gradient</td><td><code>rgba(252,90,41,0.08)</code> to <code>rgba(255,255,255,0.04)</code></td><td>Subtle warm gradient overlay on sidebar</td></tr>
-    <tr><td>Active nav indicator</td><td><code>#FC5A29</code> (primary orange)</td><td>Left border on active sidebar item</td></tr>
-    <tr><td>Table header bg</td><td><code>#F9FAFB</code> (gray-50)</td><td>Light gray table header row</td></tr>
-    <tr><td>Table row hover</td><td><code>#F3F4F6</code> (gray-100)</td><td>Subtle hover highlight</td></tr>
-    <tr><td>Card accent</td><td><code>#3B82F6</code> (blue-500)</td><td>Optional blue accent bar on cards</td></tr>
+    <tr>
+      <td>Sidebar background</td>
+      <td>
+        <code>#0A0A0A</code>
+      </td>
+      <td>Near-black sidebar</td>
+    </tr>
+    <tr>
+      <td>Sidebar gradient</td>
+      <td>
+        <code>rgba(252,90,41,0.08)</code> to <code>rgba(255,255,255,0.04)</code>
+      </td>
+      <td>Subtle warm gradient overlay on sidebar</td>
+    </tr>
+    <tr>
+      <td>Active nav indicator</td>
+      <td>
+        <code>#FC5A29</code> (primary orange)
+      </td>
+      <td>Left border on active sidebar item</td>
+    </tr>
+    <tr>
+      <td>Table header bg</td>
+      <td>
+        <code>#F9FAFB</code> (gray-50)
+      </td>
+      <td>Light gray table header row</td>
+    </tr>
+    <tr>
+      <td>Table row hover</td>
+      <td>
+        <code>#F3F4F6</code> (gray-100)
+      </td>
+      <td>Subtle hover highlight</td>
+    </tr>
+    <tr>
+      <td>Card accent</td>
+      <td>
+        <code>#3B82F6</code> (blue-500)
+      </td>
+      <td>Optional blue accent bar on cards</td>
+    </tr>
   </tbody>
 </table>
 
@@ -254,14 +487,64 @@ All tokens are defined as CSS custom properties in `globals.css` (the **Nominal*
 
 <table>
   <thead>
-    <tr><th>Status</th><th>Background</th><th>Text</th><th>Usage</th></tr>
+    <tr>
+      <th>Status</th>
+      <th>Background</th>
+      <th>Text</th>
+      <th>Usage</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td>Default</td><td><code>#F5F5F5</code></td><td><code>#0A0A0A</code></td><td>Neutral status</td></tr>
-    <tr><td>Success</td><td><code>#DCFCE7</code></td><td><code>#166534</code></td><td>Completed, active, confirmed</td></tr>
-    <tr><td>Warning</td><td><code>#FEF3C7</code></td><td><code>#92400E</code></td><td>Pending, needs attention</td></tr>
-    <tr><td>Info</td><td><code>#DBEAFE</code></td><td><code>#1E40AF</code></td><td>Informational</td></tr>
-    <tr><td>Destructive</td><td><code>#FEE2E2</code></td><td><code>#991B1B</code></td><td>Error, rejected, overdue</td></tr>
+    <tr>
+      <td>Default</td>
+      <td>
+        <code>#F5F5F5</code>
+      </td>
+      <td>
+        <code>#0A0A0A</code>
+      </td>
+      <td>Neutral status</td>
+    </tr>
+    <tr>
+      <td>Success</td>
+      <td>
+        <code>#DCFCE7</code>
+      </td>
+      <td>
+        <code>#166534</code>
+      </td>
+      <td>Completed, active, confirmed</td>
+    </tr>
+    <tr>
+      <td>Warning</td>
+      <td>
+        <code>#FEF3C7</code>
+      </td>
+      <td>
+        <code>#92400E</code>
+      </td>
+      <td>Pending, needs attention</td>
+    </tr>
+    <tr>
+      <td>Info</td>
+      <td>
+        <code>#DBEAFE</code>
+      </td>
+      <td>
+        <code>#1E40AF</code>
+      </td>
+      <td>Informational</td>
+    </tr>
+    <tr>
+      <td>Destructive</td>
+      <td>
+        <code>#FEE2E2</code>
+      </td>
+      <td>
+        <code>#991B1B</code>
+      </td>
+      <td>Error, rejected, overdue</td>
+    </tr>
   </tbody>
 </table>
 
@@ -271,15 +554,67 @@ Based on a **4px** base unit, aligned with Tailwind&#8217;s default scale:
 
 <table>
   <thead>
-    <tr><th>Token</th><th>Value</th><th>Tailwind</th></tr>
+    <tr>
+      <th>Token</th>
+      <th>Value</th>
+      <th>Tailwind</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td><code>--spacing-1</code></td><td>4px</td><td><code>p-1</code>, <code>gap-1</code>, <code>m-1</code></td></tr>
-    <tr><td><code>--spacing-2</code></td><td>8px</td><td><code>p-2</code>, <code>gap-2</code>, <code>m-2</code></td></tr>
-    <tr><td><code>--spacing-3</code></td><td>12px</td><td><code>p-3</code>, <code>gap-3</code>, <code>m-3</code></td></tr>
-    <tr><td><code>--spacing-4</code></td><td>16px</td><td><code>p-4</code>, <code>gap-4</code>, <code>m-4</code></td></tr>
-    <tr><td><code>--spacing-5</code></td><td>20px</td><td><code>p-5</code>, <code>gap-5</code>, <code>m-5</code></td></tr>
-    <tr><td><code>--spacing-6</code></td><td>24px</td><td><code>p-6</code>, <code>gap-6</code>, <code>m-6</code></td></tr>
+    <tr>
+      <td>
+        <code>--spacing-1</code>
+      </td>
+      <td>4px</td>
+      <td>
+        <code>p-1</code>, <code>gap-1</code>, <code>m-1</code>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>--spacing-2</code>
+      </td>
+      <td>8px</td>
+      <td>
+        <code>p-2</code>, <code>gap-2</code>, <code>m-2</code>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>--spacing-3</code>
+      </td>
+      <td>12px</td>
+      <td>
+        <code>p-3</code>, <code>gap-3</code>, <code>m-3</code>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>--spacing-4</code>
+      </td>
+      <td>16px</td>
+      <td>
+        <code>p-4</code>, <code>gap-4</code>, <code>m-4</code>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>--spacing-5</code>
+      </td>
+      <td>20px</td>
+      <td>
+        <code>p-5</code>, <code>gap-5</code>, <code>m-5</code>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>--spacing-6</code>
+      </td>
+      <td>24px</td>
+      <td>
+        <code>p-6</code>, <code>gap-6</code>, <code>m-6</code>
+      </td>
+    </tr>
   </tbody>
 </table>
 
@@ -295,14 +630,64 @@ Common spacing patterns from the Figma mockups:
 
 <table>
   <thead>
-    <tr><th>Token</th><th>Value</th><th>Tailwind</th><th>Usage</th></tr>
+    <tr>
+      <th>Token</th>
+      <th>Value</th>
+      <th>Tailwind</th>
+      <th>Usage</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td><code>--radius</code></td><td>10px</td><td><code>rounded-lg</code></td><td>Base radius</td></tr>
-    <tr><td><code>--radius-sm</code></td><td>6px</td><td><code>rounded-sm</code></td><td>Small elements (badges, chips)</td></tr>
-    <tr><td><code>--radius-md</code></td><td>8px</td><td><code>rounded-md</code></td><td>Buttons, inputs</td></tr>
-    <tr><td><code>--radius-lg</code></td><td>10px</td><td><code>rounded-lg</code></td><td>Cards, panels</td></tr>
-    <tr><td><code>--radius-xl</code></td><td>14px</td><td><code>rounded-xl</code></td><td>Large cards, modals</td></tr>
+    <tr>
+      <td>
+        <code>--radius</code>
+      </td>
+      <td>10px</td>
+      <td>
+        <code>rounded-lg</code>
+      </td>
+      <td>Base radius</td>
+    </tr>
+    <tr>
+      <td>
+        <code>--radius-sm</code>
+      </td>
+      <td>6px</td>
+      <td>
+        <code>rounded-sm</code>
+      </td>
+      <td>Small elements (badges, chips)</td>
+    </tr>
+    <tr>
+      <td>
+        <code>--radius-md</code>
+      </td>
+      <td>8px</td>
+      <td>
+        <code>rounded-md</code>
+      </td>
+      <td>Buttons, inputs</td>
+    </tr>
+    <tr>
+      <td>
+        <code>--radius-lg</code>
+      </td>
+      <td>10px</td>
+      <td>
+        <code>rounded-lg</code>
+      </td>
+      <td>Cards, panels</td>
+    </tr>
+    <tr>
+      <td>
+        <code>--radius-xl</code>
+      </td>
+      <td>14px</td>
+      <td>
+        <code>rounded-xl</code>
+      </td>
+      <td>Large cards, modals</td>
+    </tr>
   </tbody>
 </table>
 
@@ -310,14 +695,48 @@ Common spacing patterns from the Figma mockups:
 
 <table>
   <thead>
-    <tr><th>Token</th><th>Tailwind</th><th>Usage</th></tr>
+    <tr>
+      <th>Token</th>
+      <th>Tailwind</th>
+      <th>Usage</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td>shadow/xs</td><td><code>shadow-xs</code></td><td>Subtle depth (inputs, small elements)</td></tr>
-    <tr><td>shadow/sm</td><td><code>shadow-sm</code></td><td>Card elevation, list items</td></tr>
-    <tr><td>shadow/md</td><td><code>shadow-md</code></td><td>Elevated cards, dropdowns</td></tr>
-    <tr><td>shadow/lg</td><td><code>shadow-lg</code></td><td>Modals, dialogs, popovers</td></tr>
-    <tr><td>drop-shadow/sm</td><td><code>drop-shadow-sm</code></td><td>Floating elements</td></tr>
+    <tr>
+      <td>shadow/xs</td>
+      <td>
+        <code>shadow-xs</code>
+      </td>
+      <td>Subtle depth (inputs, small elements)</td>
+    </tr>
+    <tr>
+      <td>shadow/sm</td>
+      <td>
+        <code>shadow-sm</code>
+      </td>
+      <td>Card elevation, list items</td>
+    </tr>
+    <tr>
+      <td>shadow/md</td>
+      <td>
+        <code>shadow-md</code>
+      </td>
+      <td>Elevated cards, dropdowns</td>
+    </tr>
+    <tr>
+      <td>shadow/lg</td>
+      <td>
+        <code>shadow-lg</code>
+      </td>
+      <td>Modals, dialogs, popovers</td>
+    </tr>
+    <tr>
+      <td>drop-shadow/sm</td>
+      <td>
+        <code>drop-shadow-sm</code>
+      </td>
+      <td>Floating elements</td>
+    </tr>
   </tbody>
 </table>
 
@@ -329,12 +748,38 @@ Common spacing patterns from the Figma mockups:
 
 <table>
   <thead>
-    <tr><th>Font</th><th>CSS Variable</th><th>Usage</th></tr>
+    <tr>
+      <th>Font</th>
+      <th>CSS Variable</th>
+      <th>Usage</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td><strong>Geist</strong></td><td><code>--font-geist</code></td><td>Primary UI font (all text)</td></tr>
-    <tr><td><strong>Geist Mono</strong></td><td><code>--font-geist-mono</code></td><td>Code snippets, monospace data</td></tr>
-    <tr><td><strong>Indie Flower</strong></td><td>Google Fonts import</td><td>Decorative annotations only (not for UI)</td></tr>
+    <tr>
+      <td>
+        <strong>Geist</strong>
+      </td>
+      <td>
+        <code>--font-geist</code>
+      </td>
+      <td>Primary UI font (all text)</td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Geist Mono</strong>
+      </td>
+      <td>
+        <code>--font-geist-mono</code>
+      </td>
+      <td>Code snippets, monospace data</td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Indie Flower</strong>
+      </td>
+      <td>Google Fonts import</td>
+      <td>Decorative annotations only (not for UI)</td>
+    </tr>
   </tbody>
 </table>
 
@@ -344,19 +789,130 @@ The Figma file defines text styles using Tailwind naming conventions:
 
 <table>
   <thead>
-    <tr><th>Style</th><th>Size</th><th>Weight</th><th>Leading</th><th>Tailwind</th><th>Usage</th></tr>
+    <tr>
+      <th>Style</th>
+      <th>Size</th>
+      <th>Weight</th>
+      <th>Leading</th>
+      <th>Tailwind</th>
+      <th>Usage</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td>Display</td><td>72px</td><td>Bold (700)</td><td>none</td><td><code>text-7xl font-bold leading-none</code></td><td>Hero/splash only</td></tr>
-    <tr><td>Heading XL</td><td>48px</td><td>Medium (500)</td><td>normal</td><td><code>text-5xl font-medium</code></td><td>Page titles (rarely used)</td></tr>
-    <tr><td>Heading LG</td><td>20px</td><td>Extrabold (800)</td><td>none</td><td><code>text-xl font-extrabold leading-none</code></td><td>Section headers</td></tr>
-    <tr><td><strong>Heading MD</strong></td><td>&#8212;</td><td>&#8212;</td><td>&#8212;</td><td>Use <code>custom/heading-md</code> style</td><td>Primary heading</td></tr>
-    <tr><td><strong>Heading SM</strong></td><td>&#8212;</td><td>&#8212;</td><td>&#8212;</td><td>Use <code>custom/heading-sm</code> style</td><td>Secondary heading</td></tr>
-    <tr><td><strong>Heading XS</strong></td><td>&#8212;</td><td>&#8212;</td><td>&#8212;</td><td>Use <code>custom/heading-xs</code> style</td><td>Tertiary heading</td></tr>
-    <tr><td>text-lg</td><td>18px</td><td>Semibold (600)</td><td>normal</td><td><code>text-lg font-semibold</code></td><td>Subheadings, card titles</td></tr>
-    <tr><td><strong>text-base</strong></td><td>16px</td><td>Normal/Medium/Semibold</td><td>normal</td><td><code>text-base</code></td><td>Body text, form labels</td></tr>
-    <tr><td><strong>text-sm</strong></td><td>14px</td><td>Normal/Medium/Semibold/Bold</td><td>normal or none</td><td><code>text-sm</code></td><td><strong>Default UI text</strong>, table cells, inputs</td></tr>
-    <tr><td><strong>text-xs</strong></td><td>12px</td><td>Normal/Semibold</td><td>normal or none</td><td><code>text-xs</code></td><td>Captions, helper text, timestamps</td></tr>
+    <tr>
+      <td>Display</td>
+      <td>72px</td>
+      <td>Bold (700)</td>
+      <td>none</td>
+      <td>
+        <code>text-7xl font-bold leading-none</code>
+      </td>
+      <td>Hero/splash only</td>
+    </tr>
+    <tr>
+      <td>Heading XL</td>
+      <td>48px</td>
+      <td>Medium (500)</td>
+      <td>normal</td>
+      <td>
+        <code>text-5xl font-medium</code>
+      </td>
+      <td>Page titles (rarely used)</td>
+    </tr>
+    <tr>
+      <td>Heading LG</td>
+      <td>20px</td>
+      <td>Extrabold (800)</td>
+      <td>none</td>
+      <td>
+        <code>text-xl font-extrabold leading-none</code>
+      </td>
+      <td>Section headers</td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Heading MD</strong>
+      </td>
+      <td>&#8212;</td>
+      <td>&#8212;</td>
+      <td>&#8212;</td>
+      <td>
+        Use <code>custom/heading-md</code> style
+      </td>
+      <td>Primary heading</td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Heading SM</strong>
+      </td>
+      <td>&#8212;</td>
+      <td>&#8212;</td>
+      <td>&#8212;</td>
+      <td>
+        Use <code>custom/heading-sm</code> style
+      </td>
+      <td>Secondary heading</td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Heading XS</strong>
+      </td>
+      <td>&#8212;</td>
+      <td>&#8212;</td>
+      <td>&#8212;</td>
+      <td>
+        Use <code>custom/heading-xs</code> style
+      </td>
+      <td>Tertiary heading</td>
+    </tr>
+    <tr>
+      <td>text-lg</td>
+      <td>18px</td>
+      <td>Semibold (600)</td>
+      <td>normal</td>
+      <td>
+        <code>text-lg font-semibold</code>
+      </td>
+      <td>Subheadings, card titles</td>
+    </tr>
+    <tr>
+      <td>
+        <strong>text-base</strong>
+      </td>
+      <td>16px</td>
+      <td>Normal/Medium/Semibold</td>
+      <td>normal</td>
+      <td>
+        <code>text-base</code>
+      </td>
+      <td>Body text, form labels</td>
+    </tr>
+    <tr>
+      <td>
+        <strong>text-sm</strong>
+      </td>
+      <td>14px</td>
+      <td>Normal/Medium/Semibold/Bold</td>
+      <td>normal or none</td>
+      <td>
+        <code>text-sm</code>
+      </td>
+      <td>
+        <strong>Default UI text</strong>, table cells, inputs
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <strong>text-xs</strong>
+      </td>
+      <td>12px</td>
+      <td>Normal/Semibold</td>
+      <td>normal or none</td>
+      <td>
+        <code>text-xs</code>
+      </td>
+      <td>Captions, helper text, timestamps</td>
+    </tr>
   </tbody>
 </table>
 
@@ -366,14 +922,48 @@ The Figma file defines text styles using Tailwind naming conventions:
 
 <table>
   <thead>
-    <tr><th>Weight</th><th>Tailwind</th><th>Usage</th></tr>
+    <tr>
+      <th>Weight</th>
+      <th>Tailwind</th>
+      <th>Usage</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td>400 (Normal)</td><td><code>font-normal</code></td><td>Body text, descriptions</td></tr>
-    <tr><td>500 (Medium)</td><td><code>font-medium</code></td><td>Labels, navigation items, form labels</td></tr>
-    <tr><td>600 (Semibold)</td><td><code>font-semibold</code></td><td>Emphasized text, active states, card titles</td></tr>
-    <tr><td>700 (Bold)</td><td><code>font-bold</code></td><td>Headings, strong emphasis</td></tr>
-    <tr><td>800 (Extrabold)</td><td><code>font-extrabold</code></td><td>Display headings only</td></tr>
+    <tr>
+      <td>400 (Normal)</td>
+      <td>
+        <code>font-normal</code>
+      </td>
+      <td>Body text, descriptions</td>
+    </tr>
+    <tr>
+      <td>500 (Medium)</td>
+      <td>
+        <code>font-medium</code>
+      </td>
+      <td>Labels, navigation items, form labels</td>
+    </tr>
+    <tr>
+      <td>600 (Semibold)</td>
+      <td>
+        <code>font-semibold</code>
+      </td>
+      <td>Emphasized text, active states, card titles</td>
+    </tr>
+    <tr>
+      <td>700 (Bold)</td>
+      <td>
+        <code>font-bold</code>
+      </td>
+      <td>Headings, strong emphasis</td>
+    </tr>
+    <tr>
+      <td>800 (Extrabold)</td>
+      <td>
+        <code>font-extrabold</code>
+      </td>
+      <td>Display headings only</td>
+    </tr>
   </tbody>
 </table>
 
@@ -381,14 +971,52 @@ The Figma file defines text styles using Tailwind naming conventions:
 
 <table>
   <thead>
-    <tr><th>Purpose</th><th>Color</th><th>Tailwind</th></tr>
+    <tr>
+      <th>Purpose</th>
+      <th>Color</th>
+      <th>Tailwind</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td>Primary text</td><td><code>#171717</code></td><td><code>text-foreground</code></td></tr>
-    <tr><td>Secondary/muted text</td><td><code>#737373</code></td><td><code>text-muted-foreground</code></td></tr>
-    <tr><td>Link text</td><td>Primary orange or blue</td><td><code>text-[var(--base-primary)]</code></td></tr>
-    <tr><td>Underlined link</td><td>14px, underlined</td><td><code>text-sm underline</code></td></tr>
-    <tr><td>Disabled text</td><td>Slate 400</td><td><code>text-slate-400</code></td></tr>
+    <tr>
+      <td>Primary text</td>
+      <td>
+        <code>#171717</code>
+      </td>
+      <td>
+        <code>text-foreground</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Secondary/muted text</td>
+      <td>
+        <code>#737373</code>
+      </td>
+      <td>
+        <code>text-muted-foreground</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Link text</td>
+      <td>Primary orange or blue</td>
+      <td>
+        <code>text-[var(--base-primary)]</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Underlined link</td>
+      <td>14px, underlined</td>
+      <td>
+        <code>text-sm underline</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Disabled text</td>
+      <td>Slate 400</td>
+      <td>
+        <code>text-slate-400</code>
+      </td>
+    </tr>
   </tbody>
 </table>
 
@@ -494,13 +1122,55 @@ Used for item detail editing and viewing:
 
 <table>
   <thead>
-    <tr><th>Variant</th><th>Background</th><th>Text</th><th>Border</th><th>Usage</th></tr>
+    <tr>
+      <th>Variant</th>
+      <th>Background</th>
+      <th>Text</th>
+      <th>Border</th>
+      <th>Usage</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td><code>primary</code></td><td><code>#FC5A29</code> (orange)</td><td>White</td><td>none</td><td>Primary CTA, form submit</td></tr>
-    <tr><td><code>secondary</code></td><td>White</td><td>Dark</td><td>1px border</td><td>Secondary actions</td></tr>
-    <tr><td><code>ghost</code></td><td>Transparent</td><td>Dark</td><td>none</td><td>Tertiary actions, toolbars</td></tr>
-    <tr><td><code>destructive</code></td><td><code>#DC2626</code> (red)</td><td>White</td><td>none</td><td>Delete, remove</td></tr>
+    <tr>
+      <td>
+        <code>primary</code>
+      </td>
+      <td>
+        <code>#FC5A29</code> (orange)
+      </td>
+      <td>White</td>
+      <td>none</td>
+      <td>Primary CTA, form submit</td>
+    </tr>
+    <tr>
+      <td>
+        <code>secondary</code>
+      </td>
+      <td>White</td>
+      <td>Dark</td>
+      <td>1px border</td>
+      <td>Secondary actions</td>
+    </tr>
+    <tr>
+      <td>
+        <code>ghost</code>
+      </td>
+      <td>Transparent</td>
+      <td>Dark</td>
+      <td>none</td>
+      <td>Tertiary actions, toolbars</td>
+    </tr>
+    <tr>
+      <td>
+        <code>destructive</code>
+      </td>
+      <td>
+        <code>#DC2626</code> (red)
+      </td>
+      <td>White</td>
+      <td>none</td>
+      <td>Delete, remove</td>
+    </tr>
   </tbody>
 </table>
 
@@ -538,21 +1208,27 @@ Six variants matching the status colors: `default` / `success` / `warning` / `in
 ### 5.4 Form Controls
 
 #### Input
+
 **Figma:** `Input` component set. Height: 36px (`h-9`), border: 1px `border-input`, radius: `rounded-md`, font: `text-sm`, placeholder: `text-muted-foreground`. States: Default, Focused, Error (red border + error message), Disabled.
 
 #### Select
+
 **Figma:** `Select` component set. Same dimensions as Input. Chevron down icon on right. Dropdown uses `shadow-md`, `rounded-md`.
 
 #### Combobox
+
 **Figma:** `Combobox` component set. Search input + dropdown list. Filterable options. Used for typeahead/autocomplete patterns.
 
 #### Textarea
+
 **Figma:** `Textarea` component set. Min height: 80px. Same border/radius as Input. Resizable.
 
 #### Switch
+
 **Figma:** `Switch` component set. Toggle between on/off states. Primary orange when active.
 
 #### File Drop Zone
+
 **Figma:** `File Drop Zone` / `File Drop Zone Item` component sets. Dashed border area for drag-and-drop uploads. Shows file items after upload with remove option.
 
 ### 5.5 Tables
@@ -584,17 +1260,69 @@ Tables are a primary data display pattern in Arda (item management, order queue,
 
 <table>
   <thead>
-    <tr><th>Component</th><th>Purpose</th><th>Figma Set</th></tr>
+    <tr>
+      <th>Component</th>
+      <th>Purpose</th>
+      <th>Figma Set</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td>Item Form</td><td>Multi-field form for creating/editing inventory items</td><td><code>Component/Item Form</code></td></tr>
-    <tr><td>Side Drawer / Item</td><td>Slide-out panel for item details</td><td><code>Component/Side Drawer/Item</code></td></tr>
-    <tr><td>Card Items</td><td>Grid display of inventory items</td><td><code>Component/Card items</code></td></tr>
-    <tr><td>Card Preview Count</td><td>Summary count overlay on card</td><td><code>Component/Card Preview Count</code></td></tr>
-    <tr><td>Puddles</td><td>Decorative blob shapes for empty states</td><td><code>Component/Puddles</code></td></tr>
-    <tr><td>Resize Handle</td><td>Drag handle for resizable panels</td><td><code>Component/Resize Handle</code></td></tr>
-    <tr><td>Notification</td><td>Toast-style notification banner</td><td><code>Notification</code></td></tr>
-    <tr><td>Checklist Item</td><td>Checkbox + label for checklist UIs</td><td><code>.Component CheckList Item</code></td></tr>
+    <tr>
+      <td>Item Form</td>
+      <td>Multi-field form for creating/editing inventory items</td>
+      <td>
+        <code>Component/Item Form</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Side Drawer / Item</td>
+      <td>Slide-out panel for item details</td>
+      <td>
+        <code>Component/Side Drawer/Item</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Card Items</td>
+      <td>Grid display of inventory items</td>
+      <td>
+        <code>Component/Card items</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Card Preview Count</td>
+      <td>Summary count overlay on card</td>
+      <td>
+        <code>Component/Card Preview Count</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Puddles</td>
+      <td>Decorative blob shapes for empty states</td>
+      <td>
+        <code>Component/Puddles</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Resize Handle</td>
+      <td>Drag handle for resizable panels</td>
+      <td>
+        <code>Component/Resize Handle</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Notification</td>
+      <td>Toast-style notification banner</td>
+      <td>
+        <code>Notification</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Checklist Item</td>
+      <td>Checkbox + label for checklist UIs</td>
+      <td>
+        <code>.Component CheckList Item</code>
+      </td>
+    </tr>
   </tbody>
 </table>
 
@@ -610,27 +1338,194 @@ Tables are a primary data display pattern in Arda (item management, order queue,
 
 <table>
   <thead>
-    <tr><th>Context</th><th>Icon</th><th>Context</th><th>Icon</th></tr>
+    <tr>
+      <th>Context</th>
+      <th>Icon</th>
+      <th>Context</th>
+      <th>Icon</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td>Dashboard / Home</td><td><code>LayoutDashboard</code></td><td>Items / Inventory</td><td><code>Package</code></td></tr>
-    <tr><td>Receiving</td><td><code>PackageOpen</code></td><td>Remove item</td><td><code>PackageMinus</code></td></tr>
-    <tr><td>Order Queue</td><td><code>ShoppingCart</code></td><td>Suppliers</td><td><code>Building2</code></td></tr>
-    <tr><td>Table view</td><td><code>Table2</code></td><td>Reports</td><td><code>BarChart3</code></td></tr>
-    <tr><td>Settings</td><td><code>Settings</code></td><td>Search</td><td><code>Search</code></td></tr>
-    <tr><td>Add / Create</td><td><code>Plus</code></td><td>Edit</td><td><code>Edit</code></td></tr>
-    <tr><td>Delete</td><td><code>Trash</code></td><td>Location</td><td><code>MapPin</code></td></tr>
-    <tr><td>Filter</td><td><code>Filter</code></td><td>Download / Export</td><td><code>Download</code></td></tr>
-    <tr><td>Upload / Import</td><td><code>Upload</code></td><td>View / Visible</td><td><code>Eye</code></td></tr>
-    <tr><td>Hide / Password</td><td><code>EyeOff</code></td><td>Confirm / Success</td><td><code>Check</code></td></tr>
-    <tr><td>Close / Cancel</td><td><code>X</code></td><td>Warning</td><td><code>AlertTriangle</code></td></tr>
-    <tr><td>Information</td><td><code>Info</code></td><td>Notifications</td><td><code>Bell</code></td></tr>
-    <tr><td>User profile</td><td><code>User</code></td><td>Date / Schedule</td><td><code>Calendar</code></td></tr>
-    <tr><td>Logout</td><td><code>LogOut</code></td><td>Navigate back</td><td><code>ChevronLeft</code></td></tr>
-    <tr><td>Navigate forward</td><td><code>ChevronRight</code></td><td>Expand / Dropdown</td><td><code>ChevronDown</code></td></tr>
-    <tr><td>History / Timeline</td><td><code>History</code></td><td>Help</td><td><code>CircleHelp</code></td></tr>
-    <tr><td>Email</td><td><code>Mail</code></td><td>Copy confirmed</td><td><code>CopyCheck</code></td></tr>
-    <tr><td>Mobile device</td><td><code>Smartphone</code></td><td>Laptop</td><td><code>Laptop</code></td></tr>
+    <tr>
+      <td>Dashboard / Home</td>
+      <td>
+        <code>LayoutDashboard</code>
+      </td>
+      <td>Items / Inventory</td>
+      <td>
+        <code>Package</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Receiving</td>
+      <td>
+        <code>PackageOpen</code>
+      </td>
+      <td>Remove item</td>
+      <td>
+        <code>PackageMinus</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Order Queue</td>
+      <td>
+        <code>ShoppingCart</code>
+      </td>
+      <td>Suppliers</td>
+      <td>
+        <code>Building2</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Table view</td>
+      <td>
+        <code>Table2</code>
+      </td>
+      <td>Reports</td>
+      <td>
+        <code>BarChart3</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Settings</td>
+      <td>
+        <code>Settings</code>
+      </td>
+      <td>Search</td>
+      <td>
+        <code>Search</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Add / Create</td>
+      <td>
+        <code>Plus</code>
+      </td>
+      <td>Edit</td>
+      <td>
+        <code>Edit</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Delete</td>
+      <td>
+        <code>Trash</code>
+      </td>
+      <td>Location</td>
+      <td>
+        <code>MapPin</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Filter</td>
+      <td>
+        <code>Filter</code>
+      </td>
+      <td>Download / Export</td>
+      <td>
+        <code>Download</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Upload / Import</td>
+      <td>
+        <code>Upload</code>
+      </td>
+      <td>View / Visible</td>
+      <td>
+        <code>Eye</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Hide / Password</td>
+      <td>
+        <code>EyeOff</code>
+      </td>
+      <td>Confirm / Success</td>
+      <td>
+        <code>Check</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Close / Cancel</td>
+      <td>
+        <code>X</code>
+      </td>
+      <td>Warning</td>
+      <td>
+        <code>AlertTriangle</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Information</td>
+      <td>
+        <code>Info</code>
+      </td>
+      <td>Notifications</td>
+      <td>
+        <code>Bell</code>
+      </td>
+    </tr>
+    <tr>
+      <td>User profile</td>
+      <td>
+        <code>User</code>
+      </td>
+      <td>Date / Schedule</td>
+      <td>
+        <code>Calendar</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Logout</td>
+      <td>
+        <code>LogOut</code>
+      </td>
+      <td>Navigate back</td>
+      <td>
+        <code>ChevronLeft</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Navigate forward</td>
+      <td>
+        <code>ChevronRight</code>
+      </td>
+      <td>Expand / Dropdown</td>
+      <td>
+        <code>ChevronDown</code>
+      </td>
+    </tr>
+    <tr>
+      <td>History / Timeline</td>
+      <td>
+        <code>History</code>
+      </td>
+      <td>Help</td>
+      <td>
+        <code>CircleHelp</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Email</td>
+      <td>
+        <code>Mail</code>
+      </td>
+      <td>Copy confirmed</td>
+      <td>
+        <code>CopyCheck</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Mobile device</td>
+      <td>
+        <code>Smartphone</code>
+      </td>
+      <td>Laptop</td>
+      <td>
+        <code>Laptop</code>
+      </td>
+    </tr>
   </tbody>
 </table>
 
@@ -640,16 +1535,84 @@ Icon sizes are defined as design tokens in `globals.css`. **Prefer the token-bas
 
 <table>
   <thead>
-    <tr><th>Token</th><th>Pixels</th><th>Tailwind Alternative</th><th>Usage</th></tr>
+    <tr>
+      <th>Token</th>
+      <th>Pixels</th>
+      <th>Tailwind Alternative</th>
+      <th>Usage</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td><code>--icon-xxs</code></td><td>14px</td><td><code>w-3.5 h-3.5</code></td><td>Inline with small text</td></tr>
-    <tr><td><code>--icon-xs</code></td><td>16px</td><td><code>w-4 h-4</code></td><td>Small buttons, compact UI</td></tr>
-    <tr><td><code>--icon-s</code></td><td>18px</td><td><code>w-[18px] h-[18px]</code></td><td>Default inline with text</td></tr>
-    <tr><td><code>--icon-m</code></td><td>20px</td><td><code>w-5 h-5</code></td><td>Standard buttons</td></tr>
-    <tr><td><code>--icon-l</code></td><td>24px</td><td><code>w-6 h-6</code></td><td>Prominent, standalone</td></tr>
-    <tr><td><code>--icon-xl</code></td><td>32px</td><td><code>w-8 h-8</code></td><td>Feature sections</td></tr>
-    <tr><td><code>--icon-xxl</code></td><td>48px</td><td><code>w-12 h-12</code></td><td>Empty states, hero</td></tr>
+    <tr>
+      <td>
+        <code>--icon-xxs</code>
+      </td>
+      <td>14px</td>
+      <td>
+        <code>w-3.5 h-3.5</code>
+      </td>
+      <td>Inline with small text</td>
+    </tr>
+    <tr>
+      <td>
+        <code>--icon-xs</code>
+      </td>
+      <td>16px</td>
+      <td>
+        <code>w-4 h-4</code>
+      </td>
+      <td>Small buttons, compact UI</td>
+    </tr>
+    <tr>
+      <td>
+        <code>--icon-s</code>
+      </td>
+      <td>18px</td>
+      <td>
+        <code>w-[18px] h-[18px]</code>
+      </td>
+      <td>Default inline with text</td>
+    </tr>
+    <tr>
+      <td>
+        <code>--icon-m</code>
+      </td>
+      <td>20px</td>
+      <td>
+        <code>w-5 h-5</code>
+      </td>
+      <td>Standard buttons</td>
+    </tr>
+    <tr>
+      <td>
+        <code>--icon-l</code>
+      </td>
+      <td>24px</td>
+      <td>
+        <code>w-6 h-6</code>
+      </td>
+      <td>Prominent, standalone</td>
+    </tr>
+    <tr>
+      <td>
+        <code>--icon-xl</code>
+      </td>
+      <td>32px</td>
+      <td>
+        <code>w-8 h-8</code>
+      </td>
+      <td>Feature sections</td>
+    </tr>
+    <tr>
+      <td>
+        <code>--icon-xxl</code>
+      </td>
+      <td>48px</td>
+      <td>
+        <code>w-12 h-12</code>
+      </td>
+      <td>Empty states, hero</td>
+    </tr>
   </tbody>
 </table>
 
@@ -761,7 +1724,8 @@ export interface ArdaComponentRuntimeConfig {
 
 /** Combined props - extends HTML element attributes */
 export interface ArdaComponentProps
-  extends ArdaComponentStaticConfig,
+  extends
+    ArdaComponentStaticConfig,
     ArdaComponentRuntimeConfig,
     React.HTMLAttributes<HTMLElement> {}
 ```
@@ -821,15 +1785,55 @@ Located at `public/images/`:
 
 <table>
   <thead>
-    <tr><th>Asset</th><th>File</th><th>Usage</th></tr>
+    <tr>
+      <th>Asset</th>
+      <th>File</th>
+      <th>Usage</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td>Primary logo (white)</td><td><code>ArdaLogoV1.svg</code></td><td>Expanded sidebar</td></tr>
-    <tr><td>Mobile/icon logo</td><td><code>ArdaLogoMobileV1.svg</code></td><td>Collapsed sidebar</td></tr>
-    <tr><td>Black logo</td><td><code>ArdaLogoBlack.svg</code></td><td>Auth pages, light backgrounds</td></tr>
-    <tr><td>QR code</td><td><code>QRC.svg</code></td><td>Item card QR display</td></tr>
-    <tr><td>Puddle shapes (1&#8211;4)</td><td><code>Puddle1.svg</code> &#8211; <code>Puddle4.svg</code></td><td>Decorative empty states</td></tr>
-    <tr><td>Sidebar footer graphic</td><td><code>SidebarFooter.svg</code></td><td>Sidebar bottom decoration</td></tr>
+    <tr>
+      <td>Primary logo (white)</td>
+      <td>
+        <code>ArdaLogoV1.svg</code>
+      </td>
+      <td>Expanded sidebar</td>
+    </tr>
+    <tr>
+      <td>Mobile/icon logo</td>
+      <td>
+        <code>ArdaLogoMobileV1.svg</code>
+      </td>
+      <td>Collapsed sidebar</td>
+    </tr>
+    <tr>
+      <td>Black logo</td>
+      <td>
+        <code>ArdaLogoBlack.svg</code>
+      </td>
+      <td>Auth pages, light backgrounds</td>
+    </tr>
+    <tr>
+      <td>QR code</td>
+      <td>
+        <code>QRC.svg</code>
+      </td>
+      <td>Item card QR display</td>
+    </tr>
+    <tr>
+      <td>Puddle shapes (1&#8211;4)</td>
+      <td>
+        <code>Puddle1.svg</code> &#8211; <code>Puddle4.svg</code>
+      </td>
+      <td>Decorative empty states</td>
+    </tr>
+    <tr>
+      <td>Sidebar footer graphic</td>
+      <td>
+        <code>SidebarFooter.svg</code>
+      </td>
+      <td>Sidebar bottom decoration</td>
+    </tr>
   </tbody>
 </table>
 

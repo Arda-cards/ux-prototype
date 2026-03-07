@@ -316,7 +316,7 @@ const { Component: SupplierWithAddressViewer } = createArdaEntityViewer<MockSupp
 /* ------------------------------------------------------------------ */
 
 const meta: Meta = {
-  title: 'Components/Extras/Organisms/Shared/EntityViewer',
+  title: 'Components/Current/Organisms/Shared/EntityViewer',
   parameters: {
     layout: 'padded',
   },
