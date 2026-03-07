@@ -240,7 +240,7 @@ describe('ManageCardsPanel — overlay mode', () => {
       render(<ManageCardsPanel item={mockItem} mode="overlay" open={true} />);
     });
     expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('query-by-item'),
+      expect.stringContaining('query-details-by-item'),
       expect.anything()
     );
   });

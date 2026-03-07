@@ -12,8 +12,9 @@ import * as domain from '@frontend/types/domain';
 import { useItemCards } from '@frontend/app/items/ItemTableAGGrid';
 import { flyToTarget } from '@frontend/lib/fly-to-target';
 import { useOrderQueueToast } from '@frontend/hooks/useOrderQueueToast';
-import { useOrderQueue } from '@frontend/contexts/OrderQueueContext';
+import { useOrderQueue } from '@frontend/store/hooks/useOrderQueue';
 import { toast } from 'sonner';
+import { ALLOWED_ORDER_QUEUE_STATUSES } from '@frontend/lib/cardStateUtils';
 import { NoteModal } from '@frontend/components/common/NoteModal';
 import {
   cardSizeOptions,
@@ -73,6 +74,7 @@ const GridImage = ({
       src={src}
       alt={alt}
       className={className}
+      style={{ width: 32, height: 32 }}
       onError={() => setImageError(true)}
       onLoad={() => setImageError(false)}
     />
@@ -98,6 +100,11 @@ export const formatQuantity = (quantity: items.Quantity | undefined) => {
   if (!quantity) return '-';
   return `${quantity.amount} ${quantity.unit}`;
 };
+
+/** Default column width: wide enough to display the header label at 14px Geist,
+ *  including the ⋮ sort menu button (~24px) that appears on hover.
+ *  Formula: ~9px per character + 72px (32px cell padding + 16px sort indicator + 24px ⋮ button). */
+const colWidth = (text: string): number => Math.max(80, Math.ceil(text.length * 9) + 72);
 
 // Quick Actions Cell Component
 const QuickActionsCell = ({ item }: { item: items.Item }) => {
@@ -125,6 +132,24 @@ const QuickActionsCell = ({ item }: { item: items.Item }) => {
     return () => {
       mountedRef.current = false;
     };
+  }, []);
+
+  // Track how many buttons fit in the current column width
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [visibleCount, setVisibleCount] = React.useState(4);
+  React.useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    // 8px left pad + N×36px buttons + (N-1)×4px gaps + 8px right pad
+    const obs = new ResizeObserver(([entry]) => {
+      const w = entry.contentRect.width;
+      if (w >= 172) setVisibleCount(4);
+      else if (w >= 132) setVisibleCount(3);
+      else if (w >= 92) setVisibleCount(2);
+      else setVisibleCount(1);
+    });
+    obs.observe(el);
+    return () => obs.disconnect();
   }, []);
 
   // Count cards with status "REQUESTING" (In Order Queue)
@@ -166,56 +191,51 @@ const QuickActionsCell = ({ item }: { item: items.Item }) => {
           return;
         }
 
-        // Query for the oldest FULFILLED card for this item
-        const requestBody: any = {
-          filter: {
-            eq: 'FULFILLED',
-            locator: 'status',
-          },
-          paginate: {
-            index: 0,
-            size: 50,
-          },
-        };
-
-        const response = await fetch(
-          `/api/arda/kanban/kanban-card/query`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${jwtToken}`,
-            },
-            body: JSON.stringify(requestBody),
-            signal,
-          }
-        );
-
-        if (signal?.aborted) return;
-
-        if (response.ok) {
-          const data = await response.json();
-          if (signal?.aborted || !mountedRef.current) return;
-          if (data.ok && data.data?.results) {
-            const itemCards = data.data.results.filter(
+        // Query cards for each allowed status in parallel; return [] on any failure
+        // so a single failing request never drops results from the other statuses
+        const queryStatus = async (status: string) => {
+          try {
+            const response = await fetch(`/api/arda/kanban/kanban-card/query`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${jwtToken}`,
+              },
+              body: JSON.stringify({
+                filter: { eq: status, locator: 'status' },
+                paginate: { index: 0, size: 50 },
+              }),
+              signal,
+            });
+            if (!response.ok) return [];
+            const data = await response.json();
+            if (!data.ok || !data.data?.results) return [];
+            return data.data.results.filter(
               (card: any) =>
                 card.payload?.item?.eId === item.entityId ||
                 card.payload?.itemDetails?.eId === item.entityId
             );
-
-            if (itemCards.length > 0) {
-              itemCards.sort((a: any, b: any) => {
-                const aEffective = a.asOf?.effective || 0;
-                const bEffective = b.asOf?.effective || 0;
-                return aEffective - bEffective;
-              });
-              if (mountedRef.current) setCandidateCard(itemCards[0]);
-            } else {
-              if (mountedRef.current) setCandidateCard(null);
-            }
-          } else {
-            if (mountedRef.current) setCandidateCard(null);
+          } catch {
+            return [];
           }
+        };
+
+        const results = await Promise.all(
+          ALLOWED_ORDER_QUEUE_STATUSES.map(queryStatus)
+        );
+
+        if (signal?.aborted || !mountedRef.current) return;
+
+        // Merge all candidates and pick the single oldest one
+        const allCandidates = results.flat();
+
+        if (allCandidates.length > 0) {
+          allCandidates.sort((a: any, b: any) => {
+            const aEffective = a.asOf?.effective || 0;
+            const bEffective = b.asOf?.effective || 0;
+            return aEffective - bEffective;
+          });
+          if (mountedRef.current) setCandidateCard(allCandidates[0]);
         } else {
           if (mountedRef.current) setCandidateCard(null);
         }
@@ -514,13 +534,14 @@ const QuickActionsCell = ({ item }: { item: items.Item }) => {
 
   return (
     <div
+      ref={containerRef}
       style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'flex-start',
         width: '100%',
         height: '100%',
-        overflow: 'hidden',
+        overflow: 'visible',
       }}
       onClick={handleMouseEvent}
       onMouseDown={handleMouseEvent}
@@ -532,6 +553,8 @@ const QuickActionsCell = ({ item }: { item: items.Item }) => {
           position: 'relative',
           gap: '4px',
           flexShrink: 0,
+          paddingLeft: '8px',
+          paddingRight: '8px',
         }}
       >
         {/* View Item Details Button */}
@@ -566,7 +589,7 @@ const QuickActionsCell = ({ item }: { item: items.Item }) => {
         {/* Shopping Cart Button */}
         <div
           data-item-id={item.entityId}
-          style={{ position: 'relative', overflow: 'visible' }}
+          style={{ position: 'relative', overflow: 'visible', display: visibleCount >= 2 ? undefined : 'none' }}
         >
           <button
             className='shopping-cart-button'
@@ -658,7 +681,7 @@ const QuickActionsCell = ({ item }: { item: items.Item }) => {
         </div>
 
         {/* Printer Button */}
-        <div style={{ position: 'relative', overflow: 'visible' }}>
+        <div style={{ position: 'relative', overflow: 'visible', display: visibleCount >= 3 ? undefined : 'none' }}>
           <button
             style={{
               height: '36px',
@@ -747,7 +770,7 @@ const QuickActionsCell = ({ item }: { item: items.Item }) => {
         </div>
 
         {/* Print Label Button */}
-        <div style={{ position: 'relative', overflow: 'visible' }}>
+        <div style={{ position: 'relative', overflow: 'visible', display: visibleCount >= 4 ? undefined : 'none' }}>
             <button
               style={{
                 height: '36px',
@@ -1072,7 +1095,7 @@ const CardNotesCell = ({
 };
 
 // Select All Header Component
-const SelectAllHeaderComponent = React.memo((params: any) => {
+export const SelectAllHeaderComponent = React.memo((params: any) => {
   const [isChecked, setIsChecked] = React.useState(false);
   const [isIndeterminate, setIsIndeterminate] = React.useState(false);
 
@@ -1368,13 +1391,13 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'SKU',
     field: 'internalSKU',
-    width: 140,
+    width: colWidth('SKU'),
     valueFormatter: (params: ValueFormatterParams) => params.value ?? '',
   },
   {
     headerName: 'GL Code',
     field: 'generalLedgerCode',
-    width: 140,
+    width: colWidth('GL Code'),
     valueFormatter: (params: ValueFormatterParams) => params.value ?? '',
   },
   {
@@ -1424,32 +1447,35 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Image',
     field: 'imageUrl',
-    width: 80,
+    width: colWidth('Image'),
     cellStyle: {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
+      overflow: 'hidden',
     },
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       return (
-        <GridImage
-          src={item.imageUrl || ''}
-          alt={item.name}
-          className='w-8 h-8 object-contain rounded'
-        />
+        <div style={{ width: 32, height: 32, flexShrink: 0, overflow: 'hidden' }}>
+          <GridImage
+            src={item.imageUrl || ''}
+            alt={item.name}
+            className='w-8 h-8 object-contain rounded'
+          />
+        </div>
       );
     },
   },
   {
     headerName: 'Quick Actions',
     field: 'quickActions' as any,
-    // 4 buttons × ~38px + 3 gaps × 4px = ~164px; min = 1 button (~38px)
-    width: 164,
-    minWidth: 38,
+    // 8px pad + 4×36px buttons + 3×4px gaps + 8px pad = 172px; min = 1 button + padding = 52px
+    width: 172,
+    minWidth: 52,
     sortable: false,
     cellStyle: {
-      overflow: 'hidden',
+      overflow: 'visible',
       textOverflow: 'clip',
       whiteSpace: 'normal',
       display: 'flex',
@@ -1470,7 +1496,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Supplier',
     field: 'primarySupply.supplier',
-    width: 150,
+    width: colWidth('Supplier'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       const supplier = item.primarySupply?.supplier;
@@ -1482,13 +1508,13 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Unit Price',
     field: 'primarySupply.unitCost',
-    width: 120,
+    width: colWidth('Unit Price'),
     valueFormatter: (params: ValueFormatterParams) => formatCurrency(params.value),
   },
   {
     headerName: 'Created',
     field: 'createdCoordinates',
-    width: 150,
+    width: colWidth('Created'),
     valueFormatter: (params: ValueFormatterParams) =>
       formatDateTime(new Date(params.value?.recordedAsOf || 0).toISOString()),
   },
@@ -1496,8 +1522,8 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
     headerName: 'Min Qty',
     field: 'minQuantity.amount' as any,
     colId: 'minQuantityAmount',
-    width: 150,
-    minWidth: 100,
+    width: colWidth('Min Qty'),
+    minWidth: colWidth('Min Qty'),
     suppressSizeToFit: true,
     valueFormatter: (params: ValueFormatterParams) => String(params.value ?? '-'),
   },
@@ -1505,8 +1531,8 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
     headerName: 'Min Unit',
     field: 'minQuantity.unit' as any,
     colId: 'minQuantityUnit',
-    width: 130,
-    minWidth: 90,
+    width: colWidth('Min Unit'),
+    minWidth: colWidth('Min Unit'),
     suppressSizeToFit: true,
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
@@ -1517,8 +1543,8 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
     headerName: 'Order Amount',
     field: 'primarySupply.orderQuantity.amount' as any,
     colId: 'orderQuantityAmount',
-    width: 150,
-    minWidth: 100,
+    width: colWidth('Order Amount'),
+    minWidth: colWidth('Order Amount'),
     suppressSizeToFit: true,
     valueFormatter: (params: ValueFormatterParams) => String(params.value ?? '-'),
   },
@@ -1526,8 +1552,8 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
     headerName: 'Order Unit',
     field: 'primarySupply.orderQuantity.unit' as any,
     colId: 'orderQuantityUnit',
-    width: 130,
-    minWidth: 90,
+    width: colWidth('Order Unit'),
+    minWidth: colWidth('Order Unit'),
     suppressSizeToFit: true,
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
@@ -1537,7 +1563,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Order Method',
     field: 'primarySupply.orderMechanism',
-    width: 140,
+    width: colWidth('Order Method'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       const orderMechanism = item.primarySupply?.orderMechanism;
@@ -1563,23 +1589,20 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
     },
   },
   {
-    headerName: 'Classification',
+    headerName: 'Type',
     field: 'classification.type',
-    width: 150,
+    width: colWidth('Type'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       const classification = item.classification;
       if (!classification?.type) return '-';
-      const display = classification.subType
-        ? `${classification.type} - ${classification.subType}`
-        : classification.type;
-      return <span className='text-black'>{display}</span>;
+      return <span className='text-black'>{classification.type}</span>;
     },
   },
   {
     headerName: 'Location',
     field: 'locator.location',
-    width: 150,
+    width: colWidth('Location'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       const locator = item.locator;
@@ -1600,7 +1623,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Sub-location',
     field: 'locator.subLocation',
-    width: 150,
+    width: colWidth('Sub-location'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       return <span className='text-black'>{item.locator?.subLocation || '-'}</span>;
@@ -1610,7 +1633,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
     headerName: '# of Cards',
     field: 'cardCount' as any,
     colId: 'cardCount',
-    width: 100,
+    width: colWidth('# of Cards'),
     cellStyle: {
       display: 'flex',
       alignItems: 'center',
@@ -1624,7 +1647,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Notes',
     field: 'notes',
-    width: 100,
+    width: colWidth('Notes'),
     cellStyle: {
       display: 'flex',
       alignItems: 'center',
@@ -1641,7 +1664,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Sub-Type',
     field: 'classification.subType',
-    width: 150,
+    width: colWidth('Sub-Type'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       return <span className='text-black'>{item.classification?.subType || '-'}</span>;
@@ -1650,7 +1673,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Use Case',
     field: 'useCase',
-    width: 150,
+    width: colWidth('Use Case'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       return <span className='text-black'>{item.useCase || '-'}</span>;
@@ -1659,7 +1682,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Department',
     field: 'locator.department',
-    width: 150,
+    width: colWidth('Department'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       return <span className='text-black'>{item.locator?.department || '-'}</span>;
@@ -1668,7 +1691,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Facility',
     field: 'locator.facility',
-    width: 150,
+    width: colWidth('Facility'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       return <span className='text-black'>{item.locator?.facility || '-'}</span>;
@@ -1677,7 +1700,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Card Notes',
     field: 'cardNotesDefault',
-    width: 100,
+    width: colWidth('Card Notes'),
     cellStyle: {
       display: 'flex',
       alignItems: 'center',
@@ -1694,7 +1717,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Taxable',
     field: 'taxable',
-    width: 100,
+    width: colWidth('Taxable'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       return <span className='text-black'>{item.taxable ? 'Yes' : 'No'}</span>;
@@ -1724,7 +1747,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Supplier SKU',
     field: 'primarySupply.sku',
-    width: 150,
+    width: colWidth('Supplier SKU'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       return <span className='text-black'>{item.primarySupply?.sku || '-'}</span>;
@@ -1733,7 +1756,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Lead Time',
     field: 'primarySupply.averageLeadTime',
-    width: 120,
+    width: colWidth('Lead Time'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       const leadTime = item.primarySupply?.averageLeadTime;
@@ -1744,13 +1767,13 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Order Cost',
     field: 'primarySupply.orderCost',
-    width: 120,
+    width: colWidth('Order Cost'),
     valueFormatter: (params: ValueFormatterParams) => formatCurrency(params.value),
   },
   {
     headerName: 'Card Size',
     field: 'cardSize',
-    width: 150,
+    width: colWidth('Card Size'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       const value = item.cardSize;
@@ -1762,7 +1785,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Label Size',
     field: 'labelSize',
-    width: 120,
+    width: colWidth('Label Size'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       const value = item.labelSize;
@@ -1774,7 +1797,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Breadcrumb Size',
     field: 'breadcrumbSize',
-    width: 150,
+    width: colWidth('Breadcrumb Size'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       const value = item.breadcrumbSize;
@@ -1786,7 +1809,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Color',
     field: 'color',
-    width: 120,
+    width: colWidth('Color'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       const color = item.color;

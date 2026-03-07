@@ -13,7 +13,7 @@ jest.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-jest.mock('@/contexts/OrderQueueContext', () => ({
+jest.mock('@/store/hooks/useOrderQueue', () => ({
   useOrderQueue: () => ({
     refreshOrderQueueData: jest.fn(),
     orderQueueData: [],

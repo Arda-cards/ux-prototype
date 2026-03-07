@@ -462,12 +462,12 @@ function nullToUndefined<T>(v: T | null): T | undefined {
   return v === null ? undefined : v;
 }
 
-function supplyToUpdatePayload(supply: items.Supply): ardaApi.ArdaCreateItemRequest['primarySupply'] {
+function supplyToUpdatePayload(supply: items.Supply, defaultName: string): ardaApi.ArdaCreateItemRequest['primarySupply'] {
   const u = emptyToNull(supply.url);
   const supplier = supply.supplier?.trim() ?? '';
   return {
     ...(supply.supplyEId && { supplyEId: supply.supplyEId }),
-    ...(supply.supplyEId && { name: supplier || (supply.name?.trim() ?? '') }),
+    name: supplier || defaultName,
     supplier,
     sku: nullToUndefined(emptyToNull(supply.sku)),
     orderMethod: supply.orderMechanism ?? 'ONLINE',
@@ -518,8 +518,8 @@ export function mapItemToArdaUpdateRequest(
     notes: nullToUndefined(emptyToNull(item.notes)),
     cardNotesDefault: nullToUndefined(emptyToNull(item.cardNotesDefault)),
     taxable: item.taxable ?? true,
-    primarySupply: item.primarySupply != null ? supplyToUpdatePayload(item.primarySupply) : undefined,
-    secondarySupply: item.secondarySupply != null ? supplyToUpdatePayload(item.secondarySupply) : undefined,
+    primarySupply: item.primarySupply != null ? supplyToUpdatePayload(item.primarySupply, 'Primary') : undefined,
+    secondarySupply: item.secondarySupply != null ? supplyToUpdatePayload(item.secondarySupply, 'Secondary') : undefined,
     defaultSupply: nullToUndefined(emptyToNull(item.defaultSupply)),
     cardSize: nullToUndefined(emptyToNull(item.cardSize)),
     labelSize: nullToUndefined(emptyToNull(item.labelSize)),

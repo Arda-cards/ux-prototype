@@ -5,6 +5,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { store, persistor } from './store';
 import { ReactNode } from 'react';
 import { AuthInit } from './components/AuthInit';
+import { OrderQueueInit } from './components/OrderQueueInit';
 import { Loader } from '@frontend/components/ui/loader';
 
 interface ReduxProviderProps {
@@ -27,6 +28,7 @@ export function ReduxProvider({ children }: ReduxProviderProps) {
         persistor={persistor}
       >
         <AuthInit />
+        <OrderQueueInit />
         {children}
       </PersistGate>
     </Provider>

@@ -797,35 +797,40 @@ describe('ItemTableAGGrid', () => {
     expect(result).toBe('-');
   });
 
-  it('enhanced color column cellRenderer renders color label via dropdownLabelWithArrow', () => {
+  it('enhanced color column cellRenderer renders DropdownSelectRenderer', () => {
     render(<ItemTableAGGrid {...defaultProps} />);
     const col = _lastArdaGridProps?.columnDefs?.find((c: any) => c.field === 'color');
     const cr = col?.cellRenderer;
     if (!cr) return;
-    const mockApi = { startEditingCell: jest.fn() };
-    const { container } = render(cr({
+    const { container } = render(React.createElement(cr, {
       value: 'YELLOW',
       data: makeItem('1'),
-      api: mockApi,
+      api: null,
       node: { rowIndex: 0 },
       column: { getColId: () => 'color' },
+      context: {},
+      options: [],
+      fieldPath: 'color',
     }));
     expect(container).toBeInTheDocument();
   });
 
-  it('enhanced color cellRenderer returns dash for empty value', () => {
+  it('enhanced color cellRenderer renders for empty value', () => {
     render(<ItemTableAGGrid {...defaultProps} />);
     const col = _lastArdaGridProps?.columnDefs?.find((c: any) => c.field === 'color');
     const cr = col?.cellRenderer;
     if (!cr) return;
-    const { container } = render(cr({
+    const { container } = render(React.createElement(cr, {
       value: '',
       data: makeItem('1'),
       api: null,
       node: { rowIndex: 0 },
       column: { getColId: () => 'color' },
+      context: {},
+      options: [],
+      fieldPath: 'color',
     }));
-    expect(container.textContent).toContain('-');
+    expect(container).toBeInTheDocument();
   });
 
   it('enhanced internalSKU valueGetter returns sku', () => {
@@ -1782,141 +1787,13 @@ describe('ItemTableAGGrid — BreadcrumbSizeCellEditor class', () => {
   });
 });
 
-describe('ItemTableAGGrid — dropdownLabelWithArrow click handler', () => {
-  it('arrow button onClick calls startEditingCell on api', () => {
-    const mockApi = { startEditingCell: jest.fn() };
-    render(<ItemTableAGGrid {...defaultProps} />);
-    const col = _lastArdaGridProps?.columnDefs?.find((c: any) => c.field === 'color');
-    const cr = col?.cellRenderer;
-    if (!cr) return;
-
-    const { container } = render(
-      cr({
-        value: 'BLUE',
-        data: makeItem('1'),
-        api: mockApi,
-        node: { rowIndex: 3 },
-        column: { getColId: () => 'color' },
-      })
-    );
-
-    // Find and click the dropdown button
-    const button = container.querySelector('button');
-    if (button) {
-      button.click();
-    }
-    // startEditingCell should have been called
-    if (mockApi.startEditingCell.mock.calls.length > 0) {
-      expect(mockApi.startEditingCell).toHaveBeenCalled();
-    }
-  });
-
-  it('orderMechanism arrow button onClick calls startEditingCell', () => {
-    const mockApi = { startEditingCell: jest.fn() };
-    render(<ItemTableAGGrid {...defaultProps} />);
-    const col = _lastArdaGridProps?.columnDefs?.find(
-      (c: any) => c.field === 'primarySupply.orderMechanism'
-    );
-    const cr = col?.cellRenderer;
-    if (!cr) return;
-
-    const { container } = render(
-      cr({
-        value: 'EMAIL',
-        data: { ...makeItem('1'), primarySupply: { orderMechanism: 'EMAIL' } },
-        api: mockApi,
-        node: { rowIndex: 0 },
-        column: { getColId: () => 'primarySupply.orderMechanism' },
-      })
-    );
-
-    const button = container.querySelector('button');
-    if (button) {
-      button.click();
-      expect(mockApi.startEditingCell).toHaveBeenCalled();
-    }
-  });
-
-  it('cardSize arrow button onClick calls startEditingCell', () => {
-    const mockApi = { startEditingCell: jest.fn() };
-    render(<ItemTableAGGrid {...defaultProps} />);
-    const col = _lastArdaGridProps?.columnDefs?.find((c: any) => c.field === 'cardSize');
-    const cr = col?.cellRenderer;
-    if (!cr) return;
-
-    const { container } = render(
-      cr({
-        value: 'MEDIUM',
-        data: { ...makeItem('1'), cardSize: 'MEDIUM' as any },
-        api: mockApi,
-        node: { rowIndex: 0 },
-        column: { getColId: () => 'cardSize' },
-      })
-    );
-
-    const button = container.querySelector('button');
-    if (button) {
-      button.click();
-      expect(mockApi.startEditingCell).toHaveBeenCalled();
-    }
-  });
-
-  it('labelSize arrow button onClick calls startEditingCell', () => {
-    const mockApi = { startEditingCell: jest.fn() };
-    render(<ItemTableAGGrid {...defaultProps} />);
-    const col = _lastArdaGridProps?.columnDefs?.find((c: any) => c.field === 'labelSize');
-    const cr = col?.cellRenderer;
-    if (!cr) return;
-
-    const { container } = render(
-      cr({
-        value: 'SMALL',
-        data: { ...makeItem('1'), labelSize: 'SMALL' as any },
-        api: mockApi,
-        node: { rowIndex: 0 },
-        column: { getColId: () => 'labelSize' },
-      })
-    );
-
-    const button = container.querySelector('button');
-    if (button) {
-      button.click();
-      expect(mockApi.startEditingCell).toHaveBeenCalled();
-    }
-  });
-
-  it('breadcrumbSize arrow button onClick calls startEditingCell', () => {
-    const mockApi = { startEditingCell: jest.fn() };
-    render(<ItemTableAGGrid {...defaultProps} />);
-    const col = _lastArdaGridProps?.columnDefs?.find((c: any) => c.field === 'breadcrumbSize');
-    const cr = col?.cellRenderer;
-    if (!cr) return;
-
-    const { container } = render(
-      cr({
-        value: 'LARGE',
-        data: { ...makeItem('1'), breadcrumbSize: 'LARGE' as any },
-        api: mockApi,
-        node: { rowIndex: 0 },
-        column: { getColId: () => 'breadcrumbSize' },
-      })
-    );
-
-    const button = container.querySelector('button');
-    if (button) {
-      button.click();
-      expect(mockApi.startEditingCell).toHaveBeenCalled();
-    }
-  });
-
-  it('simpleCellRenderer returns dash for empty value on non-dropdown fields', () => {
-    render(<ItemTableAGGrid {...defaultProps} />);
-    const col = _lastArdaGridProps?.columnDefs?.find((c: any) => c.field === 'name');
-    const cr = col?.cellRenderer;
-    if (!cr) return;
-    const result = cr({ value: '', data: makeItem('1'), node: { rowIndex: 0 }, column: { getColId: () => 'name' } });
-    expect(result).toBe('-');
-  });
+it('simpleCellRenderer returns dash for empty value on non-dropdown fields', () => {
+  render(<ItemTableAGGrid {...defaultProps} />);
+  const col = _lastArdaGridProps?.columnDefs?.find((c: any) => c.field === 'name');
+  const cr = col?.cellRenderer;
+  if (!cr) return;
+  const result = cr({ value: '', data: makeItem('1'), node: { rowIndex: 0 }, column: { getColId: () => 'name' } });
+  expect(result).toBe('-');
 });
 
 describe('ItemTableAGGrid — additional enhanced valueGetters', () => {

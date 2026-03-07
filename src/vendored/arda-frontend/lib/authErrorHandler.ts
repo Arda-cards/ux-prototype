@@ -5,6 +5,7 @@
  */
 
 import { isAuthenticationError } from './utils';
+import { STORAGE_KEYS } from '@frontend/store/constants/storageKeys';
 
 let redirectHandler: ((path: string) => void) | null = null;
 
@@ -39,20 +40,20 @@ export function handleAuthError(error: unknown): boolean {
     const currentPath = window.location.pathname;
     if (currentPath === '/signin' || currentPath.startsWith('/signin/')) {
       // Just clear tokens, don't redirect
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('idToken');
-      localStorage.removeItem('userEmail');
+      localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.ID_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.USER_EMAIL);
       return true;
     }
   }
 
   // Clear tokens if it's an auth error
   if (typeof window !== 'undefined') {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('idToken');
-    localStorage.removeItem('userEmail');
+    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.ID_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.USER_EMAIL);
   }
 
   // Redirect to login

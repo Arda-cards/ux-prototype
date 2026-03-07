@@ -2217,7 +2217,7 @@ export default function ItemsPage() {
                             }))
                           }
                         >
-                          Classification
+                          Type
                         </DropdownMenuCheckboxItem>
                         <DropdownMenuCheckboxItem
                           onSelect={(e) => e.preventDefault()}

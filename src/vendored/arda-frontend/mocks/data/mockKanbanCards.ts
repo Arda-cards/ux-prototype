@@ -3,17 +3,10 @@ import { KanbanCardResult } from '@frontend/types/kanban';
 import { mockItems } from './mockItems';
 import { MOCK_TENANT_ID } from './mockUser';
 
-// Seeded PRNG (LCG) — deterministic for reproducible mock data
-let _seed = 7;
-function seededRandom(): number {
-  _seed = (_seed * 1664525 + 1013904223) & 0x7fffffff;
-  return _seed / 0x7fffffff;
-}
-
-// Helper to generate deterministic UUIDs
+// Helper to generate UUIDs
 function generateUUID(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (seededRandom() * 16) | 0;
+    const r = (Math.random() * 16) | 0;
     const v = c === 'x' ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
@@ -55,13 +48,13 @@ function getLocator(locator?: { facility: string; department?: string; location?
  * Generate a mock Kanban card linked to an item
  */
 export function generateMockKanbanCard(overrides?: Partial<KanbanCardResult>): KanbanCardResult {
-  const itemIndex = Math.floor(seededRandom() * Math.min(mockItems.length, 10));
+  const itemIndex = Math.floor(Math.random() * Math.min(mockItems.length, 10));
   const item = mockItems[itemIndex];
   const eId = generateUUID();
   const rId = generateUUID();
   const now = Date.now();
-  const serialNumber = `KC-${String(Math.floor(seededRandom() * 9999)).padStart(4, '0')}`;
-  const status = cardStatuses[Math.floor(seededRandom() * cardStatuses.length)];
+  const serialNumber = `KC-${String(Math.floor(Math.random() * 9999)).padStart(4, '0')}`;
+  const status = cardStatuses[Math.floor(Math.random() * cardStatuses.length)];
 
   const card: KanbanCardResult = {
     rId: rId,
@@ -108,13 +101,13 @@ export function generateMockKanbanCard(overrides?: Partial<KanbanCardResult>): K
         itemColor: item.payload.itemColor || '#808080',
       },
       cardQuantity: {
-        amount: Math.floor(seededRandom() * 50) + 10,
+        amount: Math.floor(Math.random() * 50) + 10,
         unit: 'each',
       },
       lastEvent: {
         when: {
-          effective: now - Math.floor(seededRandom() * 86400000),
-          recorded: now - Math.floor(seededRandom() * 86400000),
+          effective: now - Math.floor(Math.random() * 86400000),
+          recorded: now - Math.floor(Math.random() * 86400000),
         },
         type: statusEventMap[status],
         author: 'developer@arda.cards',

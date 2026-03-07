@@ -32,7 +32,7 @@ jest.mock('@/store/hooks/useAuth', () => ({
 
 // ─── OrderQueue ────────────────────────────────────────────────────────────
 const mockUseOrderQueue = jest.fn();
-jest.mock('@/contexts/OrderQueueContext', () => ({
+jest.mock('@/store/hooks/useOrderQueue', () => ({
   useOrderQueue: () => mockUseOrderQueue(),
 }));
 
