@@ -1,0 +1,129 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Personas/Irene &#8212; Inventory Manager" />
+
+# Irene the Inventory Manager
+
+> &#8220;If I can&#8217;t find it in two clicks, it&#8217;s costing us money.&#8221;
+
+**Name:** Irene Itemsworth
+
+## Professional Background
+
+<table>
+  <thead>
+    <tr>
+      <th>Attribute</th>
+      <th>Details</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Job Title</td>
+      <td>
+        Inventory Manager (end-user, daily operator). Also called
+        &#8220;Arda Manager&#8221; in Arda&#8217;s own documentation.
+      </td>
+    </tr>
+    <tr>
+      <td>Company</td>
+      <td>
+        Small to mid-size manufacturing or healthcare supply operation
+        (10&#8211;200 employees).
+      </td>
+    </tr>
+    <tr>
+      <td>Experience</td>
+      <td>5&#8211;10 years in supply chain or manufacturing operations.</td>
+    </tr>
+  </tbody>
+</table>
+
+The Arda Manager owns the replenishment loop: from the moment a card is scanned
+to the moment the item is received and restocked. They are the connective tissue
+between the people who use supplies and the people who buy them.
+
+In smaller operations (10&#8211;50 people), this person is often the shop
+manager, office manager, or operations lead who took on inventory responsibility
+because no one else did. They are not a software specialist; they are an
+operations person who uses Arda daily as part of their job.
+
+**Responsibilities:** Maintains accurate inventory records, creates and updates
+item entries, manages kanban card lifecycle (print, distribute, scan, reorder),
+processes the order queue, receives inbound shipments, trains shop floor workers
+on the card system, and enforces &#8220;no card, no order&#8221; discipline.
+Categorizes items using the Three Types of Inventory model: Type 1 (Always in
+Stock, ~80% of items, managed with Kanban cards), Type 2 (Infrequent but
+reliable, managed via binder-based or project-based ordering), and Type 3
+(One-off orders, tracked in the Order Archive without a card).
+
+## Goals and Motivations
+
+- **&#8220;Never Run Out.&#8221;** The primary fear is a stockout: when a worker
+  cannot find a critical supply and has to stop work or improvise.
+- Items arrive before the shop runs out. Cards are always visible at the reorder
+  point. Workers can scan and move on without help.
+- The Order Queue is empty or near-empty at the end of each week.
+- Gradually push more items from Type 2 to Type 1 as consumption patterns become
+  clearer, increasing the fraction of inventory on automatic replenishment.
+- Making every order traceable and every reorder point observable.
+- Training and cultural enforcement: convincing shop floor workers to scan cards
+  instead of calling directly, reinforcing the card-based workflow.
+
+## Challenges and Pain Points
+
+- Managing a catalog of 50+ items with multiple attributes (Title, SKU, Minimum
+  Quantity, Order Unit, Primary Supplier, Unit Price, Image URL, Order Method)
+  and categorization fields (Item Type, Subtype, Use Case, Location/Sub-Location).
+- Sizing minimum quantities correctly: must account for consumption during lead
+  time plus a safety buffer.
+- Switching between item list view, item detail, kanban cards, and order queue to
+  complete a single reorder workflow.
+- Print workflow reliability: kanban cards, shelf labels, and breadcrumbs open
+  PDFs in new browser tabs via popup windows. Popup blockers silently suppress
+  the tab &#8212; the most common real-world failure for this persona.
+- Shared workstations mean another user may navigate away mid-batch.
+- USB scanner disconnection or battery death requires fallback to manual text
+  entry.
+
+## Typical Day
+
+1. **7:15am:** Open Arda, check Order Queue badge count. Process cards workers
+   scanned overnight. Group by supplier, start orders, advance card states:
+   AVAILABLE &#8594; REQUESTED &#8594; INPROCESS.
+2. **8:30am:** Walk the floor (weekly ritual). Check card condition, verify cards
+   are in correct positions, look for items without cards that should have them.
+3. **10:00am:** Handle ad-hoc requests. Add new items, set categorization, publish,
+   create and print cards (PDF to Tray 2), laminate, place on shelves. Print shelf
+   labels and breadcrumbs (Avery 8.5&#215;11, Tray 1).
+4. **2:00pm:** Receive deliveries. Open Receiving page, mark items received, return
+   physical cards to shelf positions.
+5. **Throughout the day:** Quick checks on item details, print replacement cards,
+   adjust minimum quantities.
+
+**Session pattern:** Two to three shorter sessions per day: a morning processing
+session (15&#8211;30 minutes), a midday check (5&#8211;10 minutes), and an
+end-of-day verification (5&#8211;10 minutes).
+
+## Technology and Environment
+
+- Dedicated or semi-dedicated desktop at a desk in a supply room or at the
+  boundary between the office and shop floor.
+- Always browser-based (Chrome/Edge on a 1080p or 1440p display).
+- USB QR scanner plugged into the same workstation.
+- Comfortable with web applications but not a power user. Relies on visual cues
+  (colors, icons) rather than keyboard shortcuts.
+
+**Physical artifacts:**
+- **Kanban cards:** Laminated index cards with QR codes, printed from Arda.
+- **Shelf labels:** Avery stickers fixed to shelves/bins identifying what belongs there.
+- **Breadcrumbs:** Restocking pointers placed near the receiving dock.
+- **&#8220;To Order&#8221; and &#8220;Ordered&#8221; physical bins:** Central
+  collection points for cards in transit through the loop.
+
+## Personality
+
+Detail-oriented, methodical, pragmatic, slightly impatient with slow or
+confusing interfaces. Prioritizes reliability and speed over configurability.
+Leads by example: scans their own cards, follows the process visibly. Embeds
+Arda into team rhythms: daily huddles, weekly reviews, monthly analysis.

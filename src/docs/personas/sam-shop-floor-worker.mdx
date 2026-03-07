@@ -1,0 +1,125 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Personas/Sam &#8212; Shop Floor Worker" />
+
+# Sam the Shop Floor Worker
+
+> &#8220;Just tell me where to scan it and let me get back to work.&#8221;
+
+**Name:** Sam Scansworth
+
+## Professional Background
+
+<table>
+  <thead>
+    <tr>
+      <th>Attribute</th>
+      <th>Details</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Job Title</td>
+      <td>
+        Shop Floor Worker (end-user, trigger point). Also called Production
+        Worker, Technician, Assembler, or Maintenance Worker.
+      </td>
+    </tr>
+    <tr>
+      <td>Company</td>
+      <td>
+        Small to mid-size manufacturing or healthcare supply operation
+        (10&#8211;200 employees).
+      </td>
+    </tr>
+    <tr>
+      <td>Experience</td>
+      <td>
+        Variable. Career path is in their trade, not in inventory management.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+This is not an Arda-specific role &#8212; it is the person whose primary job is
+production, assembly, maintenance, or fabrication, and who interacts with Arda
+only at the moment they consume a supply and encounter a kanban card. They are
+the most numerous user type in any Arda deployment and the most critical adoption
+risk.
+
+Their Arda responsibility is narrow but essential: when they reach the reorder
+point for a supply (the front bin empties and the kanban card becomes visible),
+they must either scan the card at a nearby workstation or drop it in the
+&#8220;To Order&#8221; bin. This single action triggers the entire replenishment
+loop.
+
+## Goals and Motivations
+
+- Get supplies when they need them without interruption to their primary work.
+- Spend as little time as possible on inventory tasks. Under 30 seconds per card
+  scan is the target.
+- Not get blamed for stockouts that were not their fault.
+- Self-interest: if they scan the card, the item gets reordered automatically and
+  it is on the shelf when they need it next time.
+- Path of least resistance: they will follow the system if it is easier than the
+  alternative.
+- Peer pressure and team norms: once the majority of the team scans cards,
+  holdouts feel social pressure to comply.
+
+## Challenges and Pain Points
+
+- They do not think of themselves as Arda users. Inventory is not their job.
+- Time pressure: they are mid-task when the front bin empties. Stopping to scan a
+  card means breaking flow.
+- Physical environment: gloved or dirty hands make touchscreens and keyboards
+  harder to use.
+- Scanner availability: if the nearest workstation is occupied, across the room,
+  or the scanner is missing/broken, they will default to dropping the card in the
+  bin (acceptable) or ignoring it entirely (the failure mode).
+- Training gaps: new hires may not understand the two-bin system or know where the
+  &#8220;To Order&#8221; bin is. Training must happen live on the floor with real
+  items.
+- Cards that are missing, faded, or improperly placed may not be noticed at all.
+
+## Typical Day
+
+1. **Throughout the day:** Use supplies from the front bin as part of normal
+   production work. Do not think about inventory.
+2. **Trigger moment:** Front bin empties. Reach into the back bin. The kanban card
+   is the first thing they touch &#8212; it physically blocks access to the
+   minimum quantity.
+3. **Option A (preferred):** Walk to the nearby USB scanner workstation (ideally
+   within 20 feet). Scan the QR code. Click &#8220;Add to order queue.&#8221;
+   Done in under 30 seconds. Card state: REQUESTED.
+4. **Option B (acceptable):** Drop the card in the &#8220;To Order&#8221; bin.
+   The Inventory Manager will scan it during the next morning batch.
+5. **Option C (failure):** Ignore the card, set it aside, or lose it. No signal
+   is sent. Stockout.
+
+**Session pattern:** Not sessions in the traditional sense. A single action
+lasting 10&#8211;30 seconds, happening 0&#8211;5 times per day. They do not log
+in, navigate, or browse. They scan one card and walk away.
+
+## Technology and Environment
+
+- Shared workstation near their work area or at a central supply point.
+- USB QR scanner (pen or gun-shaped, plugs into USB, behaves like a keyboard
+  &#8212; no drivers or camera needed).
+- They do not need to know how the software works. They point the scanner at the
+  QR code and press the trigger. The system handles the rest.
+- May have minimal computer literacy. The interface must require zero navigation
+  and zero typing.
+
+**Physical artifacts:**
+- **Kanban card:** Laminated index card with a QR code, sitting at the reorder
+  point in the two-bin system.
+- **&#8220;To Order&#8221; bin:** Physical tray at a central location for card
+  drop-off.
+
+## Personality
+
+Practical, hands-on, focused on their primary trade. Impatient with anything that
+slows down production. Skeptical of new processes until they see personal benefit.
+Responds to demonstrated results, not explanations. Responds to visual cues: a
+brightly colored card at the reorder point, a clearly labeled bin, a scanner
+sitting on the counter ready to use.

@@ -1,0 +1,112 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Use Cases/Procurement/Context" />
+
+# Procurement Context
+
+## Goal
+
+The use cases under the **Procurement** section define the end-to-end workflows
+that Arda users follow to order materials from vendors and receive them into
+their facilities. Procurement in Arda spans two major operational areas:
+
+- **Orders** &#8212; Creating, editing, approving, and submitting Purchase Orders
+  (POs) that formalize material requests to vendors. Orders originate from the
+  Kanban Card Order Queue, from a list of Items, from a blank form, or as copies
+  of previous orders. Each order contains a header with vendor and delivery
+  information plus one or more order lines specifying items, quantities, and
+  costs.
+
+- **Receiving** &#8212; Recording the arrival of goods against submitted orders,
+  tracking partial and complete deliveries, and closing orders once all materials
+  are accounted for. Receiving completes the procurement cycle by returning
+  Kanban Cards to the shop-floor inventory pool.
+
+These use cases cover the user-facing workflows and UI interactions. They build
+on the domain concepts of Purchase Orders, Order Lines, Items, Item Supplies,
+Business Affiliates, and Kanban Cards defined in the Arda information model.
+
+## Source Materials
+
+### Demo202509 &#8212; Ordering and Receiving Workflow
+
+<a href="https://docs.google.com/document/d/1PKI1eL1RBl3o7EfDFH65_LNm7HRTQL5TXIuqelJjs7w/edit?tab=t.0#heading=h.6edukkvb57br" target="_blank">Google Doc</a>
+
+Defines the procurement workflow from both user-centric and card-centric
+perspectives. Describes the four-step cycle: a card is added to the Order Queue,
+ordering starts (In Progress), ordering completes (Ordered), and materials are
+received (Fulfilled). Includes an alternate flow where ordering and receiving are
+collapsed into a single step for companies without a formal receiving process.
+Documents the required changes to the front-end and back-end to support these
+state transitions, including the mapping of user actions to Kanban Card lifecycle
+events.
+
+### Purchase Order Management
+
+<a href="https://docs.google.com/document/d/1NlEP-G6zJ2fSB5okdBXFKyfxObpjAR34w9_AFa9udk0/edit?tab=t.0#heading=h.nbluyjp7tsev" target="_blank">Google Doc</a>
+
+The comprehensive specification for the Purchase Order feature. Defines core
+domain concepts (Organization, Vendor, Customer, Supplier, Consumer), the
+Purchase Order and Order Line information models with full field specifications,
+and the complete order lifecycle with eleven states and twelve signals (including
+composite signals). Covers all creation modes (blank, from Kanban Cards, from
+copy), editing behavior, item reference management (staleness and invalidation),
+receiving, and interactions between POs and Kanban Cards. Also includes draft
+implementation tickets for both Kanban Card modifications and PO CRUD operations.
+
+### Simplified PO Spec V1 (PO-Lite)
+
+<a href="https://docs.google.com/document/d/10kmDva7aiIT1N-x3BAm6fmDOfjZAj1IfWJT1tCtBIeo/edit?tab=t.0#heading=h.y9w9ex5focv5" target="_blank">Google Doc</a>
+
+A scoped-down specification for a fast &#8220;Generate PO from Order Queue&#8221;
+workflow. The user views the Order Queue grouped by Vendor and Order Mechanism,
+opens a side panel to review and edit aggregated PO lines, and generates a
+vendor-ready PDF via the Documint service. Covers the interaction spec
+screen-by-screen (Order Queue grouped view, PO side panel with vendor/header/lines
+sections), data behavior rules (grouping, aggregation, quantity computation,
+editability), backend integration touchpoints, and edge cases. This spec
+represents a simplified first iteration that does not persist POs as first-class
+objects.
+
+### Drafts of PO Use Cases and Requirements
+
+<a href="https://arda-cards.github.io/technical-documentation/1_specifications/mvp2/purchase-orders/" target="_blank">Technical Documentation Site</a>
+
+The authoritative technical specification hosted in the `technical-documentation`
+repository. Contains the master index with the information model (PlantUML class
+diagram), entity field specifications, and lifecycle definitions. Sub-pages cover
+core use cases (listing orders, viewing details, creating from cards, updating
+headers, adding/removing lines, processing orders) and additional use cases
+(create empty, create by copy, order from items, add lines from items, submit).
+Each use case includes API routes, sequence diagrams, field defaults, and
+validation rules. Documents implementation status: creation and line management
+are implemented; submit, receive, complete, and cancel are stubs.
+
+### Information Model Context for Orders
+
+<a href="https://arda-cards.github.io/technical-documentation/2_design/2_functional/information-structure/domain-model/assets/items/R1/" target="_blank">Technical Documentation Site</a>
+
+The R1 domain model for Items and related entities (ItemSupply,
+ItemSupplyReference, ItemClassification). Defines the Item entity fields
+including supply references (primary, secondary, default), the
+`preferredSupply()` and `effectiveSupply()` computed lookups, and the
+OrderMethod enumeration. Also specifies mutation qualifiers (lax, strict, update)
+that govern how fields behave during create and update operations. This model
+underpins the item-to-order-line mapping used when PO lines are populated from
+inventory data.
+
+### Initial Audit Work for PO Use Cases
+
+<a href="https://www.figma.com/board/veCfrdVl1Yos2vacnNCWXv/Arda-Audit?node-id=0-1&p=f&t=omMvxEn18B21W5kO-0" target="_blank">Figma Board</a>
+
+A Figma board capturing the initial audit of the PO workflow, including
+annotations and observations on the current user experience and areas for
+improvement.
+
+### Original Figma Designs for Arda
+
+<a href="https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ/Arda-MVP-2.0---Hi-Fi-Mockups?node-id=61-19170&p=f&t=0TVyIZeFQMRycAg5-0" target="_blank">Figma Design</a>
+
+The high-fidelity mockups for Arda MVP 2.0, including the procurement-related
+screens (order queue, purchase order forms, receiving views) that inform the
+visual design and interaction patterns for the use cases in this section.

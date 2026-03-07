@@ -1,0 +1,80 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Personas/Overview" />
+
+# Domain Personas
+
+Five personas represent the distinct users of the Arda inventory management
+platform. Together they form the **kanban replenishment loop** &#8212; a relay
+that spans the shop floor, the office, and the receiving dock.
+
+## Personas
+
+<table>
+  <thead>
+    <tr>
+      <th>Persona</th>
+      <th>Role in the Loop</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Irene Itemsworth</strong> &#8212; Inventory Manager</td>
+      <td>
+        Arda Manager. Owns the loop end to end: item setup, card creation,
+        printing, floor walks, cultural enforcement, and receiving.
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Sam Scansworth</strong> &#8212; Shop Floor Worker</td>
+      <td>
+        Triggers the loop by consuming supplies and scanning (or dropping) the
+        kanban card at the reorder point.
+      </td>
+    </tr>
+    <tr>
+      <td><strong>David Dealsworth</strong> &#8212; Purchasing Manager</td>
+      <td>
+        Executes the loop by placing orders with suppliers and advancing card
+        states through the procurement lifecycle.
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Keisha Clerkson</strong> &#8212; Receiving Clerk</td>
+      <td>
+        Closes the loop by receiving deliveries, marking cards fulfilled, and
+        returning cards to their shelf positions.
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Alan Adminson</strong> &#8212; Account Admin</td>
+      <td>
+        Configures the platform, manages users, and drives organizational
+        adoption &#8212; the infrastructure that makes the loop possible.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+## The Kanban Loop
+
+The loop is a relay across all five personas:
+
+1. **Setup** (Irene): Creates items, prints cards, laminates them, places them
+   at reorder points on the shelf. Prints shelf labels and breadcrumbs. Card
+   state: AVAILABLE.
+2. **Consumption and Trigger** (Sam): Uses supplies until the front bin empties.
+   Picks up the visible kanban card. Scans it at the workstation or drops it in
+   the &#8220;To Order&#8221; bin. Card state: REQUESTED.
+3. **Order Processing** (David): Reviews the Order Queue grouped by supplier.
+   Places orders via supplier portals, email/PO, phone, or RFQ. Advances card
+   states. Card state: INPROCESS.
+4. **Receipt** (Keisha): Receives the delivery at the dock. Marks items received
+   in Arda. Returns physical cards to their shelf positions using breadcrumbs
+   for location guidance. Card state: FULFILLED / SHELVED.
+5. **Loop Closed**: Card is back at the reorder point, item is restocked, system
+   is ready for the next cycle.
+
+The loop breaks in three predictable places: the worker does not scan the card,
+the card is missing or damaged, or the delivery is received but not logged. All
+five personas have responsibilities that address these failure modes.

@@ -70,6 +70,13 @@ const preview: Preview = {
           'Dev Witness',
           'Canary Refactor',
           'Use Cases',
+          [
+            'Reference',
+            'Procurement',
+            ['Context', 'References', 'Orders', 'Receiving', '*'],
+            'Samples',
+            '*',
+          ],
           'Archive',
           ['About', 'Applications', '*'],
           '*',
