@@ -18,6 +18,14 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [2.0.1] - 2026-03-06
+
+### Fixed
+
+- Disabled HTTP Basic Authentication on Vercel Edge middleware, Express server, and Storybook
+  dev middleware — the Storybook site is now publicly accessible without credentials
+- Updated stakeholder instructions, README, and Makefile to reflect removal of auth
+
 ## [2.0.0] - 2026-03-05
 
 ### Added
