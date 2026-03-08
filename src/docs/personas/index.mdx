@@ -4,9 +4,10 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 # Domain Personas
 
-Five personas represent the distinct users of the Arda inventory management
-platform. Together they form the **kanban replenishment loop** &#8212; a relay
-that spans the shop floor, the office, and the receiving dock.
+Six personas represent the distinct users of the Arda inventory management
+platform. Five form the **kanban replenishment loop** &#8212; a relay that spans
+the shop floor, the office, and the receiving dock. The sixth, the Business
+Principal, owns the business case and strategic direction that drives adoption.
 
 ## Personas
 
@@ -19,38 +20,47 @@ that spans the shop floor, the office, and the receiving dock.
   </thead>
   <tbody>
     <tr>
-      <td><strong>Irene Itemsworth</strong> &#8212; Inventory Manager</td>
+      <td><strong><a href="?path=/docs/docs-personas-irene-inventory-manager--docs">Irene Itemsworth</a></strong> &#8212; Inventory Manager</td>
       <td>
         Arda Manager. Owns the loop end to end: item setup, card creation,
         printing, floor walks, cultural enforcement, and receiving.
       </td>
     </tr>
     <tr>
-      <td><strong>Sam Scansworth</strong> &#8212; Shop Floor Worker</td>
+      <td><strong><a href="?path=/docs/docs-personas-sam-shop-floor-worker--docs">Sam Scansworth</a></strong> &#8212; Shop Floor Worker</td>
       <td>
         Triggers the loop by consuming supplies and scanning (or dropping) the
         kanban card at the reorder point.
       </td>
     </tr>
     <tr>
-      <td><strong>David Dealsworth</strong> &#8212; Purchasing Manager</td>
+      <td><strong><a href="?path=/docs/docs-personas-david-purchasing-manager--docs">David Dealsworth</a></strong> &#8212; Purchasing Manager</td>
       <td>
         Executes the loop by placing orders with suppliers and advancing card
         states through the procurement lifecycle.
       </td>
     </tr>
     <tr>
-      <td><strong>Keisha Clerkson</strong> &#8212; Receiving Clerk</td>
+      <td><strong><a href="?path=/docs/docs-personas-keisha-receiving-clerk--docs">Keisha Clerkson</a></strong> &#8212; Receiving Clerk</td>
       <td>
         Closes the loop by receiving deliveries, marking cards fulfilled, and
         returning cards to their shelf positions.
       </td>
     </tr>
     <tr>
-      <td><strong>Alan Adminson</strong> &#8212; Account Admin</td>
+      <td><strong><a href="?path=/docs/docs-personas-owen-business-principal--docs">Owen Ownerton</a></strong> &#8212; Business Principal</td>
       <td>
-        Configures the platform, manages users, and drives organizational
-        adoption &#8212; the infrastructure that makes the loop possible.
+        Owns the business case for Arda. Decides what to bring under kanban
+        management, funds the investment, and is accountable for ROI. In small
+        operations, also wears David&#8217;s hat.
+      </td>
+    </tr>
+    <tr>
+      <td><strong><a href="?path=/docs/docs-personas-alan-account-admin--docs">Alan Adminson</a></strong> &#8212; Account Admin</td>
+      <td>
+        Configures the platform, onboards new users and inventory areas,
+        stewards reference data quality &#8212; the infrastructure that makes
+        the loop possible.
       </td>
     </tr>
   </tbody>
@@ -58,7 +68,7 @@ that spans the shop floor, the office, and the receiving dock.
 
 ## The Kanban Loop
 
-The loop is a relay across all five personas:
+The loop is a relay across the operational personas:
 
 1. **Setup** (Irene): Creates items, prints cards, laminates them, places them
    at reorder points on the shelf. Prints shelf labels and breadcrumbs. Card
@@ -77,4 +87,9 @@ The loop is a relay across all five personas:
 
 The loop breaks in three predictable places: the worker does not scan the card,
 the card is missing or damaged, or the delivery is received but not logged. All
-five personas have responsibilities that address these failure modes.
+operational personas have responsibilities that address these failure modes.
+
+Owen (Business Principal) sits above the loop: accountable for whether the
+system delivers value, deciding which areas to manage and when to expand. Alan
+(Account Admin) sits beneath it: ensuring the platform, data, and user accounts
+are ready so the loop can run without friction.

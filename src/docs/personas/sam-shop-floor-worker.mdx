@@ -35,7 +35,9 @@ import { Meta } from '@storybook/addon-docs/blocks';
     <tr>
       <td>Experience</td>
       <td>
-        Variable. Career path is in their trade, not in inventory management.
+        Variable. May be an experienced machinist, a new hire on an assembly
+        line, or a maintenance technician. Career path is in their trade, not
+        in inventory management.
       </td>
     </tr>
   </tbody>
@@ -81,6 +83,18 @@ loop.
   items.
 - Cards that are missing, faded, or improperly placed may not be noticed at all.
 
+## Fears and Objections
+
+- **&#8220;This adds a step to my job.&#8221;** The Inventory Manager must show
+  them how it removes later steps: fewer calls to suppliers, no emergency runs,
+  no &#8220;who ordered this?&#8221; conversations.
+- **&#8220;I scanned it last time and it still ran out.&#8221;** If the system
+  does not deliver results &#8212; items reordered promptly, restocked before
+  depletion &#8212; trust erodes and compliance drops.
+- **Being monitored or tracked.** They may perceive the scan system as
+  surveillance rather than support. Framing matters: the card system supports
+  them, it does not constrain them.
+
 ## Typical Day
 
 1. **Throughout the day:** Use supplies from the front bin as part of normal
@@ -100,6 +114,19 @@ loop.
 lasting 10&#8211;30 seconds, happening 0&#8211;5 times per day. They do not log
 in, navigate, or browse. They scan one card and walk away.
 
+## Scanning Method
+
+The worker uses one of two methods, both designed so no navigation or typing is
+required before scanning:
+
+- **Method 1 &#8212; URL bar (primary):** The scanner inputs the card&#8217;s
+  URL directly into the browser address bar. This auto-opens the scan modal.
+  The worker does not need to navigate to any page &#8212; the QR code URL
+  handles routing.
+- **Method 2 &#8212; In-app Scan page:** If the Scan page is already open in
+  the browser, scanning into the in-app input field works identically. Both
+  methods result in the same outcome with the same effort.
+
 ## Technology and Environment
 
 - Shared workstation near their work area or at a central supply point.
@@ -111,10 +138,54 @@ in, navigate, or browse. They scan one card and walk away.
   and zero typing.
 
 **Physical artifacts:**
-- **Kanban card:** Laminated index card with a QR code, sitting at the reorder
-  point in the two-bin system.
-- **&#8220;To Order&#8221; bin:** Physical tray at a central location for card
-  drop-off.
+
+<table>
+  <thead>
+    <tr>
+      <th>Artifact</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Kanban card</td>
+      <td>
+        Laminated index card with a QR code, sitting at the reorder point in
+        the two-bin system. They pick it up when the front bin empties.
+      </td>
+    </tr>
+    <tr>
+      <td>&#8220;To Order&#8221; bin</td>
+      <td>
+        A physical tray or bin at a central location where they drop a card if
+        they cannot or choose not to scan it. Must be conveniently placed.
+      </td>
+    </tr>
+    <tr>
+      <td>Shelf labels</td>
+      <td>
+        Help them confirm they are taking from the right location. They do not
+        interact with labels as part of the Arda workflow.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+## Information Sources
+
+Sam does not read help center articles, emails, or documentation about inventory.
+Information reaches them through:
+
+- In-person training from the Inventory Manager
+- Live floor demonstrations with real items
+- Daily huddle reminders (&#8220;Anything scan-worthy today?&#8221;)
+- Peer observation of other workers using the system
+
+## Decision-Making Process
+
+Sam does not make inventory decisions. Their only decision is binary: scan or
+drop the card, or ignore it. The system is designed so the first option is always
+faster and easier than the alternative.
 
 ## Personality
 
@@ -123,3 +194,11 @@ slows down production. Skeptical of new processes until they see personal benefi
 Responds to demonstrated results, not explanations. Responds to visual cues: a
 brightly colored card at the reorder point, a clearly labeled bin, a scanner
 sitting on the counter ready to use.
+
+## Communication Preferences
+
+In-person, on the floor, during natural breaks. Will not read emails or
+documentation about inventory. Responds to visual cues: a brightly colored card
+at the reorder point, a clearly labeled &#8220;To Order&#8221; bin, a scanner
+sitting on the counter ready to use. Values a system that is impossible to miss
+and faster to follow than to skip.
