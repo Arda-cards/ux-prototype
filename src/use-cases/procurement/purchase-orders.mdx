@@ -1,0 +1,416 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Use Cases/Procurement/Purchase Orders" />
+
+# Purchase Order Behaviors
+
+Manages the procurement order lifecycle: creation (from the Order Queue, from
+Kanban Cards, from items, free-form, or by copy), line item management,
+submission to vendors, acceptance tracking, receiving against lines, and
+archiving. The order entity follows a ten-state lifecycle (`NEW` through
+`CLOSED`, `CANCELLED`, `REJECTED`, `DISPUTED`).
+
+---
+
+### `PRO::PO::0001` &#8212; Create Purchase Order
+
+<table>
+  <tbody>
+    <tr><th>Persona</th><td><a href="?path=/docs/docs-personas-david-purchasing-manager--docs">David</a></td></tr>
+    <tr><th>Status</th><td>Covered</td></tr>
+    <tr><th>Depends</th><td>PRO::OQ::0007, RES::KC</td></tr>
+  </tbody>
+</table>
+
+Create a new purchase order from various sources.
+
+- **PRO::PO::0001::0001.UC &#8212; Create PO from Order Queue:** Create a PO
+  draft from a vendor group in the Order Queue. Cards transition from
+  `REQUESTING` to `REQUESTED` via `accept` events.
+
+- **PRO::PO::0001::0002.UC &#8212; Create PO from Kanban Cards:** Validate card
+  compatibility, group by item + UOM, create with aggregated lines. API:
+  `POST /v1/order/order/from-kanban-cards`.
+
+- **PRO::PO::0001::0003.UC &#8212; Create Empty Order:** Blank form, persist
+  header in `NEW` state. Defaults: `allowPartial=true`, `deliverBy=now+7d`.
+
+- **PRO::PO::0001::0004.UC &#8212; Create Order as Copy:** Duplicate existing
+  PO, reset history, clear card attachments, reset item references to current
+  versions. **Not yet implemented.**
+
+- **PRO::PO::0001::0005.UC &#8212; Create Order from Header and Lines:**
+  Programmatic creation with prescribed data, enriched from item supply.
+
+- **PRO::PO::0001::0006.UC &#8212; Create Order from List of Items:** Select
+  items sharing a compatible supplier. Supplier with highest mention count
+  across selected items becomes the PO supplier.
+
+- **PRO::PO::0001::0007.UC &#8212; Create Order from Item Identifiers:** Provide
+  a list of item entity IDs. One header and one line per item. Bypasses the
+  queue for direct ordering.
+
+---
+
+### `PRO::PO::0002` &#8212; View Purchase Orders
+
+<table>
+  <tbody>
+    <tr><th>Persona</th><td><a href="?path=/docs/docs-personas-david-purchasing-manager--docs">David</a></td></tr>
+    <tr><th>Status</th><td>Covered</td></tr>
+  </tbody>
+</table>
+
+Browse, filter, sort, and inspect purchase orders across status groupings.
+
+- **PRO::PO::0002::0001.UC &#8212; List POs:** Draft (`NEW`), Receiving
+  (`SUBMITTED`/`IN_PROCESS`/`PARTIALLY_RECEIVED`), Completed
+  (`RECEIVED`/`CLOSED`/`ARCHIVED`/`CANCELLED`). API:
+  `POST /v1/order/order/query`.
+
+- **PRO::PO::0002::0002.UC &#8212; View PO Details:** Three API paths:
+  header-only (`GET /v1/order/order/{eId}`), full
+  (`GET /v1/order/order/full/{eId}`), lines-only
+  (`GET /v1/order/order/lines/{eId}`).
+
+- **PRO::PO::0002::0003.UC &#8212; View PO List and Details (Actor-Goal):**
+  Filter by status groupings, click a row for full details including header,
+  lines, and serviced Kanban Cards.
+
+- **PRO::PO::0002::0004.UC &#8212; View Order Details (E2E):** From the
+  `/order-queue` page, click an order item row to open the Item Details Panel.
+
+---
+
+### `PRO::PO::0003` &#8212; Edit Purchase Order
+
+<table>
+  <tbody>
+    <tr><th>Persona</th><td><a href="?path=/docs/docs-personas-david-purchasing-manager--docs">David</a></td></tr>
+    <tr><th>Status</th><td>Covered</td></tr>
+  </tbody>
+</table>
+
+Modify PO header fields, add or remove lines, and manage card associations on
+draft orders. Only POs in `NEW` state are editable.
+
+- **PRO::PO::0003::0001.UC &#8212; Add Cards to Existing PO:** Select additional
+  cards, validate vendor compatibility, merge or add lines. API:
+  `PUT /v1/order/order/from-kanban-cards/{eId}`.
+
+- **PRO::PO::0003::0002.UC &#8212; Edit PO Header and Lines:** Modify vendor
+  name, contact, shipping terms, delivery address, line quantities, notes.
+  API: `PUT /v1/order/order/{eId}`. System-managed fields (`orderNumber`,
+  `status`, `goodsValue`) are read-only.
+
+- **PRO::PO::0003::0003.UC &#8212; Update Order Header Properties:** From Draft
+  list, edit header in a local copy, persist on Save.
+
+- **PRO::PO::0003::0004.UC &#8212; Add Lines from Kanban Cards:** Select cards
+  from Order Queue, choose &#8220;add to existing order,&#8221; pick from
+  `NEW`-state orders sorted most-recently-updated first.
+
+- **PRO::PO::0003::0005.UC &#8212; Remove Line:** API:
+  `DELETE /v1/order/order/{eId}/lines/{lineEId}`. Cards previously associated
+  only with the removed line return to `REQUESTING` via `shelve` events.
+
+- **PRO::PO::0003::0006.UC &#8212; Add Single Line:** From a Kanban Card (item
+  values copied), as a blank line (item typeahead selector), or via bulk CSV
+  upload. Unmatched CSV item names produce `INVALID` lines.
+
+---
+
+### `PRO::PO::0004` &#8212; Submit Purchase Order
+
+<table>
+  <tbody>
+    <tr><th>Persona</th><td><a href="?path=/docs/docs-personas-david-purchasing-manager--docs">David</a></td></tr>
+    <tr><th>Status</th><td>Covered</td></tr>
+    <tr><th>Depends</th><td>PRO::PO::0003</td></tr>
+  </tbody>
+</table>
+
+Finalize a draft PO and advance it for vendor communication.
+
+- **PRO::PO::0004::0001.UC &#8212; Submit PO:** Validate (vendor name required,
+  at least one line with title + quantity), send `start-processing` events to
+  cards, advance PO to `SUBMITTED`. API: `PUT /v1/order/order/{eId}/submit`.
+
+- **PRO::PO::0004::0002.UC &#8212; Submit and Release:** Same validation, but
+  cards transition directly to `FULFILLED` (skipping receiving). For in-store
+  pickups or retroactive record-keeping.
+
+- **PRO::PO::0004::0003.UC &#8212; Submit Order API:** Desired submission
+  workflow. **Not yet implemented** &#8212; existing services do not change
+  `OrderStatus` or initiate vendor communication.
+
+- **PRO::PO::0004::0004.UC &#8212; Submit a PO (Lifecycle Stub):** Placeholder
+  reserving the identifier in the lifecycle taxonomy.
+
+- **PRO::PO::0004::0005.UC &#8212; Send Order via Email (E2E):** Pre-populated
+  email panel with vendor email, subject line, and item list. Cards advance to
+  `REQUESTED` on send confirmation.
+
+---
+
+### `PRO::PO::0005` &#8212; Post-Submission Order Tracking
+
+<table>
+  <tbody>
+    <tr><th>Persona</th><td><a href="?path=/docs/docs-personas-david-purchasing-manager--docs">David</a></td></tr>
+    <tr><th>Status</th><td>New-extends</td></tr>
+    <tr><th>Depends</th><td>PRO::PO::0004</td></tr>
+  </tbody>
+</table>
+
+Extend the PO lifecycle beyond `SUBMITTED` with vendor responsiveness tracking.
+
+- **PRO::PO::0005::0001.US &#8212; Vendor Acknowledgment Tracking:** Mark when
+  a vendor confirms receipt. Unacknowledged orders past a threshold surface as
+  action items.
+
+- **PRO::PO::0005::0002.US &#8212; Order Aging Visibility:** Elapsed-time
+  indicator for `SUBMITTED`/`IN_PROCESS` orders, similar to queue aging
+  (PRO::OQ::0004).
+
+- **PRO::PO::0005::0003.US &#8212; Vendor Follow-Up Action:** Quick
+  pre-populated chaser from PO detail (vendor name, PO number, date, items).
+  Records follow-up timestamp to avoid duplicates.
+
+---
+
+### `PRO::PO::0006` &#8212; Generate PO Document
+
+<table>
+  <tbody>
+    <tr><th>Persona</th><td><a href="?path=/docs/docs-personas-david-purchasing-manager--docs">David</a></td></tr>
+    <tr><th>Status</th><td>Covered</td></tr>
+    <tr><th>Depends</th><td>PRO::PO::0004</td></tr>
+  </tbody>
+</table>
+
+Produce vendor-ready PDF and email content from PO data.
+
+- **PRO::PO::0006::0001.UC &#8212; Generate PO PDF:** Click &#8220;Generate
+  PO,&#8221; Documint produces a PDF (opens in new tab), email body copied to
+  clipboard. Fallback &#8220;Copy email text&#8221; button on clipboard failure.
+
+- **PRO::PO::0006::0002.FS &#8212; PDF Generation via Documint:** Payload
+  matches Documint template mapping. Email body is a fixed template. Documint
+  is a synchronous dependency; failures surfaced with retry.
+
+---
+
+### `PRO::PO::0007` &#8212; Cancel Purchase Order
+
+<table>
+  <tbody>
+    <tr><th>Persona</th><td><a href="?path=/docs/docs-personas-david-purchasing-manager--docs">David</a></td></tr>
+    <tr><th>Status</th><td>Covered</td></tr>
+  </tbody>
+</table>
+
+Cancel a draft PO, returning associated cards to the queue.
+
+- **PRO::PO::0007::0001.UC &#8212; Cancel PO:** PO in `NEW` or `SUBMITTED`.
+  Confirmation dialog, then `shelve` events to `REQUESTED` cards (&#8594;
+  `REQUESTING`). Rollback for `IN_PROCESS` cards is TBD. PO becomes
+  `CANCELLED` and read-only.
+
+- **PRO::PO::0007::0002.UC &#8212; Cancel a PO (Lifecycle Stub):** Placeholder
+  for `IN_PROCESS` card handling during cancellation.
+
+- **PRO::PO::0007::0003.UC &#8212; Cancel Order from Queue (E2E):** Card
+  returns to previous state, badge decrements, card available for re-ordering.
+
+---
+
+### `PRO::PO::0008` &#8212; Order Data Rules
+
+<table>
+  <tbody>
+    <tr><th>Persona</th><td><a href="?path=/docs/docs-personas-david-purchasing-manager--docs">David</a></td></tr>
+    <tr><th>Status</th><td>Covered</td></tr>
+  </tbody>
+</table>
+
+Data integrity rules governing line aggregation, validation, vendor
+compatibility, numbering, free-form lines, and editability.
+
+- **PRO::PO::0008::0001.FS &#8212; Line Aggregation:** Same item (`eId`,
+  fallback to SKU) &#8594; single PO line. Quantity = sum of reorder
+  quantities. All contributing cards tracked via `servicedCards`.
+
+- **PRO::PO::0008::0002.FS &#8212; Snapshot Validation at Submit Time:** All
+  contributing cards must still be `REQUESTED`. If changed, error shown and
+  card list refreshed; header edits preserved.
+
+- **PRO::PO::0008::0003.FS &#8212; Vendor Compatibility:** Single vendor per
+  PO. Cards added must have an ItemSupply matching the PO&#8217;s
+  `supplierName`.
+
+- **PRO::PO::0008::0004.FS &#8212; PO Number Assignment:** Auto-generated via
+  `ScopedSequenceService` (format `PO-000001`) in Full scope; user-entered
+  in Lite.
+
+- **PRO::PO::0008::0005.FS &#8212; Free-Form PO Lines:** Not linked to any
+  catalog item or card. All fields free text. No card state transitions.
+
+- **PRO::PO::0008::0006.FS &#8212; PO Editability Guard:** Only `NEW` state
+  is editable. After submission, the PO is a read-only snapshot. Only
+  `privateNotes` and `received` quantities remain writable.
+
+---
+
+### `PRO::PO::0009` &#8212; Data Propagation
+
+<table>
+  <tbody>
+    <tr><th>Persona</th><td><a href="?path=/docs/docs-personas-david-purchasing-manager--docs">David</a></td></tr>
+    <tr><th>Status</th><td>Covered</td></tr>
+  </tbody>
+</table>
+
+**PRO::PO::0009::0001.FS &#8212; Update Propagation:** When upstream entities
+change, open PO fields update automatically: supplier rename &#8594; header
+`supplierName`; item name/description &#8594; line `title`/`description`;
+ItemSupply price &#8594; line `unitCost`. Applies only to POs in `NEW` state.
+Submitted POs are frozen snapshots.
+
+---
+
+### `PRO::PO::0010` &#8212; Vendor-Specific Purchasing Knowledge
+
+<table>
+  <tbody>
+    <tr><th>Persona</th><td><a href="?path=/docs/docs-personas-david-purchasing-manager--docs">David</a></td></tr>
+    <tr><th>Status</th><td>Covered</td></tr>
+    <tr><th>Depends</th><td>REF::SPL</td></tr>
+  </tbody>
+</table>
+
+**PRO::PO::0010::0001.US &#8212; Store Vendor-Specific Purchasing Knowledge:**
+ItemSupply stores vendor SKU, item specs, pack sizes, ordering URLs, and
+instructions. All PO creation flows draw from ItemSupply data. High-quality
+records minimize manual data entry during PO creation. Ties to the continuous
+improvement loop (PRO::E2E::0003).
+
+---
+
+### `PRO::PO::0011` &#8212; Validate Quantities Against Physical Reality
+
+<table>
+  <tbody>
+    <tr><th>Persona</th><td><a href="?path=/docs/docs-personas-david-purchasing-manager--docs">David</a></td></tr>
+    <tr><th>Status</th><td>New-distinct</td></tr>
+    <tr><th>Depends</th><td>RES::FAC</td></tr>
+  </tbody>
+</table>
+
+**PRO::PO::0011::0001.US &#8212; Check Point-of-Use for Questionable
+Quantities:** When a reorder quantity seems wrong, surface item location info
+(facility, zone, bin) alongside the PO line quantity so David can physically
+verify or ask someone on the floor to check. Motivates a &#8220;point-of-use&#8221;
+context panel on the queue/PO display.
+
+---
+
+## Summary
+
+<table>
+  <thead>
+    <tr>
+      <th>Use Case</th>
+      <th>Scenarios</th>
+      <th>US</th>
+      <th>FS</th>
+      <th>UC</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>PRO::PO::0001</code> Create Purchase Order</td>
+      <td>7</td>
+      <td>0</td>
+      <td>0</td>
+      <td>7</td>
+    </tr>
+    <tr>
+      <td><code>PRO::PO::0002</code> View Purchase Orders</td>
+      <td>4</td>
+      <td>0</td>
+      <td>0</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <td><code>PRO::PO::0003</code> Edit Purchase Order</td>
+      <td>6</td>
+      <td>0</td>
+      <td>0</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <td><code>PRO::PO::0004</code> Submit Purchase Order</td>
+      <td>5</td>
+      <td>0</td>
+      <td>0</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <td><code>PRO::PO::0005</code> Post-Submission Tracking</td>
+      <td>3</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td><code>PRO::PO::0006</code> Generate PO Document</td>
+      <td>2</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td><code>PRO::PO::0007</code> Cancel Purchase Order</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <td><code>PRO::PO::0008</code> Order Data Rules</td>
+      <td>6</td>
+      <td>0</td>
+      <td>6</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td><code>PRO::PO::0009</code> Data Propagation</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td><code>PRO::PO::0010</code> Vendor Knowledge</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td><code>PRO::PO::0011</code> Physical Validation</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td><strong>Total</strong></td>
+      <td><strong>39</strong></td>
+      <td><strong>5</strong></td>
+      <td><strong>8</strong></td>
+      <td><strong>26</strong></td>
+    </tr>
+  </tbody>
+</table>

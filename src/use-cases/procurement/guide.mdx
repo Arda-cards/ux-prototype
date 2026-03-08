@@ -1,0 +1,182 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Use Cases/Procurement/Reading Guide" />
+
+# Procurement Use Cases &#8212; Reading Guide
+
+This section documents the procurement domain: the end-to-end workflows that Arda
+users follow to order materials from vendors and receive them into their
+facilities.
+
+## How This Section Is Organized
+
+<table>
+  <thead>
+    <tr>
+      <th>Document</th>
+      <th>What It Contains</th>
+      <th>When to Read It</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="?path=/docs/use-cases-procurement-reading-guide--docs"><strong>Reading Guide</strong></a> (this page)</td>
+      <td>Map of the section, conventions, and totals.</td>
+      <td>Start here.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/use-cases-procurement-context--docs"><strong>Context</strong></a></td>
+      <td>Goal statement, source material links (Google Docs, Figma, tech docs).</td>
+      <td>When you need to trace a use case back to its original specification.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/use-cases-procurement-domain-reference--docs"><strong>Domain Reference</strong></a></td>
+      <td>
+        Scope constraints, PO lifecycle and signals, Kanban Card lifecycle,
+        key entities, order method enumeration, PO field specifications,
+        order line sub-lifecycle, and implementation gaps.
+      </td>
+      <td>When you need to understand the data model, state machines, or API fields.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/use-cases-procurement-end-to-end-behaviors--docs"><strong>End-to-End Behaviors</strong></a></td>
+      <td>
+        Cross-cutting lifecycle scenarios: full lifecycle verification,
+        business outcomes, continuous improvement loop, instant persistence.
+        <br /><strong>4 use cases, 5 scenarios.</strong>
+      </td>
+      <td>When you need the big picture or business justification.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/use-cases-procurement-order-queue--docs"><strong>Order Queue</strong></a></td>
+      <td>
+        How cards enter the queue, how the queue is viewed and filtered,
+        grouping rules, aging visibility, inline editing, and order creation
+        from accumulated demand.
+        <br /><strong>7 use cases, 21 scenarios.</strong>
+      </td>
+      <td>When building or reviewing the Order Queue page and its interactions.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/use-cases-procurement-purchase-orders--docs"><strong>Purchase Orders</strong></a></td>
+      <td>
+        PO creation (7 methods), viewing, editing, submission, document
+        generation, cancellation, data rules, propagation, vendor knowledge,
+        and physical validation.
+        <br /><strong>11 use cases, 39 scenarios.</strong>
+      </td>
+      <td>When building or reviewing Purchase Order CRUD, submission, or PDF generation.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/use-cases-procurement-receiving--docs"><strong>Receiving</strong></a></td>
+      <td>
+        Shipment receipt against POs, lightweight receiving, the receiving
+        list view, and order completion.
+        <br /><strong>4 use cases, 10 scenarios.</strong>
+      </td>
+      <td>When building or reviewing the Receiving page and its interactions.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Conventions
+
+### Use Case Identifiers
+
+Every use case and scenario has a structured identifier:
+
+`PRO::AREA::NNNN::NNNN.TYPE`
+
+- **PRO** &#8212; Procurement domain
+- **AREA** &#8212; Functional area: `E2E` (End-to-End), `OQ` (Order Queue),
+  `PO` (Purchase Orders), `RCV` (Receiving)
+- **NNNN** &#8212; Use case number (first segment) and scenario number (second segment)
+- **TYPE** &#8212; Scenario classification:
+  - **US** &#8212; User Story (describes a user need or motivation)
+  - **FS** &#8212; Functional Specification (describes system behavior or data rules)
+  - **UC** &#8212; Use Case (describes a step-by-step interaction flow)
+
+### Status Labels
+
+Each use case group carries a status:
+
+- **Covered** &#8212; Documented in at least one source specification and accounted for
+  in the current design.
+- **New-extends** &#8212; Extends an existing use case with additional scenarios not
+  yet in the original specs.
+- **New-distinct** &#8212; A wholly new use case identified during analysis.
+- **Partial** &#8212; Some scenarios are covered; others require further specification.
+
+### Personas
+
+Four personas appear across procurement use cases (see
+<a href="?path=/docs/docs-personas-overview--docs">Domain Personas</a> for full
+profiles):
+
+- <a href="?path=/docs/docs-personas-david-purchasing-manager--docs">**David**</a>
+  (Purchasing Manager) &#8212; Primary actor for Order Queue and Purchase Order use cases.
+- <a href="?path=/docs/docs-personas-keisha-receiving-clerk--docs">**Keisha**</a>
+  (Receiving Clerk) &#8212; Primary actor for Receiving use cases.
+- <a href="?path=/docs/docs-personas-irene-inventory-manager--docs">**Irene**</a>
+  (Inventory Manager) /
+  <a href="?path=/docs/docs-personas-sam-shop-floor-worker--docs">**Sam**</a>
+  (Shop Floor Worker) &#8212; Trigger the procurement loop.
+- <a href="?path=/docs/docs-personas-owen-business-principal--docs">**Owen**</a>
+  (Business Principal) &#8212; Owns business outcomes and strategic direction.
+
+## Totals
+
+<table>
+  <thead>
+    <tr>
+      <th>Area</th>
+      <th>Use Cases</th>
+      <th>Scenarios</th>
+      <th>US</th>
+      <th>FS</th>
+      <th>UC</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>End-to-End</td>
+      <td>4</td>
+      <td>5</td>
+      <td>3</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>Order Queue</td>
+      <td>7</td>
+      <td>21</td>
+      <td>12</td>
+      <td>1</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <td>Purchase Orders</td>
+      <td>11</td>
+      <td>39</td>
+      <td>5</td>
+      <td>8</td>
+      <td>26</td>
+    </tr>
+    <tr>
+      <td>Receiving</td>
+      <td>4</td>
+      <td>10</td>
+      <td>1</td>
+      <td>0</td>
+      <td>9</td>
+    </tr>
+    <tr>
+      <td><strong>Total</strong></td>
+      <td><strong>26</strong></td>
+      <td><strong>75</strong></td>
+      <td><strong>21</strong></td>
+      <td><strong>10</strong></td>
+      <td><strong>44</strong></td>
+    </tr>
+  </tbody>
+</table>
