@@ -308,14 +308,14 @@ describe('useEntityViewer', () => {
 
       await waitFor(() => expect(result.current.state.mode).toBe('display'));
 
-      act(() => result.current.actions.enterEditMode());
-      act(() => result.current.actions.handleFieldChange('name', ''));
+      await act(async () => result.current.actions.enterEditMode());
+      await act(async () => result.current.actions.handleFieldChange('name', ''));
 
       await act(async () => {
         await result.current.actions.validateAndSubmit();
       });
 
-      await waitFor(() => expect(result.current.state.mode).toBe('errored'));
+      expect(result.current.state.mode).toBe('errored');
       expect(result.current.state.fieldErrors).toHaveLength(1);
       expect(result.current.state.fieldErrors[0]!.message).toBe('Name is required');
       expect(designConfig.update).not.toHaveBeenCalled();
