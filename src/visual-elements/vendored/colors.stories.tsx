@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 
 const meta: Meta = {
-  title: 'Foundations/Reference/Colors',
+  title: 'Styles/Reference/Colors',
 };
 
 export default meta;

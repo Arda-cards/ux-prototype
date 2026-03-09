@@ -35,7 +35,7 @@ The Storybook sidebar is organized into these top-level sections:
 
 - **Start Here** — onboarding and orientation pages (`Overview`, `Getting Started`, `Changelog`)
 - **Guides** — implementation and workflow documentation
-- **Foundations** — design references (style guide, colors, icons, brand assets)
+- **Styles** — design references (style guide, colors, icons, brand assets)
 - **Components** — reusable UI components (`Stable` and `Canary` tracks)
 - **App** — full-app page stories (`Reference` vendored parity, `Canary` replacement workbench)
 - **Prototypes** — forward-looking workflow scenarios
@@ -75,7 +75,7 @@ src/
   canary-refactor/    # App/Canary stories
   dev-witness/        # App/Reference stories (historical directory name)
   use-cases/          # Prototypes stories
-  visual-elements/    # Foundations stories
+  visual-elements/    # Styles stories
   archive/            # Historical stories
   docs/               # Storybook docs pages (MDX)
   vendored/           # Synced source from arda-frontend-app (storybook-only)
@@ -118,7 +118,7 @@ Only `src/components/`, `src/types/`, `src/lib/`, and `src/styles/` are compiled
 - `src/dev-witness/` and `src/canary-refactor/` — `App/Reference` and `App/Canary` stories (Storybook only)
 - `src/use-cases/` — `Prototypes` stories (Storybook only)
 - `src/docs/` — documentation pages (Storybook only)
-- `src/visual-elements/` — `Foundations` stories (Storybook only)
+- `src/visual-elements/` — `Styles` stories (Storybook only)
 
 ### Canary Export Path
 

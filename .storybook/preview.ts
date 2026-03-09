@@ -40,7 +40,7 @@ const preview: Preview = {
             ['Agentation'],
             '*',
           ],
-          'Foundations',
+          'Styles',
           ['Style Guide', 'Colors', 'Brand Assets', 'Icons', '*'],
           'Components',
           [
