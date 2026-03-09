@@ -35,7 +35,7 @@ import {
 } from 'lucide-react';
 
 const meta: Meta = {
-  title: 'Visual Elements/Canary/Icons',
+  title: 'Foundations/Canary/Icons',
 };
 
 export default meta;

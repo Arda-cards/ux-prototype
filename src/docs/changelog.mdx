@@ -19,16 +19,18 @@ Track structural and presentation changes to this Storybook instance.
   - `Prototypes`
   - `Archive`
 - Renamed component tracks:
-  - `Extras` -> `Current`
-  - `Canary` -> `Migration`
+  - `Extras` -> `Stable`
+  - `Canary` -> `Canary` (kept — matches export path convention)
 - Grouped full-app pages under a single app container:
   - `App/Reference` (vendored parity pages)
   - `App/Canary` (migration workbench pages)
 - Renamed `Use Cases` -> `Prototypes` for clearer future-state intent.
 - Renamed `Visual Elements` -> `Foundations`.
+- Renamed `Dev Witness` -> `App/Reference`.
 
 ### Why
 
 - Reduce internal jargon in navigation labels.
 - Make section intent legible for first-time readers.
-- Keep migration work adjacent to mirrored app pages for faster comparison.
+- Align with established software conventions (Stable/Canary).
+- Keep migration work adjacent to reference app pages for faster comparison.
