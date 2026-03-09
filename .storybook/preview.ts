@@ -37,10 +37,11 @@ const preview: Preview = {
             ],
             'Tools',
             ['Agentation'],
+            'From Figma',
             '*',
           ],
           'Foundations',
-          ['Style Guide', 'Colors', 'Brand Assets', 'Icons', 'From Figma', '*'],
+          ['Style Guide', 'Colors', 'Brand Assets', 'Icons', '*'],
           'Components',
           [
             'Overview',
