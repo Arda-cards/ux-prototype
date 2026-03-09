@@ -1,166 +1,27 @@
 import { Meta } from '@storybook/addon-docs/blocks';
+import { docsUrl } from '../../links';
 
 <Meta title="Use Cases/Procurement/Receiving" />
 
 # Receiving Behaviors
 
-Manages the physical flow of materials into a facility from suppliers. Covers
-receiving orders against open purchase orders, lightweight receiving for
-organizations without a formal dock process, the receiving list view, and
-completing the purchase order lifecycle after all lines have been received.
+<a href={docsUrl('/product/use-cases/procurement/receiving/')}
+   target="_blank" rel="noopener">
+  View full specification &#8594;
+</a>
 
----
+Manages the physical flow of materials into a facility from suppliers. The
+canonical specification is maintained in the documentation site linked above.
 
-### `PRO::RCV::0001` &#8212; Receive Shipment
-
-<table>
-  <tbody>
-    <tr><th>Persona</th><td><a href="?path=/docs/docs-personas-keisha-receiving-clerk--docs">Keisha</a></td></tr>
-    <tr><th>Status</th><td>Covered</td></tr>
-    <tr><th>Depends</th><td>PRO::PO::0004, RES::KC</td></tr>
-  </tbody>
-</table>
-
-Process deliveries at the dock, marking items received and transitioning cards
-to `FULFILLED`.
-
-- **PRO::RCV::0001::0001.UC &#8212; Receive Shipment Against PO:** Navigate to
-  Receiving page. POs/cards in `IN_PROCESS` grouped by supplier. Select PO or
-  individual lines, click &#8220;Receive.&#8221; Cards transition `IN_PROCESS`
-  &#8594; `FULFILLED`. PO advances to `RECEIVED` (all lines) or
-  `PARTIALLY_RECEIVED` (some lines).
-
-- **PRO::RCV::0001::0002.UC &#8212; Record Receiving Against PO (Lifecycle
-  Stub):** Placeholder reserving the identifier. Detailed API routes not yet
-  defined.
-
-- **PRO::RCV::0001::0003.UC &#8212; Release Card to Production:** Fulfill
-  action skips `FULFILLING` intermediate state by design. Physical side: pair
-  received card with restocked bin, return bin to shelf location, confirm item
-  is available. Future iterations may make the `FULFILLING` transition
-  configurable.
-
-- **PRO::RCV::0001::0004.UC &#8212; Receive Incoming Shipment (E2E):** On
-  `/receiving` &#8220;Receiving&#8221; tab, locate item, use status dropdown
-  to mark received. System fires `POST /event/fulfill`. Card moves to
-  &#8220;Recently Received&#8221; tab.
-
----
-
-### `PRO::RCV::0002` &#8212; Lightweight Receiving
+## Stories in This Section
 
 <table>
-  <tbody>
-    <tr><th>Persona</th><td><a href="?path=/docs/docs-personas-keisha-receiving-clerk--docs">Keisha</a>, <a href="?path=/docs/docs-personas-owen-business-principal--docs">Owen</a></td></tr>
-    <tr><th>Status</th><td>New-extends</td></tr>
-    <tr><th>Depends</th><td>PRO::PO::0004</td></tr>
-  </tbody>
-</table>
-
-**PRO::RCV::0002::0001.US &#8212; Quick Mark-as-Received:** A simplified path
-for organizations that find full PO-based receiving too heavyweight.
-Scan-to-receive (scan QR on package &#8594; mark received) or check-to-receive
-(check a box on the receiving list without opening PO detail). Middle ground
-between full receiving (PRO::RCV::0001) and skipping it entirely via
-&#8220;Submit and Release&#8221; (PRO::PO::0004::0002).
-
----
-
-### `PRO::RCV::0003` &#8212; View Receiving List
-
-<table>
-  <tbody>
-    <tr><th>Persona</th><td><a href="?path=/docs/docs-personas-keisha-receiving-clerk--docs">Keisha</a></td></tr>
-    <tr><th>Status</th><td>Covered</td></tr>
-  </tbody>
-</table>
-
-Browse orders pending receipt, grouped by supplier.
-
-- **PRO::RCV::0003::0001.UC &#8212; View Receiving List (Actor-Goal):** Two
-  tabs: &#8220;Receiving&#8221; (cards/PO lines in `IN_PROCESS`, grouped by
-  supplier) and &#8220;Recently Received&#8221; (`FULFILLED` within 24 hours,
-  grouped by supplier). Searchable and filterable by item name, SKU, or
-  supplier.
-
-- **PRO::RCV::0003::0002.UC &#8212; View Receiving List (E2E):** Badge refresh
-  on page load. Search bar above list. Layout mirrors Order Queue: tabs at
-  top, grouped items below.
-
-- **PRO::RCV::0003::0003.UC &#8212; Switch Between Receiving Tabs (E2E):** Tab
-  switch preserves active search filter. Allows searching for an item name
-  and then checking if it has already been received.
-
-- **PRO::RCV::0003::0004.UC &#8212; View Recently Received Items (E2E):**
-  `FULFILLED` cards within the last 24 hours, grouped by supplier. Each row
-  shows item name, SKU, receipt date/time, and quantity. Items older than
-  24 hours must be found via the PO list (PRO::PO::0002).
-
----
-
-### `PRO::RCV::0004` &#8212; Complete Purchase Order
-
-<table>
-  <tbody>
-    <tr><th>Persona</th><td><a href="?path=/docs/docs-personas-david-purchasing-manager--docs">David</a>, <a href="?path=/docs/docs-personas-keisha-receiving-clerk--docs">Keisha</a></td></tr>
-    <tr><th>Status</th><td>Covered</td></tr>
-  </tbody>
-</table>
-
-**PRO::RCV::0004::0001.UC &#8212; Complete a Purchase Order (Lifecycle Stub):**
-After all PO lines are received (`RECEIVED` state), a completion step advances
-the PO to `CLOSED` or `ARCHIVED`. Detailed closure conditions and the
-distinction between `RECEIVED`, `CLOSED`, and `ARCHIVED` are not yet defined.
-
----
-
-## Summary
-
-<table>
-  <thead>
-    <tr>
-      <th>Use Case</th>
-      <th>Scenarios</th>
-      <th>US</th>
-      <th>FS</th>
-      <th>UC</th>
-    </tr>
-  </thead>
+  <thead><tr><th>Use Case ID</th><th>Description</th><th>Status</th></tr></thead>
   <tbody>
     <tr>
-      <td><code>PRO::RCV::0001</code> Receive Shipment</td>
-      <td>4</td>
-      <td>0</td>
-      <td>0</td>
-      <td>4</td>
-    </tr>
-    <tr>
-      <td><code>PRO::RCV::0002</code> Lightweight Receiving</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <td><code>PRO::RCV::0003</code> View Receiving List</td>
-      <td>4</td>
-      <td>0</td>
-      <td>0</td>
-      <td>4</td>
-    </tr>
-    <tr>
-      <td><code>PRO::RCV::0004</code> Complete Purchase Order</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <td><strong>Total</strong></td>
-      <td><strong>10</strong></td>
-      <td><strong>1</strong></td>
-      <td><strong>0</strong></td>
-      <td><strong>9</strong></td>
+      <td><code>PRO::RCV::0001</code></td>
+      <td>Receive Shipment</td>
+      <td>Specified (no interactive story yet)</td>
     </tr>
   </tbody>
 </table>
