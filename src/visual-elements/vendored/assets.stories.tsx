@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 
 const meta: Meta = {
-  title: 'Visual Elements/Vendored/Brand Assets',
+  title: 'Foundations/Reference/Brand Assets',
 };
 
 export default meta;
