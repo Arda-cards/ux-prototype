@@ -52,8 +52,8 @@ src/
     extras/           # Current-track component stories and implementations
     canary/           # Migration-track component stories and implementations
     ui/               # Shared lower-level UI primitives
-  dev-witness/        # App/Current stories (historical directory name)
-  canary-refactor/    # App/Migration stories
+  dev-witness/        # App/Reference stories (historical directory name)
+  canary-refactor/    # App/Canary stories
   use-cases/          # Prototypes stories and framework
   visual-elements/    # Foundations stories
   archive/            # Historical stories
@@ -65,8 +65,8 @@ src/
 
 In Storybook, those folders are presented as:
 
-- `Components/Current` and `Components/Migration`
-- `App/Current` and `App/Migration`
+- `Components/Stable` and `Components/Canary`
+- `App/Reference` and `App/Canary`
 - `Prototypes`
 - `Foundations`
 
@@ -117,7 +117,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { MyButton } from './my-button';
 
 const meta: Meta<typeof MyButton> = {
-  title: 'Components/Current/Atoms/My Button',
+  title: 'Components/Stable/Atoms/My Button',
   component: MyButton,
   tags: ['autodocs'],
   argTypes: {
@@ -138,4 +138,4 @@ export const Primary: Story = {};
 export const Secondary: Story = { args: { variant: 'secondary' } };
 ```
 
-3. Run `npm run storybook` and find your component in the sidebar under **Components/Current/Atoms/My Button**.
+3. Run `npm run storybook` and find your component in the sidebar under **Components/Stable/Atoms/My Button**.

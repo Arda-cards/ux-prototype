@@ -110,7 +110,7 @@ const mockData: DemoEntity[] = [
 /* ------------------------------------------------------------------ */
 
 const meta: Meta<typeof DemoDataGrid> = {
-  title: 'Components/Current/Organisms/Shared/Entity Data Grid',
+  title: 'Components/Stable/Organisms/Shared/Entity Data Grid',
   component: DemoDataGrid,
   parameters: {
     layout: 'padded',

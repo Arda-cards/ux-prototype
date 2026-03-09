@@ -44,7 +44,7 @@ const preview: Preview = {
           'Components',
           [
             'Overview',
-            'Current',
+            'Stable',
             [
               'Atoms',
               ['Overview', 'Badge', 'Button', 'ConfirmDialog', 'Form', 'Grid', '*'],
@@ -54,16 +54,16 @@ const preview: Preview = {
               ['Overview', 'Shared', 'Reference', '*'],
               '*',
             ],
-            'Migration',
+            'Canary',
             ['Atoms', 'Molecules', 'Organisms', '*'],
             '*',
           ],
           'App',
           [
             'Overview',
-            'Current',
+            'Reference',
             ['Home', 'Reference', 'Resources', 'System', 'Transactions', '*'],
-            'Migration',
+            'Canary',
             '*',
           ],
           'Prototypes',

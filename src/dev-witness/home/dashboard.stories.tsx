@@ -4,7 +4,7 @@ import DashboardPage from '@frontend/app/dashboard/page';
 import '@/styles/vendored/globals.css';
 
 const meta: Meta<typeof DashboardPage> = {
-  title: 'App/Current/Home/Dashboard',
+  title: 'App/Reference/Home/Dashboard',
   component: DashboardPage,
   tags: ['app-route:/dashboard'],
   parameters: {

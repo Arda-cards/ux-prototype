@@ -4,7 +4,7 @@ import KanbanCardPage from '@frontend/app/kanban/cards/[cardId]/page';
 import '@/styles/vendored/globals.css';
 
 const meta: Meta<typeof KanbanCardPage> = {
-  title: 'App/Current/Resources/Kanban Cards/Kanban Card',
+  title: 'App/Reference/Resources/Kanban Cards/Kanban Card',
   component: KanbanCardPage,
   tags: ['app-route:/kanban/cards/[cardId]'],
   parameters: {

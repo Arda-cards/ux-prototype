@@ -1,16 +1,16 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="App/Current/Integration" />
+<Meta title="App/Reference/Integration" />
 
 # App Current Integration
 
-The **App/Current** section in the Storybook sidebar contains live page components vendored from the production `arda-frontend-app` repository. Each page renders against MSW mock services, reproducing the real application behavior without a running backend.
+The **App/Reference** section in the Storybook sidebar contains live page components vendored from the production `arda-frontend-app` repository. Each page renders against MSW mock services, reproducing the real application behavior without a running backend.
 
 ## Why Vendor Production Pages?
 
 The existing **Applications** section uses hand-built mocks that compose library components into page-like layouts. Those mocks are useful for design review but diverge from production over time.
 
-The `App/Current` section solves this by syncing actual production source code into `src/vendored/arda-frontend/`. The vendored pages use the same Redux store, auth context, API client, and UI components as the real application. An automated CI pipeline keeps the vendored copy in sync with the `dev` branch of `arda-frontend-app`.
+The `App/Reference` section solves this by syncing actual production source code into `src/vendored/arda-frontend/`. The vendored pages use the same Redux store, auth context, API client, and UI components as the real application. An automated CI pipeline keeps the vendored copy in sync with the `dev` branch of `arda-frontend-app`.
 
 This gives three audiences a shared source of truth:
 
@@ -130,7 +130,7 @@ Because the vendored code was written for Next.js, several framework APIs need S
 
 ### Provider Stack
 
-The `withFullAppProviders` decorator in `src/decorators/with-full-app-providers.tsx` wraps every story whose title starts with `App/Current` or `App/Migration`. It composes the same provider hierarchy used in the production application:
+The `withFullAppProviders` decorator in `src/decorators/with-full-app-providers.tsx` wraps every story whose title starts with `App/Reference` or `App/Canary`. It composes the same provider hierarchy used in the production application:
 
 <table>
   <thead>
@@ -179,7 +179,7 @@ The `withFullAppProviders` decorator in `src/decorators/with-full-app-providers.
   </tbody>
 </table>
 
-Stories in the `App/Migration` section use the same provider stack as `App/Current`, enabling side-by-side parity comparison with no additional setup. Non-full-app stories pass through the decorator unchanged.
+Stories in the `App/Canary` section use the same provider stack as `App/Reference`, enabling side-by-side parity comparison with no additional setup. Non-full-app stories pass through the decorator unchanged.
 
 ### MSW Request Handlers
 
@@ -238,7 +238,7 @@ Handlers use in-memory mock stores (`mockItems.ts`, `mockKanbanCards.ts`) that s
 
 ## Page Inventory
 
-The `App/Current` section contains 12 story files with 22 total variants, organized into five sections that mirror the application&#8217;s navigation structure:
+The `App/Reference` section contains 12 story files with 22 total variants, organized into five sections that mirror the application&#8217;s navigation structure:
 
 <table>
   <thead>
@@ -254,7 +254,7 @@ The `App/Current` section contains 12 story files with 22 total variants, organi
       <td rowspan="1">
         <strong>Home</strong>
       </td>
-      <td>App/Current/Home/Dashboard</td>
+      <td>App/Reference/Home/Dashboard</td>
       <td>
         <code>/dashboard</code>
       </td>
@@ -264,14 +264,14 @@ The `App/Current` section contains 12 story files with 22 total variants, organi
       <td rowspan="2">
         <strong>Reference</strong>
       </td>
-      <td>App/Current/Reference/Items/Items Grid</td>
+      <td>App/Reference/Reference/Items/Items Grid</td>
       <td>
         <code>/items</code>
       </td>
       <td>Default, EmptyState</td>
     </tr>
     <tr>
-      <td>App/Current/Reference/Items/Item Detail</td>
+      <td>App/Reference/Reference/Items/Item Detail</td>
       <td>
         <code>/item/[itemId]</code>
       </td>
@@ -281,21 +281,21 @@ The `App/Current` section contains 12 story files with 22 total variants, organi
       <td rowspan="3">
         <strong>Resources</strong>
       </td>
-      <td>App/Current/Resources/Kanban Cards/Kanban Card</td>
+      <td>App/Reference/Resources/Kanban Cards/Kanban Card</td>
       <td>
         <code>/kanban/cards/[cardId]</code>
       </td>
       <td>Default, CardNotFound</td>
     </tr>
     <tr>
-      <td>App/Current/Resources/Kanban Cards/Mobile Device Check</td>
+      <td>App/Reference/Resources/Kanban Cards/Mobile Device Check</td>
       <td>
         <code>/mobile-device-check</code>
       </td>
       <td>Default</td>
     </tr>
     <tr>
-      <td>App/Current/Resources/Kanban Cards/Scan</td>
+      <td>App/Reference/Resources/Kanban Cards/Scan</td>
       <td>
         <code>/scan</code>
       </td>
@@ -305,28 +305,28 @@ The `App/Current` section contains 12 story files with 22 total variants, organi
       <td rowspan="4">
         <strong>System</strong>
       </td>
-      <td>App/Current/System/Authentication/Sign In</td>
+      <td>App/Reference/System/Authentication/Sign In</td>
       <td>
         <code>/signin</code>
       </td>
       <td>Default, InvalidCredentials</td>
     </tr>
     <tr>
-      <td>App/Current/System/Authentication/Sign Up</td>
+      <td>App/Reference/System/Authentication/Sign Up</td>
       <td>
         <code>/signup</code>
       </td>
       <td>Default</td>
     </tr>
     <tr>
-      <td>App/Current/System/Authentication/Reset Password</td>
+      <td>App/Reference/System/Authentication/Reset Password</td>
       <td>
         <code>/reset-password</code>
       </td>
       <td>Default</td>
     </tr>
     <tr>
-      <td>App/Current/System/Settings</td>
+      <td>App/Reference/System/Settings</td>
       <td>
         <code>/settings</code>
       </td>
@@ -336,14 +336,14 @@ The `App/Current` section contains 12 story files with 22 total variants, organi
       <td rowspan="2">
         <strong>Transactions</strong>
       </td>
-      <td>App/Current/Transactions/Orders/Order Queue</td>
+      <td>App/Reference/Transactions/Orders/Order Queue</td>
       <td>
         <code>/order-queue</code>
       </td>
       <td>Default, EmptyQueue</td>
     </tr>
     <tr>
-      <td>App/Current/Transactions/Receiving</td>
+      <td>App/Reference/Transactions/Receiving</td>
       <td>
         <code>/receiving</code>
       </td>
@@ -354,7 +354,7 @@ The `App/Current` section contains 12 story files with 22 total variants, organi
 
 ## Route Traceability
 
-Every `App/Current` story carries metadata that traces it back to the production application:
+Every `App/Reference` story carries metadata that traces it back to the production application:
 
 - **Tag**: `app-route:<path>` &#8212; queryable via Storybook&#8217;s `stories.json` index, allowing external tooling to enumerate all covered routes.
 - **`appRoute` parameter** &#8212; the application route the story represents (e.g., `/items`).
@@ -388,7 +388,7 @@ Vendored dependencies are tracked in `vendored-deps.json` at the repository root
 
 ## Testing
 
-The `App/Current` stories are covered by three layers of automated testing:
+The `App/Reference` stories are covered by three layers of automated testing:
 
 <table>
   <thead>
@@ -403,15 +403,15 @@ The `App/Current` stories are covered by three layers of automated testing:
       <td>Interaction tests</td>
       <td>Storybook test runner</td>
       <td>
-        Play functions execute assertions against rendered pages (all `App/Current` and
-        `App/Migration` story variants)
+        Play functions execute assertions against rendered pages (all `App/Reference` and
+        `App/Canary` story variants)
       </td>
     </tr>
     <tr>
       <td>Visual regression</td>
       <td>Playwright</td>
       <td>
-        Pixel-level comparison of `App/Current` page screenshots against baselines (1% diff
+        Pixel-level comparison of `App/Reference` page screenshots against baselines (1% diff
         threshold)
       </td>
     </tr>
@@ -423,24 +423,24 @@ The `App/Current` stories are covered by three layers of automated testing:
   </tbody>
 </table>
 
-## App/Migration: Migration Workbench
+## App/Canary: Migration Workbench
 
-The vendored code establishes the foundation for a component migration project. The **App/Migration** section (`src/canary-refactor/`) is the active working area where vendored page components are progressively refactored to use migration-track library components instead of inline production components.
+The vendored code establishes the foundation for a component migration project. The **App/Canary** section (`src/canary-refactor/`) is the active working area where vendored page components are progressively refactored to use migration-track library components instead of inline production components.
 
 ### How it works
 
 1. A page is forked from its vendored counterpart in `src/dev-witness/` into a matching path under `src/canary-refactor/`.
 2. Vendored sub-components are replaced one-by-one with canary equivalents (e.g., `ArdaDetailField` replacing inline `flex flex-col gap-1` blocks).
-3. Intentional deviations from the `App/Current` reference are documented in the story JSDoc comment with an **Intentional deviations from App Current** block listing before/after values.
-4. The `withFullAppProviders` decorator wraps `App/Migration` stories automatically &#8212; no additional setup is required.
+3. Intentional deviations from the `App/Reference` reference are documented in the story JSDoc comment with an **Intentional deviations from App Current** block listing before/after values.
+4. The `withFullAppProviders` decorator wraps `App/Canary` stories automatically &#8212; no additional setup is required.
 
-Story files follow the same path and title structure as their `App/Current` counterparts, with `App/Current` replaced by `App/Migration`:
+Story files follow the same path and title structure as their `App/Reference` counterparts, with `App/Reference` replaced by `App/Canary`:
 
 <table>
   <thead>
     <tr>
-      <th>App/Current original</th>
-      <th>App/Migration mirror</th>
+      <th>App/Reference original</th>
+      <th>App/Canary mirror</th>
     </tr>
   </thead>
   <tbody>

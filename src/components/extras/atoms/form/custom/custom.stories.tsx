@@ -8,7 +8,7 @@ import { ArdaCustomFieldEditor } from './custom-field-editor';
 import { ArdaCustomFieldInteractive } from './custom-field-interactive';
 
 const meta: Meta<typeof ArdaCustomFieldInteractive> = {
-  title: 'Components/Current/Atoms/Form/Custom',
+  title: 'Components/Stable/Atoms/Form/Custom',
   component: ArdaCustomFieldInteractive,
   parameters: {
     layout: 'centered',

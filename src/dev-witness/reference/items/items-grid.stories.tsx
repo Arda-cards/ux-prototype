@@ -5,7 +5,7 @@ import ItemsPage from '@frontend/app/items/page';
 import '@/styles/vendored/globals.css';
 
 const meta: Meta<typeof ItemsPage> = {
-  title: 'App/Current/Reference/Items/Items Grid',
+  title: 'App/Reference/Reference/Items/Items Grid',
   component: ItemsPage,
   tags: ['app-route:/items'],
   parameters: {

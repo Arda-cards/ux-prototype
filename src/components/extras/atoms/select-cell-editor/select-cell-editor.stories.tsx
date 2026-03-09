@@ -9,7 +9,7 @@ import 'ag-grid-community/styles/ag-theme-quartz.css';
 import { ArdaSelectCellEditor, createSelectCellEditor } from './select-cell-editor';
 
 const meta = {
-  title: 'Components/Current/Atoms/Grid/SelectCellEditor',
+  title: 'Components/Stable/Atoms/Grid/SelectCellEditor',
   component: ArdaSelectCellEditor,
   parameters: {
     layout: 'padded',

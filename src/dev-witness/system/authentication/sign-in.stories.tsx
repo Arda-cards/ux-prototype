@@ -4,7 +4,7 @@ import SignInPage from '@frontend/app/signin/page';
 import '@/styles/vendored/globals.css';
 
 const meta: Meta<typeof SignInPage> = {
-  title: 'App/Current/System/Authentication/Sign In',
+  title: 'App/Reference/System/Authentication/Sign In',
   component: SignInPage,
   tags: ['app-route:/signin'],
   parameters: {

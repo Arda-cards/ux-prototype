@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { disableAnimationsAndSettle } from './vrt-helpers';
 
 /**
- * Visual Regression Tests for all App/Current page stories.
+ * Visual Regression Tests for all App/Reference page stories.
  *
  * Each test navigates to the Storybook iframe URL for a story's Default
  * variant, waits for rendering to stabilise, then captures a full-page
@@ -10,25 +10,25 @@ import { disableAnimationsAndSettle } from './vrt-helpers';
  *
  * Story ID format: Storybook lowercases the title path and joins with
  * double hyphens for the group separator and single hyphens within words.
- * Example: "App/Current/Home/Dashboard" -> "app-current-home-dashboard--default"
+ * Example: "App/Reference/Home/Dashboard" -> "app-reference-home-dashboard--default"
  */
 
 const STORIES = [
-  { name: 'Dashboard', id: 'app-current-home-dashboard--default' },
-  { name: 'Item Detail', id: 'app-current-reference-items-item-detail--default' },
-  { name: 'Items Grid', id: 'app-current-reference-items-items-grid--default' },
-  { name: 'Kanban Card', id: 'app-current-resources-kanban-cards-kanban-card--default' },
+  { name: 'Dashboard', id: 'app-reference-home-dashboard--default' },
+  { name: 'Item Detail', id: 'app-reference-reference-items-item-detail--default' },
+  { name: 'Items Grid', id: 'app-reference-reference-items-items-grid--default' },
+  { name: 'Kanban Card', id: 'app-reference-resources-kanban-cards-kanban-card--default' },
   {
     name: 'Mobile Device Check',
-    id: 'app-current-resources-kanban-cards-mobile-device-check--default',
+    id: 'app-reference-resources-kanban-cards-mobile-device-check--default',
   },
-  { name: 'Scan', id: 'app-current-resources-kanban-cards-scan--default' },
-  { name: 'Reset Password', id: 'app-current-system-authentication-reset-password--default' },
-  { name: 'Sign In', id: 'app-current-system-authentication-sign-in--default' },
-  { name: 'Sign Up', id: 'app-current-system-authentication-sign-up--default' },
-  { name: 'Settings Account', id: 'app-current-system-settings--account' },
-  { name: 'Order Queue', id: 'app-current-transactions-orders-order-queue--default' },
-  { name: 'Receiving', id: 'app-current-transactions-receiving--default' },
+  { name: 'Scan', id: 'app-reference-resources-kanban-cards-scan--default' },
+  { name: 'Reset Password', id: 'app-reference-system-authentication-reset-password--default' },
+  { name: 'Sign In', id: 'app-reference-system-authentication-sign-in--default' },
+  { name: 'Sign Up', id: 'app-reference-system-authentication-sign-up--default' },
+  { name: 'Settings Account', id: 'app-reference-system-settings--account' },
+  { name: 'Order Queue', id: 'app-reference-transactions-orders-order-queue--default' },
+  { name: 'Receiving', id: 'app-reference-transactions-receiving--default' },
 ] as const;
 
 for (const story of STORIES) {

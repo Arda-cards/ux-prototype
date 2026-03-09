@@ -7,7 +7,7 @@ import { ArdaImageFieldEditor } from './image-field-editor';
 import { ArdaImageFieldInteractive } from './image-field-interactive';
 
 const meta: Meta<typeof ArdaImageFieldInteractive> = {
-  title: 'Components/Current/Atoms/Form/Image',
+  title: 'Components/Stable/Atoms/Form/Image',
   component: ArdaImageFieldInteractive,
   parameters: {
     layout: 'centered',

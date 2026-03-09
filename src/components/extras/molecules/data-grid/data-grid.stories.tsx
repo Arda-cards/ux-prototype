@@ -35,7 +35,7 @@ const columnDefs: ColDef[] = [
 ];
 
 const meta: Meta<typeof ArdaDataGrid> = {
-  title: 'Components/Current/Molecules/DataGrid',
+  title: 'Components/Stable/Molecules/DataGrid',
   component: ArdaDataGrid,
   parameters: {
     layout: 'padded',

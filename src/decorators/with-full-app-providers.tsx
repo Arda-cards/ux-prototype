@@ -1,9 +1,9 @@
 /**
- * withFullAppProviders — Storybook decorator that wraps App/Current stories
+ * withFullAppProviders — Storybook decorator that wraps App/Reference stories
  * with the complete provider stack from the vendored arda-frontend-app.
  *
- * Applied conditionally: only stories whose title starts with 'App/Current'
- * or 'App/Migration' are wrapped. All other stories pass through unchanged.
+ * Applied conditionally: only stories whose title starts with 'App/Reference'
+ * or 'App/Canary' are wrapped. All other stories pass through unchanged.
  */
 
 import React from 'react';
@@ -117,9 +117,9 @@ function ensureSingletonStoreHasAuth() {
 }
 
 export const withFullAppProviders: Decorator = (Story, context) => {
-  // Wrap App/Current and App/Migration stories automatically, plus any story that opts in via parameter.
+  // Wrap App/Reference and App/Canary stories automatically, plus any story that opts in via parameter.
   const isFullApp =
-    context.title.startsWith('App/Current') || context.title.startsWith('App/Migration');
+    context.title.startsWith('App/Reference') || context.title.startsWith('App/Canary');
   const optsIn = context.parameters.fullAppProviders === true;
   if (!isFullApp && !optsIn) {
     return <Story />;

@@ -4,7 +4,7 @@ import ScanPage from '@frontend/app/scan/page';
 import '@/styles/vendored/globals.css';
 
 const meta: Meta<typeof ScanPage> = {
-  title: 'App/Current/Resources/Kanban Cards/Scan',
+  title: 'App/Reference/Resources/Kanban Cards/Scan',
   component: ScanPage,
   tags: ['app-route:/scan'],
   parameters: {

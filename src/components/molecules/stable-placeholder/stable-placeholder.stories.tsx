@@ -4,7 +4,7 @@ import { expect, within } from 'storybook/test';
 import { StableMoleculePlaceholder } from './stable-placeholder';
 
 const meta: Meta<typeof StableMoleculePlaceholder> = {
-  title: 'Components/Current/Molecules/Stable Placeholder',
+  title: 'Components/Stable/Molecules/Stable Placeholder',
   component: StableMoleculePlaceholder,
   parameters: {
     docs: {

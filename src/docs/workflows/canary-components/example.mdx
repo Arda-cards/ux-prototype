@@ -13,7 +13,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
 - **Component:** ArdaDetailField (C1 from design-session-1, decision D10)
 - **Classification:** Atom &#8212; Display and Layout
 - **Source pattern:** Five identical `flex flex-col gap-1` blocks in `vendored/arda-frontend/components/items/ItemDetailsPanel.tsx` lines 1161-1204
-- **App/Migration target:** `App/Migration/Reference/Items/Item Detail`
+- **App/Canary target:** `App/Canary/Reference/Items/Item Detail`
 
 ## Phase 1: Discovery &amp; Definition (Manual)
 
@@ -77,7 +77,7 @@ The following prompt was composed from **Template B** in the how-to guide and se
 ```
 You are a front-end engineer working in the `ux-prototype` Storybook component library.
 
-**Task:** Create the ArdaDetailField migration-track component and adopt it in an App/Migration story,
+**Task:** Create the ArdaDetailField migration-track component and adopt it in an App/Canary story,
 following the fork chain pattern.
 
 **Component definition:**
@@ -88,7 +88,7 @@ following the fork chain pattern.
 - RuntimeConfig: `value` (string | undefined), `children` (ReactNode for custom value rendering)
 - Upstream analog: shadcn: none, AG Grid: N/A
 - Vendored source: `src/vendored/arda-frontend/components/items/ItemDetailsPanel.tsx` lines 1161-1204
-- App/Migration target: `App/Migration/Reference/Items/Item Detail`
+- App/Canary target: `App/Canary/Reference/Items/Item Detail`
 
 **IMPORTANT: Read these reference documents FIRST before writing any code:**
 - Full workflow: `workspace/projects/ad-hoc/ux-prototype/component-workflow-support/how-to-create-new-canary-components.md`
@@ -113,17 +113,17 @@ following the fork chain pattern.
    - Accept className prop
 4. Create `detail-field.stories.tsx` with: Default (with play function), EmptyValue,
    CustomFallback, Compact, WithChildren, Composition, Playground stories.
-   Title: `Components/Migration/Atoms/Detail Field`
+   Title: `Components/Canary/Atoms/Detail Field`
 5. Create `detail-field.test.tsx` with unit tests.
 6. Create `detail-field.mdx` documentation.
    IMPORTANT: No markdown tables in MDX (use HTML tables), no named HTML entities
    (use numeric like `&#8212;` or Unicode), no bare curly braces in text.
 
-## Phase 3: Adoption in App/Migration -- FORK CHAIN PATTERN
+## Phase 3: Adoption in App/Canary -- FORK CHAIN PATTERN
 
 **THIS IS CRITICAL -- read Step 3.2 and 3.3 of the how-to document carefully.**
 
-The App/Current story renders `ItemDetailPage` which has this import chain:
+The App/Reference story renders `ItemDetailPage` which has this import chain:
 
     ItemDetailPage (vendored: app/item/[itemId]/page.tsx, 41 lines)
       -> ItemsPage (vendored: app/items/page.tsx, 3070 lines)
@@ -144,13 +144,13 @@ You must fork the ENTIRE chain. Create these files in `src/canary-refactor/compo
 
 4. **Create the story -- `src/canary-refactor/item-detail.stories.tsx`**:
    - Import the FORKED `ItemDetailPage` from `./components/ItemDetailPage`
-   - Title: `App/Migration/Reference/Items/Item Detail`
-   - SAME args shape as App/Current
+   - Title: `App/Canary/Reference/Items/Item Detail`
+   - SAME args shape as App/Reference
    - SAME play function testing for heading
    - SAME parameters (layout: fullscreen, etc.)
 
 **ANTI-PATTERN:** Do NOT render `ItemDetailsPanel` directly in the story. The story MUST
-render `ItemDetailPage` (the forked version) to be visually comparable with App/Current.
+render `ItemDetailPage` (the forked version) to be visually comparable with App/Reference.
 
 ## Phase 4: Verify
 1. Run the unit tests: `cd ux-prototype && npx vitest run src/components/canary/atoms/detail-field/`
@@ -345,7 +345,7 @@ In `ItemDetailsPanel.tsx` (forked):
 
 After fixing the relative imports, both stories were verified using the Playwright MCP browser tools.
 
-### App/Current: `App/Current/Reference/Items/Item Detail/Default`
+### App/Reference: `App/Reference/Reference/Items/Item Detail/Default`
 
 URL: `http://localhost:6006/?path=/story/app-current-reference-items-item-detail--default`
 
@@ -353,13 +353,13 @@ Screenshot: `scratch/app-current-item-detail.png`
 
 Result: Full Items page renders with "Items" heading, description, search bar, and AG Grid. The detail panel does not open because `mock-item-001` is not in the MSW mock data (returns 404). MSW mocks, Redux store, and routing all initialize correctly via `withFullAppProviders`.
 
-### App/Migration: `App/Migration/Reference/Items/Item Detail/Default`
+### App/Canary: `App/Canary/Reference/Items/Item Detail/Default`
 
 URL: `http://localhost:6006/?path=/story/app-migration-reference-items-item-detail--default`
 
 Screenshot: `scratch/app-migration-item-detail-fixed.png`
 
-Result: Identical to App/Current &#8212; full Items page with the same layout, heading, grid, and behavior. The pagination logs confirm the forked `ItemsPage.tsx` is being used (`canary-refactor/components/ItemsPage.tsx`). MSW, Redux, and routing all function identically.
+Result: Identical to App/Reference &#8212; full Items page with the same layout, heading, grid, and behavior. The pagination logs confirm the forked `ItemsPage.tsx` is being used (`canary-refactor/components/ItemsPage.tsx`). MSW, Redux, and routing all function identically.
 
 ### Comparison
 
@@ -403,13 +403,13 @@ The two screenshots are visually identical at the page level. The migration-trac
 
 ## Observations and Lessons Learned
 
-1. **Fork chain is essential.** The first agent attempt rendered `ItemDetailsPanel` directly in the story (without the fork chain), producing a completely different visual output from App/Current. The instructions were updated to make the fork chain concept explicit and mandatory.
+1. **Fork chain is essential.** The first agent attempt rendered `ItemDetailsPanel` directly in the story (without the fork chain), producing a completely different visual output from App/Reference. The instructions were updated to make the fork chain concept explicit and mandatory.
 
 2. **Relative imports break in forks.** When copying a vendored file to a new directory, any `./Sibling` imports must be converted to `@frontend/...` absolute paths. The agent did not catch this automatically.
 
 3. **TypeScript vs. Vite resolution.** The `@frontend` alias is configured only in Storybook's Vite config (`.storybook/main.ts`), not in `tsconfig.json` (which excludes `src/vendored`). Forked files that import via `@frontend/...` will show TypeScript errors in the IDE but resolve correctly at Storybook runtime.
 
-4. **MSW mock data gap.** The story uses `pathname: '/item/mock-item-001'` but this ID doesn't exist in the MSW mock handlers. Both App/Current and App/Migration show the same behavior (item not found, redirects to `/items`). To see the detail panel with the migration-track component, you'd need to click a grid row for an item that exists in the mock data (e.g., `item-001`).
+4. **MSW mock data gap.** The story uses `pathname: '/item/mock-item-001'` but this ID doesn't exist in the MSW mock handlers. Both App/Reference and App/Canary show the same behavior (item not found, redirects to `/items`). To see the detail panel with the migration-track component, you'd need to click a grid row for an item that exists in the mock data (e.g., `item-001`).
 
 5. **Playwright verification is essential.** Visual comparison via Playwright screenshots caught the broken fork chain issue immediately. This step should be part of every agent's self-check before completing.
 

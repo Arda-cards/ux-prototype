@@ -186,7 +186,7 @@ function DemoWizard(props: WizardProps<DemoFormData>) {
    ================================================================ */
 
 const meta = {
-  title: 'Components/Current/Organisms/Shared/Stepped Viewer/Demo',
+  title: 'Components/Stable/Organisms/Shared/Stepped Viewer/Demo',
   component: DemoWizard,
   parameters: { layout: 'centered' },
 } satisfies Meta<typeof DemoWizard>;

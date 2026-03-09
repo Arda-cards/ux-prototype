@@ -7,7 +7,7 @@ import { ArdaTextFieldEditor } from './text-field-editor';
 import { ArdaTextFieldInteractive } from './text-field-interactive';
 
 const meta: Meta<typeof ArdaTextFieldInteractive> = {
-  title: 'Components/Current/Atoms/Form/Text',
+  title: 'Components/Stable/Atoms/Form/Text',
   component: ArdaTextFieldInteractive,
   parameters: {
     layout: 'centered',

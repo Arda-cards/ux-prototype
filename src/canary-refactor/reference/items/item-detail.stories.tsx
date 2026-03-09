@@ -3,7 +3,7 @@ import { expect, within } from 'storybook/test';
 import ItemDetailPage from '../../components/ItemDetailPage';
 
 const meta: Meta<typeof ItemDetailPage> = {
-  title: 'App/Migration/Reference/Items/Item Detail',
+  title: 'App/Canary/Reference/Items/Item Detail',
   component: ItemDetailPage,
   tags: ['app-route:/item/[itemId]'],
   parameters: {

@@ -36,8 +36,8 @@ The Storybook sidebar is organized into these top-level sections:
 - **Start Here** — onboarding and orientation pages (`Overview`, `Getting Started`, `Changelog`)
 - **Guides** — implementation and workflow documentation
 - **Foundations** — design references (style guide, colors, icons, brand assets)
-- **Components** — reusable UI components (`Current` and `Migration` tracks)
-- **App** — full-app page stories (`Current` vendored parity, `Migration` replacement workbench)
+- **Components** — reusable UI components (`Stable` and `Canary` tracks)
+- **App** — full-app page stories (`Reference` vendored parity, `Canary` replacement workbench)
 - **Prototypes** — forward-looking workflow scenarios
 - **Archive** — historical mocks and superseded artifacts
 
@@ -71,9 +71,9 @@ src/
   index.ts            # Stable package entry point
   canary.ts           # Canary package entry point (staging track)
   extras.ts           # Extras package entry point
-  components/         # Component stories/docs (Current + Migration sidebar tracks)
-  canary-refactor/    # App/Migration stories
-  dev-witness/        # App/Current stories (historical directory name)
+  components/         # Component stories/docs (Stable + Canary sidebar tracks)
+  canary-refactor/    # App/Canary stories
+  dev-witness/        # App/Reference stories (historical directory name)
   use-cases/          # Prototypes stories
   visual-elements/    # Foundations stories
   archive/            # Historical stories
@@ -115,7 +115,7 @@ The library is published to GitHub Packages as `@arda-cards/design-system`. It i
 Only `src/components/`, `src/types/`, `src/lib/`, and `src/styles/` are compiled into `dist/`. The following directories are **excluded** from the published package:
 
 - `src/vendored/` — Production app code used only for Storybook Full App stories
-- `src/dev-witness/` and `src/canary-refactor/` — `App/Current` and `App/Migration` stories (Storybook only)
+- `src/dev-witness/` and `src/canary-refactor/` — `App/Reference` and `App/Canary` stories (Storybook only)
 - `src/use-cases/` — `Prototypes` stories (Storybook only)
 - `src/docs/` — documentation pages (Storybook only)
 - `src/visual-elements/` — `Foundations` stories (Storybook only)

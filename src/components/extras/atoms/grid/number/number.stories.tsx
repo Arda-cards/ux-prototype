@@ -7,7 +7,7 @@ import { ArdaNumberCellEditor } from './number-cell-editor';
 import { ArdaNumberCellInteractive } from './number-cell-interactive';
 
 const meta: Meta<typeof ArdaNumberCellInteractive> = {
-  title: 'Components/Current/Atoms/Grid/Number',
+  title: 'Components/Stable/Atoms/Grid/Number',
   component: ArdaNumberCellInteractive,
   parameters: {
     layout: 'centered',

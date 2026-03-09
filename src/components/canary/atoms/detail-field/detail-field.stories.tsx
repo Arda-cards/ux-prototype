@@ -3,7 +3,7 @@ import { expect, within } from 'storybook/test';
 import { ArdaDetailField } from './detail-field';
 
 const meta: Meta<typeof ArdaDetailField> = {
-  title: 'Components/Migration/Atoms/Detail Field',
+  title: 'Components/Canary/Atoms/Detail Field',
   component: ArdaDetailField,
   parameters: {
     docs: {

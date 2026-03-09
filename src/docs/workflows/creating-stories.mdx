@@ -4,7 +4,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 # How to Create New Stories
 
-This guide covers the conventions for creating Storybook stories in this project, including CSS theming, `App/Current` page stories, and component stories.
+This guide covers the conventions for creating Storybook stories in this project, including CSS theming, `App/Reference` page stories, and component stories.
 
 ## Intent
 
@@ -20,10 +20,10 @@ Arda's Design System elements are defined in 3 versions:
 | Story type                                                   | CSS to import                                          | Notes                              |
 | ------------------------------------------------------------ | ------------------------------------------------------ | ---------------------------------- |
 | Current-track component stories (`src/components/extras/`)   | None &#8212; uses the global default from `preview.ts` | Base theme is already loaded       |
-| `App/Current` page stories (`src/dev-witness/`)              | `@/styles/extras/vendored-theme.css`                   | Must match the real app appearance |
+| `App/Reference` page stories (`src/dev-witness/`)              | `@/styles/extras/vendored-theme.css`                   | Must match the real app appearance |
 | Migration-track component stories (`src/components/canary/`) | `@/styles/canary/globals.css` (when available)         | For migration-specific theming     |
 
-### Example: `App/Current` Story with Theme Override
+### Example: `App/Reference` Story with Theme Override
 
 ```tsx
 // src/dev-witness/<section>/my-page.stories.tsx
@@ -34,7 +34,7 @@ import MyPage from '@frontend/app/my-page/page';
 import '@/styles/vendored/globals.css';
 
 const meta: Meta<typeof MyPage> = {
-  title: 'App/Current/Section/My Page',
+  title: 'App/Reference/Section/My Page',
   component: MyPage,
   tags: ['app-route:/my-page'],
   parameters: {
@@ -63,7 +63,7 @@ import { MyAtom } from './my-atom';
 // No CSS import needed — uses global default from preview.ts
 
 const meta: Meta<typeof MyAtom> = {
-  title: 'Components/Current/Atoms/My Atom',
+  title: 'Components/Stable/Atoms/My Atom',
   component: MyAtom,
 };
 
@@ -77,7 +77,7 @@ export const Default: Story = {};
 
 _(This section will be expanded as conventions are finalized.)_
 
-## `App/Current` Stories
+## `App/Reference` Stories
 
 For detailed guidance on creating mirrored app page stories, see the
 [App Current Contributing Guide](?path=/docs/app-current-contributing--docs).

@@ -4,7 +4,7 @@ import { expect, within } from 'storybook/test';
 import { CanaryMoleculePlaceholder } from './canary-placeholder';
 
 const meta: Meta<typeof CanaryMoleculePlaceholder> = {
-  title: 'Components/Migration/Molecules/Staging Placeholder',
+  title: 'Components/Canary/Molecules/Staging Placeholder',
   component: CanaryMoleculePlaceholder,
   parameters: {
     docs: {

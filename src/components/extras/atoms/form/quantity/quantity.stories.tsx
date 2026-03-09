@@ -9,7 +9,7 @@ import { ArdaQuantityFieldInteractive } from './quantity-field-interactive';
 const weightUnits = { kg: 'Kilograms', lbs: 'Pounds', g: 'Grams', oz: 'Ounces' } as const;
 
 const meta: Meta<typeof ArdaQuantityFieldInteractive> = {
-  title: 'Components/Current/Atoms/Form/Quantity',
+  title: 'Components/Stable/Atoms/Form/Quantity',
   component: ArdaQuantityFieldInteractive,
   parameters: {
     layout: 'centered',

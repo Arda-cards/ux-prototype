@@ -25,7 +25,7 @@ Phase 1: Discovery & Definition
 Phase 2: Component Creation
   Check upstream libraries (shadcn/ui, AG Grid) -> Create component + CVA variants -> Stories -> Tests -> MDX docs
 
-Phase 3: Adoption in App/Migration
+Phase 3: Adoption in App/Canary
   Fork import chain -> Replace vendored inline code -> Visual comparison -> Iterate -> Update tests/docs
 
 Phase 4: Publication
@@ -46,7 +46,7 @@ Each phase is detailed below with exact file paths, commands, and decision crite
 
 - Vendored production code (`src/vendored/arda-frontend/`)
 - Figma mockups ([Arda MVP 2.0](https://www.figma.com/design/JJJ5Yb7t8hMe2LfCX0W5gQ))
-- App/Current Storybook stories
+- App/Reference Storybook stories
 - Prototype stories
 - Extras experiments
 - New feature designs
@@ -273,7 +273,7 @@ import { expect, within } from 'storybook/test';
 import { ArdaDetailField } from './detail-field';
 
 const meta: Meta<typeof ArdaDetailField> = {
-  title: 'Components/Migration/Atoms/Detail Field',
+  title: 'Components/Canary/Atoms/Detail Field',
   component: ArdaDetailField,
   parameters: {
     docs: {
@@ -402,46 +402,46 @@ Follow the structure from [Consolidated Guidelines, Section 10.5](consolidated-c
 
 ---
 
-## Phase 3: Adoption in App/Migration
+## Phase 3: Adoption in App/Canary
 
 ### Step 3.1: Identify Replacement Points
 
-Review each App/Migration story for places where the new component should replace inline vendored code.
+Review each App/Canary story for places where the new component should replace inline vendored code.
 
-For DetailFieldRow in the Item Detail App/Migration story:
+For DetailFieldRow in the Item Detail App/Canary story:
 
 - The five `flex flex-col gap-1` blocks at lines 1161-1204 of `ItemDetailsPanel.tsx` are the replacement targets.
 
-### Step 3.2: Create the App/Migration Story (if not already present)
+### Step 3.2: Create the App/Canary Story (if not already present)
 
-If an App/Migration version of the App/Current story doesn't exist yet, create one.
+If an App/Canary version of the App/Reference story doesn't exist yet, create one.
 
-**Critical rule:** The App/Migration story must render the **same top-level component** as the App/Current story. If the App/Current story renders a page component (e.g., `ItemDetailPage`), the App/Migration story must also render a page component &#8212; never a lower-level panel or section directly. This ensures the App/Migration output is visually comparable with the App/Current original.
+**Critical rule:** The App/Canary story must render the **same top-level component** as the App/Reference story. If the App/Reference story renders a page component (e.g., `ItemDetailPage`), the App/Canary story must also render a page component &#8212; never a lower-level panel or section directly. This ensures the App/Canary output is visually comparable with the App/Reference original.
 
 Steps:
 
-1. Read the App/Current story and note which component it imports (the "story root component").
-2. Copy the App/Current story file to `src/canary-refactor/`.
-3. Change the title to `App/Migration/{Section}/{Page}`.
-4. The `withFullAppProviders` decorator auto-wraps stories with `App/Migration` title prefix (configured in Round 3).
-5. Keep the same args shape and play functions. At this point the story should render identically to App/Current.
+1. Read the App/Reference story and note which component it imports (the "story root component").
+2. Copy the App/Reference story file to `src/canary-refactor/`.
+3. Change the title to `App/Canary/{Section}/{Page}`.
+4. The `withFullAppProviders` decorator auto-wraps stories with `App/Canary` title prefix (configured in Round 3).
+5. Keep the same args shape and play functions. At this point the story should render identically to App/Reference.
 
-**Anti-pattern:** Do NOT change the story to render a different component than the App/Current version. For example, if App/Current renders `ItemDetailPage`, the App/Migration must NOT render `ItemDetailsPanel` directly &#8212; that produces a completely different visual output and defeats the purpose of side-by-side comparison.
+**Anti-pattern:** Do NOT change the story to render a different component than the App/Reference version. For example, if App/Reference renders `ItemDetailPage`, the App/Canary must NOT render `ItemDetailsPanel` directly &#8212; that produces a completely different visual output and defeats the purpose of side-by-side comparison.
 
 ### Step 3.3: Fork the Import Chain and Replace Inline Code
 
-To modify vendored code without affecting the App/Current story, fork the **entire import chain** from the story root component down to the component containing the inline pattern.
+To modify vendored code without affecting the App/Reference story, fork the **entire import chain** from the story root component down to the component containing the inline pattern.
 
 **The fork chain concept:**
 
-If the App/Current story renders `PageComponent` which imports `PanelComponent` which contains the inline pattern:
+If the App/Reference story renders `PageComponent` which imports `PanelComponent` which contains the inline pattern:
 
 ```
-App/Current story
+App/Reference story
   -> imports PageComponent (from vendored)
     -> imports PanelComponent (from vendored) <- inline pattern here
 
-App/Migration story
+App/Canary story
   -> imports PageComponent (FORKED)
     -> imports PanelComponent (FORKED) <- migration-track component replaces inline pattern
 ```
@@ -451,18 +451,18 @@ App/Migration story
 1. **Identify the chain.** Trace imports from the story root component to the component containing the inline code. List every component in that chain.
 2. **Fork the leaf.** Copy the vendored component that contains the inline pattern into `src/canary-refactor/components/`. Replace inline code with the new migration-track component.
 3. **Fork each parent in the chain.** For each component between the story root and the leaf, create a fork that is identical to the vendored version except it imports the forked child instead of the vendored child.
-4. **Update the story import.** Change the App/Migration story to import the forked story root component.
-5. **Verify.** At this point, the App/Migration story should render identically to App/Current except for the intentional migration-track component changes.
+4. **Update the story import.** Change the App/Canary story to import the forked story root component.
+5. **Verify.** At this point, the App/Canary story should render identically to App/Reference except for the intentional migration-track component changes.
 
 **Example &#8212; DetailFieldRow in ItemDetailsPanel:**
 
 ```
-App/Current: item-detail.stories.tsx
+App/Reference: item-detail.stories.tsx
   -> imports ItemDetailPage from '@frontend/app/item/[itemId]/page'
     -> imports ItemsPage
       -> imports ItemDetailsPanel <- 5 inline detail field blocks
 
-App/Migration: item-detail.stories.tsx
+App/Canary: item-detail.stories.tsx
   -> imports ItemDetailPage from './components/ItemDetailPage'  (FORKED)
     -> imports ItemsPage from './components/ItemsPage'  (FORKED)
       -> imports ItemDetailsPanel from './components/ItemDetailsPanel'  (FORKED)
@@ -489,7 +489,7 @@ Only change the import for the **next file in the fork chain** to a relative pat
 
 ### Step 3.4: Visual Comparison
 
-Compare the App/Migration output against the App/Current original. This step is mandatory &#8212; do not skip it.
+Compare the App/Canary output against the App/Reference original. This step is mandatory &#8212; do not skip it.
 
 **Method A: Automated VRT (if baselines exist)**
 
@@ -499,11 +499,11 @@ npm run test:vrt
 
 **Method B: Playwright MCP (recommended for agent workflows)**
 
-If a Playwright MCP server is available, use it to verify that the App/Migration story loads and renders correctly. This catches import errors, runtime exceptions, and structural rendering problems that unit tests cannot detect.
+If a Playwright MCP server is available, use it to verify that the App/Canary story loads and renders correctly. This catches import errors, runtime exceptions, and structural rendering problems that unit tests cannot detect.
 
 Steps:
 
-1. Navigate to the App/Current story:
+1. Navigate to the App/Reference story:
    ```
    browser_navigate: http://localhost:6006/?path=/story/{app-current-story-id}--default
    ```
@@ -512,11 +512,11 @@ Steps:
    const frame = page.frameLocator('iframe#storybook-preview-iframe');
    await frame.getByRole('heading', { name: /ExpectedHeading/i }).waitFor({ timeout: 30000 });
    ```
-3. Take a screenshot of the App/Current version:
+3. Take a screenshot of the App/Reference version:
    ```
    browser_take_screenshot: scratch/app-current-{page-name}.png
    ```
-4. Navigate to the App/Migration story:
+4. Navigate to the App/Canary story:
    ```
    browser_navigate: http://localhost:6006/?path=/story/{app-migration-story-id}--default
    ```
@@ -530,13 +530,13 @@ Steps:
 
 - "Failed to fetch dynamically imported module" &#8212; broken import in a forked file (usually a relative import that wasn't converted to `@frontend/...`)
 - Blank iframe &#8212; the story renders but the component tree fails silently
-- Different page structure &#8212; the story renders a different component than App/Current (e.g., panel directly instead of full page)
+- Different page structure &#8212; the story renders a different component than App/Reference (e.g., panel directly instead of full page)
 
 **Method C: Manual inspection (fallback)**
 
 1. Open Storybook (`npm run dev`)
-2. Open `App/Current/Items/Item Detail/Default` in one browser tab
-3. Open `App/Migration/Items/Item Detail/Default` in another tab
+2. Open `App/Reference/Items/Item Detail/Default` in one browser tab
+3. Open `App/Canary/Items/Item Detail/Default` in another tab
 4. Compare visually, paying attention to:
    - Layout and spacing (gap sizes, padding)
    - Typography (font size, weight, color &#8212; the vendored code uses hardcoded hex like `#737373`, the migration-track component uses `text-muted-foreground`)
@@ -557,16 +557,16 @@ Based on the visual comparison:
 
 ### Step 3.6: Extend to Additional Stories
 
-Review other App/Current stories for the same pattern:
+Review other App/Reference stories for the same pattern:
 
-1. Identify App/Current stories that contain the same inline pattern.
-2. If an App/Migration copy doesn't exist, create one (Step 3.2).
+1. Identify App/Reference stories that contain the same inline pattern.
+2. If an App/Canary copy doesn't exist, create one (Step 3.2).
 3. Apply the component replacement (Step 3.3) and visual comparison (Step 3.4).
-4. Update the VRT spec to include the new App/Migration stories.
+4. Update the VRT spec to include the new App/Canary stories.
 
 ### Step 3.7: Update Tests and Documentation
 
-1. Add the App/Migration stories to `tests/vrt/full-app-pages.spec.ts` (or a new `app-migration-comparison.spec.ts`).
+1. Add the App/Canary stories to `tests/vrt/full-app-pages.spec.ts` (or a new `app-migration-comparison.spec.ts`).
 2. Update the component's MDX documentation with adoption examples.
 3. Run `npm run test` to ensure all unit tests pass.
 
@@ -606,7 +606,7 @@ git add src/canary.ts
 git add src/canary-refactor/
 git add src/docs/workflows/using-the-design-system.mdx
 git add tests/vrt/
-git commit -m "Add ArdaDetailField canary atom and App/Migration adoption"
+git commit -m "Add ArdaDetailField canary atom and App/Canary adoption"
 ```
 
 ### Step 4.3: Create Pull Request
@@ -616,12 +616,12 @@ gh pr create \
   --title "Add ArdaDetailField canary atom" \
   --body "## Summary
 - New canary atom: ArdaDetailField (label/value pair for detail views)
-- Adopted in `App/Migration/Items/Item Detail` (replaces 5 inline blocks)
+- Adopted in `App/Canary/Items/Item Detail` (replaces 5 inline blocks)
 - Stories, tests, and MDX documentation included
 
 ## Verification
-- [ ] Storybook: Components/Migration/Atoms/Detail Field renders correctly
-- [ ] `App/Migration/Items/Item Detail` matches `App/Current` visually
+- [ ] Storybook: Components/Canary/Atoms/Detail Field renders correctly
+- [ ] `App/Canary/Items/Item Detail` matches `App/Reference` visually
 - [ ] Unit tests pass: npm run test
 - [ ] VRT comparison: npm run test:vrt (if baselines exist)"
 ```
@@ -635,19 +635,19 @@ gh pr create \
 
 ## AI Agent Prompt Templates
 
-### Template A: Discovery-First (Starting from App/Current Stories)
+### Template A: Discovery-First (Starting from App/Reference Stories)
 
-Use this when the goal is to explore one or more App/Current stories and identify components to extract.
+Use this when the goal is to explore one or more App/Reference stories and identify components to extract.
 
 ```
 You are a front-end engineer working in the `ux-prototype` Storybook component library.
 
-**Task:** Analyze the following App/Current stories and identify reusable components
+**Task:** Analyze the following App/Reference stories and identify reusable components
 that can be extracted into the migration track.
 
 **Stories to analyze:**
-- App/Current/Items/Item Detail/Default
-- App/Current/Items/Items Grid/Default
+- App/Reference/Items/Item Detail/Default
+- App/Reference/Items/Items Grid/Default
 [Add or replace with target stories]
 
 **Instructions:**
@@ -687,7 +687,7 @@ Use this when the component to extract has already been identified and defined (
 ```
 You are a front-end engineer working in the `ux-prototype` Storybook component library.
 
-**Task:** Create a new migration-track component and adopt it in an App/Migration story.
+**Task:** Create a new migration-track component and adopt it in an App/Canary story.
 
 **Component definition:**
 - Name: Arda{ComponentName}
@@ -697,7 +697,7 @@ You are a front-end engineer working in the `ux-prototype` Storybook component l
 - RuntimeConfig: {list of dynamic props}
 - Upstream analog: shadcn: {component name or "none"}, AG Grid: {feature or "N/A"}
 - Vendored source: {file path and line range}
-- App/Migration target: {story title where this will be adopted}
+- App/Canary target: {story title where this will be adopted}
 
 **Instructions -- follow these phases in order:**
 
@@ -719,11 +719,11 @@ You are a front-end engineer working in the `ux-prototype` Storybook component l
 5. Create `{name}.test.tsx` with unit tests for each variant and edge case.
 6. Create `{name}.mdx` documentation.
 
-**Phase 3: Adoption in App/Migration**
-1. If the App/Migration story doesn't exist, create it as a copy of the
-   App/Current story (title prefix: `App/Migration/`).
+**Phase 3: Adoption in App/Canary**
+1. If the App/Canary story doesn't exist, create it as a copy of the
+   App/Reference story (title prefix: `App/Canary/`).
    CRITICAL: The story must render the SAME top-level component as the Dev
-   Witness story (e.g., if App/Current renders a page, App/Migration must
+   Witness story (e.g., if App/Reference renders a page, App/Canary must
    also render a page -- never a lower-level panel or section directly).
 2. Trace the import chain from the story root component down to the
    component containing the inline pattern. Fork EVERY component in that
@@ -731,7 +731,7 @@ You are a front-end engineer working in the `ux-prototype` Storybook component l
 3. In the leaf fork, replace inline code with the new migration-track component.
    Each parent fork is identical to the vendored original except it imports
    the forked child instead of the vendored child.
-4. Update the App/Migration story to import the forked story root component.
+4. Update the App/Canary story to import the forked story root component.
 5. IMPORTANT: In every forked file, scan for relative imports (`'./SiblingFile'`).
    Convert any relative import that points to a vendored sibling (NOT part of
    the fork chain) to an absolute `@frontend/...` path. Only the fork-chain
@@ -740,13 +740,13 @@ You are a front-end engineer working in the `ux-prototype` Storybook component l
 
 **Phase 4: Self-Check (mandatory before completing)**
 1. Run unit tests: `cd ux-prototype && npx vitest run src/components/canary/{level}/{name}/`
-2. Verify the App/Migration story loads in Storybook using Playwright MCP:
-   a. Navigate to the App/Current story URL:
+2. Verify the App/Canary story loads in Storybook using Playwright MCP:
+   a. Navigate to the App/Reference story URL:
       `http://localhost:6006/?path=/story/{app-current-story-id}--default`
    b. Wait for the story iframe to load (use `page.frameLocator('iframe#storybook-preview-iframe')`
       and wait for a known heading or element).
    c. Take a screenshot: `scratch/app-current-{page-name}.png`
-   d. Navigate to the App/Migration story URL:
+   d. Navigate to the App/Canary story URL:
       `http://localhost:6006/?path=/story/{app-migration-story-id}--default`
    e. Wait for the iframe to load. If it fails with "Failed to fetch dynamically
       imported module", check for broken relative imports in the forked files.
@@ -771,18 +771,18 @@ Use this after adoption to run or prepare visual regression tests.
 ````
 You are a test engineer working in the `ux-prototype` Storybook component library.
 
-**Task:** Run visual regression tests comparing the App/Migration story against
-the App/Current original.
+**Task:** Run visual regression tests comparing the App/Canary story against
+the App/Reference original.
 
 **Stories to compare:**
-- App/Current: {App/Current story title} (story ID: {id})
-- App/Migration: {App/Migration story title} (story ID: {id})
+- App/Reference: {App/Reference story title} (story ID: {id})
+- App/Canary: {App/Canary story title} (story ID: {id})
 
 **Instructions:**
 
 **Step 1: Playwright MCP smoke test (always do this first)**
 Before running VRT, verify that both stories load and render correctly:
-1. Navigate to the App/Current story:
+1. Navigate to the App/Reference story:
    `http://localhost:6006/?path=/story/{app-current-story-id}--default`
 2. Wait for the story iframe to load:
    ```js
@@ -791,7 +791,7 @@ Before running VRT, verify that both stories load and render correctly:
 ````
 
 3. Take a screenshot: `scratch/app-current-{page-name}.png`
-4. Navigate to the App/Migration story:
+4. Navigate to the App/Canary story:
    `http://localhost:6006/?path=/story/{app-migration-story-id}--default`
 5. Wait for the iframe to load (same pattern). If this fails with
    "Failed to fetch dynamically imported module", report the broken import path.
@@ -803,7 +803,7 @@ Before running VRT, verify that both stories load and render correctly:
 
 1. Check if VRT baselines exist: `ls tests/vrt/__snapshots__/`
 2. If baselines exist:
-   - Add the App/Migration story to the VRT spec (either `full-app-pages.spec.ts`
+   - Add the App/Canary story to the VRT spec (either `full-app-pages.spec.ts`
      or a new `app-migration-comparison.spec.ts`)
    - Run `npm run test:vrt`
    - Report pass/fail and any pixel diffs
@@ -838,11 +838,11 @@ Before running VRT, verify that both stories load and render correctly:
       <td>`src/components/canary/{level}/{name}/`</td>
     </tr>
     <tr>
-      <td>App/Migration stories</td>
+      <td>App/Canary stories</td>
       <td>`src/canary-refactor/`</td>
     </tr>
     <tr>
-      <td>App/Current stories</td>
+      <td>App/Reference stories</td>
       <td>`src/dev-witness/`</td>
     </tr>
     <tr>

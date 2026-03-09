@@ -1,14 +1,14 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="App/Current/Contributing" />
+<Meta title="App/Reference/Contributing" />
 
 # App Current Contributing Guide
 
-This page covers how to add new page stories, override MSW handlers, run the sync script locally, and debug common issues with the `App/Current` integration.
+This page covers how to add new page stories, override MSW handlers, run the sync script locally, and debug common issues with the `App/Reference` integration.
 
 ## Adding a New Page Story
 
-Each `App/Current` page story lives in `src/dev-witness/` and follows a consistent template. The folder name is historical; the Storybook section label is `App/Current`.
+Each `App/Reference` page story lives in `src/dev-witness/` and follows a consistent template. The folder name is historical; the Storybook section label is `App/Reference`.
 
 ### 1. Create the Story File
 
@@ -19,7 +19,7 @@ import MyPage from '@frontend/app/my-page/page';
 import '@/styles/vendored/globals.css';
 
 const meta: Meta<typeof MyPage> = {
-  title: 'App/Current/Section/My Page',
+  title: 'App/Reference/Section/My Page',
   component: MyPage,
   tags: ['app-route:/my-page'],
   parameters: {
@@ -40,7 +40,7 @@ export const Default: Story = {};
 
 Key points:
 
-- The `title` must start with `App/Current/` so the `withFullAppProviders` decorator activates. Use a minimum three-level title (`App/Current/Section/Page`) matching the application&#8217;s navigation structure. See the [Page Inventory](?path=/docs/app-current-integration--docs#page-inventory) for the section taxonomy.
+- The `title` must start with `App/Reference/` so the `withFullAppProviders` decorator activates. Use a minimum three-level title (`App/Reference/Section/Page`) matching the application&#8217;s navigation structure. See the [Page Inventory](?path=/docs/app-current-integration--docs#page-inventory) for the section taxonomy.
 - The `tags` array should include `app-route:<path>` for route traceability.
 - Import `@/styles/vendored/globals.css` to apply the production application&#8217;s CSS custom properties. This file uses the `theme-override` CSS layer so vendored tokens take precedence over the Nominal base theme. See the [CSS Layer System](?path=/docs/docs-css-layer-system--docs) for details.
 - Set `pathname` in `args` to match the application route. For dynamic routes, provide a concrete value (e.g., `/item/item-001`).
@@ -224,11 +224,11 @@ The script is idempotent: it deletes the target directory before copying. After 
 
 ### Runtime Error: Story Shows Sign-In Page
 
-**Symptom:** An `App/Current` story renders the sign-in page instead of the expected page.
+**Symptom:** An `App/Reference` story renders the sign-in page instead of the expected page.
 
 **Cause:** The auth guard detected missing or invalid auth state and redirected to `/signin`.
 
-**Fix:** Verify the story title starts with `App/Current/` or `App/Migration/` (case-sensitive). The `withFullAppProviders` decorator activates for both prefixes. If the title is correct, check that `MockAuthProvider` and the Redux store pre-loading are working by inspecting the browser console for auth-related errors.
+**Fix:** Verify the story title starts with `App/Reference/` or `App/Canary/` (case-sensitive). The `withFullAppProviders` decorator activates for both prefixes. If the title is correct, check that `MockAuthProvider` and the Redux store pre-loading are working by inspecting the browser console for auth-related errors.
 
 ### Runtime Error: API Calls Return Empty Data
 
@@ -248,7 +248,7 @@ The script is idempotent: it deletes the target directory before copying. After 
 
 ## Updating VRT Baselines
 
-After making intentional visual changes to an `App/Current` page, update the Playwright screenshot baselines:
+After making intentional visual changes to an `App/Reference` page, update the Playwright screenshot baselines:
 
 ```bash
 # Build Storybook first
