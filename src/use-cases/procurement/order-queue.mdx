@@ -1,287 +1,58 @@
 import { Meta } from '@storybook/addon-docs/blocks';
+import { docsUrl } from '../links';
 
 <Meta title="Use Cases/Procurement/Order Queue" />
 
 # Order Queue Behaviors
 
-Manages the queue of procurement demand signals &#8212; Kanban Cards in
-`REQUESTING` state &#8212; awaiting conversion into purchase orders. Use cases
-cover how cards enter the queue, how the queue is viewed and filtered, and how
-a purchasing manager initiates an order from accumulated demand.
+<a href={docsUrl('/product/use-cases/procurement/order-queue/')}
+   target="_blank" rel="noopener">
+  View full specification &#8594;
+</a>
 
----
+Manages the queue of procurement demand signals awaiting conversion into purchase
+orders. The canonical specification is maintained in the documentation site linked
+above.
 
-### `PRO::OQ::0001` &#8212; Add Card to Order Queue
-
-<table>
-  <tbody>
-    <tr><th>Persona</th><td><a href="?path=/docs/docs-personas-sam-shop-floor-worker--docs">Sam</a>, <a href="?path=/docs/docs-personas-irene-inventory-manager--docs">Irene</a></td></tr>
-    <tr><th>Status</th><td>Covered</td></tr>
-    <tr><th>Depends</th><td>RES::KC</td></tr>
-  </tbody>
-</table>
-
-Request replenishment for an item by placing its Kanban Card into the
-procurement queue. The card transitions to `REQUESTING` and appears in the
-Order Queue under its supplier group.
-
-- **PRO::OQ::0001::0001.US &#8212; Add Card via Item List:** Navigate to
-  `/items`, click an item row, click &#8220;Add to cart.&#8221; The system
-  sends `POST /v1/kanban/kanban-card/{eId}/event/request`. Badge increments,
-  toast shown. Button disabled when card is already in `REQUESTING`,
-  `REQUESTED`, or `IN_PROCESS`.
-
-- **PRO::OQ::0001::0002.US &#8212; Add Card via QR Scan:** Navigate to `/scan`,
-  scan QR code, decode URL (`/kanban/cards/{eId}?view=card&src=qr`), preview
-  card, tap &#8220;Add to order queue.&#8221; Supports batch scanning and
-  inline editing (PRO::OQ::0002) before queue entry is confirmed.
-
-- **PRO::OQ::0001::0003.US &#8212; Add Card via Card Detail Page:** Navigate
-  directly to `/kanban/cards/{eId}?view=card` (standalone page, no sidebar).
-  Click &#8220;Add to order queue.&#8221; Implementation note: button must
-  be added to this page.
-
-- **PRO::OQ::0001::0004.US &#8212; Physical Kanban Card Trigger:** Purely
-  physical workflow. Card placed at reorder point triggers Sam to initiate a
-  digital queue entry via QR scan or item list. Informs card placement
-  conventions and physical bin setup guides.
-
----
-
-### `PRO::OQ::0002` &#8212; Inline Field Editing During Replenishment Trigger
+## Stories in This Section
 
 <table>
-  <tbody>
-    <tr><th>Persona</th><td><a href="?path=/docs/docs-personas-sam-shop-floor-worker--docs">Sam</a>, <a href="?path=/docs/docs-personas-irene-inventory-manager--docs">Irene</a></td></tr>
-    <tr><th>Status</th><td>New-extends</td></tr>
-    <tr><th>Depends</th><td>PRO::OQ::0001</td></tr>
-  </tbody>
-</table>
-
-During the &#8220;Add to Cart&#8221; mobile flow, the user should be able to
-edit item parameters inline without navigating to a separate reference data page.
-
-- **PRO::OQ::0002::0001.US &#8212; Update Minimums at Point of Use:** Adjust
-  minimum stock level directly in the queue-entry flow on the QR scan or item
-  details panel. Prevents the failure mode where a user notices a data problem
-  but does not fix it because fixing requires navigating away.
-
-- **PRO::OQ::0002::0002.US &#8212; Update Reorder Quantities from Shop Floor:**
-  Change reorder quantity inline before queue entry is confirmed. Updates the
-  ItemSupply record so the correction applies to all future orders.
-
-- **PRO::OQ::0002::0003.US &#8212; Proactive Data Correction** (Irene,
-  Status: Partial): Remove or replace a wrong URL at the point of discovery
-  without leaving the queue-entry flow.
-
----
-
-### `PRO::OQ::0003` &#8212; View and Filter Order Queue
-
-<table>
-  <tbody>
-    <tr><th>Persona</th><td><a href="?path=/docs/docs-personas-david-purchasing-manager--docs">David</a></td></tr>
-    <tr><th>Status</th><td>Covered</td></tr>
-  </tbody>
-</table>
-
-Display the Order Queue with cards grouped by vendor and order mechanism,
-searchable and filterable.
-
-- **PRO::OQ::0003::0001.UC &#8212; View Procurement Queue:** Cards in
-  `REQUESTED`/`IN_PROCESS`/`READY` grouped by supplier. Three actions:
-  Procure (&#8594; `IN_PROCESS`), Receive (&#8594; `READY`), Fulfill
-  (&#8594; `FULFILLED`, skipping `FULFILLING`).
-
-- **PRO::OQ::0003::0002.UC &#8212; View Order Queue (Actor-Goal):** Two tabs:
-  &#8220;Ready to Order&#8221; (`REQUESTING`) and &#8220;Recent Orders&#8221;
-  (`REQUESTED` + `IN_PROCESS`). Grouped by Vendor + Order Mechanism. Group
-  headers show vendor name, mechanism, card count, unique item count. Missing
-  vendor = &#8220;Unassigned vendor&#8221; (disabled). Missing mechanism =
-  &#8220;Unknown mechanism&#8221; (disabled).
-
-- **PRO::OQ::0003::0003.UC &#8212; View Order Queue (E2E):** Two parallel card
-  detail queries, client-side grouping by `primarySupply.supplier` and
-  `primarySupply.orderMethod`. Proposed `POST /v1/order/queue/query` endpoint
-  for server-side grouping.
-
-- **PRO::OQ::0003::0004.UC &#8212; Filter and Sort:** Switch grouping (by
-  Supplier / by Order Method), search bar filters in real time, collapsible
-  group headers.
-
-- **PRO::OQ::0003::0005.US &#8212; Physical-to-Digital Queue Bridge**
-  (New-distinct): Workers drop physical cards in a bin; the Purchasing Manager
-  later scans them at a workstation to verify each appears in the digital queue.
-
----
-
-### `PRO::OQ::0004` &#8212; Queue Aging Visibility
-
-<table>
-  <tbody>
-    <tr><th>Persona</th><td><a href="?path=/docs/docs-personas-david-purchasing-manager--docs">David</a></td></tr>
-    <tr><th>Status</th><td>New-extends</td></tr>
-    <tr><th>Depends</th><td>PRO::OQ::0003</td></tr>
-  </tbody>
-</table>
-
-**PRO::OQ::0004::0001.US &#8212; Time-in-State Display:** Show how long each
-card has been in `REQUESTING` state so David can distinguish urgent items from
-those that can wait. Surfaces longest-waiting cards at top or with a visual
-indicator. Motivates adding `enteredStateAt` timestamp to the card display
-payload.
-
----
-
-### `PRO::OQ::0005` &#8212; Order Queue Grouping Rules
-
-<table>
-  <tbody>
-    <tr><th>Persona</th><td><a href="?path=/docs/docs-personas-david-purchasing-manager--docs">David</a></td></tr>
-    <tr><th>Status</th><td>Covered</td></tr>
-  </tbody>
-</table>
-
-**PRO::OQ::0005::0001.FS &#8212; Grouping Key Definition:** Cards are grouped
-by `primarySupply.supplier` + `primarySupply.orderMethod`. Cards with no vendor
-fall into &#8220;Unassigned vendor&#8221; (ordering disabled). Cards with no
-mechanism fall into &#8220;Unknown mechanism&#8221; (also disabled). Each group
-header displays vendor name, mechanism label, card count, and unique item count.
-
----
-
-### `PRO::OQ::0006` &#8212; Inline Vendor Data Completion
-
-<table>
-  <tbody>
-    <tr><th>Persona</th><td><a href="?path=/docs/docs-personas-david-purchasing-manager--docs">David</a></td></tr>
-    <tr><th>Status</th><td>New-extends</td></tr>
-    <tr><th>Depends</th><td>PRO::OQ::0005</td></tr>
-  </tbody>
-</table>
-
-**PRO::OQ::0006::0001.US &#8212; Add Missing Vendor Information During
-Purchasing:** When David encounters an &#8220;Unassigned vendor&#8221; group,
-he adds vendor name, purchase URL, and order method inline &#8212; directly in
-the queue view. After completion, the group gains a real vendor assignment and
-ordering is re-enabled without a page reload.
-
----
-
-### `PRO::OQ::0007` &#8212; Create Order from Queue
-
-<table>
-  <tbody>
-    <tr><th>Persona</th><td><a href="?path=/docs/docs-personas-david-purchasing-manager--docs">David</a></td></tr>
-    <tr><th>Status</th><td>Covered</td></tr>
-    <tr><th>Depends</th><td>PRO::OQ::0005, PRO::PO::0001</td></tr>
-  </tbody>
-</table>
-
-Select cards from the same vendor group, trigger order creation, and complete
-the transaction.
-
-- **PRO::OQ::0007::0001.UC &#8212; Create Order from Accumulated Demand:**
-  Select cards in a vendor group and trigger &#8220;Create Order.&#8221;
-  Depending on order mechanism: online vendors open a cart, email vendors
-  get a pre-populated draft, manual vendors get a copy-paste table.
-
-- **PRO::OQ::0007::0002.UC &#8212; Create PO from Order Queue (Actor-Goal):**
-  PO side panel with vendor section (name, contact, address), PO header
-  (number, date, delivery address, terms), and lines (one per unique item).
-  Cards transition from `REQUESTING` to `REQUESTED` via `accept` events.
-  Removing a line returns its cards to `REQUESTING` via `shelve` events.
-
-- **PRO::OQ::0007::0003.UC &#8212; Create PO from Kanban Cards:** Validate
-  card compatibility (same or no supplier). Group by item + UOM. API:
-  `POST /v1/order/order/from-kanban-cards`.
-
-- **PRO::OQ::0007::0004.UC &#8212; Process Order from Queue (E2E):**
-  `CardStateDropdown` component: &#8220;Accept&#8221; fires
-  `POST /event/accept` (&#8594; `REQUESTED`); &#8220;Start Processing&#8221;
-  fires `POST /event/start-processing` (&#8594; `IN_PROCESS`). Badge updates
-  after each transition.
-
-- **PRO::OQ::0007::0005.US &#8212; Ordering Context Preservation**
-  (New-extends): When David works across Arda and vendor website tabs, he
-  loses track of quantities. Motivates split-screen helpers, persistent
-  quantity summary panel, or clipboard integration.
-
-- **PRO::OQ::0007::0006.US &#8212; Proactive Replenishment During Ordering**
-  (New-distinct): Surface items from the same vendor that are approaching
-  their reorder point but have not yet triggered a card. Allows David to
-  include near-trigger items in the current order.
-
----
-
-## Summary
-
-<table>
-  <thead>
-    <tr>
-      <th>Use Case</th>
-      <th>Scenarios</th>
-      <th>US</th>
-      <th>FS</th>
-      <th>UC</th>
-    </tr>
-  </thead>
+  <thead><tr><th>Use Case ID</th><th>Description</th><th>Status</th></tr></thead>
   <tbody>
     <tr>
-      <td><code>PRO::OQ::0001</code> Add Card to Order Queue</td>
-      <td>4</td>
-      <td>4</td>
-      <td>0</td>
-      <td>0</td>
+      <td><code>PRO::OQ::0001</code></td>
+      <td>Add Card to Order Queue</td>
+      <td>Specified (no interactive story yet)</td>
     </tr>
     <tr>
-      <td><code>PRO::OQ::0002</code> Inline Field Editing</td>
-      <td>3</td>
-      <td>3</td>
-      <td>0</td>
-      <td>0</td>
+      <td><code>PRO::OQ::0002</code></td>
+      <td>Inline Field Editing During Replenishment Trigger</td>
+      <td>Specified (no interactive story yet)</td>
     </tr>
     <tr>
-      <td><code>PRO::OQ::0003</code> View and Filter Order Queue</td>
-      <td>5</td>
-      <td>1</td>
-      <td>0</td>
-      <td>4</td>
+      <td><code>PRO::OQ::0003</code></td>
+      <td>View and Filter Order Queue</td>
+      <td>Specified (no interactive story yet)</td>
     </tr>
     <tr>
-      <td><code>PRO::OQ::0004</code> Queue Aging Visibility</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
+      <td><code>PRO::OQ::0004</code></td>
+      <td>Queue Aging Visibility</td>
+      <td>Specified (no interactive story yet)</td>
     </tr>
     <tr>
-      <td><code>PRO::OQ::0005</code> Grouping Rules</td>
-      <td>1</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
+      <td><code>PRO::OQ::0005</code></td>
+      <td>Order Queue Grouping Rules</td>
+      <td>Specified (no interactive story yet)</td>
     </tr>
     <tr>
-      <td><code>PRO::OQ::0006</code> Inline Vendor Data Completion</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
+      <td><code>PRO::OQ::0006</code></td>
+      <td>Inline Vendor Data Completion</td>
+      <td>Specified (no interactive story yet)</td>
     </tr>
     <tr>
-      <td><code>PRO::OQ::0007</code> Create Order from Queue</td>
-      <td>6</td>
-      <td>2</td>
-      <td>0</td>
-      <td>4</td>
-    </tr>
-    <tr>
-      <td><strong>Total</strong></td>
-      <td><strong>21</strong></td>
-      <td><strong>12</strong></td>
-      <td><strong>1</strong></td>
-      <td><strong>8</strong></td>
+      <td><code>PRO::OQ::0007</code></td>
+      <td>Create Order from Queue</td>
+      <td>Specified (no interactive story yet)</td>
     </tr>
   </tbody>
 </table>

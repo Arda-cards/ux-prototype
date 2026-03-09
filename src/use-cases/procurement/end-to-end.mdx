@@ -1,161 +1,43 @@
 import { Meta } from '@storybook/addon-docs/blocks';
+import { docsUrl } from '../links';
 
 <Meta title="Use Cases/Procurement/End-to-End Behaviors" />
 
 # End-to-End Behaviors
 
+<a href={docsUrl('/product/use-cases/procurement/end-to-end/')}
+   target="_blank" rel="noopener">
+  View full specification &#8594;
+</a>
+
 Cross-cutting procurement lifecycle scenarios that span multiple areas within the
-Procurement domain. These use cases cover full lifecycle verification, top-level
-business outcomes, the continuous improvement loop, and non-functional persistence
-requirements.
+Procurement domain. The canonical specification is maintained in the documentation
+site linked above.
 
----
-
-### `PRO::E2E::0001` &#8212; Order Lifecycle End-to-End
+## Stories in This Section
 
 <table>
-  <tbody>
-    <tr><th>Persona</th><td><a href="?path=/docs/docs-personas-david-purchasing-manager--docs">David</a>, <a href="?path=/docs/docs-personas-keisha-receiving-clerk--docs">Keisha</a>, <a href="?path=/docs/docs-personas-owen-business-principal--docs">Owen</a></td></tr>
-    <tr><th>Status</th><td>Covered</td></tr>
-    <tr><th>Depends</th><td>PRO::OQ, PRO::PO, PRO::RCV</td></tr>
-  </tbody>
-</table>
-
-Verify the complete procurement lifecycle: `AVAILABLE` &#8594; `REQUESTING`
-&#8594; `REQUESTED` &#8594; `IN_PROCESS` &#8594; `FULFILLED`.
-
-**PRO::E2E::0001::0001.UC &#8212; Full Lifecycle from Items to Receiving:**
-Exercises Items, Order Queue, and Receiving pages in sequence. Starting from
-the Items page, a user clicks &#8220;Add to cart&#8221; on an item with an
-available Kanban Card. The system fires `POST /event/request`, the card
-transitions to `REQUESTING`, and the Order Queue badge increments.
-
-On the Order Queue page, the Purchasing Manager accepts the card (&#8594;
-`REQUESTED`) and starts processing (&#8594; `IN_PROCESS`). Finally, the
-Receiving Clerk marks the card as received on the `/receiving` page (&#8594;
-`FULFILLED`). Acceptance criteria include correct badge increments at each
-step, correct tab placement after each transition, and the card appearing
-in the &#8220;Recently Received&#8221; tab after fulfillment.
-
----
-
-### `PRO::E2E::0002` &#8212; Business Outcome
-
-<table>
-  <tbody>
-    <tr><th>Persona</th><td><a href="?path=/docs/docs-personas-owen-business-principal--docs">Owen</a></td></tr>
-    <tr><th>Status</th><td>Covered</td></tr>
-  </tbody>
-</table>
-
-Top-level business outcomes that the procurement loop delivers.
-
-- **PRO::E2E::0002::0001.US &#8212; Avoid Workflow Interruptions from Missing
-  Consumables:** The kanban-driven procurement loop prevents stockouts by
-  triggering replenishment at the moment stock is consumed, not after work
-  has already stopped. Measurable result: fewer workflow interruptions,
-  shorter lead times, greater team confidence.
-
-- **PRO::E2E::0002::0002.US &#8212; Replace Memory-Based Communication:**
-  Scanning or clicking to add a card to the queue creates a durable, visible
-  record of the supply need. The purchasing manager sees it in the Order Queue
-  regardless of whether the original worker is still present. Motivates the
-  always-visible Order Queue badge count and optimistic-UI persistence model.
-
----
-
-### `PRO::E2E::0003` &#8212; Continuous Improvement Loop
-
-<table>
-  <tbody>
-    <tr><th>Persona</th><td><a href="?path=/docs/docs-personas-owen-business-principal--docs">Owen</a></td></tr>
-    <tr><th>Status</th><td>New-extends</td></tr>
-    <tr><th>Depends</th><td>PRO::PO::0009</td></tr>
-  </tbody>
-</table>
-
-When a wrong SKU is ordered, a pack-size mismatch causes an over-order, or a
-supplier URL is stale, the correction should happen at the point of error and
-persist for all future orders.
-
-**PRO::E2E::0003::0001.US &#8212; Fix It Once, Fixed Forever:** When David
-notices a wrong vendor SKU while preparing an order, he corrects the ItemSupply
-record immediately. The correction is reflected in the current PO (via update
-propagation, PRO::PO::0009) and in all subsequent orders that draw from the
-same ItemSupply record. The value of the system compounds over time as data
-quality improves with each correction.
-
----
-
-### `PRO::E2E::0004` &#8212; Instant Persistence
-
-<table>
-  <tbody>
-    <tr><th>Persona</th><td><a href="?path=/docs/docs-personas-sam-shop-floor-worker--docs">Sam</a></td></tr>
-    <tr><th>Status</th><td>New-distinct</td></tr>
-  </tbody>
-</table>
-
-Changes made during a replenishment trigger must be saved instantly and reliably.
-
-**PRO::E2E::0004::0001.FS &#8212; Optimistic UI with Background Persistence:**
-When Sam scans a QR code and taps &#8220;Add to order queue,&#8221; he receives
-immediate visual confirmation (toast, badge increment) and can put down his
-phone within one second without risking that the action was lost. The system
-optimistically updates the UI while persisting to the backend in the background.
-If the persist fails, a recoverable error with a retry option is surfaced. If
-the same card is added concurrently, the system handles the duplicate gracefully
-(idempotent request event).
-
----
-
-## Summary
-
-<table>
-  <thead>
-    <tr>
-      <th>Use Case</th>
-      <th>Scenarios</th>
-      <th>US</th>
-      <th>FS</th>
-      <th>UC</th>
-    </tr>
-  </thead>
+  <thead><tr><th>Use Case ID</th><th>Description</th><th>Status</th></tr></thead>
   <tbody>
     <tr>
-      <td><code>PRO::E2E::0001</code> Order Lifecycle End-to-End</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
+      <td><code>PRO::E2E::0001</code></td>
+      <td>Order Lifecycle End-to-End</td>
+      <td>Specified (no interactive story yet)</td>
     </tr>
     <tr>
-      <td><code>PRO::E2E::0002</code> Business Outcome</td>
-      <td>2</td>
-      <td>2</td>
-      <td>0</td>
-      <td>0</td>
+      <td><code>PRO::E2E::0002</code></td>
+      <td>Business Outcome</td>
+      <td>Specified (no interactive story yet)</td>
     </tr>
     <tr>
-      <td><code>PRO::E2E::0003</code> Continuous Improvement Loop</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
+      <td><code>PRO::E2E::0003</code></td>
+      <td>Continuous Improvement Loop</td>
+      <td>Specified (no interactive story yet)</td>
     </tr>
     <tr>
-      <td><code>PRO::E2E::0004</code> Instant Persistence</td>
-      <td>1</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <td><strong>Total</strong></td>
-      <td><strong>5</strong></td>
-      <td><strong>3</strong></td>
-      <td><strong>1</strong></td>
-      <td><strong>1</strong></td>
+      <td><code>PRO::E2E::0004</code></td>
+      <td>Instant Persistence</td>
+      <td>Specified (no interactive story yet)</td>
     </tr>
   </tbody>
 </table>
