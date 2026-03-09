@@ -5,7 +5,7 @@ import { expect, fn, userEvent, within } from 'storybook/test';
 import { ArdaCollapseToggle } from './collapse-toggle';
 
 const meta: Meta<typeof ArdaCollapseToggle> = {
-  title: 'Components/Extras/Atoms/Collapse Toggle',
+  title: 'Components/Canary/Atoms/Collapse Toggle',
   component: ArdaCollapseToggle,
   parameters: {
     layout: 'centered',

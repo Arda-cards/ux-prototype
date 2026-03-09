@@ -6,7 +6,7 @@ import { LayoutDashboard, Package, ShoppingCart, Building2, Settings } from 'luc
 import { ArdaNavItem } from './nav-item';
 
 const meta: Meta<typeof ArdaNavItem> = {
-  title: 'Components/Extras/Atoms/Nav Item',
+  title: 'Components/Canary/Atoms/Nav Item',
   component: ArdaNavItem,
   parameters: {
     layout: 'centered',

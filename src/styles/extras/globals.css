@@ -69,6 +69,8 @@
   --sidebar-active-indicator: #fc5a29;
   --sidebar-gradient-start: rgba(252, 90, 41, 0.08);
   --sidebar-gradient-end: rgba(255, 255, 255, 0.04);
+  --sidebar-width-expanded: 240px;
+  --sidebar-width-collapsed: 56px;
 
   /* Table Chrome */
   --table-header-bg: #f9fafb;
