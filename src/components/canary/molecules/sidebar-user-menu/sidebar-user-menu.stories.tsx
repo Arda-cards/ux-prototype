@@ -1,14 +1,21 @@
 import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, within } from 'storybook/test';
+import { Settings, ShieldCheck, LogOut } from 'lucide-react';
 
-import { ArdaSidebarUserMenu } from './sidebar-user-menu';
+import { ArdaSidebarUserMenu, type UserMenuAction } from './sidebar-user-menu';
 
 const mockUser = {
   name: 'Callil Capuozzo',
   email: 'callil@arda.cards',
   avatar: '',
 };
+
+const defaultActions: UserMenuAction[] = [
+  { key: 'admin', label: 'Admin', icon: ShieldCheck, onClick: fn() },
+  { key: 'settings', label: 'Settings', icon: Settings, onClick: fn() },
+  { key: 'logout', label: 'Log out', icon: LogOut, onClick: fn(), destructive: true },
+];
 
 const meta: Meta<typeof ArdaSidebarUserMenu> = {
   title: 'Components/Canary/Molecules/Sidebar User Menu',
@@ -18,14 +25,12 @@ const meta: Meta<typeof ArdaSidebarUserMenu> = {
     docs: {
       description: {
         component:
-          'User profile menu with avatar, name, email, and dropdown actions. ' +
-          'Built on shadcn Avatar and DropdownMenu. Shows avatar + name in expanded mode, avatar-only in collapsed mode.',
+          'User profile menu with avatar, name, email, and configurable dropdown actions. ' +
+          'Built on shadcn Avatar and DropdownMenu. Actions are data-driven — pass an array ' +
+          'of {key, label, icon, onClick, destructive?} objects. Destructive actions render ' +
+          'after a separator in red.',
       },
     },
-  },
-  args: {
-    onLogout: fn(),
-    onSettings: fn(),
   },
   decorators: [
     (Story) => (
@@ -39,10 +44,11 @@ const meta: Meta<typeof ArdaSidebarUserMenu> = {
 export default meta;
 type Story = StoryObj<typeof ArdaSidebarUserMenu>;
 
-/** Default expanded view with name and email visible. */
+/** Default expanded view with admin, settings, and logout. */
 export const Default: Story = {
   args: {
     user: mockUser,
+    actions: defaultActions,
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -56,6 +62,7 @@ export const Default: Story = {
 export const Collapsed: Story = {
   args: {
     user: mockUser,
+    actions: defaultActions,
     collapsed: true,
   },
   decorators: [
@@ -75,13 +82,14 @@ export const WithAvatar: Story = {
       email: 'miguel@arda.cards',
       avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=MT',
     },
+    actions: defaultActions,
   },
 };
 
-/** Without settings action. */
+/** Minimal — logout only. */
 export const LogoutOnly: Story = {
   args: {
     user: mockUser,
-    onSettings: undefined,
+    actions: [{ key: 'logout', label: 'Log out', icon: LogOut, onClick: fn(), destructive: true }],
   },
 };

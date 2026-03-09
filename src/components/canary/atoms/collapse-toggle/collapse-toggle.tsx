@@ -42,7 +42,7 @@ export function ArdaCollapseToggle({
       aria-expanded={!collapsed}
       aria-label={label}
       className={cn(
-        'flex items-center justify-center rounded-md p-1.5 text-sidebar-text-muted hover:bg-sidebar-hover hover:text-sidebar-text-active transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar-bg',
+        'flex items-center justify-center rounded-md p-2 text-sidebar-text-muted hover:bg-sidebar-hover hover:text-sidebar-text-active transition-colors duration-150 motion-reduce:transition-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar-bg',
         className,
       )}
     >

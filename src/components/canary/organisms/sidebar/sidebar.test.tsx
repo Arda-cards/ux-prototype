@@ -53,6 +53,43 @@ describe('ArdaSidebar', () => {
     expect(screen.getByRole('complementary')).toHaveClass('test-sidebar');
   });
 
+  it('sets data-collapsed attribute', () => {
+    const { rerender } = render(
+      <ArdaSidebar>
+        <div>Content</div>
+      </ArdaSidebar>,
+    );
+    const aside = screen.getByRole('complementary');
+    expect(aside).toHaveAttribute('data-collapsed', 'false');
+
+    rerender(
+      <ArdaSidebar collapsed>
+        <div>Content</div>
+      </ArdaSidebar>,
+    );
+    expect(aside).toHaveAttribute('data-collapsed', 'true');
+  });
+
+  it('has contain layout style for paint isolation', () => {
+    render(
+      <ArdaSidebar>
+        <div>Content</div>
+      </ArdaSidebar>,
+    );
+    const aside = screen.getByRole('complementary');
+    expect(aside.className).toContain('[contain:layout_style]');
+  });
+
+  it('has motion-reduce class for prefers-reduced-motion', () => {
+    render(
+      <ArdaSidebar>
+        <div>Content</div>
+      </ArdaSidebar>,
+    );
+    const aside = screen.getByRole('complementary');
+    expect(aside.className).toContain('motion-reduce:transition-none');
+  });
+
   it('includes the background gradient element', () => {
     render(
       <ArdaSidebar>

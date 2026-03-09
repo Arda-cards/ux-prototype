@@ -60,12 +60,12 @@
   /* Sidebar Chrome */
   --sidebar-bg: #0a0a0a;
   --sidebar-tooltip-bg: #1a1a1a;
-  --sidebar-text: rgba(255, 255, 255, 0.7);
+  --sidebar-text: #a3a3a3;
   --sidebar-text-active: #ffffff;
-  --sidebar-text-muted: rgba(255, 255, 255, 0.4);
-  --sidebar-border: rgba(255, 255, 255, 0.1);
-  --sidebar-hover: rgba(255, 255, 255, 0.1);
-  --sidebar-active-bg: rgba(255, 255, 255, 0.1);
+  --sidebar-text-muted: #737373;
+  --sidebar-border: #262626;
+  --sidebar-hover: #1a1a1a;
+  --sidebar-active-bg: #1a1a1a;
   --sidebar-active-indicator: #fc5a29;
   --sidebar-gradient-start: rgba(252, 90, 41, 0.08);
   --sidebar-gradient-end: rgba(255, 255, 255, 0.04);

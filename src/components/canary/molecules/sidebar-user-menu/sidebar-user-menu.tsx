@@ -1,6 +1,6 @@
 'use client';
 
-import { LogOut, Settings } from 'lucide-react';
+import { type LucideIcon, LogOut } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -14,6 +14,20 @@ import {
 
 // --- Interfaces ---
 
+/** A single action in the user menu flyout. */
+export interface UserMenuAction {
+  /** Unique key for React list rendering. */
+  key: string;
+  /** Display label. */
+  label: string;
+  /** Lucide icon shown before the label. */
+  icon: LucideIcon;
+  /** Called when this action is selected. */
+  onClick: () => void;
+  /** When true, renders with destructive styling (red text). */
+  destructive?: boolean;
+}
+
 /** Props for ArdaSidebarUserMenu. */
 export interface ArdaSidebarUserMenuProps {
   /* --- Model / Data Binding --- */
@@ -23,10 +37,8 @@ export interface ArdaSidebarUserMenuProps {
     email: string;
     avatar?: string;
   };
-  /** Called when logout is selected. */
-  onLogout?: () => void;
-  /** Called when settings is selected. */
-  onSettings?: () => void;
+  /** Menu actions rendered in the flyout dropdown. Logout should be last and marked destructive. */
+  actions: UserMenuAction[];
 
   /* --- View / Layout / Controller --- */
   /** When true, renders in compact mode (avatar only). */
@@ -39,8 +51,7 @@ export interface ArdaSidebarUserMenuProps {
 
 export function ArdaSidebarUserMenu({
   user,
-  onLogout,
-  onSettings,
+  actions,
   collapsed = false,
   className,
 }: ArdaSidebarUserMenuProps) {
@@ -51,14 +62,19 @@ export function ArdaSidebarUserMenu({
     .toUpperCase()
     .slice(0, 2);
 
+  // Split actions: non-destructive first, then destructive (separated)
+  const standardActions = actions.filter((a) => !a.destructive);
+  const destructiveActions = actions.filter((a) => a.destructive);
+
   return (
-    <div className={cn('relative z-10 border-t border-sidebar-border p-3', className)}>
+    <div className={cn('relative z-10 border-t border-sidebar-border p-3 h-16', className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
             type="button"
+            aria-label={`Account menu for ${user.name}`}
             className={cn(
-              'flex w-full items-center gap-3 rounded-md p-1 text-left outline-none transition-colors duration-150',
+              'flex w-full items-center gap-3 rounded-md p-1 text-left outline-none transition-colors duration-150 motion-reduce:transition-none',
               'hover:bg-sidebar-hover focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar-bg',
               collapsed && 'justify-center',
             )}
@@ -80,7 +96,7 @@ export function ArdaSidebarUserMenu({
           </button>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent side="right" align="end" sideOffset={8}>
+        <DropdownMenuContent side="top" align="start" sideOffset={8}>
           {/* Show user info in dropdown when collapsed (since it's sr-only in the trigger) */}
           {collapsed && (
             <>
@@ -91,18 +107,22 @@ export function ArdaSidebarUserMenu({
               <DropdownMenuSeparator />
             </>
           )}
-          {onSettings && (
-            <DropdownMenuItem onClick={onSettings}>
-              <Settings size={14} />
-              Settings
+
+          {standardActions.map((action) => (
+            <DropdownMenuItem key={action.key} onClick={action.onClick}>
+              <action.icon size={14} />
+              {action.label}
             </DropdownMenuItem>
-          )}
-          {onLogout && (
-            <DropdownMenuItem onClick={onLogout} variant="destructive">
-              <LogOut size={14} />
-              Log out
+          ))}
+
+          {destructiveActions.length > 0 && standardActions.length > 0 && <DropdownMenuSeparator />}
+
+          {destructiveActions.map((action) => (
+            <DropdownMenuItem key={action.key} onClick={action.onClick} variant="destructive">
+              <action.icon size={14} />
+              {action.label}
             </DropdownMenuItem>
-          )}
+          ))}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

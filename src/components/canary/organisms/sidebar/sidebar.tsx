@@ -24,8 +24,12 @@ export function ArdaSidebar({ collapsed = false, children, className }: ArdaSide
   return (
     <SidebarProvider value={ctx}>
       <aside
+        aria-label="Main navigation"
+        data-collapsed={collapsed}
         className={cn(
-          'fixed inset-y-0 left-0 bg-sidebar-bg text-white flex flex-col transition-all duration-200 z-50 overflow-hidden',
+          'fixed inset-y-0 left-0 bg-sidebar-bg text-white flex flex-col z-50 overflow-hidden',
+          'transition-all duration-200 motion-reduce:transition-none',
+          '[contain:layout_style]',
           collapsed ? 'w-[var(--sidebar-width-collapsed)]' : 'w-[var(--sidebar-width-expanded)]',
           className,
         )}

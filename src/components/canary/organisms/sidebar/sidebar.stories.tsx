@@ -9,21 +9,32 @@ import {
   Settings,
   Boxes,
   BarChart3,
+  ShieldCheck,
+  LogOut,
 } from 'lucide-react';
 
 import { ArdaSidebar } from './sidebar';
 import { ArdaSidebarHeader } from './sidebar-header';
 import { ArdaSidebarNav } from '../../molecules/sidebar-nav/sidebar-nav';
 import { ArdaSidebarNavGroup } from '../../molecules/sidebar-nav-group/sidebar-nav-group';
-import { ArdaSidebarUserMenu } from '../../molecules/sidebar-user-menu/sidebar-user-menu';
+import {
+  ArdaSidebarUserMenu,
+  type UserMenuAction,
+} from '../../molecules/sidebar-user-menu/sidebar-user-menu';
 import { ArdaNavItem } from '../../atoms/nav-item/nav-item';
 import { ArdaCollapseToggle } from '../../atoms/collapse-toggle/collapse-toggle';
-import { ArdaLogo, ArdaLogoFull } from '../../../extras/organisms/sidebar/arda-logo';
+import { ArdaBrandLogo, ArdaBrandIcon } from '../../atoms/brand-logo/brand-logo';
 
 const mockUser = {
   name: 'Callil Capuozzo',
   email: 'callil@arda.cards',
 };
+
+const mockActions: UserMenuAction[] = [
+  { key: 'admin', label: 'Admin', icon: ShieldCheck, onClick: () => {} },
+  { key: 'settings', label: 'Settings', icon: Settings, onClick: () => {} },
+  { key: 'logout', label: 'Log out', icon: LogOut, onClick: () => {}, destructive: true },
+];
 
 const meta: Meta<typeof ArdaSidebar> = {
   title: 'Components/Canary/Organisms/Sidebar',
@@ -49,7 +60,7 @@ export const Expanded: Story = {
   render: () => (
     <ArdaSidebar>
       <ArdaSidebarHeader>
-        <ArdaLogoFull height={24} />
+        <ArdaBrandLogo />
       </ArdaSidebarHeader>
 
       <ArdaSidebarNav>
@@ -72,7 +83,7 @@ export const Expanded: Story = {
         <ArdaNavItem href="/settings" icon={Settings} label="Settings" variant="dark" />
       </ArdaSidebarNav>
 
-      <ArdaSidebarUserMenu user={mockUser} onLogout={() => {}} onSettings={() => {}} />
+      <ArdaSidebarUserMenu user={mockUser} actions={mockActions} />
     </ArdaSidebar>
   ),
   play: async ({ canvasElement }) => {
@@ -87,7 +98,7 @@ export const Collapsed: Story = {
   render: () => (
     <ArdaSidebar collapsed>
       <ArdaSidebarHeader>
-        <ArdaLogo size={24} />
+        <ArdaBrandIcon />
       </ArdaSidebarHeader>
 
       <ArdaSidebarNav>
@@ -136,7 +147,7 @@ export const Collapsed: Story = {
         <ArdaNavItem href="/settings" icon={Settings} label="Settings" collapsed variant="dark" />
       </ArdaSidebarNav>
 
-      <ArdaSidebarUserMenu user={mockUser} collapsed onLogout={() => {}} />
+      <ArdaSidebarUserMenu user={mockUser} actions={mockActions} collapsed />
     </ArdaSidebar>
   ),
 };
@@ -148,10 +159,7 @@ export const Interactive: Story = {
 
     return (
       <ArdaSidebar collapsed={collapsed}>
-        <ArdaSidebarHeader>
-          {collapsed ? <ArdaLogo size={24} /> : <ArdaLogoFull height={24} />}
-          <ArdaCollapseToggle collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} />
-        </ArdaSidebarHeader>
+        <ArdaSidebarHeader>{collapsed ? <ArdaBrandIcon /> : <ArdaBrandLogo />}</ArdaSidebarHeader>
 
         <ArdaSidebarNav>
           <ArdaNavItem
@@ -216,12 +224,12 @@ export const Interactive: Story = {
           />
         </ArdaSidebarNav>
 
-        <ArdaSidebarUserMenu
-          user={mockUser}
-          collapsed={collapsed}
-          onLogout={() => {}}
-          onSettings={() => {}}
-        />
+        {/* Toggle lives at the bottom, pinned above user menu — same position in both states */}
+        <div className="relative z-10 px-2 py-1 flex justify-center">
+          <ArdaCollapseToggle collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} />
+        </div>
+
+        <ArdaSidebarUserMenu user={mockUser} actions={mockActions} collapsed={collapsed} />
       </ArdaSidebar>
     );
   },

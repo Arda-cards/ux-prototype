@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 // --- CVA variant definition ---
 
 const navItemVariants = cva(
-  'relative flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors duration-150 outline-none',
+  'relative flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors duration-150 motion-reduce:transition-none outline-none',
   {
     variants: {
       variant: {
@@ -95,7 +95,7 @@ export function ArdaNavItem({
 
       {/* Badge */}
       {badge !== undefined && !collapsed && (
-        <span className="ml-auto inline-flex items-center justify-center rounded-full bg-sidebar-active-indicator px-1.5 py-0.5 text-xs font-bold text-white min-w-[20px]">
+        <span className="ml-auto inline-flex items-center justify-center rounded-full bg-sidebar-active-indicator px-1.5 py-0.5 text-xs font-medium text-white min-w-[20px]">
           {badge}
         </span>
       )}
@@ -113,7 +113,7 @@ export function ArdaNavItem({
               <span className="flex items-center gap-2">
                 {label}
                 {badge !== undefined && (
-                  <span className="inline-flex items-center justify-center rounded-full bg-sidebar-active-indicator px-1.5 py-0.5 text-xs font-bold text-white min-w-[20px]">
+                  <span className="inline-flex items-center justify-center rounded-full bg-sidebar-active-indicator px-1.5 py-0.5 text-xs font-medium text-white min-w-[20px]">
                     {badge}
                   </span>
                 )}
