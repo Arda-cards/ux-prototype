@@ -51,27 +51,29 @@ export function ArdaSidebarNavItem({
         tooltip={label}
         className={cn('data-[active=true]:font-medium', className)}
         onClick={onClick}
+        aria-current={active ? 'page' : undefined}
       >
         <Icon />
         <span>{label}</span>
       </SidebarMenuButton>
       {badge !== undefined && (
         <>
-          {/* Dot — vertically centered when expanded, top-right when collapsed */}
+          {/* Dot — always rendered, visible only when collapsed (for count badges) or always (for dot-only) */}
           <span
             className={cn(
-              'pointer-events-none absolute size-1.5 rounded-full bg-sidebar-primary transition-none',
+              'pointer-events-none absolute size-1.5 rounded-full bg-sidebar-primary',
+              'transition-opacity duration-150',
               'right-2 top-1/2 -translate-y-1/2',
               'group-data-[collapsible=icon]:right-0.5 group-data-[collapsible=icon]:top-0.5 group-data-[collapsible=icon]:translate-y-0',
-              badge !== true && 'hidden group-data-[collapsible=icon]:block',
+              badge !== true ? 'opacity-0 group-data-[collapsible=icon]:opacity-100' : '',
             )}
             aria-label="New activity"
           />
-          {/* Count — visible when expanded */}
+          {/* Count — fades out when collapsing, fades in when expanding */}
           {badge !== true && (
             <ArdaBadge
               variant="default"
-              className="absolute right-2 top-1/2 -translate-y-1/2 tabular-nums group-data-[collapsible=icon]:hidden"
+              className="absolute right-2 top-1/2 -translate-y-1/2 tabular-nums transition-opacity duration-150 group-data-[collapsible=icon]:opacity-0"
             >
               {badge}
             </ArdaBadge>

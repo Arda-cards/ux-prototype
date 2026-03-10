@@ -68,13 +68,11 @@ function AppSidebar() {
 
 ## Usage
 
-### Expanded
+### Default
 
-<Canvas of={SidebarStories.Expanded} />
+Toggle `defaultOpen` in the controls panel to switch between expanded and collapsed.
 
-### Collapsed
-
-<Canvas of={SidebarStories.Collapsed} />
+<Canvas of={SidebarStories.Default} />
 
 ### With Badges
 
@@ -92,13 +90,7 @@ Full layout with `SidebarInset`. Cmd+B to toggle.
 
 ### Mobile
 
-Below 768px, the sidebar renders as a Sheet drawer. Use the trigger button to open/close.
-
-<Canvas of={SidebarStories.Mobile} />
-
-### Playground
-
-<Canvas of={SidebarStories.Playground} />
+Below 768px, the sidebar automatically renders as a Sheet drawer instead of a fixed side panel. This is handled by shadcn's `useIsMobile()` hook &#8212; no additional props needed.
 
 ---
 

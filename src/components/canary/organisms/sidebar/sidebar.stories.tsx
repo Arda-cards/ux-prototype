@@ -57,10 +57,13 @@ const meta: Meta<typeof ArdaSidebar> = {
 export default meta;
 type Story = StoryObj<typeof ArdaSidebar>;
 
-/** Full sidebar in expanded mode with team name header. */
-export const Expanded: Story = {
-  render: () => (
-    <ArdaSidebar defaultOpen>
+/** Default sidebar — toggle `open` in the controls panel, or use Cmd+B / the sidebar rail. */
+export const Default: Story = {
+  args: {
+    open: true,
+  },
+  render: (args) => (
+    <ArdaSidebar open={args.open} onOpenChange={args.onOpenChange}>
       <ArdaSidebarHeader teamName="Arda Cards" />
 
       <ArdaSidebarNav>
@@ -85,25 +88,6 @@ export const Expanded: Story = {
     await expect(canvas.getByText('Arda Cards')).toBeInTheDocument();
     await expect(canvas.getByText('Dashboard')).toBeInTheDocument();
   },
-};
-
-/** Collapsed sidebar — icon-only with tooltips. Hover items to see tooltip labels. */
-export const Collapsed: Story = {
-  render: () => (
-    <ArdaSidebar defaultOpen={false}>
-      <ArdaSidebarHeader teamName="Arda Cards" />
-
-      <ArdaSidebarNav>
-        <ArdaSidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
-        <ArdaSidebarNavItem icon={Package} label="Items" />
-        <ArdaSidebarNavItem icon={ShoppingCart} label="Order Queue" badge={3} />
-        <ArdaSidebarNavItem icon={Building2} label="Suppliers" />
-        <ArdaSidebarNavItem icon={Settings} label="Settings" />
-      </ArdaSidebarNav>
-
-      <ArdaSidebarUserMenu user={mockUser} actions={mockActions} />
-    </ArdaSidebar>
-  ),
 };
 
 /** Nav items with notification badges. */
@@ -184,92 +168,6 @@ export const Composition: Story = {
         </SidebarInset>
       }
     >
-      <ArdaSidebarHeader teamName="Arda Cards" />
-
-      <ArdaSidebarNav>
-        <ArdaSidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
-        <ArdaSidebarNavItem icon={Package} label="Items" />
-        <ArdaSidebarNavItem icon={ShoppingCart} label="Order Queue" badge={3} />
-      </ArdaSidebarNav>
-
-      <ArdaSidebarUserMenu user={mockUser} actions={mockActions} />
-    </ArdaSidebar>
-  ),
-};
-
-/** Interactive — toggle via sidebar rail, keyboard shortcut, or trigger button. */
-export const Interactive: Story = {
-  render: () => (
-    <ArdaSidebar defaultOpen>
-      <ArdaSidebarHeader teamName="Arda Cards" />
-
-      <ArdaSidebarNav>
-        <ArdaSidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
-        <ArdaSidebarNavItem icon={Package} label="Items" />
-        <ArdaSidebarNavItem icon={ShoppingCart} label="Order Queue" badge={3} />
-        <ArdaSidebarNavItem icon={Building2} label="Suppliers" />
-
-        <ArdaSidebarNavGroup label="Analytics" icon={BarChart3} defaultExpanded>
-          <ArdaSidebarNavItem icon={BarChart3} label="Sales" />
-          <ArdaSidebarNavItem icon={Boxes} label="Inventory" />
-        </ArdaSidebarNavGroup>
-
-        <ArdaSidebarNavItem icon={Settings} label="Settings" />
-      </ArdaSidebarNav>
-
-      <ArdaSidebarUserMenu user={mockUser} actions={mockActions} />
-    </ArdaSidebar>
-  ),
-};
-
-/** Mobile — renders as a Sheet drawer at viewports below 768px. Use the trigger button to open. */
-export const Mobile: Story = {
-  parameters: {
-    viewport: {
-      defaultViewport: 'mobile1',
-    },
-    chromatic: { viewports: [375] },
-  },
-  render: () => (
-    <ArdaSidebar
-      defaultOpen
-      page={
-        <SidebarInset>
-          <header className="flex h-14 items-center gap-2 border-b px-4">
-            <SidebarTrigger className="-ml-1" />
-            <h1 className="text-lg font-semibold">Dashboard</h1>
-          </header>
-          <main className="p-6">
-            <p className="text-muted-foreground text-sm">
-              On mobile viewports (&lt;768px), the sidebar renders as a bottom Sheet drawer instead
-              of a fixed side panel. Tap the trigger button above to toggle.
-            </p>
-          </main>
-        </SidebarInset>
-      }
-    >
-      <ArdaSidebarHeader teamName="Arda Cards" />
-
-      <ArdaSidebarNav>
-        <ArdaSidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
-        <ArdaSidebarNavItem icon={Package} label="Items" />
-        <ArdaSidebarNavItem icon={ShoppingCart} label="Order Queue" badge={3} />
-        <ArdaSidebarNavItem icon={Building2} label="Suppliers" />
-        <ArdaSidebarNavItem icon={Settings} label="Settings" />
-      </ArdaSidebarNav>
-
-      <ArdaSidebarUserMenu user={mockUser} actions={mockActions} />
-    </ArdaSidebar>
-  ),
-};
-
-/** Playground — use Storybook controls to toggle open state. */
-export const Playground: Story = {
-  args: {
-    open: true,
-  },
-  render: (args) => (
-    <ArdaSidebar open={args.open} onOpenChange={() => {}}>
       <ArdaSidebarHeader teamName="Arda Cards" />
 
       <ArdaSidebarNav>
