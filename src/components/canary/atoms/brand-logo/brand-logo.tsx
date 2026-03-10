@@ -8,16 +8,16 @@ type BrandLogoVariant = 'default' | 'inverted' | 'mono' | 'mono-inverted';
 
 const LOGO_PATHS: Record<'full' | 'small', Record<BrandLogoVariant, string>> = {
   full: {
-    default: '/images/brand/arda-logo-default.svg',
-    inverted: '/images/brand/arda-logo-inverted.svg',
-    mono: '/images/brand/arda-logo-mono.svg',
-    'mono-inverted': '/images/brand/arda-logo-mono-inverted.svg',
+    default: '/canary/images/arda-logo-default.svg',
+    inverted: '/canary/images/arda-logo-inverted.svg',
+    mono: '/canary/images/arda-logo-mono.svg',
+    'mono-inverted': '/canary/images/arda-logo-mono-inverted.svg',
   },
   small: {
-    default: '/images/brand/arda-logo-small-default.svg',
-    inverted: '/images/brand/arda-logo-small-inverted.svg',
-    mono: '/images/brand/arda-logo-small-mono.svg',
-    'mono-inverted': '/images/brand/arda-logo-small-mono-inverted.svg',
+    default: '/canary/images/arda-logo-small-default.svg',
+    inverted: '/canary/images/arda-logo-small-inverted.svg',
+    mono: '/canary/images/arda-logo-small-mono.svg',
+    'mono-inverted': '/canary/images/arda-logo-small-mono-inverted.svg',
   },
 };
 
