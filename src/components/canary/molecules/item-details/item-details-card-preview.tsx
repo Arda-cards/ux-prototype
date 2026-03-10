@@ -31,7 +31,7 @@ export interface ArdaItemDetailsCardPreviewProps {
 // --- Constants ---
 const SWIPE_THRESHOLD = 50;
 const ARROW_BUTTON_CLASS =
-  'absolute top-1/2 -translate-y-1/2 flex size-11 items-center justify-center rounded-full text-muted-foreground transition-colors motion-reduce:transition-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none';
+  'absolute top-1/2 -translate-y-1/2 flex size-11 items-center justify-center rounded-full text-muted-foreground transition-colors motion-reduce:transition-none hover:text-foreground active:scale-95 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none';
 /** Card width in pixels — large enough to verify print content. */
 const CARD_W = 260;
 /** Gap between cards in pixels. */

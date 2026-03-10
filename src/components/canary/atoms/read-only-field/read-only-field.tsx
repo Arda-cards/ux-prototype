@@ -64,7 +64,7 @@ export function ArdaReadOnlyField({
 
   return (
     <div className={cn(readOnlyFieldVariants({ variant }), className)} {...props}>
-      <span className="text-sm uppercase tracking-wide text-muted-foreground font-medium">
+      <span className="text-sm uppercase tracking-[0.06em] text-muted-foreground font-medium">
         {label}
       </span>
       <span className="text-sm text-foreground break-words font-mono">{displayValue}</span>
