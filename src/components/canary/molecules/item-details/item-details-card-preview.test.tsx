@@ -18,7 +18,7 @@ describe('ArdaItemDetailsCardPreview', () => {
 
   it('shows empty state when no cards', () => {
     render(<ArdaItemDetailsCardPreview currentIndex={1} totalCards={0} onIndexChange={() => {}} />);
-    expect(screen.getByText('No cards available')).toBeInTheDocument();
+    expect(screen.getByText('No cards yet')).toBeInTheDocument();
   });
 
   it('renders card via renderCard prop', () => {
@@ -33,7 +33,7 @@ describe('ArdaItemDetailsCardPreview', () => {
     expect(screen.getByText('Card 1')).toBeInTheDocument();
   });
 
-  it('shows count badge', () => {
+  it('shows card counter in navigation', () => {
     render(
       <ArdaItemDetailsCardPreview
         currentIndex={1}
@@ -42,7 +42,7 @@ describe('ArdaItemDetailsCardPreview', () => {
         renderCard={() => <div>Card</div>}
       />,
     );
-    expect(screen.getByText('x5')).toBeInTheDocument();
+    expect(screen.getByText('1 / 5')).toBeInTheDocument();
   });
 
   it('navigates to next card', async () => {

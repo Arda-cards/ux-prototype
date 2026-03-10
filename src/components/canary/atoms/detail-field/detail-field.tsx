@@ -3,13 +3,13 @@ import { cn } from '@/lib/utils';
 
 // --- CVA variant definition ---
 
-const detailFieldVariants = cva('flex flex-col gap-1', {
+const detailFieldVariants = cva('flex flex-col gap-0.5', {
   variants: {
     variant: {
       /** Standard gap between label and value. */
       default: '',
       /** Reduced gap for compact layouts. */
-      compact: 'gap-0.5',
+      compact: 'gap-px',
     },
   },
   defaultVariants: { variant: 'default' },
@@ -64,8 +64,10 @@ export function ArdaDetailField({
 
   return (
     <div className={cn(detailFieldVariants({ variant }), className)} {...props}>
-      <span className="text-sm text-muted-foreground font-medium">{label}</span>
-      <span className="text-base text-foreground font-semibold break-words">{displayValue}</span>
+      <span className="text-sm uppercase tracking-wide text-muted-foreground/60 font-medium">
+        {label}
+      </span>
+      <span className="text-sm text-foreground break-words">{displayValue}</span>
     </div>
   );
 }

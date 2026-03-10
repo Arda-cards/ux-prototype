@@ -10,29 +10,14 @@ const tabs = [
 ];
 
 describe('ArdaItemDetailsHeader', () => {
-  it('renders title', () => {
-    render(
-      <ArdaItemDetailsHeader
-        title="Test Item"
-        activeTab="details"
-        onTabChange={() => {}}
-        tabs={tabs}
-      />,
-    );
-    expect(screen.getByText('Test Item')).toBeInTheDocument();
-  });
-
-  it('renders fallback title when empty', () => {
-    render(
-      <ArdaItemDetailsHeader title="" activeTab="details" onTabChange={() => {}} tabs={tabs} />,
-    );
-    expect(screen.getByText('Item Details')).toBeInTheDocument();
+  it('renders tabs (title is rendered by the organism, not the molecule)', () => {
+    render(<ArdaItemDetailsHeader activeTab="details" onTabChange={() => {}} tabs={tabs} />);
+    // Title rendering is the organism's responsibility
+    expect(screen.getByText('Item details')).toBeInTheDocument();
   });
 
   it('renders tab labels', () => {
-    render(
-      <ArdaItemDetailsHeader title="Test" activeTab="details" onTabChange={() => {}} tabs={tabs} />,
-    );
+    render(<ArdaItemDetailsHeader activeTab="details" onTabChange={() => {}} tabs={tabs} />);
     expect(screen.getByText('Item details')).toBeInTheDocument();
     expect(screen.getByText('Cards')).toBeInTheDocument();
   });
@@ -40,35 +25,27 @@ describe('ArdaItemDetailsHeader', () => {
   it('calls onTabChange when tab is clicked', async () => {
     const user = userEvent.setup();
     const onTabChange = vi.fn();
-    render(
-      <ArdaItemDetailsHeader
-        title="Test"
-        activeTab="details"
-        onTabChange={onTabChange}
-        tabs={tabs}
-      />,
-    );
+    render(<ArdaItemDetailsHeader activeTab="details" onTabChange={onTabChange} tabs={tabs} />);
     await user.click(screen.getByText('Cards'));
     expect(onTabChange).toHaveBeenCalledWith('cards');
   });
 
-  it('renders action toolbar when actions provided', () => {
+  it('renders action buttons when actions provided', () => {
     render(
       <ArdaItemDetailsHeader
-        title="Test"
         activeTab="details"
         onTabChange={() => {}}
         tabs={tabs}
         actions={[{ key: 'edit', label: 'Edit item', icon: SquarePen, onAction: () => {} }]}
       />,
     );
-    expect(screen.getByText('Edit item')).toBeInTheDocument();
+    // Short label (first word) visible, full label on aria-label
+    expect(screen.getByText('Edit')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit item' })).toBeInTheDocument();
   });
 
-  it('does not render toolbar when no actions', () => {
-    render(
-      <ArdaItemDetailsHeader title="Test" activeTab="details" onTabChange={() => {}} tabs={tabs} />,
-    );
-    expect(screen.queryByText('Edit item')).not.toBeInTheDocument();
+  it('does not render action buttons when no actions', () => {
+    render(<ArdaItemDetailsHeader activeTab="details" onTabChange={() => {}} tabs={tabs} />);
+    expect(screen.queryByRole('button', { name: 'Edit item' })).not.toBeInTheDocument();
   });
 });

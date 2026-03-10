@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { SquarePen, Printer, Dock, Tag, Hash } from 'lucide-react';
+import { SquarePen, Printer, Dock, Tag, Hash, ScanLine, Copy, Trash2 } from 'lucide-react';
 
 import { ArdaItemDetails } from './item-details';
 import type { ToolbarAction, OverflowAction, DetailFieldDef } from './index';
@@ -26,42 +26,63 @@ const noop = () => {};
 
 const sampleFields: DetailFieldDef[] = [
   { key: 'sku', label: 'SKU', value: 'WDG-4420-BLK' },
-  { key: 'gl', label: 'General Ledger Code', value: 'GL-5200' },
-  { key: 'price', label: 'Unit price', value: '$12.50' },
-  { key: 'cards', label: 'Number of cards', value: '5' },
+  {
+    key: 'desc',
+    label: 'Description',
+    value: 'Standard widget assembly kit with mounting hardware',
+  },
+  { key: 'gl', label: 'GL Code', value: 'GL-5200' },
+  { key: 'price', label: 'Unit Price', value: '$12.50' },
+  { key: 'reorder', label: 'Reorder Point', value: '25 units' },
+  { key: 'supplier', label: 'Supplier', value: 'McMaster-Carr' },
+  { key: 'lead', label: 'Lead Time', value: '3–5 days' },
 ];
 
 const sampleActions: ToolbarAction[] = [
-  { key: 'edit', label: 'Edit item', icon: SquarePen, onAction: noop },
-  { key: 'cart', label: 'Add to cart', icon: Dock, onAction: noop },
-  { key: 'print', label: 'Print card', icon: Printer, onAction: noop },
-  { key: 'label', label: 'Print label', icon: Tag, onAction: noop },
-  { key: 'breadcrumb', label: 'Print breadcrumb', icon: Hash, onAction: noop },
+  { key: 'edit', label: 'Edit', icon: SquarePen, onAction: noop },
+  { key: 'cart', label: 'Queue', icon: Dock, onAction: noop },
+  { key: 'print', label: 'Print', icon: Printer, onAction: noop },
 ];
 
 const sampleOverflow: OverflowAction[] = [
-  { key: 'scan', label: 'Scan preview', onAction: noop },
-  { key: 'preview', label: 'View card preview', onAction: noop },
-  { key: 'duplicate', label: 'Duplicate item\u2026', onAction: noop },
-  { key: 'delete', label: 'Delete', onAction: noop, destructive: true, separatorBefore: true },
+  { key: 'label', label: 'Label', icon: Tag, onAction: noop },
+  { key: 'scan', label: 'Scan', icon: ScanLine, onAction: noop },
+  { key: 'duplicate', label: 'Duplicate', icon: Copy, onAction: noop },
+  { key: 'delete', label: 'Delete', icon: Trash2, onAction: noop, destructive: true },
 ];
 
-const MockCard = ({ index }: { index: number }) => (
-  <div className="flex h-48 w-72 items-center justify-center rounded-lg border bg-background shadow-sm">
-    <div className="text-center">
-      <p className="text-sm font-medium text-foreground">Widget Assembly Kit</p>
-      <p className="text-xs text-muted-foreground">Card {index} of 5</p>
-      <p className="mt-2 text-xs font-mono text-muted-foreground">WDG-4420-BLK</p>
+const CARD_STATUSES: Record<number, string> = { 2: 'Low Stock', 4: 'Reorder' };
+
+const MockCard = ({ index }: { index: number }) => {
+  const status = CARD_STATUSES[index];
+  return (
+    <div className="relative flex h-full w-full flex-col justify-between overflow-hidden rounded-lg border bg-background p-4 shadow-sm">
+      {/* Status sash — sized for the smaller preview card */}
+      {status && (
+        <div className="absolute right-0 top-0 z-10 -mr-4 mt-3 rotate-45 bg-primary px-6 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-foreground shadow-sm">
+          {status}
+        </div>
+      )}
+      <div>
+        <p className="text-sm font-medium text-foreground">Widget Assembly Kit</p>
+        <p className="mt-1 text-xs text-muted-foreground font-mono">WDG-4420-BLK</p>
+      </div>
+      <div className="flex items-end justify-between">
+        <div className="flex size-10 items-center justify-center rounded border border-dashed border-border">
+          <span className="text-xs text-muted-foreground font-mono">QR</span>
+        </div>
+        <span className="text-xs text-muted-foreground font-mono">Card {index}</span>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 /** Default — full item details panel with cards and toolbar. */
 export const Default: Story = {
   render: () => {
     const [open, setOpen] = useState(true);
     return (
-      <div className="flex h-screen items-center justify-center bg-muted">
+      <div className="flex h-screen items-center justify-center bg-muted/50">
         <button
           onClick={() => setOpen(true)}
           className="rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background"
@@ -71,13 +92,12 @@ export const Default: Story = {
         <ArdaItemDetails
           open={open}
           onOpenChange={setOpen}
-          title="Widget Assembly Kit WDG-4420-BLK"
+          title="Widget Assembly Kit"
           fields={sampleFields}
           actions={sampleActions}
           overflowActions={sampleOverflow}
           cardCount={5}
           renderCard={(i) => <MockCard index={i} />}
-          onCardPreview={noop}
         />
       </div>
     );
@@ -112,7 +132,7 @@ export const NoCards: Story = {
         title="New Item (Draft)"
         fields={[
           { key: 'sku', label: 'SKU', value: 'DRAFT-001' },
-          { key: 'price', label: 'Unit price' },
+          { key: 'price', label: 'Unit Price' },
         ]}
         cardCount={0}
       />

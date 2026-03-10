@@ -67,8 +67,6 @@ export interface ArdaItemDetailsRuntimeConfig {
   cardsLoading?: boolean;
   /** Render prop for the card visual. Receives 1-based index. */
   renderCard?: (index: number) => React.ReactNode;
-  /** Called when the card preview button is clicked. */
-  onCardPreview?: () => void;
   /** Custom empty state for the card preview area. */
   cardEmptyState?: React.ReactNode;
 
@@ -113,7 +111,6 @@ export function ArdaItemDetails({
   cardCount = 0,
   cardsLoading,
   renderCard,
-  onCardPreview,
   cardEmptyState,
   renderCardsTab,
 }: ArdaItemDetailsProps) {
@@ -134,28 +131,29 @@ export function ArdaItemDetails({
 
   return (
     <ArdaDrawer open={open} onOpenChange={handleOpenChange} size={size} className={className}>
-      <ArdaDrawerHeader className="relative">
-        {/* Close button */}
-        <button
-          onClick={() => onOpenChange(false)}
-          className="absolute right-4 top-4 rounded-sm text-muted-foreground opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          aria-label="Close"
-        >
-          <XIcon className="size-4" />
-        </button>
+      <ArdaDrawerHeader>
         {/* Visually hidden title for screen readers (Radix requirement) */}
         <ArdaDrawerTitle className="sr-only">{title || 'Item Details'}</ArdaDrawerTitle>
         <ArdaDrawerDescription className="sr-only">
           View and manage item details.
         </ArdaDrawerDescription>
-        <ArdaItemDetailsHeader
-          title={title}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          tabs={tabs}
-          actions={showToolbar ? actions : undefined}
-          overflowActions={showToolbar ? overflowActions : undefined}
-        />
+
+        {/* Title row with close button */}
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="flex-1 min-w-0 text-lg font-semibold leading-snug break-words text-foreground">
+            {title || 'Item Details'}
+          </h2>
+          <button
+            onClick={() => onOpenChange(false)}
+            className="flex size-11 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none -mr-2"
+            aria-label="Close"
+          >
+            <XIcon className="size-4" />
+          </button>
+        </div>
+
+        {/* Tabs — full width */}
+        <ArdaItemDetailsHeader activeTab={activeTab} onTabChange={setActiveTab} tabs={tabs} />
       </ArdaDrawerHeader>
 
       <ArdaDrawerBody>
@@ -167,9 +165,19 @@ export function ArdaItemDetails({
               onIndexChange={setCurrentCardIndex}
               loading={cardsLoading}
               renderCard={renderCard}
-              onPreview={onCardPreview}
               emptyState={cardEmptyState}
             />
+            {showToolbar && (actions?.length || overflowActions?.length) && (
+              <div className="border-b border-border px-5 py-4">
+                <ArdaItemDetailsHeader
+                  activeTab={activeTab}
+                  onTabChange={setActiveTab}
+                  tabs={[]}
+                  actions={actions}
+                  overflowActions={overflowActions}
+                />
+              </div>
+            )}
             {fields && <ArdaItemDetailsContent fields={fields} />}
           </>
         ) : (
@@ -182,7 +190,7 @@ export function ArdaItemDetails({
           variant="outline"
           size="sm"
           onClick={() => onOpenChange(false)}
-          className="h-8 px-3 text-sm font-medium"
+          className="h-9 min-w-[72px] px-4 text-sm font-medium"
         >
           Done
         </Button>

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -39,6 +39,8 @@ export interface OverflowAction {
   key: string;
   /** Menu item label. */
   label: string;
+  /** Icon displayed in the grid cell. */
+  icon?: LucideIcon;
   /** Called when selected. */
   onAction: () => void;
   /** Whether this is a destructive action. */
@@ -50,32 +52,84 @@ export interface OverflowAction {
 /** Props for ArdaActionToolbar. */
 export interface ArdaActionToolbarProps {
   /* --- Model / Data Binding --- */
-  /** Primary actions rendered as buttons. */
+  /** Primary actions — shown as buttons when space allows, otherwise in overflow. */
   actions?: ToolbarAction[];
-  /** Actions that overflow into a dropdown menu. */
+  /** Always-in-overflow actions (e.g. destructive, low-priority). */
   overflowActions?: OverflowAction[];
   /* --- View / Layout / Controller --- */
   /** Additional CSS classes. */
   className?: string;
 }
 
+// --- Constants ---
+
+/** Approximate width per action button (icon + label + padding + gap). */
+const ACTION_WIDTH_ESTIMATE = 100;
+/** Width of the overflow trigger button. */
+const OVERFLOW_BUTTON_WIDTH = 36;
+
 // --- Component ---
 
 /**
- * ArdaActionToolbar — a row of icon+label action buttons with an overflow dropdown.
+ * ArdaActionToolbar — responsive action bar that promotes items from overflow as space allows.
  *
- * Data-driven: pass `actions[]` for visible buttons and `overflowActions[]`
- * for the dropdown menu. Designed for entity detail panel headers.
+ * Measures available width with ResizeObserver and shows as many `actions[]` as fit.
+ * Remaining actions are demoted into the overflow dropdown alongside `overflowActions[]`.
  */
 export function ArdaActionToolbar({ actions, overflowActions, className }: ArdaActionToolbarProps) {
-  const hasActions = actions && actions.length > 0;
-  const hasOverflow = overflowActions && overflowActions.length > 0;
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [visibleCount, setVisibleCount] = useState(actions?.length ?? 0);
 
-  if (!hasActions && !hasOverflow) return null;
+  const allActions = actions ?? [];
+  const allOverflow = overflowActions ?? [];
+  const hasAnything = allActions.length > 0 || allOverflow.length > 0;
+
+  const computeVisible = useCallback(() => {
+    const el = containerRef.current;
+    if (!el || allActions.length === 0) return;
+
+    const containerWidth = el.clientWidth;
+    // In test/SSR environments clientWidth is 0 — show all actions
+    if (containerWidth === 0) {
+      setVisibleCount(allActions.length);
+      return;
+    }
+
+    const needsOverflow = allOverflow.length > 0;
+    const reservedForOverflow = needsOverflow || allActions.length > 1 ? OVERFLOW_BUTTON_WIDTH : 0;
+    const available = containerWidth - reservedForOverflow;
+    const fits = Math.max(0, Math.floor(available / ACTION_WIDTH_ESTIMATE));
+
+    // If all actions fit and no permanent overflow items, show them all (no overflow button needed)
+    if (fits >= allActions.length && !needsOverflow) {
+      setVisibleCount(allActions.length);
+    } else {
+      // Always reserve space for overflow button when some actions are hidden
+      const availableWithOverflow = containerWidth - OVERFLOW_BUTTON_WIDTH;
+      setVisibleCount(Math.max(0, Math.floor(availableWithOverflow / ACTION_WIDTH_ESTIMATE)));
+    }
+  }, [allActions.length, allOverflow.length]);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    computeVisible();
+
+    const observer = new ResizeObserver(computeVisible);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [computeVisible]);
+
+  if (!hasAnything) return null;
+
+  const visibleActions = allActions.slice(0, visibleCount);
+  const hiddenActions = allActions.slice(visibleCount);
+  const showOverflow = hiddenActions.length > 0 || allOverflow.length > 0;
 
   return (
-    <div className={cn('flex items-center gap-1 flex-wrap', className)}>
-      {actions?.map((action) => {
+    <div ref={containerRef} className={cn('flex items-center gap-1', className)}>
+      {visibleActions.map((action) => {
         const Icon = action.icon;
         return (
           <Button
@@ -84,7 +138,7 @@ export function ArdaActionToolbar({ actions, overflowActions, className }: ArdaA
             size="sm"
             onClick={action.onAction}
             disabled={action.disabled || action.loading}
-            className="h-8 gap-1.5 rounded-lg px-3 py-2 text-xs font-medium"
+            className="h-9 gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium"
           >
             {action.loading ? (
               <Loader2 className="size-4 animate-spin" aria-hidden="true" />
@@ -96,20 +150,33 @@ export function ArdaActionToolbar({ actions, overflowActions, className }: ArdaA
         );
       })}
 
-      {hasOverflow && (
+      {showOverflow && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
-              className="size-8 rounded-lg"
+              className="size-9 shrink-0 rounded-md"
               aria-label="More actions"
             >
               <MoreHorizontal className="size-4" aria-hidden="true" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="min-w-48">
-            {overflowActions?.map((item) => (
+            {/* Hidden primary actions promoted into the menu */}
+            {hiddenActions.map((action) => (
+              <DropdownMenuItem
+                key={action.key}
+                onClick={action.onAction}
+                disabled={action.disabled || action.loading}
+              >
+                {action.label}
+              </DropdownMenuItem>
+            ))}
+            {/* Separator between promoted actions and permanent overflow */}
+            {hiddenActions.length > 0 && allOverflow.length > 0 && <DropdownMenuSeparator />}
+            {/* Permanent overflow actions */}
+            {allOverflow.map((item) => (
               <React.Fragment key={item.key}>
                 {item.separatorBefore && <DropdownMenuSeparator />}
                 <DropdownMenuItem

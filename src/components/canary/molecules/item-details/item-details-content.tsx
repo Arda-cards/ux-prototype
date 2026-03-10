@@ -36,11 +36,13 @@ export function ArdaItemDetailsContent({ fields, className }: ArdaItemDetailsCon
   if (fields.length === 0) return null;
 
   return (
-    <div className={cn('space-y-3 px-6 py-4', className)}>
+    <div className={cn('divide-y divide-border/60 px-5', className)}>
       {fields.map((field) => (
-        <ArdaDetailField key={field.key} label={field.label} value={field.value}>
-          {field.children}
-        </ArdaDetailField>
+        <div key={field.key} className="py-3">
+          <ArdaDetailField label={field.label} value={field.value}>
+            {field.children}
+          </ArdaDetailField>
+        </div>
       ))}
     </div>
   );

@@ -50,12 +50,12 @@ describe('ArdaItemDetails', () => {
     expect(screen.queryByText('Test Item')).not.toBeInTheDocument();
   });
 
-  it('renders card preview with count badge', () => {
+  it('renders card preview with navigation counter', () => {
     render(
       <ArdaItemDetails {...defaultProps} cardCount={3} renderCard={(i) => <div>Card {i}</div>} />,
     );
     expect(screen.getByText('Card 1')).toBeInTheDocument();
-    expect(screen.getByText('x3')).toBeInTheDocument();
+    expect(screen.getByText('1 / 3')).toBeInTheDocument();
   });
 
   it('shows loading state for cards', () => {

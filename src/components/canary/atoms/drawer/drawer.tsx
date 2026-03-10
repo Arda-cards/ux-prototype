@@ -78,7 +78,7 @@ export function ArdaDrawer({
 export function ArdaDrawerHeader({ className, children, ...props }: React.ComponentProps<'div'>) {
   return (
     <SheetHeader
-      className={cn('sticky top-0 z-40 border-b bg-background px-6 py-4', className)}
+      className={cn('sticky top-0 z-40 border-b bg-background px-5 py-3', className)}
       {...props}
     >
       {children}
@@ -106,7 +106,7 @@ export function ArdaDrawerFooter({ className, children, ...props }: React.Compon
   return (
     <SheetFooter
       className={cn(
-        'sticky bottom-0 z-40 flex-row justify-end border-t bg-background px-6 py-3',
+        'sticky bottom-0 z-40 flex-row justify-end border-t bg-background px-5 py-3',
         className,
       )}
       {...props}

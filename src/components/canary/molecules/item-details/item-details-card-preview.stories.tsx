@@ -11,7 +11,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Card preview area with prev/next navigation and count badge. ' +
+          'Card preview carousel with centered active card, animated transitions, ' +
           'Handles loading, empty, and populated states.',
       },
     },
@@ -39,7 +39,6 @@ export const Default: Story = {
           totalCards={5}
           onIndexChange={setIndex}
           renderCard={(i) => <MockCard index={i} />}
-          onPreview={() => {}}
         />
       </div>
     );

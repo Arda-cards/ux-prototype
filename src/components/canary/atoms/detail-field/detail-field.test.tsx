@@ -56,13 +56,13 @@ describe('ArdaDetailField', () => {
 
   it('applies compact variant class', () => {
     const { container } = render(<ArdaDetailField label="Test" value="Val" variant="compact" />);
-    expect(container.firstChild).toHaveClass('gap-0.5');
+    expect(container.firstChild).toHaveClass('gap-px');
   });
 
   it('applies default variant (no extra gap class)', () => {
     const { container } = render(<ArdaDetailField label="Test" value="Val" variant="default" />);
     // base class always present
-    expect(container.firstChild).toHaveClass('flex', 'flex-col', 'gap-1');
+    expect(container.firstChild).toHaveClass('flex', 'flex-col', 'gap-0.5');
   });
 
   it('passes through HTML attributes to the root div', () => {
@@ -73,7 +73,8 @@ describe('ArdaDetailField', () => {
   it('label uses muted-foreground token class', () => {
     render(<ArdaDetailField label="My Label" value="Val" />);
     const label = screen.getByText('My Label');
-    expect(label).toHaveClass('text-muted-foreground');
+    // Uses muted-foreground with opacity modifier
+    expect(label.className).toContain('text-muted-foreground');
   });
 
   it('value uses foreground token class', () => {
