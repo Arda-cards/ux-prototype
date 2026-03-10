@@ -858,8 +858,8 @@ Where:
 </table>
 
 For stable organism stories, use the full taxonomy from the in-tree guides:
-- `Components/Stable/Organisms/Shared/{Component Name}`
-- `Components/Stable/Organisms/Reference/{Domain}/{Component Name}`
+- `Components/Extras/Organisms/Shared/{Component Name}`
+- `Components/Extras/Organisms/Reference/{Domain}/{Component Name}`
 
 ### 8.3 Track-Specific Paths and Story Titles
 
@@ -888,7 +888,7 @@ For stable organism stories, use the full taxonomy from the in-tree guides:
     <tr>
       <td>Extras</td>
       <td><code>src/components/extras/&#123;level&#125;/&#123;name&#125;/</code></td>
-      <td><code>Components/Stable/&#123;Level&#125;/&#123;Name&#125;</code></td>
+      <td><code>Components/Extras/&#123;Level&#125;/&#123;Name&#125;</code></td>
       <td><code>./extras</code></td>
     </tr>
   </tbody>
@@ -989,7 +989,7 @@ import { fn } from 'storybook/test';
 import { ArdaWidget } from './widget';
 
 const meta: Meta<typeof ArdaWidget> = {
-  title: 'Components/Stable/Atoms/General/Widget',
+  title: 'Components/Extras/Atoms/General/Widget',
   component: ArdaWidget,
   parameters: {
     docs: {

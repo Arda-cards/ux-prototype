@@ -1,6 +1,6 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Components/Stable/Organisms/Overview" />
+<Meta title="Components/Extras/Organisms/Overview" />
 
 # Organisms
 
@@ -30,13 +30,13 @@ Organisms are organized into two tiers based on their reusability scope:
     <tr>
       <td><strong>Shared</strong></td>
       <td><code>organisms/shared/&#123;component&#125;/</code></td>
-      <td><code>Components/Stable/Organisms/Shared/</code></td>
+      <td><code>Components/Extras/Organisms/Shared/</code></td>
       <td>Reusable organisms that work across domains via configuration or generic type parameters.</td>
     </tr>
     <tr>
       <td><strong>Reference</strong></td>
       <td><code>organisms/reference/&#123;domain&#125;/&#123;component&#125;/</code></td>
-      <td><code>Components/Stable/Organisms/Reference/&#123;Domain&#125;/</code></td>
+      <td><code>Components/Extras/Organisms/Reference/&#123;Domain&#125;/</code></td>
       <td>Domain-specific organisms tied to particular business entities and workflows.</td>
     </tr>
   </tbody>
@@ -171,14 +171,14 @@ organisms/
 
 1. Create the directory at `organisms/reference/{domain}/{component-name}/`.
 2. Implement the component.
-3. Set the story title to `Components/Stable/Organisms/Reference/{Domain}/{Component Name}`.
+3. Set the story title to `Components/Extras/Organisms/Reference/{Domain}/{Component Name}`.
 4. Optionally create docs using `<Meta of={Stories} />`.
 
 ### Adding a new domain
 
 1. Create the domain directory at `organisms/reference/{domain-name}/`.
 2. Add components as subdirectories.
-3. Story titles follow `Components/Stable/Organisms/Reference/{Domain Name}/{Component Name}`.
+3. Story titles follow `Components/Extras/Organisms/Reference/{Domain Name}/{Component Name}`.
 
 ### Adding a new entity data grid
 
@@ -191,16 +191,16 @@ Use the `createArdaEntityDataGrid` factory. The complete process is documented i
 ### Adding a shared organism
 
 1. Create the directory at `organisms/shared/{component-name}/`.
-2. Set the story title to `Components/Stable/Organisms/Shared/{Component Name}`.
+2. Set the story title to `Components/Extras/Organisms/Shared/{Component Name}`.
 
 ## Story title conventions
 
 Story titles determine the Storybook sidebar structure. Always use the correct prefix:
 
 ```
-Components/Stable/Organisms/Shared/{Component Name}
-Components/Stable/Organisms/Reference/Items/{Component Name}
-Components/Stable/Organisms/Reference/Business Affiliates/{Component Name}
+Components/Extras/Organisms/Shared/{Component Name}
+Components/Extras/Organisms/Reference/Items/{Component Name}
+Components/Extras/Organisms/Reference/Business Affiliates/{Component Name}
 ```
 
 For documentation MDX files, use `<Meta of={Stories} />` to attach docs to the stories page. Do **not** use `<Meta title="..." />` with a standalone path, as this creates a separate folder in the sidebar.

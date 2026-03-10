@@ -4,7 +4,7 @@ import { expect, within } from 'storybook/test';
 import { ArdaBadge } from './badge';
 
 const meta: Meta<typeof ArdaBadge> = {
-  title: 'Components/Stable/Atoms/Badge',
+  title: 'Components/Extras/Atoms/Badge',
   component: ArdaBadge,
   parameters: {
     docs: {

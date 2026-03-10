@@ -4,7 +4,7 @@ import { expect, within } from 'storybook/test';
 import { ArdaItemCard } from './item-card';
 
 const meta: Meta<typeof ArdaItemCard> = {
-  title: 'Components/Stable/Molecules/Item Card',
+  title: 'Components/Extras/Molecules/Item Card',
   component: ArdaItemCard,
   parameters: {
     layout: 'centered',

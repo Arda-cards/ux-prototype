@@ -36,7 +36,7 @@ const { Component: ErrorArdaSupplierViewer } = createArdaEntityViewer<BusinessAf
 // ============================================================================
 
 const meta: Meta<typeof ArdaSupplierViewer> = {
-  title: 'Components/Stable/Organisms/Reference/Business Affiliates/ArdaSupplierViewer',
+  title: 'Components/Extras/Organisms/Reference/Business Affiliates/ArdaSupplierViewer',
   component: ArdaSupplierViewer,
   parameters: {
     layout: 'padded',

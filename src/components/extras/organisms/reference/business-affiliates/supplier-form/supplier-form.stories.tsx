@@ -8,7 +8,7 @@ import { ArdaSupplierForm } from './supplier-form';
 const sampleAffiliate = sampleAffiliates[0]!;
 
 const meta: Meta<typeof ArdaSupplierForm> = {
-  title: 'Components/Stable/Organisms/Reference/Business Affiliates/Supplier Form',
+  title: 'Components/Extras/Organisms/Reference/Business Affiliates/Supplier Form',
   component: ArdaSupplierForm,
   parameters: {
     layout: 'centered',

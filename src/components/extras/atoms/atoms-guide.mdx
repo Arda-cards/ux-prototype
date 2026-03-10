@@ -1,6 +1,6 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Components/Stable/Atoms/Overview" />
+<Meta title="Components/Extras/Atoms/Overview" />
 
 # Atoms
 
@@ -33,7 +33,7 @@ Atoms are organized into lightweight groups based on purpose. The group determin
         <strong>Core</strong>
       </td>
       <td>
-        <code>Components/Stable/Atoms/</code>
+        <code>Components/Extras/Atoms/</code>
       </td>
       <td>General-purpose primitives that do not need deeper grouping</td>
       <td>Badge, Button, ConfirmDialog</td>
@@ -43,7 +43,7 @@ Atoms are organized into lightweight groups based on purpose. The group determin
         <strong>Form</strong>
       </td>
       <td>
-        <code>Components/Stable/Atoms/Form/</code>
+        <code>Components/Extras/Atoms/Form/</code>
       </td>
       <td>Input controls and form primitives</td>
       <td>Typeahead</td>
@@ -53,7 +53,7 @@ Atoms are organized into lightweight groups based on purpose. The group determin
         <strong>Grid</strong>
       </td>
       <td>
-        <code>Components/Stable/Atoms/Grid/</code>
+        <code>Components/Extras/Atoms/Grid/</code>
       </td>
       <td>AG Grid cell editors and renderers</td>
       <td>SelectCellEditor, TypeaheadCellEditor</td>
@@ -81,9 +81,9 @@ atoms/
 1. **Create the directory** at `src/components/atoms/{component-name}/`.
 2. **Implement the component** in `{component-name}.tsx`.
 3. **Choose the group**:
-   - top-level atom (`Components/Stable/Atoms/{ComponentName}`)
-   - Form atom (`Components/Stable/Atoms/Form/{ComponentName}`)
-   - Grid atom (`Components/Stable/Atoms/Grid/{ComponentName}`)
+   - top-level atom (`Components/Extras/Atoms/{ComponentName}`)
+   - Form atom (`Components/Extras/Atoms/Form/{ComponentName}`)
+   - Grid atom (`Components/Extras/Atoms/Grid/{ComponentName}`)
 4. **Create stories** in `{component-name}.stories.tsx` with the matching title path.
 5. **Optionally create docs** in `{component-name}.mdx` using `<Meta of={Stories} />` to attach to the story.
 6. **Export from** `src/index.ts` if the component is part of the public API.
@@ -92,7 +92,7 @@ atoms/
 
 ```tsx
 const meta: Meta<typeof MyComponent> = {
-  title: 'Components/Stable/Atoms/Form/MyComponent',
+  title: 'Components/Extras/Atoms/Form/MyComponent',
   component: MyComponent,
 };
 ```

@@ -9,7 +9,7 @@ import { ArdaDurationFieldInteractive } from './duration-field-interactive';
 const timeUnits = { days: 'Days', hours: 'Hours', weeks: 'Weeks', months: 'Months' } as const;
 
 const meta: Meta<typeof ArdaDurationFieldInteractive> = {
-  title: 'Components/Stable/Atoms/Form/Duration',
+  title: 'Components/Extras/Atoms/Form/Duration',
   component: ArdaDurationFieldInteractive,
   parameters: {
     layout: 'centered',

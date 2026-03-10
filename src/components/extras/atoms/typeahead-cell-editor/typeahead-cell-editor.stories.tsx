@@ -10,7 +10,7 @@ import { TypeaheadOption } from '@/components/extras/atoms/typeahead/typeahead';
 import { ArdaTypeaheadCellEditor, createTypeaheadCellEditor } from './typeahead-cell-editor';
 
 const meta = {
-  title: 'Components/Stable/Atoms/Grid/TypeaheadCellEditor',
+  title: 'Components/Extras/Atoms/Grid/TypeaheadCellEditor',
   component: ArdaTypeaheadCellEditor,
   parameters: {
     layout: 'padded',

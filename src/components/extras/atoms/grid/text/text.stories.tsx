@@ -7,7 +7,7 @@ import { ArdaTextCellEditor } from './text-cell-editor';
 import { ArdaTextCellInteractive } from './text-cell-interactive';
 
 const meta: Meta<typeof ArdaTextCellInteractive> = {
-  title: 'Components/Stable/Atoms/Grid/Text',
+  title: 'Components/Extras/Atoms/Grid/Text',
   component: ArdaTextCellInteractive,
   parameters: {
     layout: 'centered',

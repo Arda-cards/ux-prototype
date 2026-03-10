@@ -14,7 +14,7 @@ const currencies = {
 } as const;
 
 const meta: Meta<typeof ArdaMoneyFieldInteractive> = {
-  title: 'Components/Stable/Atoms/Form/Money',
+  title: 'Components/Extras/Atoms/Form/Money',
   component: ArdaMoneyFieldInteractive,
   parameters: {
     layout: 'centered',

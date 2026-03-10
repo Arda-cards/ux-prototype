@@ -7,7 +7,7 @@ import { ArdaUrlCellEditor } from './url-cell-editor';
 import { ArdaUrlCellInteractive } from './url-cell-interactive';
 
 const meta: Meta<typeof ArdaUrlCellInteractive> = {
-  title: 'Components/Stable/Atoms/Grid/URL',
+  title: 'Components/Extras/Atoms/Grid/URL',
   component: ArdaUrlCellInteractive,
   parameters: {
     layout: 'centered',

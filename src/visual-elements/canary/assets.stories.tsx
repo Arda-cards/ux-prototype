@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 
 const meta: Meta = {
-  title: 'Styles/Canary/Brand Assets',
+  title: 'Visual Elements/Canary/Brand Assets',
 };
 
 export default meta;

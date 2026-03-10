@@ -7,7 +7,7 @@ import { mockSuppliers } from '@/components/extras/molecules/data-grid/presets/s
 import type { BusinessAffiliate } from '@/types/extras';
 
 const meta: Meta<typeof ArdaSupplierDataGrid> = {
-  title: 'Components/Stable/Organisms/Reference/Business Affiliates/Suppliers Data Grid',
+  title: 'Components/Extras/Organisms/Reference/Business Affiliates/Suppliers Data Grid',
   component: ArdaSupplierDataGrid,
   parameters: {
     layout: 'padded',

@@ -7,7 +7,7 @@ import { ArdaBooleanCellEditor } from './boolean-cell-editor';
 import { ArdaBooleanCellInteractive } from './boolean-cell-interactive';
 
 const meta: Meta<typeof ArdaBooleanCellInteractive> = {
-  title: 'Components/Stable/Atoms/Grid/Boolean',
+  title: 'Components/Extras/Atoms/Grid/Boolean',
   component: ArdaBooleanCellInteractive,
   parameters: {
     layout: 'centered',

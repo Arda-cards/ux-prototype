@@ -4,16 +4,16 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 # Components Section Overview
 
-The component library is organized by track, then by level.
+The component library is organized into three collections by maturity.
 
 ## Stable
 
-`Components/Stable` is the default track for reusable components intended for broad usage today.
+`Components/Stable` is the root export path for production-ready components.
 
 ## Canary
 
-`Components/Canary` is the canary track for components under active extraction/refinement.
+`Components/Canary` is a sub-package for components under active extraction and refinement. Promotion to Stable requires an explicit move and import change.
 
-Promotion path:
+## Extras
 
-`Stable` represents what developers should reach for first. `Canary` is where extraction, replacement, and parity work happens before components are promoted into `Stable`.
+`Components/Extras` contains early experiments and reference implementations kept as examples. These are not exported in the library and will be removed as real components replace them.

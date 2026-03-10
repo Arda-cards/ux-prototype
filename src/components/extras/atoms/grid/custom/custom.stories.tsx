@@ -8,7 +8,7 @@ import { ArdaCustomCellEditor, type CustomCellEditorHandle } from './custom-cell
 import { ArdaCustomCellInteractive } from './custom-cell-interactive';
 
 const meta: Meta<typeof ArdaCustomCellInteractive> = {
-  title: 'Components/Stable/Atoms/Grid/Custom',
+  title: 'Components/Extras/Atoms/Grid/Custom',
   component: ArdaCustomCellInteractive,
   parameters: {
     layout: 'centered',

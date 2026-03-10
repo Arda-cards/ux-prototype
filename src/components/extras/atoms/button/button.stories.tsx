@@ -4,7 +4,7 @@ import { expect, fn, userEvent, within } from 'storybook/test';
 import { ArdaButton } from './button';
 
 const meta: Meta<typeof ArdaButton> = {
-  title: 'Components/Stable/Atoms/Button',
+  title: 'Components/Extras/Atoms/Button',
   component: ArdaButton,
   parameters: {
     docs: {

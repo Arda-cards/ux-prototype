@@ -65,7 +65,7 @@ src/
 
 In Storybook, those folders are presented as:
 
-- `Components/Stable` and `Components/Canary`
+- `Components/Extras` and `Components/Canary`
 - `App/Reference` and `App/Canary`
 - `Prototypes`
 - `Styles`
@@ -117,7 +117,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { MyButton } from './my-button';
 
 const meta: Meta<typeof MyButton> = {
-  title: 'Components/Stable/Atoms/My Button',
+  title: 'Components/Extras/Atoms/My Button',
   component: MyButton,
   tags: ['autodocs'],
   argTypes: {
@@ -138,4 +138,4 @@ export const Primary: Story = {};
 export const Secondary: Story = { args: { variant: 'secondary' } };
 ```
 
-3. Run `npm run storybook` and find your component in the sidebar under **Components/Stable/Atoms/My Button**.
+3. Run `npm run storybook` and find your component in the sidebar under **Components/Extras/Atoms/My Button**.

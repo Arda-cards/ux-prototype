@@ -14,7 +14,7 @@ import {
 } from './table';
 
 const meta: Meta<typeof ArdaTable> = {
-  title: 'Components/Stable/Molecules/Table',
+  title: 'Components/Extras/Molecules/Table',
   component: ArdaTable,
   parameters: {
     docs: {

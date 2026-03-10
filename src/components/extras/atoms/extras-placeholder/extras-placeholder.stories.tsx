@@ -4,7 +4,7 @@ import { expect, within } from 'storybook/test';
 import { ExtrasAtomPlaceholder } from './extras-placeholder';
 
 const meta: Meta<typeof ExtrasAtomPlaceholder> = {
-  title: 'Components/Stable/Atoms/Stable Track Placeholder',
+  title: 'Components/Extras/Atoms/Stable Track Placeholder',
   component: ExtrasAtomPlaceholder,
   parameters: {
     docs: {

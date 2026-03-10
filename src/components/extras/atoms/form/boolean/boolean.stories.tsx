@@ -7,7 +7,7 @@ import { ArdaBooleanFieldEditor } from './boolean-field-editor';
 import { ArdaBooleanFieldInteractive } from './boolean-field-interactive';
 
 const meta: Meta<typeof ArdaBooleanFieldInteractive> = {
-  title: 'Components/Stable/Atoms/Form/Boolean',
+  title: 'Components/Extras/Atoms/Form/Boolean',
   component: ArdaBooleanFieldInteractive,
   parameters: {
     layout: 'centered',
