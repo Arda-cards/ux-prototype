@@ -20,7 +20,7 @@ import { businessAffiliateHandlers, resetAffiliateStore, affiliateStore } from '
 // ---------------------------------------------------------------------------
 
 const meta: Meta<typeof EditableSuppliersPage> = {
-  title: 'Use Cases/Reference/Business Affiliates/Edit Supplier/Happy Path',
+  title: 'Use Cases/Reference/Business Affiliates/BA-0004 Edit Supplier/0001 Happy Path',
   component: EditableSuppliersPage,
   parameters: {
     layout: 'fullscreen',

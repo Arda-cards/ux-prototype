@@ -28,7 +28,7 @@ import {
 
 const meta: Meta<typeof CreatableSuppliersPage> = {
   title:
-    'Use Cases/Reference/Business Affiliates/Create Supplier/Validation Errors',
+    'Use Cases/Reference/Business Affiliates/BA-0003 Create Supplier/0002 Validation Errors',
   component: CreatableSuppliersPage,
   parameters: {
     layout: 'fullscreen',

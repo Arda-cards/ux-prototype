@@ -18,7 +18,7 @@ import { businessAffiliateHandlers } from '../_shared/msw-handlers';
 
 const meta: Meta<typeof SuppliersPage> = {
   title:
-    'Use Cases/Reference/Business Affiliates/View Details/Supplier Details Panel',
+    'Use Cases/Reference/Business Affiliates/BA-0002 View Details/0001 Supplier Details Panel',
   component: SuppliersPage,
   parameters: {
     layout: 'fullscreen',

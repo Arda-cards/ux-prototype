@@ -23,7 +23,7 @@ import {
 // ---------------------------------------------------------------------------
 
 const meta: Meta<typeof EditableSuppliersPage> = {
-  title: 'Use Cases/Reference/Business Affiliates/Edit Supplier/Validation Errors',
+  title: 'Use Cases/Reference/Business Affiliates/BA-0004 Edit Supplier/0002 Validation Errors',
   component: EditableSuppliersPage,
   parameters: {
     layout: 'fullscreen',

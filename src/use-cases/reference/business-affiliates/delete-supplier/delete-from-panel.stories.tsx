@@ -13,7 +13,7 @@ import { PanelDeletableSuppliersPage } from './panel-deletable-suppliers-page';
 import { businessAffiliateHandlers, resetAffiliateStore } from '../_shared/msw-handlers';
 
 const meta: Meta<typeof PanelDeletableSuppliersPage> = {
-  title: 'Use Cases/Reference/Business Affiliates/Delete Supplier/Delete from Detail Panel',
+  title: 'Use Cases/Reference/Business Affiliates/BA-0005 Delete Supplier/0002 Delete from Detail Panel',
   component: PanelDeletableSuppliersPage,
   parameters: {
     layout: 'fullscreen',

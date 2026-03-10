@@ -12,7 +12,7 @@ import { DeletableSuppliersPage } from './deletable-suppliers-page';
 import { businessAffiliateHandlers, resetAffiliateStore } from '../_shared/msw-handlers';
 
 const meta: Meta<typeof DeletableSuppliersPage> = {
-  title: 'Use Cases/Reference/Business Affiliates/Delete Supplier/Delete from List',
+  title: 'Use Cases/Reference/Business Affiliates/BA-0005 Delete Supplier/0001 Delete from List',
   component: DeletableSuppliersPage,
   parameters: {
     layout: 'fullscreen',

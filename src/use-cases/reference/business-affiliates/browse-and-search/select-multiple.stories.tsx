@@ -13,7 +13,7 @@ import { SelectMultiplePage } from './select-multiple-page';
 import { businessAffiliateHandlers } from '../_shared/msw-handlers';
 
 const meta: Meta<typeof SelectMultiplePage> = {
-  title: 'Use Cases/Reference/Business Affiliates/Browse and Search/Select Multiple',
+  title: 'Use Cases/Reference/Business Affiliates/BA-0001 Browse and Search/0005 Select Multiple',
   component: SelectMultiplePage,
   parameters: {
     layout: 'fullscreen',

@@ -17,7 +17,7 @@ import { mockBusinessAffiliates } from '../_shared/mock-data';
 const firstAffiliate = mockBusinessAffiliates[0].payload;
 
 const meta: Meta<typeof SuppliersPage> = {
-  title: 'Use Cases/Reference/Business Affiliates/Browse and Search/Deep Link',
+  title: 'Use Cases/Reference/Business Affiliates/BA-0001 Browse and Search/0007 Deep Link',
   component: SuppliersPage,
   parameters: {
     layout: 'fullscreen',

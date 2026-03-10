@@ -13,7 +13,7 @@ import { SuppliersPage } from '../_shared/suppliers-page';
 import { businessAffiliateHandlers } from '../_shared/msw-handlers';
 
 const meta: Meta<typeof SuppliersPage> = {
-  title: 'Use Cases/Reference/Business Affiliates/Browse and Search/View Suppliers List',
+  title: 'Use Cases/Reference/Business Affiliates/BA-0001 Browse and Search/0001 View Suppliers List',
   component: SuppliersPage,
   parameters: {
     layout: 'fullscreen',

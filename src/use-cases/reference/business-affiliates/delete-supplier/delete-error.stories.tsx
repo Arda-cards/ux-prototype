@@ -30,7 +30,7 @@ const errorHandlers = [
 ];
 
 const meta: Meta<typeof DeletableSuppliersPage> = {
-  title: 'Use Cases/Reference/Business Affiliates/Delete Supplier/Delete Error',
+  title: 'Use Cases/Reference/Business Affiliates/BA-0005 Delete Supplier/0003 Delete Error',
   component: DeletableSuppliersPage,
   parameters: {
     layout: 'fullscreen',

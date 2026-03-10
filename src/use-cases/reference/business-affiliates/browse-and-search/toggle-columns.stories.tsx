@@ -11,7 +11,7 @@ import { ToggleColumnsSuppliersPage } from './toggle-columns-page';
 
 const meta: Meta<typeof ToggleColumnsSuppliersPage> = {
   title:
-    'Use Cases/Reference/Business Affiliates/Browse and Search/Toggle Column Visibility',
+    'Use Cases/Reference/Business Affiliates/BA-0001 Browse and Search/0003 Toggle Column Visibility',
   component: ToggleColumnsSuppliersPage,
   parameters: {
     layout: 'fullscreen',

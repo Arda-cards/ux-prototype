@@ -15,7 +15,7 @@ import { SuppliersPage } from '../_shared/suppliers-page';
 import { businessAffiliateHandlers, resetAffiliateStore } from '../_shared/msw-handlers';
 
 const meta: Meta<typeof SuppliersPage> = {
-  title: 'Use Cases/Reference/Business Affiliates/Browse and Search/Pagination',
+  title: 'Use Cases/Reference/Business Affiliates/BA-0001 Browse and Search/0006 Pagination',
   component: SuppliersPage,
   parameters: {
     layout: 'fullscreen',

@@ -19,7 +19,7 @@ import { businessAffiliateHandlers, resetAffiliateStore } from '../_shared/msw-h
 // ---------------------------------------------------------------------------
 
 const meta: Meta<typeof CreatableSuppliersPage> = {
-  title: 'Use Cases/Reference/Business Affiliates/Create Supplier/Happy Path',
+  title: 'Use Cases/Reference/Business Affiliates/BA-0003 Create Supplier/0001 Happy Path',
   component: CreatableSuppliersPage,
   parameters: {
     layout: 'fullscreen',
