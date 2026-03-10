@@ -30,6 +30,8 @@ export interface ArdaItemDetailsCardPreviewProps {
 
 // --- Constants ---
 const SWIPE_THRESHOLD = 50;
+const ARROW_BUTTON_CLASS =
+  'absolute top-1/2 -translate-y-1/2 flex size-11 items-center justify-center rounded-full text-muted-foreground transition-colors motion-reduce:transition-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none';
 /** Card width in pixels — large enough to verify print content. */
 const CARD_W = 260;
 /** Gap between cards in pixels. */
@@ -85,15 +87,12 @@ export function ArdaItemDetailsCardPreview({
     [goNext, goPrev],
   );
 
-  const renderCardContent = useCallback(
-    (index: number) =>
-      renderCard?.(index) ?? (
-        <div className="flex h-full w-full items-center justify-center rounded-lg border border-dashed border-border/60 bg-background">
-          <span className="text-xs text-muted-foreground">Card {index}</span>
-        </div>
-      ),
-    [renderCard],
-  );
+  const renderCardContent = (index: number) =>
+    renderCard?.(index) ?? (
+      <div className="flex h-full w-full items-center justify-center rounded-lg border border-dashed border-border/60 bg-background">
+        <span className="text-xs text-muted-foreground">Card {index}</span>
+      </div>
+    );
 
   // Build array of card indices to render
   const cardIndices = useMemo(
@@ -176,7 +175,7 @@ export function ArdaItemDetailsCardPreview({
             <button
               type="button"
               onClick={goPrev}
-              className="absolute left-0 top-1/2 -translate-y-1/2 flex size-11 items-center justify-center rounded-full text-muted-foreground transition-colors motion-reduce:transition-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className={cn(ARROW_BUTTON_CLASS, 'left-0')}
               aria-label="Previous card"
             >
               <ChevronLeft className="size-4" />
@@ -188,7 +187,7 @@ export function ArdaItemDetailsCardPreview({
             <button
               type="button"
               onClick={goNext}
-              className="absolute right-0 top-1/2 -translate-y-1/2 flex size-11 items-center justify-center rounded-full text-muted-foreground transition-colors motion-reduce:transition-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className={cn(ARROW_BUTTON_CLASS, 'right-0')}
               aria-label="Next card"
             >
               <ChevronRight className="size-4" />

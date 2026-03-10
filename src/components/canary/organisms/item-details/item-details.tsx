@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   ArdaDrawer,
   ArdaDrawerHeader,
@@ -12,6 +12,7 @@ import { ArdaItemDetailsHeader } from '../../molecules/item-details/item-details
 import { ArdaFieldList, type FieldDef } from '../../molecules/field-list/field-list';
 import { ArdaItemDetailsCardPreview } from '../../molecules/item-details/item-details-card-preview';
 import type { ToolbarAction, OverflowAction } from '../../molecules/action-toolbar/action-toolbar';
+import { ArdaButton } from '../../atoms/button/button';
 import { XIcon, type LucideIcon } from 'lucide-react';
 
 // --- Interfaces ---
@@ -110,14 +111,19 @@ export function ArdaItemDetails({
   const [activeTab, setActiveTab] = useState('details');
   const [currentCardIndex, setCurrentCardIndex] = useState(1);
 
+  const displayTitle = title || 'Item Details';
+
   // Reset state when drawer opens
-  const handleOpenChange = (nextOpen: boolean) => {
-    if (nextOpen) {
-      setActiveTab('details');
-      setCurrentCardIndex(1);
-    }
-    onOpenChange(nextOpen);
-  };
+  const handleOpenChange = useCallback(
+    (nextOpen: boolean) => {
+      if (nextOpen) {
+        setActiveTab('details');
+        setCurrentCardIndex(1);
+      }
+      onOpenChange(nextOpen);
+    },
+    [onOpenChange],
+  );
 
   const hasActions = (actions?.length ?? 0) > 0 || (overflowActions?.length ?? 0) > 0;
 
@@ -125,7 +131,7 @@ export function ArdaItemDetails({
     <ArdaDrawer open={open} onOpenChange={handleOpenChange} size={size} className={className}>
       <ArdaDrawerHeader>
         {/* Visually hidden title for screen readers (Radix requirement) */}
-        <ArdaDrawerTitle className="sr-only">{title || 'Item Details'}</ArdaDrawerTitle>
+        <ArdaDrawerTitle className="sr-only">{displayTitle}</ArdaDrawerTitle>
         <ArdaDrawerDescription className="sr-only">
           View and manage item details.
         </ArdaDrawerDescription>
@@ -133,15 +139,17 @@ export function ArdaItemDetails({
         {/* Title row with close button */}
         <div className="flex items-center justify-between gap-2">
           <h2 className="flex-1 min-w-0 text-lg font-semibold leading-snug break-words text-foreground">
-            {title || 'Item Details'}
+            {displayTitle}
           </h2>
-          <button
+          <ArdaButton
+            variant="ghost"
+            size="icon"
             onClick={() => onOpenChange(false)}
-            className="flex size-11 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none -mr-2"
+            className="-mr-2 text-muted-foreground"
             aria-label="Close"
           >
             <XIcon className="size-4" />
-          </button>
+          </ArdaButton>
         </div>
 
         {/* Tabs — full width */}

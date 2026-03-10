@@ -70,15 +70,16 @@ export function ArdaItemDetailsHeader({
   const visiblePrimary = allPrimary.slice(0, visibleSlots);
   const hiddenPrimary = allPrimary.slice(visibleSlots);
 
-  // Overflow actions with icons that fit in remaining grid slots
+  // Partition overflow actions in a single pass: icon vs no-icon
   const remainingSlots = visibleSlots - visiblePrimary.length;
-  const visibleOverflow = allOverflow
-    .filter((a): a is OverflowAction & { icon: LucideIcon } => !!a.icon)
-    .slice(0, remainingSlots);
-  const hiddenOverflow = [
-    ...allOverflow.filter((a) => a.icon).slice(remainingSlots),
-    ...allOverflow.filter((a) => !a.icon),
-  ];
+  const withIcon: (OverflowAction & { icon: LucideIcon })[] = [];
+  const withoutIcon: OverflowAction[] = [];
+  for (const a of allOverflow) {
+    if (a.icon) withIcon.push(a as OverflowAction & { icon: LucideIcon });
+    else withoutIcon.push(a);
+  }
+  const visibleOverflow = withIcon.slice(0, remainingSlots);
+  const hiddenOverflow = [...withIcon.slice(remainingSlots), ...withoutIcon];
 
   // Everything that goes in the "More" dropdown
   const moreItems = [...hiddenPrimary, ...hiddenOverflow];
