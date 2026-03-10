@@ -62,18 +62,20 @@ export function ArdaSidebarNavItem({
           <span
             className={cn(
               'pointer-events-none absolute size-1.5 rounded-full bg-sidebar-primary',
-              'transition-opacity duration-150',
+              'transition-opacity duration-150 motion-reduce:transition-none',
               'right-2 top-1/2 -translate-y-1/2',
               'group-data-[collapsible=icon]:right-0.5 group-data-[collapsible=icon]:top-0.5 group-data-[collapsible=icon]:translate-y-0',
               badge !== true ? 'opacity-0 group-data-[collapsible=icon]:opacity-100' : '',
             )}
-            aria-label="New activity"
+            role={badge === true ? 'status' : undefined}
+            aria-label={badge === true ? 'New activity' : undefined}
+            aria-hidden={badge !== true ? true : undefined}
           />
           {/* Count — fades out when collapsing, fades in when expanding */}
           {badge !== true && (
             <ArdaBadge
               variant="default"
-              className="absolute right-2 top-1/2 -translate-y-1/2 tabular-nums transition-opacity duration-150 group-data-[collapsible=icon]:opacity-0"
+              className="absolute right-2 top-1/2 -translate-y-1/2 tabular-nums transition-opacity duration-150 motion-reduce:transition-none group-data-[collapsible=icon]:opacity-0"
             >
               {badge}
             </ArdaBadge>

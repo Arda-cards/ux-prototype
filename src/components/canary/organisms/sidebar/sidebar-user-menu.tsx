@@ -60,7 +60,8 @@ export function ArdaSidebarUserMenu({ user, actions, className }: ArdaSidebarUse
   const { isMobile } = useSidebar();
 
   const initials = user.name
-    .split(' ')
+    .split(/\s+/)
+    .filter(Boolean)
     .map((n) => n[0])
     .join('')
     .toUpperCase()

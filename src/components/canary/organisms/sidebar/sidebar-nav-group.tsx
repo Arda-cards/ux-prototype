@@ -28,14 +28,9 @@ export interface ArdaSidebarNavGroupProps {
 
 /** Check if any child ArdaSidebarNavItem has active=true (auto-expand support). */
 function hasActiveChild(children: React.ReactNode): boolean {
-  let found = false;
-  React.Children.forEach(children, (child) => {
-    if (found) return;
-    if (React.isValidElement<{ active?: boolean }>(child) && child.props.active) {
-      found = true;
-    }
-  });
-  return found;
+  return React.Children.toArray(children).some(
+    (child) => React.isValidElement<{ active?: boolean }>(child) && child.props.active === true,
+  );
 }
 
 // --- Component ---
@@ -52,7 +47,9 @@ export function ArdaSidebarNavGroup({
   children,
   className,
 }: ArdaSidebarNavGroupProps) {
-  const shouldExpand = defaultExpanded || hasActiveChild(children);
+  // Only compute at mount — hasActiveChild walks the React tree and the result
+  // is only meaningful as the initial value for the uncontrolled Collapsible.
+  const [shouldExpand] = React.useState(() => defaultExpanded || hasActiveChild(children));
 
   return (
     <Collapsible defaultOpen={shouldExpand} className={cn('group/collapsible', className)}>
@@ -64,7 +61,7 @@ export function ArdaSidebarNavGroup({
           >
             {Icon && <Icon />}
             <span className="truncate">{label}</span>
-            <ChevronRight className="ml-auto shrink-0 transition-transform duration-150 group-data-[state=open]/collapsible:rotate-90" />
+            <ChevronRight className="ml-auto shrink-0 transition-transform duration-150 motion-reduce:transition-none group-data-[state=open]/collapsible:rotate-90" />
           </SidebarMenuButton>
         </CollapsibleTrigger>
         <CollapsibleContent>
