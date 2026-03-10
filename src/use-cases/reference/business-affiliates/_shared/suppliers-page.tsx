@@ -48,6 +48,13 @@ interface SuppliersPageProps {
    * and manage its own drawer with full edit mode support.
    */
   onRowClick?: (affiliate: BusinessAffiliateWithRoles) => void;
+  /**
+   * Callback when Delete is clicked in the drawer (view mode).
+   * When provided, the drawer's Delete button triggers this callback with the affiliate.
+   * When omitted, the drawer renders with an inert Delete button (no-op).
+   * Used by the Delete-from-Panel story wrapper (PanelDeletableSuppliersPage).
+   */
+  onDrawerDelete?: (affiliate: BusinessAffiliateWithRoles) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -174,6 +181,7 @@ export function SuppliersPage({
   columnVisibilityOverride,
   onAddSupplier,
   onRowClick,
+  onDrawerDelete,
 }: SuppliersPageProps) {
   const [rowData, setRowData] = useState<BusinessAffiliateWithRoles[]>([]);
   const [loading, setLoading] = useState(true);
@@ -412,9 +420,7 @@ export function SuppliersPage({
           onEdit={() => {
             // Placeholder: future stories wire this to edit mode transition
           }}
-          onDelete={() => {
-            // Placeholder: future stories wire this to confirm dialog
-          }}
+          onDelete={onDrawerDelete ? () => onDrawerDelete(selectedAffiliate!) : undefined}
         />
       )}
     </SidebarProvider>
