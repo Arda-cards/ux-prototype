@@ -1,6 +1,6 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Docs/Workflows/Developer Workflow" />
+<Meta title="Guides/Workflows/Developer Workflow" />
 
 # Developer Workflow
 
@@ -26,6 +26,7 @@ Tips:
 - Provide the AI with an existing story file as a reference for the project conventions.
 - Ask the AI to run `npm test` after writing tests to catch issues immediately.
 - Use `make check` to run linting and type-checking before committing.
+- For package-affecting changes, run `npm run build:lib` and `npm_config_cache=/tmp/npm-cache npm pack --dry-run` before opening a PR.
 
 ## Running Tests Locally
 

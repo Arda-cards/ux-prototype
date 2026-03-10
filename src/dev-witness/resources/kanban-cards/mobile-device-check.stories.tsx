@@ -4,7 +4,7 @@ import MobileDeviceCheckPage from '@frontend/app/mobile-device-check/page';
 import '@/styles/vendored/globals.css';
 
 const meta: Meta<typeof MobileDeviceCheckPage> = {
-  title: 'Dev Witness/Resources/Kanban Cards/Mobile Device Check',
+  title: 'App/Reference/Resources/Kanban Cards/Mobile Device Check',
   component: MobileDeviceCheckPage,
   tags: ['app-route:/mobile-device-check'],
   parameters: {

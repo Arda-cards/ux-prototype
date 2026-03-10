@@ -3,7 +3,7 @@ import { expect, within } from 'storybook/test';
 import ItemDetailPage from '../../components/ItemDetailPage';
 
 const meta: Meta<typeof ItemDetailPage> = {
-  title: 'Canary Refactor/Reference/Items/Item Detail',
+  title: 'App/Canary/Reference/Items/Item Detail',
   component: ItemDetailPage,
   tags: ['app-route:/item/[itemId]'],
   parameters: {
@@ -21,10 +21,10 @@ export default meta;
 type Story = StoryObj<typeof ItemDetailPage>;
 
 /**
- * Canary Refactor: Item Detail view with ArdaDetailField replacing inline blocks.
+ * App Migration: Item Detail view with ArdaDetailField replacing inline blocks.
  * Exercises UC-ITEM-003: View item detail panel.
  *
- * Intentional deviations from Dev Witness (vendored):
+ * Intentional deviations from App Baseline (vendored):
  * - Label color: `text-[#737373]` -> `text-muted-foreground` (design token)
  * - Value color: `text-[#0a0a0a]` -> `text-foreground` (design token)
  * - "Number of cards" value: `text-sm` -> `text-base` (consistent with other values)

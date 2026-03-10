@@ -4,7 +4,7 @@ import { expect, within } from 'storybook/test';
 import { ExtrasOrganismPlaceholder } from './extras-placeholder';
 
 const meta: Meta<typeof ExtrasOrganismPlaceholder> = {
-  title: 'Components/Extras/Organisms/Extras Placeholder',
+  title: 'Components/Extras/Organisms/Stable Track Placeholder',
   component: ExtrasOrganismPlaceholder,
   parameters: {
     layout: 'padded',

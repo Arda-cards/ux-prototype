@@ -4,7 +4,7 @@ import ItemDetailPage from '@frontend/app/item/[itemId]/page';
 import '@/styles/vendored/globals.css';
 
 const meta: Meta<typeof ItemDetailPage> = {
-  title: 'Dev Witness/Reference/Items/Item Detail',
+  title: 'App/Reference/Reference/Items/Item Detail',
   component: ItemDetailPage,
   tags: ['app-route:/item/[itemId]'],
   parameters: {

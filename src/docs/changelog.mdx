@@ -1,0 +1,36 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Start Here/Changelog" />
+
+# Storybook Changelog
+
+Track structural and presentation changes to this Storybook instance.
+
+## 2026-03-07
+
+### Sidebar IA Refactor
+
+- Reorganized top-level sidebar sections to:
+  - `Start Here`
+  - `Guides`
+  - `Styles`
+  - `Components`
+  - `App`
+  - `Prototypes`
+  - `Archive`
+- Renamed component tracks:
+  - `Extras` -> `Stable`
+  - `Canary` -> `Canary` (kept — matches export path convention)
+- Grouped full-app pages under a single app container:
+  - `App/Reference` (vendored parity pages)
+  - `App/Canary` (migration workbench pages)
+- Renamed `Use Cases` -> `Prototypes` for clearer future-state intent.
+- Renamed `Visual Elements` -> `Styles`.
+- Renamed `Dev Witness` -> `App/Reference`.
+
+### Why
+
+- Reduce internal jargon in navigation labels.
+- Make section intent legible for first-time readers.
+- Align with established software conventions (Stable/Canary).
+- Keep migration work adjacent to reference app pages for faster comparison.

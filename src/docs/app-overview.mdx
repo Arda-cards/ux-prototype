@@ -1,0 +1,32 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="App/Overview" />
+
+# App Section Overview
+
+The `App` section contains page-level stories that map to the real application shell.
+
+Conceptually:
+
+- `Current` is the current mirrored app surface.
+- `Migration` is the in-progress track for those same pages.
+
+## Current
+
+`App/Reference` contains vendored page stories mirrored from `arda-frontend-app` and rendered with mock services.
+
+Use this section for:
+
+- Production-parity UI review
+- Functional parity checks
+- Current-state screenshots and interaction assertions
+
+## Migration
+
+`App/Canary` contains migration variants of the same pages where components are progressively swapped to migrated library components.
+
+Use this section for:
+
+- Side-by-side comparison against `App/Reference`
+- Documenting intentional visual/behavior deltas
+- De-risking component migration before promotion

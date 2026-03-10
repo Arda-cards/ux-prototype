@@ -1,14 +1,14 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Docs/Misc/Applications" />
+<Meta title="Archive/Applications/Overview" />
 
 # Applications
 
-Application mocks are full-page layouts that simulate how components look and behave in a real application context.
+This page documents an older Storybook pattern that predated the current `App` and `Prototypes` organization. It is retained in `Archive` for historical reference.
 
 ## Overview
 
-Each application mock comes in three versions:
+The original application-mock approach used three variants:
 
 <table>
   <thead>
@@ -22,36 +22,42 @@ Each application mock comes in three versions:
       <td>
         <strong>Production</strong>
       </td>
-      <td>Mirrors the real app as closely as possible</td>
+      <td>Mirrored the real app as closely as possible</td>
     </tr>
     <tr>
       <td>
         <strong>Development</strong>
       </td>
-      <td>Includes debug overlays and in-progress feature banners</td>
+      <td>Included debug overlays and in-progress feature banners</td>
     </tr>
     <tr>
       <td>
         <strong>Design</strong>
       </td>
-      <td>Structural dotted borders for design review</td>
+      <td>Used structural dotted borders for design review</td>
     </tr>
   </tbody>
 </table>
 
-Mocks live in `src/dev-witness/` and are organized by application area (e.g., dashboard, settings, onboarding).
+This approach has been superseded by:
+
+- `App/Reference` for vendored production-parity pages
+- `App/Canary` for page-level migration work
+- `Prototypes` for forward-looking workflow concepts
 
 ## How to Add a Page
 
-1. **Create a directory** under `src/dev-witness/`:
+Do not use this pattern for new work. Prefer `App/Reference`, `App/Canary`, or `Prototypes` depending on intent.
+
+Historically, teams created a directory like this:
 
 ```
-src/dev-witness/my-page/
+src/applications/my-page/
   MyPage.tsx
   MyPage.stories.tsx
 ```
 
-2. **Build the page component** using library components:
+The page component itself followed this pattern:
 
 ```tsx
 import { Button } from '@/components/extras/atoms/Button/Button';
@@ -70,14 +76,14 @@ export function MyPage() {
 }
 ```
 
-3. **Create the story**:
+And the story usually looked like:
 
 ```tsx
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { MyPage } from './MyPage';
 
 const meta = {
-  title: 'Applications/My Page',
+  title: 'Archive/Applications/My Page',
   component: MyPage,
   parameters: {
     layout: 'fullscreen',
@@ -92,10 +98,10 @@ export const Default: Story = {};
 
 ## Using Custom Components
 
-Sometimes a page mock needs a component that does not (yet) exist in the library. You can define it locally within the application mock directory:
+Sometimes a page mock needed a component that did not yet exist in the library. Teams defined it locally within the mock directory:
 
 ```
-src/dev-witness/my-page/
+src/applications/my-page/
   MyPage.tsx
   MyPage.stories.tsx
   components/
@@ -108,7 +114,7 @@ Import it in the page:
 import { CustomWidget } from './components/CustomWidget';
 ```
 
-This keeps the library clean while still allowing rapid prototyping.
+That kept the library clean while still allowing rapid prototyping.
 
 ## Promoting to Library
 

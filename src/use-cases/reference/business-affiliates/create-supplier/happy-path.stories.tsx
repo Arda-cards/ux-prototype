@@ -555,7 +555,7 @@ function CreateSupplierWizard(props: WizardProps<SupplierFormData>) {
    ================================================================ */
 
 const meta = {
-  title: 'Use Cases/Reference/Business Affiliates/Create Supplier/Happy Path',
+  title: 'Prototypes/Reference/Business Affiliates/Create Supplier/Happy Path',
   parameters: { layout: 'centered' },
 } satisfies Meta;
 

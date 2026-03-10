@@ -24,7 +24,7 @@ const SampleComponent = () => (
 );
 
 const meta: Meta = {
-  title: 'Docs/Tools/Agentation',
+  title: 'Guides/Tools/Agentation',
   component: SampleComponent,
   parameters: {
     docs: {

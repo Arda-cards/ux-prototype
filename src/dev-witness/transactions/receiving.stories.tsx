@@ -4,7 +4,7 @@ import ReceivingPage from '@frontend/app/receiving/page';
 import '@/styles/vendored/globals.css';
 
 const meta: Meta<typeof ReceivingPage> = {
-  title: 'Dev Witness/Transactions/Receiving',
+  title: 'App/Reference/Transactions/Receiving',
   component: ReceivingPage,
   tags: ['app-route:/receiving'],
   parameters: {

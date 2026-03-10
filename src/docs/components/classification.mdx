@@ -1,6 +1,6 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Docs/Components/Classification" />
+<Meta title="Guides/Components/Classification" />
 
 # Component Classification Guidelines
 
@@ -42,27 +42,37 @@ This hierarchy helps maintain clear separation of concerns, promotes reusability
   </thead>
   <tbody>
     <tr>
-      <td><strong>General</strong></td>
+      <td>
+        <strong>General</strong>
+      </td>
       <td>Common UI primitives for user interaction and status display</td>
       <td>Badge, Button, ConfirmDialog</td>
     </tr>
     <tr>
-      <td><strong>Display and Layout</strong></td>
+      <td>
+        <strong>Display and Layout</strong>
+      </td>
       <td>Components for structuring and presenting content</td>
       <td>Card, Separator, Skeleton</td>
     </tr>
     <tr>
-      <td><strong>Form</strong></td>
+      <td>
+        <strong>Form</strong>
+      </td>
       <td>Input controls and form primitives</td>
       <td>Input, Select, Checkbox, Radio</td>
     </tr>
     <tr>
-      <td><strong>Grid</strong></td>
+      <td>
+        <strong>Grid</strong>
+      </td>
       <td>AG Grid cell editors and renderers</td>
       <td>SelectCellEditor, TypeaheadCellEditor</td>
     </tr>
     <tr>
-      <td><strong>Other</strong></td>
+      <td>
+        <strong>Other</strong>
+      </td>
       <td>Specialized atoms that don't fit other categories</td>
       <td>Typeahead (autocomplete/combobox)</td>
     </tr>
@@ -118,6 +128,7 @@ Reusable organisms that can be applied across multiple domains with configuratio
 **Location:** `organisms/shared/`
 
 **Examples:**
+
 - **entity-data-grid (factory)** — Configurable data grid factory that can be specialized for any entity type
 
 ### Reference Organisms
@@ -138,12 +149,16 @@ Domain-specific organisms tied to particular business domains. These components 
   </thead>
   <tbody>
     <tr>
-      <td><strong>Items</strong></td>
+      <td>
+        <strong>Items</strong>
+      </td>
       <td>organisms/reference/items/</td>
       <td>items-data-grid, item-supply-form-dialog, item-supply-section</td>
     </tr>
     <tr>
-      <td><strong>Business Affiliates</strong></td>
+      <td>
+        <strong>Business Affiliates</strong>
+      </td>
       <td>organisms/reference/business-affiliates/</td>
       <td>suppliers-data-grid, supplier-drawer, supplier-form</td>
     </tr>
@@ -190,11 +205,13 @@ Use this decision tree when classifying a new component:
 ### When a component could be either Atom or Molecule
 
 **Indicators it's an Atom:**
+
 - Zero imports of other custom components
 - Wraps a single native element or Radix primitive
 - No composition logic, just prop mapping
 
 **Indicators it's a Molecule:**
+
 - Composes multiple atoms or elements
 - Contains layout or interaction orchestration
 - Provides a reusable pattern (like a card with header/body/footer structure)
@@ -204,11 +221,13 @@ Use this decision tree when classifying a new component:
 ### When a component could be either Molecule or Organism
 
 **Indicators it's a Molecule:**
+
 - Generic, reusable across features
 - No knowledge of specific entity types
 - Configuration via props, not hardcoded domain logic
 
 **Indicators it's an Organism:**
+
 - Tied to a specific domain entity (Item, Supplier, Order)
 - Contains business validation rules
 - Connects to domain-specific APIs or state
@@ -231,12 +250,14 @@ Beyond atomic classification, components should separate their props into clear 
 All component prop interfaces should clearly distinguish between:
 
 **Model/Data Binding:**
+
 - Props that relate to domain data, state values, or data-driven behavior
 - Data callbacks (onChange, onSelect, onSubmit)
 - Current values (value, selectedItems, items)
 - Data sources (options, dataSource)
 
 **View/Layout/Controller:**
+
 - Props that relate to visual presentation, layout, or interaction behavior
 - Visual variants (variant, size, color)
 - Layout flags (disabled, loading, open)
@@ -302,4 +323,4 @@ export interface ArdaDataGridRuntimeConfig<T> {
 ## Related Documentation
 
 - [Component Guidelines](/docs/component-guidelines) — General component structure and conventions
-- [Use Cases](/docs/use-cases) — How components compose into user-facing features
+- [Prototypes Structure](?path=/docs/prototypes-structure--docs) — How components compose into user-facing features

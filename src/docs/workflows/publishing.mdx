@@ -1,10 +1,19 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Docs/Workflows/Publishing" />
+<Meta title="Guides/Workflows/Publishing" />
 
 # Publishing
 
 The `@arda-cards/design-system` package is published to **GitHub Packages** on every push to `main`.
+
+## Current Release Posture
+
+This package is currently internal and pre-adoption. Prioritize correctness of artifacts and docs over broad compatibility promises.
+
+Before bumping versions, verify:
+- package exports resolve correctly (`.`, `./canary`, `./extras`, `./styles`)
+- declaration files are generated in `dist/`
+- Storybook/docs guidance reflects current folder and story-title conventions
 
 ## GitHub Packages Setup
 
@@ -61,6 +70,28 @@ git push && git push --tags
 
 The CI workflow will then build and publish the new version automatically.
 
+## Pre-Publish Verification
+
+Run this checklist locally before merging package-affecting changes:
+
+```bash
+npm run lint
+npx tsc --noEmit
+npm run build:lib
+npm_config_cache=/tmp/npm-cache npm pack --dry-run
+```
+
+Recommended:
+- Run the full suite (`npm test`) when the baseline test suite is green.
+- If baseline is known-red, run targeted tests for touched components and note the known failures in PR context.
+
+Optional tarball smoke check:
+
+```bash
+npm_config_cache=/tmp/npm-cache npm pack
+tar -tzf arda-cards-ui-components-*.tgz | rg 'dist/(index|canary|extras)\\.(js|cjs|d\\.ts)|dist/ui-components\\.css'
+```
+
 ## Consuming the Package
 
 In `arda-frontend-app` (or any consuming project), add the package:
@@ -86,7 +117,7 @@ npm install @arda-cards/design-system
 4. **Import and use components**:
 
 ```tsx
-import { Button } from '@arda-cards/design-system';
+import { ArdaButton } from '@arda-cards/design-system/extras';
 import '@arda-cards/design-system/styles';
 ```
 

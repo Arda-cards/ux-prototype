@@ -4,7 +4,7 @@
 ![Deploy](https://github.com/Arda-cards/ux-prototype/actions/workflows/deploy-pages.yml/badge.svg)
 ![Publish](https://github.com/Arda-cards/ux-prototype/actions/workflows/publish.yml/badge.svg)
 
-A shared React component library and interactive prototype gallery for Arda, built with Storybook 8, TypeScript, and Tailwind CSS v4. Components are developed in isolation, documented with stories, tested with Vitest and Playwright, and published to GitHub Packages for consumption by `arda-frontend-app`.
+A shared React component library and interactive prototype gallery for Arda, built with Storybook 10, TypeScript, and Tailwind CSS v4. Components are developed in isolation, documented with stories, tested with Vitest and Playwright, and published to GitHub Packages for consumption by `arda-frontend-app`.
 
 ## Deployed Sites
 
@@ -29,16 +29,17 @@ npm run storybook    # Start Storybook at http://localhost:6006
 npm test             # Run unit tests
 ```
 
-## Documentation
+## Storybook Information Architecture
 
-Detailed guides are available inside Storybook under the **Docs** section:
+The Storybook sidebar is organized into these top-level sections:
 
-- **Getting Started** — prerequisites, installation, project structure
-- **Component Guidelines** — interface separation, Storybook meta, MDX docs, anti-patterns
-- **Developer Workflow** — component development flow, AI-assisted workflow, running tests
-- **Application Mocks** — how to create full-page application mocks
-- **Use Cases** — user workflow scenarios with interaction tests
-- **Publishing** — GitHub Packages setup, versioning, consuming the package
+- **Start Here** — onboarding and orientation pages (`Overview`, `Getting Started`, `Changelog`)
+- **Guides** — implementation and workflow documentation
+- **Styles** — design references (style guide, colors, icons, brand assets)
+- **Components** — reusable UI components (`Stable` and `Canary` tracks)
+- **App** — full-app page stories (`Reference` vendored parity, `Canary` replacement workbench)
+- **Prototypes** — forward-looking workflow scenarios
+- **Archive** — historical mocks and superseded artifacts
 
 ## Development
 
@@ -67,21 +68,19 @@ make clean            # Remove build artifacts and node_modules
 
 ```
 src/
-  index.ts            # Nominal entry point
-  canary.ts           # Canary entry point
-  extras.ts           # Extras entry point
-  components/         # Nominal components (production-ready)
-    atoms/            #   Buttons, inputs, badges, etc.
-    molecules/        #   Cards, form groups, nav items, etc.
-    organisms/        #   Headers, sidebars, data tables, etc.
-    canary/           # Canary components (being developed/tested)
-      atoms/, molecules/, organisms/
-    extras/           # Off-maturity-track examples/reference
-      atoms/, molecules/, organisms/
-  visual-elements/    # Design tokens, colors, typography
-  applications/       # Full-page application mocks
-  use-cases/          # User workflow scenarios
-  docs/               # Documentation pages (MDX)
+  index.ts            # Stable package entry point
+  canary.ts           # Canary package entry point (staging track)
+  extras.ts           # Extras package entry point
+  components/         # Component stories/docs (Stable + Canary sidebar tracks)
+  canary-refactor/    # App/Canary stories
+  dev-witness/        # App/Reference stories (historical directory name)
+  use-cases/          # Prototypes stories
+  visual-elements/    # Styles stories
+  archive/            # Historical stories
+  docs/               # Storybook docs pages (MDX)
+  vendored/           # Synced source from arda-frontend-app (storybook-only)
+  decorators/         # Story-level provider wrappers
+  shims/              # Next.js/runtime compatibility shims
   lib/                # Shared utilities
   styles/             # Global CSS
 ```
@@ -92,12 +91,12 @@ The library is published to GitHub Packages as `@arda-cards/design-system`. It i
 
 ### Export Paths
 
-| Export | Resolves to | Description |
-|---|---|---|
-| `@arda-cards/design-system` | `dist/index.js` (ESM) / `dist/index.cjs` (CJS) | Nominal components, types, and utilities |
-| `@arda-cards/design-system/canary` | `dist/canary.js` (ESM) / `dist/canary.cjs` (CJS) | Experimental components (API may change) |
-| `@arda-cards/design-system/extras` | `dist/extras.js` (ESM) / `dist/extras.cjs` (CJS) | Supplementary components |
-| `@arda-cards/design-system/styles` | `dist/styles/globals.css` | Tailwind CSS v4 stylesheet |
+| Export                              | Resolves to                                       | Description                              |
+| ----------------------------------- | ------------------------------------------------- | ---------------------------------------- |
+| `@arda-cards/design-system`         | `dist/index.js` (ESM) / `dist/index.cjs` (CJS)   | Stable components, types, and utilities  |
+| `@arda-cards/design-system/canary`  | `dist/canary.js` (ESM) / `dist/canary.cjs` (CJS) | Experimental components (API may change) |
+| `@arda-cards/design-system/extras`  | `dist/extras.js` (ESM) / `dist/extras.cjs` (CJS) | Supplementary components                 |
+| `@arda-cards/design-system/styles`  | `dist/styles/globals.css`                         | Tailwind CSS v4 stylesheet               |
 
 ### Exported Components
 
@@ -116,10 +115,10 @@ The library is published to GitHub Packages as `@arda-cards/design-system`. It i
 Only `src/components/`, `src/types/`, `src/lib/`, and `src/styles/` are compiled into `dist/`. The following directories are **excluded** from the published package:
 
 - `src/vendored/` — Production app code used only for Storybook Full App stories
-- `src/applications/` — Full-page application mocks (Storybook only)
-- `src/use-cases/` — User workflow scenarios (Storybook only)
-- `src/docs/` — Documentation pages (Storybook only)
-- `src/visual-elements/` — Design token demos (Storybook only)
+- `src/dev-witness/` and `src/canary-refactor/` — `App/Reference` and `App/Canary` stories (Storybook only)
+- `src/use-cases/` — `Prototypes` stories (Storybook only)
+- `src/docs/` — documentation pages (Storybook only)
+- `src/visual-elements/` — `Styles` stories (Storybook only)
 
 ### Canary Export Path
 
@@ -210,7 +209,7 @@ This project uses [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) with 
 ## Technology Stack
 
 - **React 19** with TypeScript (strict mode)
-- **Storybook 8** (React + Vite)
+- **Storybook 10** (React + Vite)
 - **Tailwind CSS v4** with `@tailwindcss/postcss`
 - **Vitest** + React Testing Library for unit tests
 - **Storybook Test Runner** (Playwright) for interaction tests

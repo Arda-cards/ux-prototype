@@ -1,6 +1,6 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Docs/Components/Guidelines" />
+<Meta title="Guides/Components/Guidelines" />
 
 # Consolidated Component Guidelines
 
@@ -805,7 +805,9 @@ For any interactive pattern that requires complex accessibility (focus managemen
 ### 8.1 Directory Structure
 
 ```
-src/{track}/components/{level}/{component-name}/
+src/components/{level}/{component-name}/               # stable
+src/components/canary/{level}/{component-name}/        # canary
+src/components/extras/{level}/{component-name}/        # extras
   {component-name}.tsx           Component implementation
   {component-name}.stories.tsx   Storybook stories
   {component-name}.test.tsx      Unit tests (Vitest)
@@ -814,7 +816,6 @@ src/{track}/components/{level}/{component-name}/
 ```
 
 Where:
-- **track**: `components` (stable), `canary`, or `extras`
 - **level**: `atoms`, `molecules`, or `organisms`
 
 ### 8.2 Naming Conventions
@@ -855,6 +856,10 @@ Where:
     </tr>
   </tbody>
 </table>
+
+For stable organism stories, use the full taxonomy from the in-tree guides:
+- `Components/Extras/Organisms/Shared/{Component Name}`
+- `Components/Extras/Organisms/Reference/{Domain}/{Component Name}`
 
 ### 8.3 Track-Specific Paths and Story Titles
 
@@ -984,7 +989,7 @@ import { fn } from 'storybook/test';
 import { ArdaWidget } from './widget';
 
 const meta: Meta<typeof ArdaWidget> = {
-  title: 'Components/Atoms/General/Widget',
+  title: 'Components/Extras/Atoms/General/Widget',
   component: ArdaWidget,
   parameters: {
     docs: {
@@ -1171,6 +1176,7 @@ When creating or updating a component, deliver:
   - [ ] At least one interactive play function
   - [ ] Playground story (last, args-only)
 - [ ] MDX documentation file (`.mdx`)
+  - [ ] Guides are attached with `<Meta of={Stories} />` (not standalone `<Meta title="..." />`)
 - [ ] Unit test file (`.test.tsx`)
 - [ ] Zero hardcoded hex colors (use design tokens)
 - [ ] Typography using only the standard type scale
