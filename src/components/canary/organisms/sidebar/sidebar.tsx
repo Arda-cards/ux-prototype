@@ -10,6 +10,13 @@ export interface ArdaSidebarStaticConfig {
   /* --- View / Layout / Controller --- */
   /** Default open state (uncontrolled). */
   defaultOpen?: boolean;
+  /**
+   * Color scheme for the sidebar chrome.
+   * - `"dark"` — always dark background with light text (default)
+   * - `"light"` — always light background with dark text
+   * - `"system"` — follows the user's theme (respects `.dark` on `<html>`)
+   */
+  theme?: 'dark' | 'light' | 'system';
   /** Sidebar content — compose with ArdaSidebarHeader, nav items, ArdaSidebarUserMenu, etc. */
   children: React.ReactNode;
   /** Content to render outside the sidebar but inside the provider (e.g. SidebarInset). */
@@ -42,6 +49,7 @@ export interface ArdaSidebarProps extends ArdaSidebarStaticConfig, ArdaSidebarRu
  */
 export function ArdaSidebar({
   defaultOpen = true,
+  theme = 'dark',
   open,
   onOpenChange,
   children,
@@ -56,12 +64,20 @@ export function ArdaSidebar({
     ...(onOpenChange !== undefined && { onOpenChange }),
   };
 
+  const sidebar = (
+    <Sidebar collapsible="icon" className={cn('border-sidebar-border', className)}>
+      {children}
+      <SidebarRail />
+    </Sidebar>
+  );
+
   return (
     <SidebarProvider {...providerProps}>
-      <Sidebar collapsible="icon" className={cn('border-sidebar-border', className)}>
-        {children}
-        <SidebarRail />
-      </Sidebar>
+      {theme === 'system' ? (
+        sidebar
+      ) : (
+        <div className={theme === 'dark' ? 'dark' : 'light'}>{sidebar}</div>
+      )}
       {page}
     </SidebarProvider>
   );
