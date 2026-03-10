@@ -61,7 +61,7 @@ export const WithTeamSwitcher: Story = {
     const canvas = within(canvasElement);
     await expect(canvas.getByText('Arda Cards')).toBeVisible();
     // Open the dropdown to verify team options render
-    const trigger = canvas.getByRole('button');
+    const trigger = canvas.getByRole('button', { name: /arda cards/i });
     await userEvent.click(trigger);
   },
 };

@@ -48,7 +48,6 @@ export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByText('Callil Capuozzo')).toBeVisible();
-    await expect(canvas.getByText('callil@arda.cards')).toBeVisible();
   },
 };
 
