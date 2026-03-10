@@ -25,6 +25,11 @@ following the continuous-scroll layout (SD-1).
       <td>Full create flow: open drawer &#8594; fill all sections &#8594; save &#8594; verify in grid</td>
     </tr>
     <tr>
+      <td>Validation Errors (Empty Name Blocked / Network Error / Duplicate Name Error)</td>
+      <td><code>validation-errors.stories.tsx</code></td>
+      <td>Error paths: Save disabled when name empty, 500 response keeps drawer open, 409 duplicate-name toast</td>
+    </tr>
+    <tr>
       <td>[Experimental] Wizard (Interactive / Stepwise / Automated)</td>
       <td><code>experimental-wizard.stories.tsx</code></td>
       <td>Original 4-step wizard form (experimental, per SD-5): Affiliate Identity &#8594; Primary Contact &#8594; Address and Legal &#8594; Review and Confirm</td>
@@ -37,11 +42,6 @@ following the continuous-scroll layout (SD-1).
 <table>
   <thead><tr><th>Scenario</th><th>Story ID</th><th>Status</th></tr></thead>
   <tbody>
-    <tr>
-      <td>Validation errors (empty name, network error, duplicate)</td>
-      <td>BA::0003::0002</td>
-      <td>Planned</td>
-    </tr>
     <tr>
       <td>Stepwise scene-by-scene walkthrough</td>
       <td>BA::0003::0001</td>
