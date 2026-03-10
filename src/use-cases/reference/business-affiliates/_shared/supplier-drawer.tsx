@@ -3,7 +3,8 @@
  *
  * Supports three modes:
  *  - 'view'   — read-only field display with Edit + Delete action buttons
- *  - 'create' — blank form with Save + Cancel buttons
+ *  - 'create' — blank form with Save + Cancel buttons (full sections: Identity,
+ *               Contact, Address, Legal, Notes)
  *  - 'edit'   — pre-populated editable form with Save + Cancel buttons
  *
  * Renders as a fixed-position inline side panel (NOT a Radix Sheet portal) so
@@ -16,7 +17,7 @@
  *  BA::0004::0001 — Edit Happy Path (edit mode)
  *  BA::0005::0002 — Delete from Panel (view mode + onDelete callback)
  */
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Building2, X, ChevronDown, ChevronRight } from 'lucide-react';
 import {
   Collapsible,
@@ -184,6 +185,34 @@ function ReadOnlyField({ label, value }: { label: string; value?: string }) {
   );
 }
 
+interface FormFieldProps {
+  id: string;
+  label: string;
+  required?: boolean;
+  type?: string;
+  placeholder?: string;
+  inputRef?: React.RefObject<HTMLInputElement>;
+}
+
+function FormField({ id, label, required, type = 'text', placeholder, inputRef }: FormFieldProps) {
+  return (
+    <div className="space-y-1">
+      <label className="text-xs font-medium text-foreground" htmlFor={id}>
+        {label}
+        {required && <span className="text-red-500 ml-0.5">*</span>}
+      </label>
+      <input
+        ref={inputRef}
+        id={id}
+        name={id}
+        type={type}
+        placeholder={placeholder}
+        className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+      />
+    </div>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // SupplierDrawer
 // ---------------------------------------------------------------------------
@@ -195,9 +224,28 @@ export function SupplierDrawer({
   onClose,
   onEdit,
   onDelete,
-  onSave: _onSave,
+  onSave,
   onCancel,
 }: SupplierDrawerProps) {
+  // Ref to the form element — used to read field values on Save
+  const formRef = useRef<HTMLFormElement>(null);
+  // Track name value for Save button disabled state.
+  // In edit mode, initialize with the existing affiliate name.
+  const [nameValue, setNameValue] = useState(
+    mode === 'edit' ? (affiliate?.name ?? '') : '',
+  );
+
+  // Reset/reinitialize form state when drawer opens or mode changes
+  useEffect(() => {
+    if (!open) {
+      setNameValue('');
+    } else if (mode === 'edit' && affiliate?.name) {
+      setNameValue(affiliate.name);
+    } else if (mode === 'create') {
+      setNameValue('');
+    }
+  }, [open, mode, affiliate?.name]);
+
   // Close on Escape key
   useEffect(() => {
     if (!open) return;
@@ -212,9 +260,45 @@ export function SupplierDrawer({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [open, onClose]);
 
+  const handleSave = () => {
+    if (!formRef.current) return;
+    const fd = new FormData(formRef.current);
+    const get = (name: string) => (fd.get(name) as string | null) ?? undefined;
+
+    const data: SupplierFormData = {
+      name: (get('create-name') ?? get('edit-name') ?? '').trim(),
+      contact: {
+        salutation: get('contact-salutation') || undefined,
+        firstName: get('contact-firstName') || undefined,
+        lastName: get('contact-lastName') || undefined,
+        jobTitle: get('contact-jobTitle') || undefined,
+        email: get('contact-email') || undefined,
+        phone: get('contact-phone') || undefined,
+      },
+      address: {
+        addressLine1: get('address-line1') || undefined,
+        addressLine2: get('address-line2') || undefined,
+        city: get('address-city') || undefined,
+        state: get('address-state') || undefined,
+        postalCode: get('address-postalCode') || undefined,
+        country: get('address-country') || undefined,
+      },
+      legal: {
+        name: get('legal-name') || undefined,
+        taxId: get('legal-taxId') || undefined,
+        registrationId: get('legal-registrationId') || undefined,
+        naicsCode: get('legal-naicsCode') || undefined,
+      },
+      notes: get('notes') || undefined,
+    };
+
+    onSave?.(data);
+  };
+
   if (!open) return null;
 
   const title = mode === 'create' ? 'New Supplier' : (affiliate?.name ?? 'Supplier');
+  const isSaveDisabled = (mode === 'create' || mode === 'edit') && !nameValue.trim();
 
   return (
     <>
@@ -255,11 +339,22 @@ export function SupplierDrawer({
           {mode === 'view' && affiliate && (
             <ViewModeBody affiliate={affiliate} />
           )}
-          {mode === 'create' && (
-            <CreateModeBody />
-          )}
-          {mode === 'edit' && affiliate && (
-            <EditModeBody affiliate={affiliate} />
+          {(mode === 'create' || mode === 'edit') && (
+            <form ref={formRef} onSubmit={(e) => e.preventDefault()}>
+              {mode === 'create' && (
+                <CreateModeBody
+                  nameValue={nameValue}
+                  onNameChange={setNameValue}
+                />
+              )}
+              {mode === 'edit' && affiliate && (
+                <EditModeBody
+                  affiliate={affiliate}
+                  nameValue={nameValue}
+                  onNameChange={setNameValue}
+                />
+              )}
+            </form>
           )}
         </div>
 
@@ -288,7 +383,7 @@ export function SupplierDrawer({
               <Button variant="outline" size="sm" onClick={onCancel}>
                 Cancel
               </Button>
-              <Button size="sm">
+              <Button size="sm" disabled={isSaveDisabled} onClick={handleSave}>
                 Save
               </Button>
             </>
@@ -388,39 +483,488 @@ function ViewModeBody({ affiliate }: { affiliate: BusinessAffiliateWithRoles }) 
   );
 }
 
-function CreateModeBody() {
+interface CreateModeBodyProps {
+  nameValue: string;
+  onNameChange: (value: string) => void;
+}
+
+function CreateModeBody({ nameValue, onNameChange }: CreateModeBodyProps) {
   return (
-    <div className="space-y-4 py-2">
-      <div className="space-y-1">
-        <label className="text-xs font-medium text-foreground" htmlFor="create-name">
-          Name <span className="text-red-500">*</span>
+    <div className="space-y-1 divide-y divide-gray-100 py-2">
+      {/* Identity section — always expanded */}
+      <CollapsibleSection title="Identity" defaultOpen>
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-foreground" htmlFor="create-name">
+            Name<span className="text-red-500 ml-0.5">*</span>
+          </label>
+          <input
+            id="create-name"
+            name="create-name"
+            type="text"
+            placeholder="Supplier name"
+            value={nameValue}
+            onChange={(e) => onNameChange(e.target.value)}
+            className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+            aria-label="Name"
+          />
+        </div>
+      </CollapsibleSection>
+
+      {/* Contact section — collapsed by default */}
+      <CollapsibleSection title="Contact" defaultOpen={false}>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-foreground" htmlFor="contact-salutation">
+              Salutation
+            </label>
+            <input
+              id="contact-salutation"
+              name="contact-salutation"
+              type="text"
+              placeholder="Ms."
+              aria-label="Salutation"
+              className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-foreground" htmlFor="contact-jobTitle">
+              Job Title
+            </label>
+            <input
+              id="contact-jobTitle"
+              name="contact-jobTitle"
+              type="text"
+              placeholder="Account Manager"
+              aria-label="Job Title"
+              className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-foreground" htmlFor="contact-firstName">
+              First Name
+            </label>
+            <input
+              id="contact-firstName"
+              name="contact-firstName"
+              type="text"
+              placeholder="Sarah"
+              aria-label="First Name"
+              className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-foreground" htmlFor="contact-lastName">
+              Last Name
+            </label>
+            <input
+              id="contact-lastName"
+              name="contact-lastName"
+              type="text"
+              placeholder="Chen"
+              aria-label="Last Name"
+              className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+            />
+          </div>
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-foreground" htmlFor="contact-email">
+            Email
+          </label>
+          <input
+            id="contact-email"
+            name="contact-email"
+            type="email"
+            placeholder="contact@example.com"
+            aria-label="Email"
+            className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-foreground" htmlFor="contact-phone">
+            Phone
+          </label>
+          <input
+            id="contact-phone"
+            name="contact-phone"
+            type="tel"
+            placeholder="+1-555-000-0000"
+            aria-label="Phone"
+            className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+          />
+        </div>
+      </CollapsibleSection>
+
+      {/* Address section — collapsed by default */}
+      <CollapsibleSection title="Address" defaultOpen={false}>
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-foreground" htmlFor="address-line1">
+            Address Line 1
+          </label>
+          <input
+            id="address-line1"
+            name="address-line1"
+            type="text"
+            placeholder="123 Main St"
+            aria-label="Address Line 1"
+            className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-foreground" htmlFor="address-line2">
+            Address Line 2
+          </label>
+          <input
+            id="address-line2"
+            name="address-line2"
+            type="text"
+            placeholder="Suite 100"
+            aria-label="Address Line 2"
+            className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-foreground" htmlFor="address-city">
+              City
+            </label>
+            <input
+              id="address-city"
+              name="address-city"
+              type="text"
+              placeholder="City"
+              aria-label="City"
+              className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-foreground" htmlFor="address-state">
+              State
+            </label>
+            <input
+              id="address-state"
+              name="address-state"
+              type="text"
+              placeholder="CA"
+              aria-label="State"
+              className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-foreground" htmlFor="address-postalCode">
+              Postal Code
+            </label>
+            <input
+              id="address-postalCode"
+              name="address-postalCode"
+              type="text"
+              placeholder="90210"
+              aria-label="Postal Code"
+              className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-foreground" htmlFor="address-country">
+              Country
+            </label>
+            <input
+              id="address-country"
+              name="address-country"
+              type="text"
+              placeholder="US"
+              aria-label="Country"
+              className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+            />
+          </div>
+        </div>
+      </CollapsibleSection>
+
+      {/* Legal section — collapsed by default */}
+      <CollapsibleSection title="Legal" defaultOpen={false}>
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-foreground" htmlFor="legal-name">
+            Legal Name
+          </label>
+          <input
+            id="legal-name"
+            name="legal-name"
+            type="text"
+            placeholder="Fastenal Company"
+            aria-label="Legal Name"
+            className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-foreground" htmlFor="legal-taxId">
+            Tax ID
+          </label>
+          <input
+            id="legal-taxId"
+            name="legal-taxId"
+            type="text"
+            placeholder="41-0948415"
+            aria-label="Tax ID"
+            className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-foreground" htmlFor="legal-registrationId">
+            Registration ID
+          </label>
+          <input
+            id="legal-registrationId"
+            name="legal-registrationId"
+            type="text"
+            placeholder="MN-12345678"
+            aria-label="Registration ID"
+            className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-foreground" htmlFor="legal-naicsCode">
+            NAICS Code
+          </label>
+          <input
+            id="legal-naicsCode"
+            name="legal-naicsCode"
+            type="text"
+            placeholder="423710"
+            aria-label="NAICS Code"
+            className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+          />
+        </div>
+      </CollapsibleSection>
+
+      {/* Notes — not in a collapsible */}
+      <div className="pt-3 pb-2 space-y-1">
+        <label className="text-xs font-medium text-foreground" htmlFor="notes">
+          Notes
         </label>
-        <input
-          id="create-name"
-          type="text"
-          placeholder="Supplier name"
-          className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+        <textarea
+          id="notes"
+          name="notes"
+          rows={3}
+          placeholder="Additional notes about this supplier..."
+          aria-label="Notes"
+          className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300 resize-none"
         />
       </div>
-      <p className="text-xs text-muted-foreground">
-        Additional fields (contact, address, legal) can be added after saving.
-      </p>
     </div>
   );
 }
 
-function EditModeBody({ affiliate }: { affiliate: BusinessAffiliateWithRoles }) {
+interface EditModeBodyProps {
+  affiliate: BusinessAffiliateWithRoles;
+  nameValue: string;
+  onNameChange: (value: string) => void;
+}
+
+function EditModeBody({ affiliate, nameValue, onNameChange }: EditModeBodyProps) {
   return (
-    <div className="space-y-4 py-2">
-      <div className="space-y-1">
-        <label className="text-xs font-medium text-foreground" htmlFor="edit-name">
-          Name <span className="text-red-500">*</span>
+    <div className="space-y-1 divide-y divide-gray-100 py-2">
+      {/* Identity section — always expanded */}
+      <CollapsibleSection title="Identity" defaultOpen>
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-foreground" htmlFor="edit-name">
+            Name<span className="text-red-500 ml-0.5">*</span>
+          </label>
+          <input
+            id="edit-name"
+            name="edit-name"
+            type="text"
+            value={nameValue}
+            onChange={(e) => onNameChange(e.target.value)}
+            aria-label="Name"
+            className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+          />
+        </div>
+      </CollapsibleSection>
+
+      {/* Contact section — expanded if affiliate has contact data */}
+      <CollapsibleSection
+        title="Contact"
+        defaultOpen={sectionDefaultOpen('edit', 'contact', affiliate)}
+      >
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-foreground" htmlFor="contact-firstName">
+              First Name
+            </label>
+            <input
+              id="contact-firstName"
+              name="contact-firstName"
+              type="text"
+              defaultValue={affiliate.contact?.firstName ?? ''}
+              aria-label="First Name"
+              className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-foreground" htmlFor="contact-lastName">
+              Last Name
+            </label>
+            <input
+              id="contact-lastName"
+              name="contact-lastName"
+              type="text"
+              defaultValue={affiliate.contact?.lastName ?? ''}
+              aria-label="Last Name"
+              className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+            />
+          </div>
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-foreground" htmlFor="contact-email">
+            Email
+          </label>
+          <input
+            id="contact-email"
+            name="contact-email"
+            type="email"
+            defaultValue={affiliate.contact?.email ?? ''}
+            aria-label="Email"
+            className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-foreground" htmlFor="contact-phone">
+            Phone
+          </label>
+          <input
+            id="contact-phone"
+            name="contact-phone"
+            type="tel"
+            defaultValue={affiliate.contact?.phone ?? ''}
+            aria-label="Phone"
+            className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+          />
+        </div>
+      </CollapsibleSection>
+
+      {/* Address section — expanded if affiliate has address data */}
+      <CollapsibleSection
+        title="Address"
+        defaultOpen={sectionDefaultOpen('edit', 'address', affiliate)}
+      >
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-foreground" htmlFor="address-line1">
+            Address Line 1
+          </label>
+          <input
+            id="address-line1"
+            name="address-line1"
+            type="text"
+            defaultValue={affiliate.mainAddress?.addressLine1 ?? ''}
+            aria-label="Address Line 1"
+            className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-foreground" htmlFor="address-city">
+              City
+            </label>
+            <input
+              id="address-city"
+              name="address-city"
+              type="text"
+              defaultValue={affiliate.mainAddress?.city ?? ''}
+              aria-label="City"
+              className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-foreground" htmlFor="address-state">
+              State
+            </label>
+            <input
+              id="address-state"
+              name="address-state"
+              type="text"
+              defaultValue={affiliate.mainAddress?.state ?? ''}
+              aria-label="State"
+              className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-foreground" htmlFor="address-postalCode">
+              Postal Code
+            </label>
+            <input
+              id="address-postalCode"
+              name="address-postalCode"
+              type="text"
+              defaultValue={affiliate.mainAddress?.postalCode ?? ''}
+              aria-label="Postal Code"
+              className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-foreground" htmlFor="address-country">
+              Country
+            </label>
+            <input
+              id="address-country"
+              name="address-country"
+              type="text"
+              defaultValue={affiliate.mainAddress?.country?.symbol ?? ''}
+              aria-label="Country"
+              className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+            />
+          </div>
+        </div>
+      </CollapsibleSection>
+
+      {/* Legal section — expanded if affiliate has legal data */}
+      <CollapsibleSection
+        title="Legal"
+        defaultOpen={sectionDefaultOpen('edit', 'legal', affiliate)}
+      >
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-foreground" htmlFor="legal-name">
+            Legal Name
+          </label>
+          <input
+            id="legal-name"
+            name="legal-name"
+            type="text"
+            defaultValue={affiliate.legal?.name ?? ''}
+            aria-label="Legal Name"
+            className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-foreground" htmlFor="legal-taxId">
+            Tax ID
+          </label>
+          <input
+            id="legal-taxId"
+            name="legal-taxId"
+            type="text"
+            defaultValue={affiliate.legal?.taxId ?? ''}
+            aria-label="Tax ID"
+            className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+          />
+        </div>
+      </CollapsibleSection>
+
+      {/* Notes */}
+      <div className="pt-3 pb-2 space-y-1">
+        <label className="text-xs font-medium text-foreground" htmlFor="notes">
+          Notes
         </label>
-        <input
-          id="edit-name"
-          type="text"
-          defaultValue={affiliate.name}
-          className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+        <textarea
+          id="notes"
+          name="notes"
+          rows={3}
+          defaultValue={affiliate.notes ?? ''}
+          aria-label="Notes"
+          className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300 resize-none"
         />
       </div>
     </div>

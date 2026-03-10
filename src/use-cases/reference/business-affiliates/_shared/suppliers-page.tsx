@@ -35,6 +35,19 @@ interface SuppliersPageProps {
    * Used by the Toggle Column Visibility story wrapper.
    */
   columnVisibilityOverride?: Set<string>;
+  /**
+   * Called when the user clicks the "+ Add Supplier" button (toolbar or empty state CTA).
+   * When provided, the button is wired to this callback.
+   * When omitted, the button renders but does nothing (backward-compatible).
+   */
+  onAddSupplier?: () => void;
+  /**
+   * Override row click behavior from outside.
+   * When provided, this callback is called instead of the internal drawer open logic.
+   * Used by the Edit story wrapper (EditableSuppliersPage) to intercept row clicks
+   * and manage its own drawer with full edit mode support.
+   */
+  onRowClick?: (affiliate: BusinessAffiliateWithRoles) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -159,6 +172,8 @@ export function SuppliersPage({
   pageSize = 10,
   toolbarActions,
   columnVisibilityOverride,
+  onAddSupplier,
+  onRowClick,
 }: SuppliersPageProps) {
   const [rowData, setRowData] = useState<BusinessAffiliateWithRoles[]>([]);
   const [loading, setLoading] = useState(true);
@@ -242,9 +257,14 @@ export function SuppliersPage({
   }, [initialAffiliateId, rowData, drawerOpen]);
 
   const handleRowClick = useCallback((data: BusinessAffiliateWithRoles) => {
-    setSelectedAffiliate(data);
-    setDrawerOpen(true);
-  }, []);
+    if (onRowClick) {
+      // Delegate to external handler (e.g., EditableSuppliersPage manages its own drawer)
+      onRowClick(data);
+    } else {
+      setSelectedAffiliate(data);
+      setDrawerOpen(true);
+    }
+  }, [onRowClick]);
 
   const handleSelectionChanged = useCallback((selectedRows: BusinessAffiliateWithRoles[]) => {
     setSelectedRowIds(new Set(selectedRows.map((r) => r.eId)));
@@ -309,7 +329,7 @@ export function SuppliersPage({
                   onToggle={handleToggleColumn}
                 />
               )}
-              <Button size="sm" className="h-9 gap-1" aria-label="Add Supplier">
+              <Button size="sm" className="h-9 gap-1" aria-label="Add Supplier" onClick={onAddSupplier}>
                 <Plus className="w-4 h-4" />
                 Add Supplier
               </Button>
@@ -319,7 +339,7 @@ export function SuppliersPage({
           {/* Grid or empty/error state */}
           <div className="flex-1 px-10 py-2 md:px-8 min-h-0">
             {!loading && !error && rowData.length === 0 ? (
-              <SuppliersEmptyState onAddSupplier={() => {}} />
+              <SuppliersEmptyState onAddSupplier={onAddSupplier ?? (() => {})} />
             ) : error ? (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center p-8">
@@ -381,8 +401,9 @@ export function SuppliersPage({
         </div>
       </SidebarInset>
 
-      {/* Supplier detail drawer */}
-      {drawerOpen && selectedAffiliate && (
+      {/* Supplier detail drawer — only rendered when row click is handled internally.
+          When onRowClick prop is provided, the parent manages its own drawer. */}
+      {!onRowClick && drawerOpen && selectedAffiliate && (
         <SupplierDrawer
           open={drawerOpen}
           mode="view"

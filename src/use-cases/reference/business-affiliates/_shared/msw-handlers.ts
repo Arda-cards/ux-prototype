@@ -13,7 +13,8 @@
  * Candidate 3 (BA::0005::0001) adds:
  *   DELETE /api/arda/business-affiliate/:entityId — delete with 200ms latency
  *
- * Future stories append: update (PUT).
+ * BA::0004::0001 (Edit Happy Path) adds:
+ *   PUT  /api/arda/business-affiliate/:entityId — update with 300ms latency, deep-merge
  */
 import { http, HttpResponse, passthrough } from 'msw';
 import type { ArdaQueryResponse, ArdaResult } from '@frontend/types/arda-api';
@@ -148,8 +149,36 @@ export const businessAffiliateHandlers = [
   }),
 
   // Create a new business affiliate
+  // Accepts full SupplierFormData shape (contact, address, legal, notes) so the
+  // new affiliate appears in the grid with accurate data after creation.
+  // Backward-compatible: callers that POST only { name } still work.
   http.post('/api/arda/business-affiliate', async ({ request }) => {
-    const body = (await request.json()) as { name?: string };
+    const body = (await request.json()) as {
+      name?: string;
+      contact?: {
+        salutation?: string;
+        firstName?: string;
+        lastName?: string;
+        jobTitle?: string;
+        email?: string;
+        phone?: string;
+      };
+      address?: {
+        addressLine1?: string;
+        addressLine2?: string;
+        city?: string;
+        state?: string;
+        postalCode?: string;
+        country?: string;
+      };
+      legal?: {
+        name?: string;
+        taxId?: string;
+        registrationId?: string;
+        naicsCode?: string;
+      };
+      notes?: string;
+    };
 
     console.log(`[MSW] POST /api/arda/business-affiliate — name: ${body.name ?? '(empty)'}`);
 
@@ -170,11 +199,50 @@ export const businessAffiliateHandlers = [
       return v.toString(16);
     });
 
+    // Build contact.name from name parts if provided
+    const contactName = body.contact
+      ? [body.contact.salutation, body.contact.firstName, body.contact.lastName]
+          .filter(Boolean)
+          .join(' ') || body.contact.firstName || ''
+      : undefined;
+
     // Create affiliate with silent VENDOR role assignment (per SD-3)
     const newAffiliate = wrapAsResult({
       eId,
       name: body.name.trim(),
       roles: ['VENDOR'],
+      ...(body.contact && {
+        contact: {
+          name: contactName ?? '',
+          salutation: body.contact.salutation,
+          firstName: body.contact.firstName,
+          lastName: body.contact.lastName,
+          jobTitle: body.contact.jobTitle,
+          email: body.contact.email,
+          phone: body.contact.phone,
+        },
+      }),
+      ...(body.address && {
+        mainAddress: {
+          addressLine1: body.address.addressLine1 ?? '',
+          ...(body.address.addressLine2 && { addressLine2: body.address.addressLine2 }),
+          city: body.address.city ?? '',
+          state: body.address.state ?? '',
+          postalCode: body.address.postalCode ?? '',
+          ...(body.address.country && {
+            country: { symbol: body.address.country, name: body.address.country },
+          }),
+        },
+      }),
+      ...(body.legal && {
+        legal: {
+          name: body.legal.name ?? '',
+          ...(body.legal.taxId && { taxId: body.legal.taxId }),
+          ...(body.legal.registrationId && { registrationId: body.legal.registrationId }),
+          ...(body.legal.naicsCode && { naicsCode: body.legal.naicsCode }),
+        },
+      }),
+      ...(body.notes && { notes: body.notes }),
     });
 
     affiliateStore.push(newAffiliate);
@@ -207,5 +275,55 @@ export const businessAffiliateHandlers = [
 
     affiliateStore.splice(index, 1);
     return HttpResponse.json({ ok: true, status: 200 });
+  }),
+
+  // Update a business affiliate by entity ID
+  http.put('/api/arda/business-affiliate/:entityId', async ({ params, request }) => {
+    const { entityId } = params;
+
+    // Non-UUID values pass through
+    if (typeof entityId !== 'string' || !UUID_REGEX.test(entityId)) {
+      return passthrough();
+    }
+
+    console.log(`[MSW] PUT /api/arda/business-affiliate/${entityId}`);
+
+    // Simulate 300ms latency (validates loading state on Save button)
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    const body = (await request.json()) as Partial<BusinessAffiliateWithRoles>;
+
+    const index = affiliateStore.findIndex((r) => r.payload.eId === entityId);
+
+    if (index === -1) {
+      return HttpResponse.json(
+        { ok: false, status: 404, error: 'Business affiliate not found' },
+        { status: 404 },
+      );
+    }
+
+    // Merge updated fields into existing payload
+    const existing = affiliateStore[index];
+    const updatedPayload: BusinessAffiliateWithRoles = {
+      ...existing.payload,
+      ...body,
+      // Deep-merge contact if provided
+      contact: body.contact
+        ? { ...existing.payload.contact, ...body.contact }
+        : existing.payload.contact,
+      // Deep-merge mainAddress if provided
+      mainAddress: body.mainAddress
+        ? { ...existing.payload.mainAddress, ...body.mainAddress }
+        : existing.payload.mainAddress,
+    };
+
+    const updatedRecord = {
+      ...existing,
+      payload: updatedPayload,
+    };
+
+    affiliateStore[index] = updatedRecord;
+
+    return HttpResponse.json({ ok: true, status: 200, data: updatedRecord });
   }),
 ];
