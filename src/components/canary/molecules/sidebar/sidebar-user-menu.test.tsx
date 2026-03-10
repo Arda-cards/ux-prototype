@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import { Settings, ShieldCheck, LogOut } from 'lucide-react';
 
-import { ArdaSidebarUserMenu, type UserMenuAction } from './sidebar-user-menu';
+import { SidebarUserMenu, type UserMenuAction } from './sidebar-user-menu';
 import { ArdaSidebar } from '../../organisms/sidebar/sidebar';
 
 const mockUser = {
@@ -27,27 +27,27 @@ function getUserMenuButton() {
   return screen.getByText('Callil Capuozzo').closest('button')!;
 }
 
-describe('ArdaSidebarUserMenu', () => {
+describe('SidebarUserMenu', () => {
   it('renders user name in trigger', () => {
-    renderInSidebar(<ArdaSidebarUserMenu user={mockUser} actions={mockActions} />);
+    renderInSidebar(<SidebarUserMenu user={mockUser} actions={mockActions} />);
     expect(screen.getByText('Callil Capuozzo')).toBeInTheDocument();
   });
 
   it('shows email in dropdown', async () => {
     const user = userEvent.setup();
-    renderInSidebar(<ArdaSidebarUserMenu user={mockUser} actions={mockActions} />);
+    renderInSidebar(<SidebarUserMenu user={mockUser} actions={mockActions} />);
     await user.click(getUserMenuButton());
     expect(screen.getByText('callil@arda.cards')).toBeInTheDocument();
   });
 
   it('renders initials as avatar fallback', () => {
-    renderInSidebar(<ArdaSidebarUserMenu user={mockUser} actions={mockActions} />);
+    renderInSidebar(<SidebarUserMenu user={mockUser} actions={mockActions} />);
     expect(screen.getByText('CC')).toBeInTheDocument();
   });
 
   it('opens dropdown on click and shows all actions', async () => {
     const user = userEvent.setup();
-    renderInSidebar(<ArdaSidebarUserMenu user={mockUser} actions={mockActions} />);
+    renderInSidebar(<SidebarUserMenu user={mockUser} actions={mockActions} />);
     await user.click(getUserMenuButton());
     expect(screen.getByRole('menuitem', { name: /admin/i })).toBeVisible();
     expect(screen.getByRole('menuitem', { name: /settings/i })).toBeVisible();
@@ -60,7 +60,7 @@ describe('ArdaSidebarUserMenu', () => {
     const actions: UserMenuAction[] = [
       { key: 'admin', label: 'Admin', icon: ShieldCheck, onClick: onAdmin },
     ];
-    renderInSidebar(<ArdaSidebarUserMenu user={mockUser} actions={actions} />);
+    renderInSidebar(<SidebarUserMenu user={mockUser} actions={actions} />);
     await user.click(getUserMenuButton());
     await user.click(screen.getByRole('menuitem', { name: /admin/i }));
     expect(onAdmin).toHaveBeenCalledOnce();
@@ -68,7 +68,7 @@ describe('ArdaSidebarUserMenu', () => {
 
   it('renders actions in correct order: standard then destructive', async () => {
     const user = userEvent.setup();
-    renderInSidebar(<ArdaSidebarUserMenu user={mockUser} actions={mockActions} />);
+    renderInSidebar(<SidebarUserMenu user={mockUser} actions={mockActions} />);
     await user.click(getUserMenuButton());
     const items = screen.getAllByRole('menuitem');
     expect(items[0]).toHaveTextContent('Admin');
@@ -77,7 +77,7 @@ describe('ArdaSidebarUserMenu', () => {
   });
 
   it('renders ChevronsUpDown affordance icon in trigger', () => {
-    renderInSidebar(<ArdaSidebarUserMenu user={mockUser} actions={mockActions} />);
+    renderInSidebar(<SidebarUserMenu user={mockUser} actions={mockActions} />);
     const button = getUserMenuButton();
     const svgs = button.querySelectorAll('svg');
     // Should have at least the ChevronsUpDown icon

@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
-import { ArdaDetailField } from './detail-field';
+import { DetailField } from './detail-field';
 
 const meta = {
   title: 'Components/Canary/Atoms/DetailField',
-  component: ArdaDetailField,
+  component: DetailField,
   parameters: {
     docs: {
       description: {
@@ -39,10 +39,10 @@ const meta = {
       table: { category: 'Runtime' },
     },
   },
-} satisfies Meta<typeof ArdaDetailField>;
+} satisfies Meta<typeof DetailField>;
 
 export default meta;
-type Story = StoryObj<typeof ArdaDetailField>;
+type Story = StoryObj<typeof DetailField>;
 
 /** Default rendering with a label and value. */
 export const Default: Story = {
@@ -86,11 +86,11 @@ export const Compact: Story = {
 export const WithChildren: Story = {
   args: { label: 'Link' },
   render: (args) => (
-    <ArdaDetailField {...args}>
+    <DetailField {...args}>
       <a href="https://example.com" className="text-primary underline break-all">
         https://example.com/very-long-product-link-that-truncates
       </a>
-    </ArdaDetailField>
+    </DetailField>
   ),
 };
 
@@ -101,11 +101,11 @@ export const WithChildren: Story = {
 export const Composition: Story = {
   render: () => (
     <div className="flex w-[400px] flex-col gap-3 p-4 border rounded-lg">
-      <ArdaDetailField label="Link" fallback="No link available" />
-      <ArdaDetailField label="SKU" value="ITEM-001-A" />
-      <ArdaDetailField label="General Ledger Code" value="4200-100" />
-      <ArdaDetailField label="Unit price" value="$12.50" />
-      <ArdaDetailField label="Number of cards" value="3" />
+      <DetailField label="Link" fallback="No link available" />
+      <DetailField label="SKU" value="ITEM-001-A" />
+      <DetailField label="General Ledger Code" value="4200-100" />
+      <DetailField label="Unit price" value="$12.50" />
+      <DetailField label="Number of cards" value="3" />
     </div>
   ),
 };

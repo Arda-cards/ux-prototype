@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Package, ShoppingCart, Building2, Settings, BarChart3 } from 'lucide-react';
 
-import { ArdaIconLabel } from './icon-label';
+import { IconLabel } from './icon-label';
 
 const meta = {
   title: 'Components/Canary/Atoms/IconLabel',
-  component: ArdaIconLabel,
+  component: IconLabel,
   parameters: {
     docs: {
       description: {
@@ -20,10 +20,10 @@ const meta = {
     label: { control: 'text' },
     icon: { table: { disable: true } },
   },
-} satisfies Meta<typeof ArdaIconLabel>;
+} satisfies Meta<typeof IconLabel>;
 
 export default meta;
-type Story = StoryObj<typeof ArdaIconLabel>;
+type Story = StoryObj<typeof IconLabel>;
 
 /** Default — icon and label inline. */
 export const Default: Story = {
@@ -52,11 +52,11 @@ export const Truncated: Story = {
 export const Composition: Story = {
   render: () => (
     <div className="flex flex-col gap-2">
-      <ArdaIconLabel icon={Package} label="Items" />
-      <ArdaIconLabel icon={ShoppingCart} label="Order Queue" />
-      <ArdaIconLabel icon={Building2} label="Suppliers" />
-      <ArdaIconLabel icon={BarChart3} label="Analytics" />
-      <ArdaIconLabel icon={Settings} label="Settings" />
+      <IconLabel icon={Package} label="Items" />
+      <IconLabel icon={ShoppingCart} label="Order Queue" />
+      <IconLabel icon={Building2} label="Suppliers" />
+      <IconLabel icon={BarChart3} label="Analytics" />
+      <IconLabel icon={Settings} label="Settings" />
     </div>
   ),
 };

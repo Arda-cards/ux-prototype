@@ -24,20 +24,20 @@ const LOGO_PATHS: Record<'full' | 'small', Record<BrandLogoVariant, string>> = {
 // --- Interfaces ---
 
 /** Shared props for brand logo components. */
-interface ArdaBrandBaseProps {
+interface BrandBaseProps {
   /** Color variant. "default" = orange bg + white A, "inverted" = white bg + orange A. */
   variant?: BrandLogoVariant;
   /** Additional CSS classes. */
   className?: string;
 }
 
-export type ArdaBrandLogoProps = ArdaBrandBaseProps;
-export type ArdaBrandIconProps = ArdaBrandBaseProps;
+export type BrandLogoProps = BrandBaseProps;
+export type BrandIconProps = BrandBaseProps;
 
 // --- Components ---
 
 /** Full Arda wordmark (55x30). Use in expanded sidebars, headers, login pages. */
-export function ArdaBrandLogo({ variant = 'default', className }: ArdaBrandLogoProps) {
+export function BrandLogo({ variant = 'default', className }: BrandLogoProps) {
   return (
     <img
       src={LOGO_PATHS.full[variant]}
@@ -50,7 +50,7 @@ export function ArdaBrandLogo({ variant = 'default', className }: ArdaBrandLogoP
 }
 
 /** Compact Arda icon (30x30). Use in collapsed sidebars, favicons, mobile headers. */
-export function ArdaBrandIcon({ variant = 'default', className }: ArdaBrandIconProps) {
+export function BrandIcon({ variant = 'default', className }: BrandIconProps) {
   return (
     <img
       src={LOGO_PATHS.small[variant]}

@@ -2,14 +2,14 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 import { Package, ShoppingCart, Boxes } from 'lucide-react';
 
-import { ArdaSidebarNavGroup } from './sidebar-nav-group';
-import { ArdaSidebarNavItem } from './sidebar-nav-item';
+import { SidebarNavGroup } from './sidebar-nav-group';
+import { SidebarNavItem } from './sidebar-nav-item';
 import { ArdaSidebar } from '../../organisms/sidebar/sidebar';
-import { ArdaSidebarNav } from './sidebar-nav';
+import { SidebarNav } from './sidebar-nav';
 
 const meta = {
   title: 'Components/Canary/Molecules/Sidebar/NavGroup',
-  component: ArdaSidebarNavGroup,
+  component: SidebarNavGroup,
   parameters: {
     layout: 'fullscreen',
     docs: {
@@ -21,21 +21,21 @@ const meta = {
     },
   },
   tags: ['autodocs'],
-} satisfies Meta<typeof ArdaSidebarNavGroup>;
+} satisfies Meta<typeof SidebarNavGroup>;
 
 export default meta;
-type Story = StoryObj<typeof ArdaSidebarNavGroup>;
+type Story = StoryObj<typeof SidebarNavGroup>;
 
 /** Collapsed by default — click to expand. */
 export const Default: Story = {
   render: () => (
     <ArdaSidebar defaultOpen>
-      <ArdaSidebarNav>
-        <ArdaSidebarNavGroup label="Inventory" icon={Boxes}>
-          <ArdaSidebarNavItem icon={Package} label="Items" />
-          <ArdaSidebarNavItem icon={ShoppingCart} label="Orders" badge={2} />
-        </ArdaSidebarNavGroup>
-      </ArdaSidebarNav>
+      <SidebarNav>
+        <SidebarNavGroup label="Inventory" icon={Boxes}>
+          <SidebarNavItem icon={Package} label="Items" />
+          <SidebarNavItem icon={ShoppingCart} label="Orders" badge={2} />
+        </SidebarNavGroup>
+      </SidebarNav>
     </ArdaSidebar>
   ),
   play: async ({ canvasElement }) => {
@@ -48,12 +48,12 @@ export const Default: Story = {
 export const DefaultExpanded: Story = {
   render: () => (
     <ArdaSidebar defaultOpen>
-      <ArdaSidebarNav>
-        <ArdaSidebarNavGroup label="Inventory" icon={Boxes} defaultExpanded>
-          <ArdaSidebarNavItem icon={Package} label="Items" />
-          <ArdaSidebarNavItem icon={ShoppingCart} label="Orders" />
-        </ArdaSidebarNavGroup>
-      </ArdaSidebarNav>
+      <SidebarNav>
+        <SidebarNavGroup label="Inventory" icon={Boxes} defaultExpanded>
+          <SidebarNavItem icon={Package} label="Items" />
+          <SidebarNavItem icon={ShoppingCart} label="Orders" />
+        </SidebarNavGroup>
+      </SidebarNav>
     </ArdaSidebar>
   ),
   play: async ({ canvasElement }) => {
@@ -66,12 +66,12 @@ export const DefaultExpanded: Story = {
 export const AutoExpandActive: Story = {
   render: () => (
     <ArdaSidebar defaultOpen>
-      <ArdaSidebarNav>
-        <ArdaSidebarNavGroup label="Inventory" icon={Boxes}>
-          <ArdaSidebarNavItem icon={Package} label="Items" active />
-          <ArdaSidebarNavItem icon={ShoppingCart} label="Orders" />
-        </ArdaSidebarNavGroup>
-      </ArdaSidebarNav>
+      <SidebarNav>
+        <SidebarNavGroup label="Inventory" icon={Boxes}>
+          <SidebarNavItem icon={Package} label="Items" active />
+          <SidebarNavItem icon={ShoppingCart} label="Orders" />
+        </SidebarNavGroup>
+      </SidebarNav>
     </ArdaSidebar>
   ),
 };

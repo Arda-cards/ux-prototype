@@ -7,14 +7,14 @@ import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { SidebarMenuItem, SidebarMenuButton, SidebarMenuSub } from '@/components/ui/sidebar';
 
-export interface ArdaSidebarNavGroupProps {
+export interface SidebarNavGroupProps {
   /** Group label text. */
   label: string;
   /** Optional icon displayed before the label. */
   icon?: LucideIcon;
   /** Whether the group starts expanded. */
   defaultExpanded?: boolean;
-  /** ArdaSidebarNavItem children rendered inside the disclosure. */
+  /** SidebarNavItem children rendered inside the disclosure. */
   children: React.ReactNode;
   className?: string;
 }
@@ -25,13 +25,13 @@ function hasActiveChild(node: React.ReactNode): boolean {
   );
 }
 
-export function ArdaSidebarNavGroup({
+export function SidebarNavGroup({
   label,
   icon: Icon,
   defaultExpanded = false,
   children,
   className,
-}: ArdaSidebarNavGroupProps) {
+}: SidebarNavGroupProps) {
   const shouldExpand = useRef(defaultExpanded || hasActiveChild(children)).current;
 
   return (

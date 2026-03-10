@@ -17,10 +17,10 @@ Dark sidebar navigation built on shadcn Sidebar primitives. Compound component â
 | Component | Layer | Purpose |
 |---|---|---|
 | **ArdaSidebarHeader** | molecule | Brand logo + team name. Pass `teams` for a team switcher dropdown. |
-| **ArdaSidebarNav** | molecule | Scrollable nav area. Wraps children in a `<nav>` landmark. |
-| **ArdaSidebarNavItem** | molecule | Nav button with icon, label, optional badge (count or dot), and active state. Count badges collapse to dots in icon-only mode. |
-| **ArdaSidebarNavGroup** | molecule | Collapsible section with chevron. Auto-expands when a child is active. |
-| **ArdaSidebarUserMenu** | molecule | Footer dropdown with avatar, name, role, and configurable actions array. |
+| **SidebarNav** | molecule | Scrollable nav area. Wraps children in a `<nav>` landmark. |
+| **SidebarNavItem** | molecule | Nav button with icon, label, optional badge (count or dot), and active state. Count badges collapse to dots in icon-only mode. |
+| **SidebarNavGroup** | molecule | Collapsible section with chevron. Auto-expands when a child is active. |
+| **SidebarUserMenu** | molecule | Footer dropdown with avatar, name, role, and configurable actions array. |
 
 All sub-components follow the **StaticConfig / RuntimeConfig** prop split:
 - `StaticConfig` &#8212; design-time props (layout, structure, icons)
@@ -81,22 +81,22 @@ function AppSidebar() {
   return (
     <ArdaSidebar defaultOpen>
       <ArdaSidebarHeader teamName="Arda Cards" />
-      <ArdaSidebarNav>
-        <ArdaSidebarNavItem
+      <SidebarNav>
+        <SidebarNavItem
           icon={Package}
           label="Items"
           active={pathname === '/items'}
           onClick={() => router.push('/items')}
         />
-        <ArdaSidebarNavItem
+        <SidebarNavItem
           icon={ShoppingCart}
           label="Order Queue"
           active={pathname === '/order-queue'}
           onClick={() => router.push('/order-queue')}
           badge={readyToOrderCount > 0 ? readyToOrderCount : undefined}
         />
-      </ArdaSidebarNav>
-      <ArdaSidebarUserMenu
+      </SidebarNav>
+      <SidebarUserMenu
         user={{ name: 'Jane Doe', email: 'jane@arda.cards', role: 'Account Admin' }}
         actions={[
           { key: 'settings', label: 'Settings', icon: Settings, onClick: () => router.push('/settings') },
@@ -113,7 +113,7 @@ function AppSidebar() {
 ## Consumer responsibilities
 
 - **Destructive actions** &#8212; The `destructive` flag on `UserMenuAction` applies red styling but does not show a confirmation dialog. Wrap destructive `onClick` handlers with `ArdaConfirmDialog` at the app level.
-- **Disabled nav items** &#8212; No `disabled` prop exists on `ArdaSidebarNavItem`. Conditionally omit the item or style via `className`.
+- **Disabled nav items** &#8212; No `disabled` prop exists on `SidebarNavItem`. Conditionally omit the item or style via `className`.
 - **Reduced motion** &#8212; Nav item badge transitions and group chevron rotation respect `prefers-reduced-motion`. The sidebar collapse/expand animation is an upstream limitation in the shadcn primitives.
 
 ---

@@ -17,13 +17,10 @@ import {
 
 import { ArdaSidebar } from './sidebar';
 import { ArdaSidebarHeader } from '../../molecules/sidebar/sidebar-header';
-import { ArdaSidebarNav } from '../../molecules/sidebar/sidebar-nav';
-import { ArdaSidebarNavGroup } from '../../molecules/sidebar/sidebar-nav-group';
-import {
-  ArdaSidebarUserMenu,
-  type UserMenuAction,
-} from '../../molecules/sidebar/sidebar-user-menu';
-import { ArdaSidebarNavItem } from '../../molecules/sidebar/sidebar-nav-item';
+import { SidebarNav } from '../../molecules/sidebar/sidebar-nav';
+import { SidebarNavGroup } from '../../molecules/sidebar/sidebar-nav-group';
+import { SidebarUserMenu, type UserMenuAction } from '../../molecules/sidebar/sidebar-user-menu';
+import { SidebarNavItem } from '../../molecules/sidebar/sidebar-nav-item';
 import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 
 const mockUser = {
@@ -48,8 +45,8 @@ const meta = {
       description: {
         component:
           'Arda sidebar organism — dark by default, built on shadcn/ui Sidebar primitives. ' +
-          'Compound component: compose with ArdaSidebarHeader, ArdaSidebarNav, ' +
-          'ArdaSidebarNavItem, ArdaSidebarNavGroup, and ArdaSidebarUserMenu. ' +
+          'Compound component: compose with ArdaSidebarHeader, SidebarNav, ' +
+          'SidebarNavItem, SidebarNavGroup, and SidebarUserMenu. ' +
           'Provides mobile Sheet drawer (< 768px), Cmd+B toggle, cookie persistence, ' +
           'and icon-only collapsed mode with tooltips.',
       },
@@ -74,21 +71,21 @@ export const Default: Story = {
     <ArdaSidebar {...args}>
       <ArdaSidebarHeader teamName="Arda Cards" />
 
-      <ArdaSidebarNav>
-        <ArdaSidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
-        <ArdaSidebarNavItem icon={Package} label="Items" />
-        <ArdaSidebarNavItem icon={ShoppingCart} label="Order Queue" badge={3} />
-        <ArdaSidebarNavItem icon={Building2} label="Suppliers" />
+      <SidebarNav>
+        <SidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
+        <SidebarNavItem icon={Package} label="Items" />
+        <SidebarNavItem icon={ShoppingCart} label="Order Queue" badge={3} />
+        <SidebarNavItem icon={Building2} label="Suppliers" />
 
-        <ArdaSidebarNavGroup label="Analytics" icon={BarChart3} defaultExpanded>
-          <ArdaSidebarNavItem icon={BarChart3} label="Sales" />
-          <ArdaSidebarNavItem icon={Boxes} label="Inventory" />
-        </ArdaSidebarNavGroup>
+        <SidebarNavGroup label="Analytics" icon={BarChart3} defaultExpanded>
+          <SidebarNavItem icon={BarChart3} label="Sales" />
+          <SidebarNavItem icon={Boxes} label="Inventory" />
+        </SidebarNavGroup>
 
-        <ArdaSidebarNavItem icon={Settings} label="Settings" />
-      </ArdaSidebarNav>
+        <SidebarNavItem icon={Settings} label="Settings" />
+      </SidebarNav>
 
-      <ArdaSidebarUserMenu user={mockUser} actions={mockActions} />
+      <SidebarUserMenu user={mockUser} actions={mockActions} />
     </ArdaSidebar>
   ),
   play: async ({ canvasElement }) => {
@@ -104,15 +101,15 @@ export const WithBadges: Story = {
     <ArdaSidebar defaultOpen>
       <ArdaSidebarHeader teamName="Arda Cards" />
 
-      <ArdaSidebarNav>
-        <ArdaSidebarNavItem icon={LayoutDashboard} label="Dashboard" />
-        <ArdaSidebarNavItem icon={Package} label="Items" badge={42} />
-        <ArdaSidebarNavItem icon={ShoppingCart} label="Order Queue" badge={3} active />
-        <ArdaSidebarNavItem icon={Building2} label="Suppliers" badge={true} />
-        <ArdaSidebarNavItem icon={Settings} label="Settings" badge={true} active />
-      </ArdaSidebarNav>
+      <SidebarNav>
+        <SidebarNavItem icon={LayoutDashboard} label="Dashboard" />
+        <SidebarNavItem icon={Package} label="Items" badge={42} />
+        <SidebarNavItem icon={ShoppingCart} label="Order Queue" badge={3} active />
+        <SidebarNavItem icon={Building2} label="Suppliers" badge={true} />
+        <SidebarNavItem icon={Settings} label="Settings" badge={true} active />
+      </SidebarNav>
 
-      <ArdaSidebarUserMenu user={mockUser} actions={mockActions} />
+      <SidebarUserMenu user={mockUser} actions={mockActions} />
     </ArdaSidebar>
   ),
 };
@@ -123,27 +120,27 @@ export const WithGroups: Story = {
     <ArdaSidebar defaultOpen>
       <ArdaSidebarHeader teamName="Arda Cards" />
 
-      <ArdaSidebarNav>
-        <ArdaSidebarNavItem icon={LayoutDashboard} label="Dashboard" />
-        <ArdaSidebarNavItem icon={Package} label="Items" />
+      <SidebarNav>
+        <SidebarNavItem icon={LayoutDashboard} label="Dashboard" />
+        <SidebarNavItem icon={Package} label="Items" />
 
-        <ArdaSidebarNavGroup label="Analytics" icon={BarChart3}>
-          <ArdaSidebarNavItem icon={BarChart3} label="Sales" />
-          <ArdaSidebarNavItem icon={Boxes} label="Inventory" active />
-        </ArdaSidebarNavGroup>
+        <SidebarNavGroup label="Analytics" icon={BarChart3}>
+          <SidebarNavItem icon={BarChart3} label="Sales" />
+          <SidebarNavItem icon={Boxes} label="Inventory" active />
+        </SidebarNavGroup>
 
-        <ArdaSidebarNavGroup label="People" icon={Users}>
-          <ArdaSidebarNavItem icon={Users} label="Team" />
-          <ArdaSidebarNavItem icon={ShieldCheck} label="Roles" />
-        </ArdaSidebarNavGroup>
+        <SidebarNavGroup label="People" icon={Users}>
+          <SidebarNavItem icon={Users} label="Team" />
+          <SidebarNavItem icon={ShieldCheck} label="Roles" />
+        </SidebarNavGroup>
 
-        <ArdaSidebarNavGroup label="Content" icon={FileText}>
-          <ArdaSidebarNavItem icon={FileText} label="Pages" />
-          <ArdaSidebarNavItem icon={Tag} label="Tags" />
-        </ArdaSidebarNavGroup>
-      </ArdaSidebarNav>
+        <SidebarNavGroup label="Content" icon={FileText}>
+          <SidebarNavItem icon={FileText} label="Pages" />
+          <SidebarNavItem icon={Tag} label="Tags" />
+        </SidebarNavGroup>
+      </SidebarNav>
 
-      <ArdaSidebarUserMenu user={mockUser} actions={mockActions} />
+      <SidebarUserMenu user={mockUser} actions={mockActions} />
     </ArdaSidebar>
   ),
 };
@@ -182,13 +179,13 @@ export const Composition: Story = {
     >
       <ArdaSidebarHeader teamName="Arda Cards" />
 
-      <ArdaSidebarNav>
-        <ArdaSidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
-        <ArdaSidebarNavItem icon={Package} label="Items" />
-        <ArdaSidebarNavItem icon={ShoppingCart} label="Order Queue" badge={3} />
-      </ArdaSidebarNav>
+      <SidebarNav>
+        <SidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
+        <SidebarNavItem icon={Package} label="Items" />
+        <SidebarNavItem icon={ShoppingCart} label="Order Queue" badge={3} />
+      </SidebarNav>
 
-      <ArdaSidebarUserMenu user={mockUser} actions={mockActions} />
+      <SidebarUserMenu user={mockUser} actions={mockActions} />
     </ArdaSidebar>
   ),
 };

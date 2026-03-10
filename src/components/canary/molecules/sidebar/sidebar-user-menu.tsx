@@ -35,8 +35,8 @@ export interface UserMenuAction {
   destructive?: boolean;
 }
 
-/** Design-time configuration for ArdaSidebarUserMenu. */
-export interface ArdaSidebarUserMenuStaticConfig {
+/** Design-time configuration for SidebarUserMenu. */
+export interface SidebarUserMenuStaticConfig {
   /* --- View / Layout / Controller --- */
   /** Whether the sidebar is in mobile mode. Controls dropdown placement direction. */
   isMobile?: boolean;
@@ -44,8 +44,8 @@ export interface ArdaSidebarUserMenuStaticConfig {
   className?: string;
 }
 
-/** Runtime configuration for ArdaSidebarUserMenu. */
-export interface ArdaSidebarUserMenuRuntimeConfig {
+/** Runtime configuration for SidebarUserMenu. */
+export interface SidebarUserMenuRuntimeConfig {
   /* --- Model / Data Binding --- */
   /** User information. */
   user: {
@@ -59,18 +59,18 @@ export interface ArdaSidebarUserMenuRuntimeConfig {
   actions: UserMenuAction[];
 }
 
-/** Combined props for ArdaSidebarUserMenu. */
-export interface ArdaSidebarUserMenuProps
-  extends ArdaSidebarUserMenuStaticConfig, ArdaSidebarUserMenuRuntimeConfig {}
+/** Combined props for SidebarUserMenu. */
+export interface SidebarUserMenuProps
+  extends SidebarUserMenuStaticConfig, SidebarUserMenuRuntimeConfig {}
 
 // --- Component ---
 
-export function ArdaSidebarUserMenu({
+export function SidebarUserMenu({
   user,
   actions,
   isMobile = false,
   className,
-}: ArdaSidebarUserMenuProps) {
+}: SidebarUserMenuProps) {
   const initials = user.name
     .split(/\s+/)
     .filter(Boolean)

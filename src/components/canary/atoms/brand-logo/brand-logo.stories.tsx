@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 
-import { ArdaBrandLogo, ArdaBrandIcon } from './brand-logo';
+import { BrandLogo, BrandIcon } from './brand-logo';
 
 const meta = {
   title: 'Components/Canary/Atoms/BrandLogo',
@@ -11,7 +11,7 @@ const meta = {
       description: {
         component:
           'Arda brand logo atoms in 4 variants: default, inverted, mono, mono-inverted. ' +
-          'ArdaBrandLogo is the full wordmark (55×30), ArdaBrandIcon is the compact square (30×30).',
+          'BrandLogo is the full wordmark (55×30), BrandIcon is the compact square (30×30).',
       },
     },
   },
@@ -23,7 +23,7 @@ type Story = StoryObj;
 
 /** Full wordmark — default variant (orange bg, white A). */
 export const Wordmark: Story = {
-  render: () => <ArdaBrandLogo />,
+  render: () => <BrandLogo />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByAltText('Arda')).toBeInTheDocument();
@@ -32,7 +32,7 @@ export const Wordmark: Story = {
 
 /** Compact icon — default variant (orange bg, white A). */
 export const Icon: Story = {
-  render: () => <ArdaBrandIcon />,
+  render: () => <BrandIcon />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByAltText('Arda')).toBeInTheDocument();
@@ -48,27 +48,27 @@ export const AllVariants: Story = {
           <span className="text-xs text-sidebar-foreground/70 uppercase tracking-wider">
             default
           </span>
-          <ArdaBrandLogo />
-          <ArdaBrandIcon />
+          <BrandLogo />
+          <BrandIcon />
         </div>
         <div className="flex flex-col items-start gap-3">
           <span className="text-xs text-sidebar-foreground/70 uppercase tracking-wider">mono</span>
-          <ArdaBrandLogo variant="mono" />
-          <ArdaBrandIcon variant="mono" />
+          <BrandLogo variant="mono" />
+          <BrandIcon variant="mono" />
         </div>
       </div>
       <div className="flex items-center gap-6 bg-background border p-6 rounded-lg">
         <div className="flex flex-col items-start gap-3">
           <span className="text-xs text-muted-foreground uppercase tracking-wider">inverted</span>
-          <ArdaBrandLogo variant="inverted" />
-          <ArdaBrandIcon variant="inverted" />
+          <BrandLogo variant="inverted" />
+          <BrandIcon variant="inverted" />
         </div>
         <div className="flex flex-col items-start gap-3">
           <span className="text-xs text-muted-foreground uppercase tracking-wider">
             mono-inverted
           </span>
-          <ArdaBrandLogo variant="mono-inverted" />
-          <ArdaBrandIcon variant="mono-inverted" />
+          <BrandLogo variant="mono-inverted" />
+          <BrandIcon variant="mono-inverted" />
         </div>
       </div>
     </div>

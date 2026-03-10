@@ -2,13 +2,13 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, within } from 'storybook/test';
 import { LayoutDashboard, Package, ShoppingCart, Building2, Settings } from 'lucide-react';
 
-import { ArdaSidebarNavItem } from './sidebar-nav-item';
+import { SidebarNavItem } from './sidebar-nav-item';
 import { ArdaSidebar } from '../../organisms/sidebar/sidebar';
-import { ArdaSidebarNav } from './sidebar-nav';
+import { SidebarNav } from './sidebar-nav';
 
 const meta = {
   title: 'Components/Canary/Molecules/Sidebar/NavItem',
-  component: ArdaSidebarNavItem,
+  component: SidebarNavItem,
   parameters: {
     layout: 'fullscreen',
     docs: {
@@ -31,10 +31,10 @@ const meta = {
   args: {
     onClick: fn(),
   },
-} satisfies Meta<typeof ArdaSidebarNavItem>;
+} satisfies Meta<typeof SidebarNavItem>;
 
 export default meta;
-type Story = StoryObj<typeof ArdaSidebarNavItem>;
+type Story = StoryObj<typeof SidebarNavItem>;
 
 /** Default inactive state inside a sidebar. */
 export const Default: Story = {
@@ -44,9 +44,9 @@ export const Default: Story = {
   },
   render: (args) => (
     <ArdaSidebar defaultOpen>
-      <ArdaSidebarNav>
-        <ArdaSidebarNavItem {...args} />
-      </ArdaSidebarNav>
+      <SidebarNav>
+        <SidebarNavItem {...args} />
+      </SidebarNav>
     </ArdaSidebar>
   ),
   play: async ({ canvasElement }) => {
@@ -65,9 +65,9 @@ export const Active: Story = {
   },
   render: (args) => (
     <ArdaSidebar defaultOpen>
-      <ArdaSidebarNav>
-        <ArdaSidebarNavItem {...args} />
-      </ArdaSidebarNav>
+      <SidebarNav>
+        <SidebarNavItem {...args} />
+      </SidebarNav>
     </ArdaSidebar>
   ),
 };
@@ -81,9 +81,9 @@ export const WithBadge: Story = {
   },
   render: (args) => (
     <ArdaSidebar defaultOpen>
-      <ArdaSidebarNav>
-        <ArdaSidebarNavItem {...args} />
-      </ArdaSidebarNav>
+      <SidebarNav>
+        <SidebarNavItem {...args} />
+      </SidebarNav>
     </ArdaSidebar>
   ),
   play: async ({ canvasElement }) => {
@@ -101,9 +101,9 @@ export const WithDotBadge: Story = {
   },
   render: (args) => (
     <ArdaSidebar defaultOpen>
-      <ArdaSidebarNav>
-        <ArdaSidebarNavItem {...args} />
-      </ArdaSidebarNav>
+      <SidebarNav>
+        <SidebarNavItem {...args} />
+      </SidebarNav>
     </ArdaSidebar>
   ),
 };
@@ -112,13 +112,13 @@ export const WithDotBadge: Story = {
 export const Composition: Story = {
   render: () => (
     <ArdaSidebar defaultOpen>
-      <ArdaSidebarNav>
-        <ArdaSidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
-        <ArdaSidebarNavItem icon={Package} label="Items" badge={true} />
-        <ArdaSidebarNavItem icon={ShoppingCart} label="Order Queue" badge={5} />
-        <ArdaSidebarNavItem icon={Building2} label="Suppliers" badge={true} active />
-        <ArdaSidebarNavItem icon={Settings} label="Settings" />
-      </ArdaSidebarNav>
+      <SidebarNav>
+        <SidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
+        <SidebarNavItem icon={Package} label="Items" badge={true} />
+        <SidebarNavItem icon={ShoppingCart} label="Order Queue" badge={5} />
+        <SidebarNavItem icon={Building2} label="Suppliers" badge={true} active />
+        <SidebarNavItem icon={Settings} label="Settings" />
+      </SidebarNav>
     </ArdaSidebar>
   ),
 };

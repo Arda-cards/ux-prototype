@@ -8,8 +8,8 @@ import {
   SidebarMenu,
 } from '@/components/ui/sidebar';
 
-export interface ArdaSidebarNavProps {
-  /** ArdaSidebarNavItem and ArdaSidebarNavGroup children. */
+export interface SidebarNavProps {
+  /** SidebarNavItem and SidebarNavGroup children. */
   children: React.ReactNode;
   /** Optional group label (e.g. "Navigation", "Platform"). */
   label?: string;
@@ -18,12 +18,12 @@ export interface ArdaSidebarNavProps {
   className?: string;
 }
 
-export function ArdaSidebarNav({
+export function SidebarNav({
   children,
   label,
   ariaLabel = 'Main navigation',
   className,
-}: ArdaSidebarNavProps) {
+}: SidebarNavProps) {
   return (
     <SidebarContent className={className}>
       <SidebarGroup>

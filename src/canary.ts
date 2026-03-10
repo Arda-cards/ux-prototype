@@ -6,19 +6,19 @@
 export { ArdaBadge } from './components/canary/atoms/badge/badge';
 export type { ArdaBadgeProps } from './components/canary/atoms/badge/badge';
 
-export { ArdaBrandLogo, ArdaBrandIcon } from './components/canary/atoms/brand-logo/brand-logo';
+export { BrandLogo, BrandIcon } from './components/canary/atoms/brand-logo/brand-logo';
 
-export { ArdaIconLabel } from './components/canary/atoms/icon-label/icon-label';
-export type { ArdaIconLabelProps } from './components/canary/atoms/icon-label/icon-label';
+export { IconLabel } from './components/canary/atoms/icon-label/icon-label';
+export type { IconLabelProps } from './components/canary/atoms/icon-label/icon-label';
 
 export {
-  ArdaDetailField,
+  DetailField,
   detailFieldVariants,
 } from './components/canary/atoms/detail-field/detail-field';
 export type {
-  ArdaDetailFieldProps,
-  ArdaDetailFieldStaticConfig,
-  ArdaDetailFieldRuntimeConfig,
+  DetailFieldProps,
+  DetailFieldStaticConfig,
+  DetailFieldRuntimeConfig,
 } from './components/canary/atoms/detail-field/detail-field';
 
 // --- Molecules — Sidebar ---
@@ -29,17 +29,17 @@ export type {
   TeamOption,
 } from './components/canary/molecules/sidebar/sidebar-header';
 
-export { ArdaSidebarNav } from './components/canary/molecules/sidebar/sidebar-nav';
+export { SidebarNav } from './components/canary/molecules/sidebar/sidebar-nav';
 
-export { ArdaSidebarNavItem } from './components/canary/molecules/sidebar/sidebar-nav-item';
-export type { ArdaSidebarNavItemProps } from './components/canary/molecules/sidebar/sidebar-nav-item';
+export { SidebarNavItem } from './components/canary/molecules/sidebar/sidebar-nav-item';
+export type { SidebarNavItemProps } from './components/canary/molecules/sidebar/sidebar-nav-item';
 
-export { ArdaSidebarNavGroup } from './components/canary/molecules/sidebar/sidebar-nav-group';
-export type { ArdaSidebarNavGroupProps } from './components/canary/molecules/sidebar/sidebar-nav-group';
+export { SidebarNavGroup } from './components/canary/molecules/sidebar/sidebar-nav-group';
+export type { SidebarNavGroupProps } from './components/canary/molecules/sidebar/sidebar-nav-group';
 
-export { ArdaSidebarUserMenu } from './components/canary/molecules/sidebar/sidebar-user-menu';
+export { SidebarUserMenu } from './components/canary/molecules/sidebar/sidebar-user-menu';
 export type {
-  ArdaSidebarUserMenuProps,
+  SidebarUserMenuProps,
   UserMenuAction,
 } from './components/canary/molecules/sidebar/sidebar-user-menu';
 

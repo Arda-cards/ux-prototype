@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ChevronsUpDown } from 'lucide-react';
 
-import { ArdaBrandIcon } from '../../atoms/brand-logo/brand-logo';
+import { BrandIcon } from '../../atoms/brand-logo/brand-logo';
 
 // --- Interfaces ---
 
@@ -66,7 +66,7 @@ export function ArdaSidebarHeader({
 
   const brandMark = (
     <>
-      <ArdaBrandIcon className="size-4 min-w-4 shrink-0" />
+      <BrandIcon className="size-4 min-w-4 shrink-0" />
       <span className="truncate font-semibold text-sidebar-accent-foreground group-data-[collapsible=icon]:hidden">
         {name}
       </span>

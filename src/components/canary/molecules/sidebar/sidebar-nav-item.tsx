@@ -8,8 +8,8 @@ import { ArdaBadge } from '../../atoms/badge/badge';
 
 // --- Interfaces ---
 
-/** Design-time configuration for ArdaSidebarNavItem. */
-export interface ArdaSidebarNavItemStaticConfig {
+/** Design-time configuration for SidebarNavItem. */
+export interface SidebarNavItemStaticConfig {
   /* --- View / Layout / Controller --- */
   /** Lucide icon component rendered before the label. */
   icon: LucideIcon;
@@ -19,8 +19,8 @@ export interface ArdaSidebarNavItemStaticConfig {
   className?: string;
 }
 
-/** Runtime configuration for ArdaSidebarNavItem. */
-export interface ArdaSidebarNavItemRuntimeConfig {
+/** Runtime configuration for SidebarNavItem. */
+export interface SidebarNavItemRuntimeConfig {
   /* --- Model / Data Binding --- */
   /** Whether this item is the currently active route. */
   active?: boolean;
@@ -30,27 +30,27 @@ export interface ArdaSidebarNavItemRuntimeConfig {
   onClick?: (e: React.MouseEvent) => void;
 }
 
-/** Combined props for ArdaSidebarNavItem. */
-export interface ArdaSidebarNavItemProps
-  extends ArdaSidebarNavItemStaticConfig, ArdaSidebarNavItemRuntimeConfig {}
+/** Combined props for SidebarNavItem. */
+export interface SidebarNavItemProps
+  extends SidebarNavItemStaticConfig, SidebarNavItemRuntimeConfig {}
 
 // --- Component ---
 
 /**
- * ArdaSidebarNavItem — wraps shadcn SidebarMenuItem + SidebarMenuButton.
+ * SidebarNavItem — wraps shadcn SidebarMenuItem + SidebarMenuButton.
  *
  * Renders a button by default. Consumers handle navigation via onClick
  * (e.g. router.push). Tooltips in collapsed mode, badges, and active
  * state are all handled by the shadcn primitives.
  */
-export function ArdaSidebarNavItem({
+export function SidebarNavItem({
   active = false,
   badge,
   icon: Icon,
   label,
   className,
   onClick,
-}: ArdaSidebarNavItemProps) {
+}: SidebarNavItemProps) {
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
