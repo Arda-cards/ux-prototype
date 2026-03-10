@@ -262,11 +262,11 @@ iframe {
   color: #f9fafb !important;
 }
 
-/* Remove triangular protrusion from active sidebar items */
-[data-sidebar='menu-button']::before,
-[data-sidebar='menu-button']::after,
-[data-active='true']::before,
-[data-active='true']::after {
+/* Remove triangular protrusion from active sidebar items (vendored sidebar only) */
+.sidebar-menu-button-hover[data-sidebar='menu-button']::before,
+.sidebar-menu-button-hover[data-sidebar='menu-button']::after,
+.sidebar-menu-button-hover[data-active='true']::before,
+.sidebar-menu-button-hover[data-active='true']::after {
   display: none !important;
 }
 
@@ -276,16 +276,16 @@ iframe {
   display: none !important;
 }
 
-/* Active sidebar menu button styling with ring only */
-[data-active='true'] {
+/* Active sidebar menu button styling with ring only (vendored sidebar only) */
+.sidebar-menu-button-hover[data-active='true'] {
   position: relative !important;
   background-color: transparent !important;
   border: 2px solid var(--sidebar-ring-dark) !important;
   border-radius: 8px !important;
 }
 
-[data-active='true'] .sidebar-icon,
-[data-active='true'] .sidebar-text {
+.sidebar-menu-button-hover[data-active='true'] .sidebar-icon,
+.sidebar-menu-button-hover[data-active='true'] .sidebar-text {
   color: #ffffff !important;
 }
 
