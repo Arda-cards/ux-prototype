@@ -39,7 +39,10 @@ export function ArdaBadge({
   return (
     <Badge
       variant={variant}
-      className={cn('rounded-md px-[5px] py-px text-2xs font-semibold tabular-nums', className)}
+      className={cn(
+        'rounded-md px-[5px] py-px text-[10px] leading-none font-semibold tabular-nums',
+        className,
+      )}
       {...(isCount && { role: 'status' })}
       {...props}
     >
