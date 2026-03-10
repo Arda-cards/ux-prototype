@@ -1,6 +1,17 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { AlignLeft, Dock, SquarePen, Printer, Tag, Hash } from 'lucide-react';
+import {
+  AlignLeft,
+  CreditCard,
+  SquarePen,
+  Printer,
+  ShoppingCart,
+  Tag,
+  Hash,
+  ScanLine,
+  Copy,
+  Trash2,
+} from 'lucide-react';
 
 import { ArdaItemDetailsHeader } from './item-details-header';
 
@@ -11,7 +22,7 @@ const meta = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'Title, tab bar, and action toolbar for the item detail drawer.',
+        component: 'Tab bar and action grid for the item detail drawer.',
       },
     },
   },
@@ -25,32 +36,37 @@ const noop = () => {};
 
 const defaultTabs = [
   { key: 'details', label: 'Item details', icon: AlignLeft },
-  { key: 'cards', label: 'Cards', icon: Dock },
+  { key: 'cards', label: 'Cards', icon: CreditCard },
 ];
 
 const defaultActions = [
   { key: 'edit', label: 'Edit item', icon: SquarePen, onAction: noop },
-  { key: 'cart', label: 'Add to cart', icon: Dock, onAction: noop },
+  { key: 'queue', label: 'Add to queue', icon: ShoppingCart, onAction: noop },
   { key: 'print', label: 'Print card', icon: Printer, onAction: noop },
   { key: 'label', label: 'Print label', icon: Tag, onAction: noop },
   { key: 'breadcrumb', label: 'Print breadcrumb', icon: Hash, onAction: noop },
 ];
 
 const defaultOverflow = [
-  { key: 'scan', label: 'Scan preview', onAction: noop },
-  { key: 'preview', label: 'View card preview', onAction: noop },
-  { key: 'duplicate', label: 'Duplicate item\u2026', onAction: noop },
-  { key: 'delete', label: 'Delete', onAction: noop, destructive: true, separatorBefore: true },
+  { key: 'scan', label: 'Scan preview', icon: ScanLine, onAction: noop },
+  { key: 'copy', label: 'Copy item ID', icon: Copy, onAction: noop },
+  {
+    key: 'delete',
+    label: 'Delete',
+    icon: Trash2,
+    onAction: noop,
+    destructive: true,
+    separatorBefore: true,
+  },
 ];
 
-/** Full header with tabs and toolbar. */
+/** Full header with tabs and action grid. */
 export const Default: Story = {
   render: () => {
     const [tab, setTab] = useState('details');
     return (
       <div className="w-[460px] border rounded-lg p-4 bg-background">
         <ArdaItemDetailsHeader
-          title="Widget Assembly Kit WDG-4420-BLK"
           activeTab={tab}
           onTabChange={setTab}
           tabs={defaultTabs}
@@ -62,19 +78,28 @@ export const Default: Story = {
   },
 };
 
-/** Tabs only — no action toolbar (e.g., on the cards tab). */
+/** Tabs only — no action grid (e.g., on the cards tab). */
 export const TabsOnly: Story = {
   render: () => {
     const [tab, setTab] = useState('cards');
     return (
       <div className="w-[460px] border rounded-lg p-4 bg-background">
-        <ArdaItemDetailsHeader
-          title="Hex Bolt M8x30"
-          activeTab={tab}
-          onTabChange={setTab}
-          tabs={defaultTabs}
-        />
+        <ArdaItemDetailsHeader activeTab={tab} onTabChange={setTab} tabs={defaultTabs} />
       </div>
     );
   },
+};
+
+/** Actions only — no tabs. */
+export const ActionsOnly: Story = {
+  render: () => (
+    <div className="w-[460px] border rounded-lg p-4 bg-background">
+      <ArdaItemDetailsHeader
+        activeTab="details"
+        onTabChange={() => {}}
+        tabs={[]}
+        actions={defaultActions.slice(0, 3)}
+      />
+    </div>
+  ),
 };

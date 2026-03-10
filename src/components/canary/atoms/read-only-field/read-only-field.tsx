@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 
 // --- CVA variant definition ---
 
-const detailFieldVariants = cva('flex flex-col gap-0.5', {
+const readOnlyFieldVariants = cva('flex flex-col gap-0.5', {
   variants: {
     variant: {
       /** Standard gap between label and value. */
@@ -17,8 +17,8 @@ const detailFieldVariants = cva('flex flex-col gap-0.5', {
 
 // --- Interfaces ---
 
-/** Design-time configuration for ArdaDetailField. */
-export interface ArdaDetailFieldStaticConfig extends VariantProps<typeof detailFieldVariants> {
+/** Design-time configuration for ArdaReadOnlyField. */
+export interface ArdaReadOnlyFieldStaticConfig extends VariantProps<typeof readOnlyFieldVariants> {
   /* --- View / Layout / Controller --- */
   /** The field label displayed above the value. */
   label: string;
@@ -27,31 +27,31 @@ export interface ArdaDetailFieldStaticConfig extends VariantProps<typeof detailF
   fallback?: string;
 }
 
-/** Runtime configuration for ArdaDetailField. */
-export interface ArdaDetailFieldRuntimeConfig {
+/** Runtime configuration for ArdaReadOnlyField. */
+export interface ArdaReadOnlyFieldRuntimeConfig {
   /* --- Model / Data Binding --- */
   /** The field value to display as plain text. */
-  value?: string;
+  value?: string | undefined;
   /** Custom value rendering. When provided, overrides value and fallback. */
-  children?: React.ReactNode;
+  children?: React.ReactNode | undefined;
 }
 
-/** Combined props for ArdaDetailField. */
-export interface ArdaDetailFieldProps
+/** Combined props for ArdaReadOnlyField. */
+export interface ArdaReadOnlyFieldProps
   extends
-    ArdaDetailFieldStaticConfig,
-    ArdaDetailFieldRuntimeConfig,
+    ArdaReadOnlyFieldStaticConfig,
+    ArdaReadOnlyFieldRuntimeConfig,
     React.HTMLAttributes<HTMLDivElement> {}
 
 // --- Component ---
 
 /**
- * ArdaDetailField — a read-only label/value pair for entity detail views.
+ * ArdaReadOnlyField — a read-only label/value pair for entity detail views.
  *
  * Built from scratch (no shadcn/ui or AG Grid analog).
  * Extracted from `vendored/arda-frontend/components/items/ItemDetailsPanel.tsx` lines 1161-1204.
  */
-export function ArdaDetailField({
+export function ArdaReadOnlyField({
   label,
   value,
   fallback = '\u2014',
@@ -59,11 +59,11 @@ export function ArdaDetailField({
   children,
   className,
   ...props
-}: ArdaDetailFieldProps) {
+}: ArdaReadOnlyFieldProps) {
   const displayValue = children ?? (value !== undefined && value !== '' ? value : fallback);
 
   return (
-    <div className={cn(detailFieldVariants({ variant }), className)} {...props}>
+    <div className={cn(readOnlyFieldVariants({ variant }), className)} {...props}>
       <span className="text-sm uppercase tracking-wide text-muted-foreground font-medium">
         {label}
       </span>
@@ -72,4 +72,4 @@ export function ArdaDetailField({
   );
 }
 
-export { detailFieldVariants };
+export { readOnlyFieldVariants };

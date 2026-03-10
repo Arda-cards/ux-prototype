@@ -1,17 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
-import { ArdaDetailField } from './detail-field';
+import { ArdaReadOnlyField } from './read-only-field';
 
 const meta = {
-  title: 'Components/Canary/Atoms/DetailField',
-  component: ArdaDetailField,
+  title: 'Components/Canary/Atoms/ReadOnlyField',
+  component: ArdaReadOnlyField,
   parameters: {
     docs: {
       description: {
         component:
           'A read-only label/value pair for entity detail views. ' +
-          'Displays a field label above a formatted value with consistent typography. ' +
-          'Extracted from ItemDetailsPanel vendored source.',
+          'Displays a field label above a formatted value with consistent typography.',
       },
     },
   },
@@ -39,10 +38,10 @@ const meta = {
       table: { category: 'Runtime' },
     },
   },
-} satisfies Meta<typeof ArdaDetailField>;
+} satisfies Meta<typeof ArdaReadOnlyField>;
 
 export default meta;
-type Story = StoryObj<typeof ArdaDetailField>;
+type Story = StoryObj<typeof ArdaReadOnlyField>;
 
 /** Default rendering with a label and value. */
 export const Default: Story = {
@@ -60,7 +59,6 @@ export const EmptyValue: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByText('GL Code')).toBeVisible();
-    // The default fallback is an em dash
     await expect(canvas.getByText('\u2014')).toBeVisible();
   },
 };
@@ -79,38 +77,27 @@ export const Compact: Story = {
   args: { label: 'Unit Price', value: '$12.50', variant: 'compact' },
 };
 
-/**
- * WithChildren story — custom value rendering using children.
- * Mirrors the Link block in ItemDetailsPanel which renders a TruncatedLink.
- */
+/** Custom value rendering using children. */
 export const WithChildren: Story = {
   args: { label: 'Link' },
   render: (args) => (
-    <ArdaDetailField {...args}>
+    <ArdaReadOnlyField {...args}>
       <a href="https://example.com" className="text-primary underline break-all">
         https://example.com/very-long-product-link-that-truncates
       </a>
-    </ArdaDetailField>
+    </ArdaReadOnlyField>
   ),
 };
 
-/**
- * Composition story — multiple fields together, mirroring the Item Details section
- * in ItemDetailsPanel lines 1160-1205.
- */
+/** Multiple fields together. */
 export const Composition: Story = {
   render: () => (
     <div className="w-[400px] space-y-3 p-4 border rounded-lg">
-      <ArdaDetailField label="Link" fallback="No link available" />
-      <ArdaDetailField label="SKU" value="ITEM-001-A" />
-      <ArdaDetailField label="General Ledger Code" value="4200-100" />
-      <ArdaDetailField label="Unit price" value="$12.50" />
-      <ArdaDetailField label="Number of cards" value="3" />
+      <ArdaReadOnlyField label="Link" fallback="No link available" />
+      <ArdaReadOnlyField label="SKU" value="ITEM-001-A" />
+      <ArdaReadOnlyField label="General Ledger Code" value="4200-100" />
+      <ArdaReadOnlyField label="Unit price" value="$12.50" />
+      <ArdaReadOnlyField label="Number of cards" value="3" />
     </div>
   ),
-};
-
-/** Interactive playground: use the Controls panel to experiment with all props. */
-export const Playground: Story = {
-  args: { label: 'Field Label', value: 'Field Value', variant: 'default' },
 };

@@ -32,14 +32,14 @@ export { ArdaIconLabel } from './components/canary/atoms/icon-label/icon-label';
 export type { ArdaIconLabelProps } from './components/canary/atoms/icon-label/icon-label';
 
 export {
-  ArdaDetailField,
-  detailFieldVariants,
-} from './components/canary/atoms/detail-field/detail-field';
+  ArdaReadOnlyField,
+  readOnlyFieldVariants,
+} from './components/canary/atoms/read-only-field/read-only-field';
 export type {
-  ArdaDetailFieldProps,
-  ArdaDetailFieldStaticConfig,
-  ArdaDetailFieldRuntimeConfig,
-} from './components/canary/atoms/detail-field/detail-field';
+  ArdaReadOnlyFieldProps,
+  ArdaReadOnlyFieldStaticConfig,
+  ArdaReadOnlyFieldRuntimeConfig,
+} from './components/canary/atoms/read-only-field/read-only-field';
 
 // --- Molecules — Sidebar ---
 

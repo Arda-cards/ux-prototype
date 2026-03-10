@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { SquarePen, Printer, ShoppingCart, Tag, Hash, ScanLine, Copy, Trash2 } from 'lucide-react';
+import { SquarePen, Printer, ShoppingCart, Tag, ScanLine, Copy, Trash2 } from 'lucide-react';
 
 import { ArdaItemDetails } from './item-details';
-import type { ToolbarAction, OverflowAction, DetailFieldDef } from './index';
+import type { ToolbarAction, OverflowAction, FieldDef } from './index';
 
 const meta = {
   title: 'Components/Canary/Organisms/ItemDetails',
@@ -13,7 +13,7 @@ const meta = {
       description: {
         component:
           'Item detail/edit slide-over panel. Compound component built from ' +
-          'ArdaDrawer, ArdaItemDetailsHeader, ArdaItemDetailsCardPreview, and ArdaItemDetailsContent.',
+          'ArdaDrawer, ArdaItemDetailsHeader, ArdaItemDetailsCardPreview, and ArdaFieldList.',
       },
     },
   },
@@ -24,7 +24,7 @@ type Story = StoryObj;
 
 const noop = () => {};
 
-const sampleFields: DetailFieldDef[] = [
+const sampleFields: FieldDef[] = [
   { key: 'sku', label: 'SKU', value: 'WDG-4420-BLK' },
   {
     key: 'desc',

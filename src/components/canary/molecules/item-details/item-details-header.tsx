@@ -2,8 +2,8 @@
 
 import { cn } from '@/lib/utils';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { ToolbarAction, OverflowAction } from '../../atoms/action-toolbar/action-toolbar';
-import { ArdaGridAction } from '../../atoms/grid-action/grid-action';
+import type { ToolbarAction, OverflowAction } from '../action-toolbar/action-toolbar';
+import { ArdaGridAction } from '../grid-action/grid-action';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,8 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { MoreHorizontal, type LucideIcon } from 'lucide-react';
 import React from 'react';
 
 // --- Interfaces ---
@@ -28,13 +27,13 @@ export interface ArdaItemDetailsHeaderProps {
   /** Tab definitions. Each tab has a key, label, and optional icon. */
   tabs: Array<{ key: string; label: string; icon?: LucideIcon }>;
   /** Primary action buttons shown in the action grid. */
-  actions?: ToolbarAction[];
+  actions?: ToolbarAction[] | undefined;
   /** Additional actions — shown in grid if space allows, otherwise in "More" dropdown. */
-  overflowActions?: OverflowAction[];
+  overflowActions?: OverflowAction[] | undefined;
   /** Maximum number of visible action cells (including "More"). Defaults to 6. */
-  maxActions?: number;
+  maxActions?: number | undefined;
   /** Additional CSS classes. */
-  className?: string;
+  className?: string | undefined;
 }
 
 // --- Constants ---
@@ -73,7 +72,9 @@ export function ArdaItemDetailsHeader({
 
   // Overflow actions with icons that fit in remaining grid slots
   const remainingSlots = visibleSlots - visiblePrimary.length;
-  const visibleOverflow = allOverflow.filter((a) => a.icon).slice(0, remainingSlots);
+  const visibleOverflow = allOverflow
+    .filter((a): a is OverflowAction & { icon: LucideIcon } => !!a.icon)
+    .slice(0, remainingSlots);
   const hiddenOverflow = [
     ...allOverflow.filter((a) => a.icon).slice(remainingSlots),
     ...allOverflow.filter((a) => !a.icon),
@@ -122,7 +123,7 @@ export function ArdaItemDetailsHeader({
           {visibleOverflow.map((action) => (
             <ArdaGridAction
               key={action.key}
-              icon={action.icon!}
+              icon={action.icon}
               label={action.label}
               onAction={action.onAction}
               destructive={action.destructive}

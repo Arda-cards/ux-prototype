@@ -10,8 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Loader2 } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { MoreHorizontal, Loader2, type LucideIcon } from 'lucide-react';
 
 // --- Interfaces ---
 
@@ -168,7 +167,7 @@ export function ArdaActionToolbar({ actions, overflowActions, className }: ArdaA
               <DropdownMenuItem
                 key={action.key}
                 onClick={action.onAction}
-                disabled={action.disabled || action.loading}
+                disabled={action.disabled === true || action.loading === true}
               >
                 {action.label}
               </DropdownMenuItem>

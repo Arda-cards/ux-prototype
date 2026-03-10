@@ -1,8 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { Loader2 } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { Loader2, type LucideIcon } from 'lucide-react';
 
 // --- Interfaces ---
 
@@ -14,11 +13,11 @@ export interface ArdaGridActionStaticConfig {
   /** Full label — used for `aria-label`. */
   label: string;
   /** Short display label below the icon. Defaults to first word of `label`. */
-  shortLabel?: string;
+  shortLabel?: string | undefined;
   /** Whether this is a destructive action (red tint). */
-  destructive?: boolean;
+  destructive?: boolean | undefined;
   /** Additional CSS classes on the outer button. */
-  className?: string;
+  className?: string | undefined;
 }
 
 /** Runtime configuration for ArdaGridAction. */
@@ -27,9 +26,9 @@ export interface ArdaGridActionRuntimeConfig {
   /** Called when the action is triggered. */
   onAction: () => void;
   /** Whether this action is currently loading. */
-  loading?: boolean;
+  loading?: boolean | undefined;
   /** Whether this action is disabled. */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
 }
 
 /** Combined props for ArdaGridAction. */

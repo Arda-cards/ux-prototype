@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import {
@@ -7,9 +7,8 @@ import {
   ArdaDrawerTitle,
   ArdaDrawerDescription,
   ArdaDrawerBody,
-  ArdaDrawerFooter,
 } from './drawer';
-import { ArdaDetailField } from '../detail-field/detail-field';
+import { ArdaReadOnlyField } from '../read-only-field/read-only-field';
 
 const meta = {
   title: 'Components/Canary/Atoms/Drawer',
@@ -47,19 +46,11 @@ export const Default: Story = {
             <ArdaDrawerDescription>View and manage this inventory item.</ArdaDrawerDescription>
           </ArdaDrawerHeader>
           <ArdaDrawerBody className="px-6 py-4 space-y-3">
-            <ArdaDetailField label="SKU" value="WDG-4420-BLK" />
-            <ArdaDetailField label="Supplier" value="McMaster-Carr" />
-            <ArdaDetailField label="Unit Price" value="$12.50" />
-            <ArdaDetailField label="Location" value="Bin A-12" />
+            <ArdaReadOnlyField label="SKU" value="WDG-4420-BLK" />
+            <ArdaReadOnlyField label="Supplier" value="McMaster-Carr" />
+            <ArdaReadOnlyField label="Unit Price" value="$12.50" />
+            <ArdaReadOnlyField label="Location" value="Bin A-12" />
           </ArdaDrawerBody>
-          <ArdaDrawerFooter>
-            <button
-              onClick={() => setOpen(false)}
-              className="rounded-md border border-border px-3 py-1.5 text-sm font-medium"
-            >
-              Done
-            </button>
-          </ArdaDrawerFooter>
         </ArdaDrawer>
       </>
     );

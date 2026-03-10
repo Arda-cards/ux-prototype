@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { cn } from '@/lib/utils';
 import {
   ArdaDrawer,
   ArdaDrawerHeader,
@@ -10,14 +9,10 @@ import {
   ArdaDrawerBody,
 } from '../../atoms/drawer/drawer';
 import { ArdaItemDetailsHeader } from '../../molecules/item-details/item-details-header';
-import {
-  ArdaItemDetailsContent,
-  type DetailFieldDef,
-} from '../../molecules/item-details/item-details-content';
+import { ArdaFieldList, type FieldDef } from '../../molecules/field-list/field-list';
 import { ArdaItemDetailsCardPreview } from '../../molecules/item-details/item-details-card-preview';
-import type { ToolbarAction, OverflowAction } from '../../atoms/action-toolbar/action-toolbar';
-import type { LucideIcon } from 'lucide-react';
-import { XIcon } from 'lucide-react';
+import type { ToolbarAction, OverflowAction } from '../../molecules/action-toolbar/action-toolbar';
+import { XIcon, type LucideIcon } from 'lucide-react';
 
 // --- Interfaces ---
 
@@ -52,24 +47,24 @@ export interface ArdaItemDetailsRuntimeConfig {
   /** Item title. */
   title: string;
   /** Detail fields to display on the details tab. */
-  fields?: DetailFieldDef[];
+  fields?: FieldDef[] | undefined;
 
   /** Primary toolbar actions. */
-  actions?: ToolbarAction[];
+  actions?: ToolbarAction[] | undefined;
   /** Overflow menu actions. */
-  overflowActions?: OverflowAction[];
+  overflowActions?: OverflowAction[] | undefined;
 
   /** Total number of kanban cards for this item. */
-  cardCount?: number;
+  cardCount?: number | undefined;
   /** Whether cards are loading. */
-  cardsLoading?: boolean;
+  cardsLoading?: boolean | undefined;
   /** Render prop for the card visual. Receives 1-based index. */
-  renderCard?: (index: number) => React.ReactNode;
+  renderCard?: ((index: number) => React.ReactNode) | undefined;
   /** Custom empty state for the card preview area. */
-  cardEmptyState?: React.ReactNode;
+  cardEmptyState?: React.ReactNode | undefined;
 
   /** Render prop for the cards tab content. */
-  renderCardsTab?: () => React.ReactNode;
+  renderCardsTab?: (() => React.ReactNode) | undefined;
 }
 
 /** Combined props for ArdaItemDetails. */
@@ -89,7 +84,7 @@ const DEFAULT_TABS: ItemDetailsTab[] = [
  * ArdaItemDetails — item detail/edit slide-over panel.
  *
  * Compound component built from ArdaDrawer, ArdaItemDetailsHeader,
- * ArdaItemDetailsCardPreview, and ArdaItemDetailsContent molecules.
+ * ArdaItemDetailsCardPreview, and ArdaFieldList molecules.
  *
  * Manages internal tab and card navigation state. All data and actions
  * are passed via props — no API calls or context consumption.
@@ -176,7 +171,7 @@ export function ArdaItemDetails({
                 </div>
               )}
             </ArdaItemDetailsCardPreview>
-            {fields && <ArdaItemDetailsContent fields={fields} />}
+            {fields && <ArdaFieldList fields={fields} />}
           </>
         ) : (
           renderCardsTab?.()

@@ -1,10 +1,10 @@
 import { cn } from '@/lib/utils';
-import { ArdaDetailField } from '../../atoms/detail-field/detail-field';
+import { ArdaReadOnlyField } from '../../atoms/read-only-field/read-only-field';
 
 // --- Interfaces ---
 
-/** A single field definition for the detail content section. */
-export interface DetailFieldDef {
+/** A single field definition for the field list. */
+export interface FieldDef {
   /** Unique key for React list rendering. */
   key: string;
   /** Field label. */
@@ -15,10 +15,10 @@ export interface DetailFieldDef {
   children?: React.ReactNode;
 }
 
-export interface ArdaItemDetailsContentProps {
+export interface ArdaFieldListProps {
   /* --- Model / Data Binding --- */
   /** Fields to display as label/value pairs. */
-  fields: DetailFieldDef[];
+  fields: FieldDef[];
   /* --- View / Layout / Controller --- */
   /** Additional CSS classes. */
   className?: string;
@@ -27,21 +27,21 @@ export interface ArdaItemDetailsContentProps {
 // --- Component ---
 
 /**
- * ArdaItemDetailsContent — renders a list of label/value detail fields.
+ * ArdaFieldList — renders a list of read-only label/value fields with dividers.
  *
- * Data-driven: pass a `fields[]` array. Each field renders as an ArdaDetailField.
+ * Data-driven: pass a `fields[]` array. Each field renders as an ArdaReadOnlyField.
  * For custom value rendering (links, formatted numbers), use the `children` property.
  */
-export function ArdaItemDetailsContent({ fields, className }: ArdaItemDetailsContentProps) {
+export function ArdaFieldList({ fields, className }: ArdaFieldListProps) {
   if (fields.length === 0) return null;
 
   return (
     <div className={cn('divide-y divide-border/60 px-5', className)}>
       {fields.map((field) => (
         <div key={field.key} className="py-3">
-          <ArdaDetailField label={field.label} value={field.value}>
+          <ArdaReadOnlyField label={field.label} value={field.value}>
             {field.children}
-          </ArdaDetailField>
+          </ArdaReadOnlyField>
         </div>
       ))}
     </div>

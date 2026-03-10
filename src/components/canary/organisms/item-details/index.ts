@@ -22,7 +22,7 @@ export {
   type ArdaActionToolbarProps,
   type ToolbarAction,
   type OverflowAction,
-} from '../../atoms/action-toolbar/action-toolbar';
+} from '../../molecules/action-toolbar/action-toolbar';
 
 // Molecules (re-exported for custom composition)
 export {
@@ -31,10 +31,10 @@ export {
 } from '../../molecules/item-details/item-details-header';
 
 export {
-  ArdaItemDetailsContent,
-  type ArdaItemDetailsContentProps,
-  type DetailFieldDef,
-} from '../../molecules/item-details/item-details-content';
+  ArdaFieldList,
+  type ArdaFieldListProps,
+  type FieldDef,
+} from '../../molecules/field-list/field-list';
 
 export {
   ArdaItemDetailsCardPreview,

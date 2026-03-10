@@ -16,11 +16,11 @@ import {
 export interface ArdaDrawerStaticConfig {
   /* --- View / Layout / Controller --- */
   /** Width preset. `"md"` = 420px, `"lg"` = 460px, `"xl"` = 560px. Defaults to `"lg"`. */
-  size?: 'md' | 'lg' | 'xl';
+  size?: 'md' | 'lg' | 'xl' | undefined;
   /** Side the drawer slides in from. Defaults to `"right"`. */
-  side?: 'left' | 'right';
+  side?: 'left' | 'right' | undefined;
   /** Additional CSS classes on the content panel. */
-  className?: string;
+  className?: string | undefined;
   /** Drawer content — compose with ArdaDrawerHeader, ArdaDrawerBody, ArdaDrawerFooter. */
   children: React.ReactNode;
 }
@@ -67,6 +67,7 @@ export function ArdaDrawer({
         side={side}
         showCloseButton={false}
         className={cn('w-full gap-0 p-0', sizeClasses[size], className)}
+        onOpenAutoFocus={(e) => e.preventDefault()}
       >
         {children}
       </SheetContent>

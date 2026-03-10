@@ -3,7 +3,7 @@ import { SquarePen, Printer, ShoppingCart, Trash2 } from 'lucide-react';
 import { ArdaGridAction } from './grid-action';
 
 const meta = {
-  title: 'Components/Canary/Atoms/GridAction',
+  title: 'Components/Canary/Molecules/GridAction',
   component: ArdaGridAction,
   tags: ['autodocs'],
   parameters: {
@@ -49,7 +49,7 @@ export const Destructive: Story = {
   },
 };
 
-export const Grid: Story = {
+export const Grid: StoryObj<typeof ArdaGridAction> = {
   render: () => (
     <div className="flex flex-wrap items-start justify-center gap-x-4 gap-y-2">
       <ArdaGridAction icon={SquarePen} label="Edit" onAction={() => {}} />

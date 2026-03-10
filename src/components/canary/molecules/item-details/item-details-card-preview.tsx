@@ -15,17 +15,17 @@ export interface ArdaItemDetailsCardPreviewProps {
   /** Called when the user navigates to a different card. */
   onIndexChange: (index: number) => void;
   /** Whether cards are loading. */
-  loading?: boolean;
+  loading?: boolean | undefined;
 
   /* --- View / Layout / Controller --- */
   /** Render prop for the card visual. Receives the current 1-based index. */
-  renderCard?: (index: number) => React.ReactNode;
+  renderCard?: ((index: number) => React.ReactNode) | undefined;
   /** Empty state content when no cards exist. */
-  emptyState?: React.ReactNode;
+  emptyState?: React.ReactNode | undefined;
   /** Content rendered below the navigation, inside the preview area. */
-  children?: React.ReactNode;
+  children?: React.ReactNode | undefined;
   /** Additional CSS classes. */
-  className?: string;
+  className?: string | undefined;
 }
 
 // --- Constants ---
@@ -67,13 +67,15 @@ export function ArdaItemDetailsCardPreview({
   }, [hasPrev, currentIndex, onIndexChange]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
+    touchStartX.current = e.touches[0]?.clientX ?? null;
   }, []);
 
   const handleTouchEnd = useCallback(
     (e: React.TouchEvent) => {
       if (touchStartX.current === null) return;
-      const deltaX = e.changedTouches[0].clientX - touchStartX.current;
+      const touch = e.changedTouches[0];
+      if (!touch) return;
+      const deltaX = touch.clientX - touchStartX.current;
       touchStartX.current = null;
 
       if (Math.abs(deltaX) < SWIPE_THRESHOLD) return;

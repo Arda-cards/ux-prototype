@@ -1,11 +1,10 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { SquarePen, Printer, Dock, Tag, Hash } from 'lucide-react';
+import { SquarePen, Printer, ShoppingCart, Tag, Hash } from 'lucide-react';
 
 import { ArdaActionToolbar } from './action-toolbar';
 
 const meta = {
-  title: 'Components/Canary/Atoms/ActionToolbar',
+  title: 'Components/Canary/Molecules/ActionToolbar',
   component: ArdaActionToolbar,
   parameters: {
     layout: 'centered',
@@ -25,12 +24,12 @@ type Story = StoryObj<typeof ArdaActionToolbar>;
 
 const noop = () => {};
 
-/** Typical item detail toolbar with edit, cart, print, and overflow actions. */
+/** Typical item detail toolbar with edit, queue, print, and overflow actions. */
 export const Default: Story = {
   args: {
     actions: [
       { key: 'edit', label: 'Edit item', icon: SquarePen, onAction: noop },
-      { key: 'cart', label: 'Add to cart', icon: Dock, onAction: noop },
+      { key: 'queue', label: 'Add to queue', icon: ShoppingCart, onAction: noop },
       { key: 'print', label: 'Print card', icon: Printer, onAction: noop },
       { key: 'label', label: 'Print label', icon: Tag, onAction: noop },
       { key: 'breadcrumb', label: 'Print breadcrumb', icon: Hash, onAction: noop },
@@ -59,7 +58,7 @@ export const Disabled: Story = {
   args: {
     actions: [
       { key: 'edit', label: 'Edit item', icon: SquarePen, onAction: noop },
-      { key: 'cart', label: 'Add to cart', icon: Dock, onAction: noop, disabled: true },
+      { key: 'queue', label: 'Add to queue', icon: ShoppingCart, onAction: noop, disabled: true },
     ],
   },
 };
