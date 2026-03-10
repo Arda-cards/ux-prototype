@@ -29,6 +29,13 @@ interface SuppliersPageProps {
   pageSize?: number;
   /** Optional render prop for toolbar actions (used by Delete story wrapper). */
   toolbarActions?: (selectedIds: Set<string>) => React.ReactNode;
+  /**
+   * Override column visibility from outside. When provided:
+   * - The built-in ColumnVisibilityDropdown is hidden.
+   * - Column filtering uses this set instead of internal state.
+   * Used by the Toggle Column Visibility story wrapper.
+   */
+  columnVisibilityOverride?: Set<string>;
 }
 
 // ---------------------------------------------------------------------------
@@ -233,6 +240,7 @@ export function SuppliersPage({
   initialAffiliateId,
   pageSize = 10,
   toolbarActions,
+  columnVisibilityOverride,
 }: SuppliersPageProps) {
   const [rowData, setRowData] = useState<BusinessAffiliateWithRoles[]>([]);
   const [loading, setLoading] = useState(true);
@@ -336,11 +344,14 @@ export function SuppliersPage({
     });
   }, []);
 
+  // When an external override is provided, use it; otherwise use internal state.
+  const effectiveVisibleColumns = columnVisibilityOverride ?? visibleColumns;
+
   // Filter column defs based on visibility
   const filteredColumnDefs = suppliersColumnDefs.filter((col) => {
     const colId = col.colId ?? col.field;
     if (colId === 'select') return true; // Always show checkbox column
-    return colId ? visibleColumns.has(colId) : true;
+    return colId ? effectiveVisibleColumns.has(colId) : true;
   });
 
   const canGoPrev = paginationInfo.previousPage !== paginationInfo.thisPage;
@@ -373,11 +384,13 @@ export function SuppliersPage({
               {toolbarActions?.(selectedRowIds)}
             </div>
             <div className="flex items-center gap-2">
-              <ColumnVisibilityDropdown
-                columns={TOGGLEABLE_COLUMNS}
-                visibleColumns={visibleColumns}
-                onToggle={handleToggleColumn}
-              />
+              {columnVisibilityOverride === undefined && (
+                <ColumnVisibilityDropdown
+                  columns={TOGGLEABLE_COLUMNS}
+                  visibleColumns={visibleColumns}
+                  onToggle={handleToggleColumn}
+                />
+              )}
               <Button size="sm" className="h-9 gap-1" aria-label="Add Supplier">
                 <Plus className="w-4 h-4" />
                 Add Supplier
