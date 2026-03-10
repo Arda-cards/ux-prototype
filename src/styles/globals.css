@@ -242,7 +242,7 @@ iframe {
 
 /* Custom sidebar hover effects */
 .sidebar-menu-button-hover {
-  transition: all 0.2s ease-in-out;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
 
 .sidebar-menu-button-hover:hover {

@@ -65,7 +65,7 @@ export function ArdaDetailField({
   return (
     <div className={cn(detailFieldVariants({ variant }), className)} {...props}>
       <span className="text-sm text-muted-foreground font-medium">{label}</span>
-      <span className="text-base text-foreground font-semibold break-all">{displayValue}</span>
+      <span className="text-base text-foreground font-semibold break-words">{displayValue}</span>
     </div>
   );
 }

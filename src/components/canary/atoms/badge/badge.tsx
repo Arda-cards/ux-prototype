@@ -41,6 +41,7 @@ export function ArdaBadge({
       variant={variant}
       className={cn(
         'rounded-md px-[5px] py-px text-[10px] leading-none font-semibold tabular-nums',
+        variant === 'default' && 'bg-sidebar-primary text-sidebar-primary-foreground',
         className,
       )}
       {...(isCount && { role: 'status' })}
