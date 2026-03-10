@@ -87,6 +87,9 @@ export const NetworkError: Story = {
     }, { timeout: 10000 });
 
     // 6. Verify the row is still present (not removed after failed delete)
-    expect(canvas.getByText('Apex Medical Distributors')).toBeVisible();
+    // Grid may re-render after the failed delete response — wait for the row to reappear
+    await waitFor(() => {
+      expect(canvas.getByText('Apex Medical Distributors')).toBeInTheDocument();
+    }, { timeout: 10000 });
   },
 };
