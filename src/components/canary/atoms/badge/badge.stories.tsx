@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { ArdaBadge } from './badge';
 
-const meta: Meta<typeof ArdaBadge> = {
+const meta = {
   title: 'Components/Canary/Atoms/Badge',
   component: ArdaBadge,
   parameters: {
@@ -14,7 +14,8 @@ const meta: Meta<typeof ArdaBadge> = {
       },
     },
   },
-};
+  tags: ['autodocs'],
+} satisfies Meta<typeof ArdaBadge>;
 
 export default meta;
 type Story = StoryObj<typeof ArdaBadge>;

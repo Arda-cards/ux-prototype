@@ -3,8 +3,8 @@ import { Package, ShoppingCart, Building2, Settings, BarChart3 } from 'lucide-re
 
 import { ArdaIconLabel } from './icon-label';
 
-const meta: Meta<typeof ArdaIconLabel> = {
-  title: 'Components/Canary/Atoms/Icon Label',
+const meta = {
+  title: 'Components/Canary/Atoms/IconLabel',
   component: ArdaIconLabel,
   parameters: {
     docs: {
@@ -15,11 +15,12 @@ const meta: Meta<typeof ArdaIconLabel> = {
       },
     },
   },
+  tags: ['autodocs'],
   argTypes: {
     label: { control: 'text' },
     icon: { table: { disable: true } },
   },
-};
+} satisfies Meta<typeof ArdaIconLabel>;
 
 export default meta;
 type Story = StoryObj<typeof ArdaIconLabel>;

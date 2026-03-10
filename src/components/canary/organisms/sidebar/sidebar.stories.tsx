@@ -37,7 +37,7 @@ const mockActions: UserMenuAction[] = [
   { key: 'logout', label: 'Log out', icon: LogOut, onClick: () => {}, destructive: true },
 ];
 
-const meta: Meta<typeof ArdaSidebar> = {
+const meta = {
   title: 'Components/Canary/Organisms/Sidebar',
   component: ArdaSidebar,
   parameters: {
@@ -52,7 +52,7 @@ const meta: Meta<typeof ArdaSidebar> = {
       },
     },
   },
-};
+} satisfies Meta<typeof ArdaSidebar>;
 
 export default meta;
 type Story = StoryObj<typeof ArdaSidebar>;

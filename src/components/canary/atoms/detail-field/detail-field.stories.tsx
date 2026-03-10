@@ -2,8 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 import { ArdaDetailField } from './detail-field';
 
-const meta: Meta<typeof ArdaDetailField> = {
-  title: 'Components/Canary/Atoms/Detail Field',
+const meta = {
+  title: 'Components/Canary/Atoms/DetailField',
   component: ArdaDetailField,
   parameters: {
     docs: {
@@ -15,6 +15,7 @@ const meta: Meta<typeof ArdaDetailField> = {
       },
     },
   },
+  tags: ['autodocs'],
   argTypes: {
     label: {
       control: 'text',
@@ -38,7 +39,7 @@ const meta: Meta<typeof ArdaDetailField> = {
       table: { category: 'Runtime' },
     },
   },
-};
+} satisfies Meta<typeof ArdaDetailField>;
 
 export default meta;
 type Story = StoryObj<typeof ArdaDetailField>;

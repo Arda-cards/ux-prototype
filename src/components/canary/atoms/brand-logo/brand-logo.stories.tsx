@@ -4,8 +4,8 @@ import { expect, within } from 'storybook/test';
 
 import { ArdaBrandLogo, ArdaBrandIcon } from './brand-logo';
 
-const meta: Meta = {
-  title: 'Components/Canary/Atoms/Brand Logo',
+const meta = {
+  title: 'Components/Canary/Atoms/BrandLogo',
   parameters: {
     layout: 'centered',
     docs: {
@@ -16,7 +16,8 @@ const meta: Meta = {
       },
     },
   },
-};
+  tags: ['autodocs'],
+} satisfies Meta;
 
 export default meta;
 type Story = StoryObj;
