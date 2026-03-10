@@ -96,6 +96,14 @@ Full layout with `SidebarInset`. Cmd+B to toggle.
 
 ---
 
+## Consumer responsibilities
+
+- **Destructive actions** &#8212; The `destructive` flag on `UserMenuAction` applies red styling, but does not show a confirmation dialog. Wrap destructive `onClick` handlers (e.g. logout) with `ArdaConfirmDialog` at the app level.
+- **Disabled nav items** &#8212; There is no `disabled` prop on `ArdaSidebarNavItem`. If you need to disable a nav item, conditionally omit it or style via `className`.
+- **Reduced motion** &#8212; The sidebar collapse/expand animation does not yet respect `prefers-reduced-motion`. This is an upstream limitation in the shadcn sidebar primitives (`components/ui/sidebar.tsx`).
+
+---
+
 ## Props
 
 <ArgTypes of={SidebarStories} />
