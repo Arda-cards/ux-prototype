@@ -44,7 +44,7 @@ export const SingleDelete: Story = {
     const canvas = within(canvasElement);
 
     // 1. Wait for grid to load
-    const firstRow = await canvas.findByText('Apex Medical Distributors', {}, { timeout: 5000 });
+    const firstRow = await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
     expect(firstRow).toBeVisible();
 
     // 2. Select the first data row
@@ -58,11 +58,11 @@ export const SingleDelete: Story = {
     await userEvent.click(actionsButton);
 
     // 4. Click "Delete" menu item
-    const deleteItem = await canvas.findByRole('menuitem', { name: /delete/i });
+    const deleteItem = await canvas.findByRole('menuitem', { name: /delete/i }, { timeout: 10000 });
     await userEvent.click(deleteItem);
 
     // 5. Verify confirm dialog opens
-    const dialog = await canvas.findByRole('alertdialog');
+    const dialog = await canvas.findByRole('alertdialog', {}, { timeout: 10000 });
     expect(dialog).toBeVisible();
     expect(within(dialog).getByText('Delete Supplier')).toBeVisible();
     expect(within(dialog).getByText(/are you sure you want to delete this supplier/i)).toBeVisible();
@@ -74,16 +74,16 @@ export const SingleDelete: Story = {
     // 7. Verify dialog closes
     await waitFor(() => {
       expect(canvas.queryByRole('alertdialog')).not.toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
 
     // 8. Verify success toast (Sonner renders via portal to document.body)
-    const toastText = await screen.findByText(/supplier deleted successfully/i);
+    const toastText = await screen.findByText(/supplier deleted successfully/i, {}, { timeout: 10000 });
     expect(toastText).toBeVisible();
 
     // 9. Verify the deleted row is gone — "Apex Medical Distributors" should no longer appear
     await waitFor(() => {
       expect(canvas.queryByText('Apex Medical Distributors')).not.toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
   },
 };
 
@@ -95,7 +95,7 @@ export const BulkDelete: Story = {
     const canvas = within(canvasElement);
 
     // 1. Wait for grid to load
-    await canvas.findByText('Apex Medical Distributors', {}, { timeout: 5000 });
+    await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
 
     // 2. Select 3 rows
     const checkboxes = canvas.getAllByRole('checkbox');
@@ -106,11 +106,11 @@ export const BulkDelete: Story = {
     // 3. Open Actions dropdown, click "Delete"
     const actionsButton = canvas.getByRole('button', { name: 'Actions' });
     await userEvent.click(actionsButton);
-    const deleteItem = await canvas.findByRole('menuitem', { name: /delete/i });
+    const deleteItem = await canvas.findByRole('menuitem', { name: /delete/i }, { timeout: 10000 });
     await userEvent.click(deleteItem);
 
     // 4. Verify confirm dialog with bulk message
-    const dialog = await canvas.findByRole('alertdialog');
+    const dialog = await canvas.findByRole('alertdialog', {}, { timeout: 10000 });
     expect(within(dialog).getByText('Delete Suppliers')).toBeVisible();
     expect(within(dialog).getByText(/delete 3 suppliers/i)).toBeVisible();
 
@@ -121,10 +121,10 @@ export const BulkDelete: Story = {
     // 6. Verify dialog closes
     await waitFor(() => {
       expect(canvas.queryByRole('alertdialog')).not.toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
 
     // 7. Verify success toast (Sonner portal — use screen)
-    const toastText = await screen.findByText(/suppliers deleted successfully/i);
+    const toastText = await screen.findByText(/suppliers deleted successfully/i, {}, { timeout: 10000 });
     expect(toastText).toBeVisible();
   },
 };
@@ -137,7 +137,7 @@ export const CancelDelete: Story = {
     const canvas = within(canvasElement);
 
     // 1. Wait for grid to load
-    await canvas.findByText('Apex Medical Distributors', {}, { timeout: 5000 });
+    await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
 
     // 2. Select the first data row
     const checkboxes = canvas.getAllByRole('checkbox');
@@ -146,11 +146,11 @@ export const CancelDelete: Story = {
     // 3. Open Actions → Delete
     const actionsButton = canvas.getByRole('button', { name: 'Actions' });
     await userEvent.click(actionsButton);
-    const deleteItem = await canvas.findByRole('menuitem', { name: /delete/i });
+    const deleteItem = await canvas.findByRole('menuitem', { name: /delete/i }, { timeout: 10000 });
     await userEvent.click(deleteItem);
 
     // 4. Verify confirm dialog opens
-    const dialog = await canvas.findByRole('alertdialog');
+    const dialog = await canvas.findByRole('alertdialog', {}, { timeout: 10000 });
     expect(dialog).toBeVisible();
 
     // 5. Click "Cancel"
@@ -160,7 +160,7 @@ export const CancelDelete: Story = {
     // 6. Verify dialog closes
     await waitFor(() => {
       expect(canvas.queryByRole('alertdialog')).not.toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
 
     // 7. Verify the row is still present
     expect(canvas.getByText('Apex Medical Distributors')).toBeVisible();

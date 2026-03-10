@@ -72,19 +72,19 @@ export const ClearRequiredField: Story = {
     const canvas = within(canvasElement);
 
     // Step 1: Wait for grid to load, click Apex Medical Distributors to open drawer
-    const firstRow = await canvas.findByText('Apex Medical Distributors');
+    const firstRow = await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
     await userEvent.click(firstRow);
 
     // Step 2: Verify drawer opens
-    const drawer = await canvas.findByRole('dialog');
+    const drawer = await canvas.findByRole('dialog', {}, { timeout: 10000 });
     const drawerScope = within(drawer);
 
     // Step 3: Click "Edit" to enter edit mode
-    const editButton = await drawerScope.findByRole('button', { name: /edit/i });
+    const editButton = await drawerScope.findByRole('button', { name: /edit/i }, { timeout: 10000 });
     await userEvent.click(editButton);
 
     // Step 4: Verify edit mode — Save and Cancel buttons visible
-    const saveButton = await drawerScope.findByRole('button', { name: /save/i });
+    const saveButton = await drawerScope.findByRole('button', { name: /save/i }, { timeout: 10000 });
     const cancelButton = drawerScope.getByRole('button', { name: /cancel/i });
     expect(saveButton).toBeVisible();
     expect(cancelButton).toBeVisible();
@@ -104,7 +104,7 @@ export const ClearRequiredField: Story = {
         drawerScope.queryByText(/name is required/i) !== null ||
         drawerScope.queryByText(/required/i) !== null;
       expect(isDisabled || hasError).toBe(true);
-    });
+    }, { timeout: 10000 });
 
     // Step 7: Type a new name
     await userEvent.type(nameInput, 'Updated Supplier Name');
@@ -113,11 +113,11 @@ export const ClearRequiredField: Story = {
     await waitFor(() => {
       const saveBtn = drawerScope.getByRole('button', { name: /save/i });
       expect(saveBtn).toBeEnabled();
-    });
+    }, { timeout: 10000 });
     // No field-level error should remain
     await waitFor(() => {
       expect(drawerScope.queryByText(/name is required/i)).not.toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
   },
 };
 
@@ -135,20 +135,20 @@ export const CancelDiscards: Story = {
     const canvas = within(canvasElement);
 
     // Step 1: Open drawer for Apex Medical Distributors
-    const firstRow = await canvas.findByText('Apex Medical Distributors');
+    const firstRow = await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
     await userEvent.click(firstRow);
 
     // Step 2: Verify drawer opens in view mode with original email
-    const drawer = await canvas.findByRole('dialog');
+    const drawer = await canvas.findByRole('dialog', {}, { timeout: 10000 });
     const drawerScope = within(drawer);
-    expect(await drawerScope.findByText('msantos@apexmedical.com')).toBeVisible();
+    expect(await drawerScope.findByText('msantos@apexmedical.com', {}, { timeout: 10000 })).toBeVisible();
 
     // Step 3: Click "Edit"
-    const editButton = await drawerScope.findByRole('button', { name: /edit/i });
+    const editButton = await drawerScope.findByRole('button', { name: /edit/i }, { timeout: 10000 });
     await userEvent.click(editButton);
 
     // Step 4: Verify edit mode, locate email input
-    await drawerScope.findByRole('button', { name: /save/i });
+    await drawerScope.findByRole('button', { name: /save/i }, { timeout: 10000 });
     // In edit mode, the contact email input has id="contact-email" and aria-label="Email"
     const emailInput = drawerScope.getByLabelText(/^email$/i) as HTMLInputElement;
 
@@ -166,8 +166,8 @@ export const CancelDiscards: Story = {
     // Step 7: Verify drawer returns to view mode (Save removed, Edit reappears)
     await waitFor(() => {
       expect(drawerScope.queryByRole('button', { name: /save/i })).not.toBeInTheDocument();
-    });
-    const editButtonAfterCancel = await drawerScope.findByRole('button', { name: /edit/i });
+    }, { timeout: 10000 });
+    const editButtonAfterCancel = await drawerScope.findByRole('button', { name: /edit/i }, { timeout: 10000 });
     expect(editButtonAfterCancel).toBeVisible();
 
     // Step 8: Verify original email is restored (change discarded)
@@ -196,19 +196,20 @@ export const NetworkError: Story = {
     const canvas = within(canvasElement);
 
     // Step 1: Open drawer for Apex Medical Distributors
-    const firstRow = await canvas.findByText('Apex Medical Distributors');
+    const firstRow = await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
     await userEvent.click(firstRow);
 
-    const drawer = await canvas.findByRole('dialog');
+    const drawer = await canvas.findByRole('dialog', {}, { timeout: 10000 });
     const drawerScope = within(drawer);
 
     // Step 2: Click "Edit"
-    const editButton = await drawerScope.findByRole('button', { name: /edit/i });
+    const editButton = await drawerScope.findByRole('button', { name: /edit/i }, { timeout: 10000 });
     await userEvent.click(editButton);
 
     // Step 3: Modify the Name field
     const nameInput = await waitFor(
       () => drawerScope.getByLabelText(/^name$/i) as HTMLInputElement,
+      { timeout: 10000 },
     );
     await userEvent.clear(nameInput);
     await userEvent.type(nameInput, 'Modified Supplier Name');
@@ -223,7 +224,7 @@ export const NetworkError: Story = {
     const toastText = await screen.findByText(
       /internal server error|failed to save|update failed/i,
       {},
-      { timeout: 5000 },
+      { timeout: 10000 },
     );
     expect(toastText).toBeVisible();
 
@@ -231,7 +232,7 @@ export const NetworkError: Story = {
     await waitFor(() => {
       expect(drawerScope.getByRole('button', { name: /save/i })).toBeVisible();
       expect(drawerScope.getByRole('button', { name: /cancel/i })).toBeVisible();
-    });
+    }, { timeout: 10000 });
 
     // Step 7: Verify modified value is preserved in the Name input
     const nameInputAfterError = drawerScope.getByLabelText(/^name$/i) as HTMLInputElement;

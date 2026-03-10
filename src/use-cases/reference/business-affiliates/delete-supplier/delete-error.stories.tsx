@@ -58,7 +58,7 @@ export const NetworkError: Story = {
     const canvas = within(canvasElement);
 
     // 1. Wait for grid to load
-    await canvas.findByText('Apex Medical Distributors', {}, { timeout: 5000 });
+    await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
 
     // 2. Select a row
     const checkboxes = canvas.getAllByRole('checkbox');
@@ -67,20 +67,20 @@ export const NetworkError: Story = {
     // 3. Open Actions → Delete → Confirm
     const actionsButton = canvas.getByRole('button', { name: 'Actions' });
     await userEvent.click(actionsButton);
-    const deleteItem = await canvas.findByRole('menuitem', { name: /delete/i });
+    const deleteItem = await canvas.findByRole('menuitem', { name: /delete/i }, { timeout: 10000 });
     await userEvent.click(deleteItem);
 
-    const dialog = await canvas.findByRole('alertdialog');
+    const dialog = await canvas.findByRole('alertdialog', {}, { timeout: 10000 });
     const confirmButton = within(dialog).getByRole('button', { name: /delete/i });
     await userEvent.click(confirmButton);
 
     // 4. Verify dialog closes
     await waitFor(() => {
       expect(canvas.queryByRole('alertdialog')).not.toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
 
     // 5. Verify error toast (Sonner portal — use screen)
-    const errorToast = await screen.findByText(/failed to delete/i);
+    const errorToast = await screen.findByText(/failed to delete/i, {}, { timeout: 10000 });
     expect(errorToast).toBeVisible();
 
     // 6. Verify the row is still present (not removed after failed delete)

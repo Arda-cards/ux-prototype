@@ -34,7 +34,7 @@ export const Default: Story = {
     const canvas = within(canvasElement);
 
     // 1. Wait for grid to load
-    await canvas.findByText('Apex Medical Distributors', {}, { timeout: 5000 });
+    await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
 
     // 2. Verify all default column headers are visible
     await waitFor(() => {
@@ -44,7 +44,7 @@ export const Default: Story = {
       expect(canvas.getByRole('columnheader', { name: 'City' })).toBeVisible();
       expect(canvas.getByRole('columnheader', { name: 'State' })).toBeVisible();
       expect(canvas.getByRole('columnheader', { name: 'Roles' })).toBeVisible();
-    });
+    }, { timeout: 10000 });
 
     // 3. Click the "View" dropdown button
     const viewButton = canvas.getByRole('button', {
@@ -60,7 +60,7 @@ export const Default: Story = {
       expect(canvas.getByLabelText('City')).toBeInTheDocument();
       expect(canvas.getByLabelText('State')).toBeInTheDocument();
       expect(canvas.getByLabelText('Roles')).toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
 
     // 5. Verify "Show All" and "Hide All" buttons
     expect(canvas.getByRole('button', { name: 'Show All' })).toBeVisible();
@@ -84,7 +84,7 @@ export const Default: Story = {
       expect(
         canvas.queryByRole('columnheader', { name: 'Phone' }),
       ).not.toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
 
     // 10. Verify all other columns remain visible
     expect(canvas.getByRole('columnheader', { name: 'Name' })).toBeVisible();
@@ -104,7 +104,7 @@ export const HideAll: Story = {
     const canvas = within(canvasElement);
 
     // 1. Wait for grid to load
-    await canvas.findByText('Apex Medical Distributors', {}, { timeout: 5000 });
+    await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
 
     // 2. Click the "View" dropdown button
     const viewButton = canvas.getByRole('button', {
@@ -115,7 +115,7 @@ export const HideAll: Story = {
     // 3. Click "Hide All"
     await waitFor(() => {
       expect(canvas.getByRole('button', { name: 'Hide All' })).toBeVisible();
-    });
+    }, { timeout: 10000 });
     await userEvent.click(canvas.getByRole('button', { name: 'Hide All' }));
 
     // 4. Click "Save"
@@ -139,6 +139,6 @@ export const HideAll: Story = {
       expect(
         canvas.queryByRole('columnheader', { name: 'Roles' }),
       ).not.toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
   },
 };

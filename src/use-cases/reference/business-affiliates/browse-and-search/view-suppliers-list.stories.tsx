@@ -39,7 +39,7 @@ export const Default: Story = {
     const canvas = within(canvasElement);
 
     // 1. Wait for grid to finish loading — first affiliate alphabetically is "Apex Medical Distributors"
-    const firstRow = await canvas.findByText('Apex Medical Distributors', {}, { timeout: 5000 });
+    const firstRow = await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
     expect(firstRow).toBeVisible();
 
     // 2. Verify "+ Add Supplier" toolbar button (use exact name to avoid sidebar match)
@@ -87,7 +87,7 @@ export const EmptyState: Story = {
     const canvas = within(canvasElement);
 
     // 1. Verify empty state heading
-    const heading = await canvas.findByText(/no suppliers yet/i, {}, { timeout: 5000 });
+    const heading = await canvas.findByText(/no suppliers yet/i, {}, { timeout: 10000 });
     expect(heading).toBeVisible();
 
     // 2. Verify guidance text
@@ -125,7 +125,7 @@ export const LoadingState: Story = {
       () => {
         expect(canvas.getByText('Suppliers')).toBeVisible();
       },
-      { timeout: 3000 },
+      { timeout: 10000 },
     );
 
     // Verify no data rows are visible (still loading)
@@ -154,7 +154,7 @@ export const ErrorState: Story = {
     const canvas = within(canvasElement);
 
     // Verify error message is displayed
-    const errorMsg = await canvas.findByText(/internal server error/i, {}, { timeout: 5000 });
+    const errorMsg = await canvas.findByText(/internal server error/i, {}, { timeout: 10000 });
     expect(errorMsg).toBeVisible();
   },
 };

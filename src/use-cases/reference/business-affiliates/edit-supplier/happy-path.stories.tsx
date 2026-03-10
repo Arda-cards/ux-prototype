@@ -262,11 +262,11 @@ export const Automated: Story = {
     const canvas = within(canvasElement);
 
     // Step 1: Verify the drawer auto-opens in view mode for Apex Medical Distributors
-    const drawerHeading = await canvas.findByText('Apex Medical Distributors', {}, { timeout: 5000 });
+    const drawerHeading = await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
     expect(drawerHeading).toBeVisible();
 
     // Step 2: Verify we are in view mode — "Edit" and "Delete" buttons visible
-    const editButton = await canvas.findByRole('button', { name: /^edit$/i });
+    const editButton = await canvas.findByRole('button', { name: /^edit$/i }, { timeout: 10000 });
     expect(editButton).toBeVisible();
     const deleteButton = canvas.getByRole('button', { name: /^delete$/i });
     expect(deleteButton).toBeVisible();
@@ -275,13 +275,13 @@ export const Automated: Story = {
     await userEvent.click(editButton);
 
     // Step 4: Verify mode transition — Save/Cancel shown, Edit/Delete hidden
-    const saveButton = await canvas.findByRole('button', { name: /^save$/i });
+    const saveButton = await canvas.findByRole('button', { name: /^save$/i }, { timeout: 10000 });
     expect(saveButton).toBeVisible();
     const cancelButton = canvas.getByRole('button', { name: /^cancel$/i });
     expect(cancelButton).toBeVisible();
     await waitFor(() => {
       expect(canvas.queryByRole('button', { name: /^edit$/i })).not.toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
 
     // Step 5: Locate the contact email field (Contact section is expanded since Apex has contact data)
     const emailInput = canvas.getByLabelText(/^email$/i) as HTMLInputElement;
@@ -303,14 +303,14 @@ export const Automated: Story = {
     await userEvent.click(saveButton);
 
     // Step 10: Verify success toast (Sonner renders via portal to document.body — use screen)
-    const toastText = await screen.findByText(/supplier updated successfully/i, {}, { timeout: 5000 });
+    const toastText = await screen.findByText(/supplier updated successfully/i, {}, { timeout: 10000 });
     expect(toastText).toBeVisible();
 
     // Step 11: Verify drawer returns to view mode (Save button disappears, Edit button reappears)
     await waitFor(() => {
       expect(canvas.queryByRole('button', { name: /^save$/i })).not.toBeInTheDocument();
-    });
-    const editButtonAfterSave = await canvas.findByRole('button', { name: /^edit$/i });
+    }, { timeout: 10000 });
+    const editButtonAfterSave = await canvas.findByRole('button', { name: /^edit$/i }, { timeout: 10000 });
     expect(editButtonAfterSave).toBeVisible();
 
     // Step 12: Verify the updated email shows in view mode

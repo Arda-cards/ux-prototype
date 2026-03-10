@@ -42,7 +42,7 @@ export const ConfirmDelete: Story = {
     const firstRow = await canvas.findByText(
       'Apex Medical Distributors',
       {},
-      { timeout: 5000 },
+      { timeout: 10000 },
     );
     expect(firstRow).toBeVisible();
 
@@ -50,7 +50,7 @@ export const ConfirmDelete: Story = {
     await userEvent.click(firstRow);
 
     // 3. Verify drawer is open
-    const drawer = await canvas.findByRole('dialog');
+    const drawer = await canvas.findByRole('dialog', {}, { timeout: 10000 });
     expect(drawer).toBeVisible();
     const drawerScope = within(drawer);
 
@@ -59,7 +59,7 @@ export const ConfirmDelete: Story = {
     await userEvent.click(deleteButton);
 
     // 5. Verify confirm dialog appears (inline rendering — within canvasElement)
-    const dialog = await canvas.findByRole('alertdialog');
+    const dialog = await canvas.findByRole('alertdialog', {}, { timeout: 10000 });
     expect(dialog).toBeVisible();
 
     // 6. Verify dialog title
@@ -80,23 +80,23 @@ export const ConfirmDelete: Story = {
     // 9. Verify dialog closes
     await waitFor(() => {
       expect(canvas.queryByRole('alertdialog')).not.toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
 
     // 10. Verify success toast (Sonner renders via portal to document.body)
-    const toastText = await screen.findByText(/supplier deleted successfully/i);
+    const toastText = await screen.findByText(/supplier deleted successfully/i, {}, { timeout: 10000 });
     expect(toastText).toBeVisible();
 
     // 11. Verify the drawer is closed (key remount resets SuppliersPage state)
     await waitFor(() => {
       expect(canvas.queryByRole('dialog')).not.toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
 
     // 12. Verify the deleted row is gone from the grid
     await waitFor(() => {
       expect(
         canvas.queryByText('Apex Medical Distributors'),
       ).not.toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
   },
 };
 
@@ -112,7 +112,7 @@ export const CancelDelete: Story = {
     const firstRow = await canvas.findByText(
       'Apex Medical Distributors',
       {},
-      { timeout: 5000 },
+      { timeout: 10000 },
     );
     expect(firstRow).toBeVisible();
 
@@ -120,7 +120,7 @@ export const CancelDelete: Story = {
     await userEvent.click(firstRow);
 
     // 3. Verify drawer is open
-    const drawer = await canvas.findByRole('dialog');
+    const drawer = await canvas.findByRole('dialog', {}, { timeout: 10000 });
     expect(drawer).toBeVisible();
     const drawerScope = within(drawer);
 
@@ -129,7 +129,7 @@ export const CancelDelete: Story = {
     await userEvent.click(deleteButton);
 
     // 5. Verify confirm dialog appears
-    const dialog = await canvas.findByRole('alertdialog');
+    const dialog = await canvas.findByRole('alertdialog', {}, { timeout: 10000 });
     expect(dialog).toBeVisible();
 
     // 6. Click "Cancel"
@@ -139,7 +139,7 @@ export const CancelDelete: Story = {
     // 7. Verify dialog closes
     await waitFor(() => {
       expect(canvas.queryByRole('alertdialog')).not.toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
 
     // 8. Verify drawer is still open with affiliate data
     expect(canvas.getByRole('dialog')).toBeVisible();

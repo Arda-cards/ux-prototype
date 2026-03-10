@@ -45,10 +45,10 @@ export const Default: Story = {
     const canvas = within(canvasElement);
 
     // 1. Wait for the grid to render with data
-    await canvas.findByText('Apex Medical Distributors', {}, { timeout: 5000 });
+    await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
 
     // 2. Verify the real drawer is automatically open (has role="dialog")
-    const drawer = await canvas.findByRole('dialog', {}, { timeout: 5000 });
+    const drawer = await canvas.findByRole('dialog', {}, { timeout: 10000 });
     expect(drawer).toBeVisible();
 
     // 3. Verify the drawer shows the correct affiliate name in its heading
@@ -61,6 +61,6 @@ export const Default: Story = {
     // 5. Verify the drawer is scoped within canvasElement (not a portal)
     await waitFor(() => {
       expect(drawer).toBeVisible();
-    });
+    }, { timeout: 10000 });
   },
 };

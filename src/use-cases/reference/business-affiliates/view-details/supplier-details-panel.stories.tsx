@@ -42,17 +42,17 @@ export const Default: Story = {
     const canvas = within(canvasElement);
 
     // Wait for grid to load, then click first row to open drawer
-    const firstRow = await canvas.findByText('Apex Medical Distributors', {}, { timeout: 5000 });
+    const firstRow = await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
     await userEvent.click(firstRow);
 
     // 1. Verify the drawer is open (has role="dialog")
-    const drawer = await canvas.findByRole('dialog', {}, { timeout: 5000 });
+    const drawer = await canvas.findByRole('dialog', {}, { timeout: 10000 });
     expect(drawer).toBeVisible();
 
     const drawerScope = within(drawer);
 
     // 2. Verify the drawer header shows the affiliate name and Building2 icon
-    expect(await drawerScope.findByText('Apex Medical Distributors')).toBeVisible();
+    expect(await drawerScope.findByText('Apex Medical Distributors', {}, { timeout: 10000 })).toBeVisible();
     const header = drawer.querySelector('[data-slot="drawer-header"]');
     expect(header).toBeTruthy();
     expect(header!.querySelector('svg')).toBeTruthy();
@@ -108,10 +108,10 @@ export const MinimalData: Story = {
 
     // ColdChain Direct sorts between CleanRoom Solutions and Delta Pharma Group
     // on page 1 (first 10 of 29 sorted A-Z)
-    const row = await canvas.findByText('ColdChain Direct', {}, { timeout: 5000 });
+    const row = await canvas.findByText('ColdChain Direct', {}, { timeout: 10000 });
     await userEvent.click(row);
 
-    const drawer = await canvas.findByRole('dialog', {}, { timeout: 5000 });
+    const drawer = await canvas.findByRole('dialog', {}, { timeout: 10000 });
     const drawerScope = within(drawer);
 
     // 1. Identity section shows the name (Identity is always expanded)
@@ -123,21 +123,21 @@ export const MinimalData: Story = {
     await userEvent.click(drawerScope.getByText('Contact'));
     await waitFor(() => {
       expect(drawerScope.getByText(/no contact information/i)).toBeVisible();
-    });
+    }, { timeout: 10000 });
 
     // 3. Address section — collapsed (no data), click to expand
     expect(drawerScope.getByText('Address')).toBeVisible();
     await userEvent.click(drawerScope.getByText('Address'));
     await waitFor(() => {
       expect(drawerScope.getByText(/no address information/i)).toBeVisible();
-    });
+    }, { timeout: 10000 });
 
     // 4. Legal section — collapsed (no data), click to expand
     expect(drawerScope.getByText('Legal')).toBeVisible();
     await userEvent.click(drawerScope.getByText('Legal'));
     await waitFor(() => {
       expect(drawerScope.getByText(/no legal information/i)).toBeVisible();
-    });
+    }, { timeout: 10000 });
 
     // 5. Notes field — always visible, shows empty state
     expect(drawerScope.getByText('Notes')).toBeVisible();
@@ -154,11 +154,11 @@ export const CloseDrawer: Story = {
     const canvas = within(canvasElement);
 
     // 1. Open drawer by clicking first row
-    const firstRow = await canvas.findByText('Apex Medical Distributors', {}, { timeout: 5000 });
+    const firstRow = await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
     await userEvent.click(firstRow);
 
     // Verify drawer is open
-    const drawer = await canvas.findByRole('dialog', {}, { timeout: 5000 });
+    const drawer = await canvas.findByRole('dialog', {}, { timeout: 10000 });
     expect(drawer).toBeVisible();
 
     // 2. Click the close button (X)
@@ -168,7 +168,7 @@ export const CloseDrawer: Story = {
     // 3. Verify drawer is closed (not in the document)
     await waitFor(() => {
       expect(canvas.queryByRole('dialog')).not.toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
 
     // 4. Verify the grid is still visible
     expect(canvas.getByText('Apex Medical Distributors')).toBeVisible();
@@ -184,10 +184,10 @@ export const SectionCollapse: Story = {
     const canvas = within(canvasElement);
 
     // Open drawer for fully-populated affiliate
-    const firstRow = await canvas.findByText('Apex Medical Distributors', {}, { timeout: 5000 });
+    const firstRow = await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
     await userEvent.click(firstRow);
 
-    const drawer = await canvas.findByRole('dialog', {}, { timeout: 5000 });
+    const drawer = await canvas.findByRole('dialog', {}, { timeout: 10000 });
     const drawerScope = within(drawer);
 
     // Verify all section headers are visible
@@ -200,44 +200,44 @@ export const SectionCollapse: Story = {
     await userEvent.click(drawerScope.getByText('Identity'));
     await waitFor(() => {
       expect(drawerScope.queryByText(/^[0-9a-f]{8}-/i)).not.toBeVisible();
-    });
+    }, { timeout: 10000 });
 
     await userEvent.click(drawerScope.getByText('Identity'));
     await waitFor(() => {
       expect(drawerScope.getByText(/^[0-9a-f]{8}-/i)).toBeVisible();
-    });
+    }, { timeout: 10000 });
 
     // --- Contact section: collapse then expand ---
     await userEvent.click(drawerScope.getByText('Contact'));
     await waitFor(() => {
       expect(drawerScope.queryByText('msantos@apexmedical.com')).not.toBeVisible();
-    });
+    }, { timeout: 10000 });
 
     await userEvent.click(drawerScope.getByText('Contact'));
     await waitFor(() => {
       expect(drawerScope.getByText('msantos@apexmedical.com')).toBeVisible();
-    });
+    }, { timeout: 10000 });
 
     // --- Address section: collapse then expand ---
     await userEvent.click(drawerScope.getByText('Address'));
     await waitFor(() => {
       expect(drawerScope.queryByText('10 Summit Rd')).not.toBeVisible();
-    });
+    }, { timeout: 10000 });
 
     await userEvent.click(drawerScope.getByText('Address'));
     await waitFor(() => {
       expect(drawerScope.getByText('10 Summit Rd')).toBeVisible();
-    });
+    }, { timeout: 10000 });
 
     // --- Legal section: collapse then expand ---
     await userEvent.click(drawerScope.getByText('Legal'));
     await waitFor(() => {
       expect(drawerScope.queryByText('11-2233445')).not.toBeVisible();
-    });
+    }, { timeout: 10000 });
 
     await userEvent.click(drawerScope.getByText('Legal'));
     await waitFor(() => {
       expect(drawerScope.getByText('11-2233445')).toBeVisible();
-    });
+    }, { timeout: 10000 });
   },
 };

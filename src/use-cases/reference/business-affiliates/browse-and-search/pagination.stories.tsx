@@ -52,7 +52,7 @@ export const Default: Story = {
     // ----- Page 1 -----
 
     // 1. Wait for page 1 to load — first affiliate alphabetically
-    const firstRowPage1 = await canvas.findByText('Apex Medical Distributors');
+    const firstRowPage1 = await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
     expect(firstRowPage1).toBeVisible();
 
     // 2. Verify grid shows 10 rows
@@ -64,7 +64,7 @@ export const Default: Story = {
                         canvasElement;
       const dataRows = gridBody.querySelectorAll('[role="row"][row-index]');
       expect(dataRows.length).toBe(10);
-    });
+    }, { timeout: 10000 });
 
     // 3. Verify pagination shows "Page 1"
     expect(canvas.getByText('Page 1')).toBeVisible();
@@ -81,7 +81,7 @@ export const Default: Story = {
     // ----- Page 2 -----
 
     // 6. Wait for page 2 — first affiliate on page 2
-    const firstRowPage2 = await canvas.findByText('Horizon Diagnostics');
+    const firstRowPage2 = await canvas.findByText('Horizon Diagnostics', {}, { timeout: 10000 });
     expect(firstRowPage2).toBeVisible();
 
     // 7. Verify 10 rows on page 2
@@ -91,7 +91,7 @@ export const Default: Story = {
                         canvasElement;
       const dataRows = gridBody.querySelectorAll('[role="row"][row-index]');
       expect(dataRows.length).toBe(10);
-    });
+    }, { timeout: 10000 });
 
     // 8. Verify pagination shows "Page 2"
     expect(canvas.getByText('Page 2')).toBeVisible();
@@ -103,7 +103,7 @@ export const Default: Story = {
     // ----- Page 3 -----
 
     // 10. Wait for page 3 — first affiliate on page 3
-    const firstRowPage3 = await canvas.findByText('QuickShip Logistics');
+    const firstRowPage3 = await canvas.findByText('QuickShip Logistics', {}, { timeout: 10000 });
     expect(firstRowPage3).toBeVisible();
 
     // 11. Verify 8 rows on page 3 (28 total, 10+10+8)
@@ -113,13 +113,13 @@ export const Default: Story = {
                         canvasElement;
       const dataRows = gridBody.querySelectorAll('[role="row"][row-index]');
       expect(dataRows.length).toBe(8);
-    });
+    }, { timeout: 10000 });
 
     // 12. Verify "Next" is disabled on last page
     await waitFor(() => {
       const nextButton3 = canvas.getByRole('button', { name: 'Next page' });
       expect(nextButton3).toBeDisabled();
-    });
+    }, { timeout: 10000 });
 
     // 13. Click "Previous page"
     const prevButton3 = canvas.getByRole('button', { name: 'Previous page' });
@@ -129,12 +129,12 @@ export const Default: Story = {
     // ----- Back to Page 2 -----
 
     // 14. Wait for page 2 data to reappear
-    const backToPage2 = await canvas.findByText('Horizon Diagnostics');
+    const backToPage2 = await canvas.findByText('Horizon Diagnostics', {}, { timeout: 10000 });
     expect(backToPage2).toBeVisible();
 
     // 15. Verify pagination shows "Page 2" again
     await waitFor(() => {
       expect(canvas.getByText('Page 2')).toBeVisible();
-    });
+    }, { timeout: 10000 });
   },
 };

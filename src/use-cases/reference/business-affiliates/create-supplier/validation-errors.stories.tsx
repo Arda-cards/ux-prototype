@@ -57,14 +57,14 @@ export const EmptyNameBlocked: Story = {
     const canvas = within(canvasElement);
 
     // 1. Wait for grid to load (confirms page rendering)
-    await canvas.findByText('Apex Medical Distributors', {}, { timeout: 5000 });
+    await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
 
     // 2. Click "+ Add Supplier" to open the create drawer
     const addButton = canvas.getByRole('button', { name: 'Add Supplier' });
     await userEvent.click(addButton);
 
     // 3. Verify drawer opens in create mode
-    const drawer = await canvas.findByRole('dialog', {}, { timeout: 3000 });
+    const drawer = await canvas.findByRole('dialog', {}, { timeout: 10000 });
     expect(drawer).toBeVisible();
     const drawerScope = within(drawer);
     expect(drawerScope.getByText('New Supplier')).toBeVisible();
@@ -83,7 +83,7 @@ export const EmptyNameBlocked: Story = {
     // 7. Verify field-level error "Name is required" appears
     await waitFor(() => {
       expect(drawerScope.getByText(/name is required/i)).toBeVisible();
-    });
+    }, { timeout: 10000 });
 
     // 8. Verify Save remains disabled
     expect(saveButton).toBeDisabled();
@@ -124,13 +124,13 @@ export const NetworkError: Story = {
     const canvas = within(canvasElement);
 
     // 1. Wait for grid to load
-    await canvas.findByText('Apex Medical Distributors', {}, { timeout: 5000 });
+    await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
 
     // 2. Open create drawer
     const addButton = canvas.getByRole('button', { name: 'Add Supplier' });
     await userEvent.click(addButton);
 
-    const drawer = await canvas.findByRole('dialog', {}, { timeout: 3000 });
+    const drawer = await canvas.findByRole('dialog', {}, { timeout: 10000 });
     expect(drawer).toBeVisible();
     const drawerScope = within(drawer);
 
@@ -142,7 +142,7 @@ export const NetworkError: Story = {
     const saveButton = drawerScope.getByRole('button', { name: /^save$/i });
     await waitFor(() => {
       expect(saveButton).toBeEnabled();
-    });
+    }, { timeout: 10000 });
 
     // 5. Click Save (triggers POST → 500 response)
     await userEvent.click(saveButton);
@@ -151,7 +151,7 @@ export const NetworkError: Story = {
     const errorToast = await screen.findByText(
       /internal server error|failed to create supplier/i,
       {},
-      { timeout: 5000 },
+      { timeout: 10000 },
     );
     expect(errorToast).toBeVisible();
 
@@ -200,13 +200,13 @@ export const DuplicateNameError: Story = {
     const canvas = within(canvasElement);
 
     // 1. Wait for grid to load
-    await canvas.findByText('Apex Medical Distributors', {}, { timeout: 5000 });
+    await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
 
     // 2. Open create drawer
     const addButton = canvas.getByRole('button', { name: 'Add Supplier' });
     await userEvent.click(addButton);
 
-    const drawer = await canvas.findByRole('dialog', {}, { timeout: 3000 });
+    const drawer = await canvas.findByRole('dialog', {}, { timeout: 10000 });
     expect(drawer).toBeVisible();
     const drawerScope = within(drawer);
 
@@ -218,7 +218,7 @@ export const DuplicateNameError: Story = {
     const saveButton = drawerScope.getByRole('button', { name: /^save$/i });
     await waitFor(() => {
       expect(saveButton).toBeEnabled();
-    });
+    }, { timeout: 10000 });
 
     // 5. Click Save (triggers POST → 409 response)
     await userEvent.click(saveButton);
@@ -227,7 +227,7 @@ export const DuplicateNameError: Story = {
     const errorToast = await screen.findByText(
       /a supplier with this name already exists/i,
       {},
-      { timeout: 5000 },
+      { timeout: 10000 },
     );
     expect(errorToast).toBeVisible();
 

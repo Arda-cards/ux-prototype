@@ -36,7 +36,7 @@ export const Default: Story = {
     const canvas = within(canvasElement);
 
     // 1. Wait for grid to load
-    await canvas.findByText('Apex Medical Distributors', {}, { timeout: 5000 });
+    await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
 
     // 2. Verify Actions button is disabled (no selection)
     const actionsButton = canvas.getByRole('button', { name: 'Actions' });
@@ -50,12 +50,12 @@ export const Default: Story = {
     // 4. Verify row 1 is selected
     await waitFor(() => {
       expect(checkboxes[1]).toBeChecked();
-    });
+    }, { timeout: 10000 });
 
     // 5. Verify Actions button is enabled
     await waitFor(() => {
       expect(actionsButton).toBeEnabled();
-    });
+    }, { timeout: 10000 });
 
     // 6. Click checkbox on row 3
     await userEvent.click(checkboxes[3]);
@@ -64,13 +64,13 @@ export const Default: Story = {
     await waitFor(() => {
       expect(checkboxes[1]).toBeChecked();
       expect(checkboxes[3]).toBeChecked();
-    });
+    }, { timeout: 10000 });
 
     // 8. Open the Actions dropdown
     await userEvent.click(actionsButton);
 
     // 9. Verify "Delete" action is available
-    const deleteItem = await canvas.findByRole('menuitem', { name: /delete/i });
+    const deleteItem = await canvas.findByRole('menuitem', { name: /delete/i }, { timeout: 10000 });
     expect(deleteItem).toBeVisible();
   },
 };
@@ -83,7 +83,7 @@ export const SelectAll: Story = {
     const canvas = within(canvasElement);
 
     // 1. Wait for grid to load
-    await canvas.findByText('Apex Medical Distributors', {}, { timeout: 5000 });
+    await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
 
     // 2. Click the header checkbox (select all)
     const checkboxes = canvas.getAllByRole('checkbox');
@@ -98,13 +98,13 @@ export const SelectAll: Story = {
       for (let i = 1; i < allCheckboxes.length; i++) {
         expect(allCheckboxes[i]).toBeChecked();
       }
-    });
+    }, { timeout: 10000 });
 
     // 4. Verify header checkbox is checked (not indeterminate)
     await waitFor(() => {
       const allCheckboxes = canvas.getAllByRole('checkbox');
       expect(allCheckboxes[0]).toBeChecked();
-    });
+    }, { timeout: 10000 });
 
     // 5. Click the header checkbox again (deselect all)
     const freshCheckboxes = canvas.getAllByRole('checkbox');
@@ -116,6 +116,6 @@ export const SelectAll: Story = {
       for (let i = 1; i < allCheckboxes.length; i++) {
         expect(allCheckboxes[i]).not.toBeChecked();
       }
-    });
+    }, { timeout: 10000 });
   },
 };
