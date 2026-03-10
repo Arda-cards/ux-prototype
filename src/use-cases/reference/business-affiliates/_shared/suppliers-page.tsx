@@ -253,16 +253,18 @@ export function SuppliersPage({
     fetchSuppliers();
   }, [fetchSuppliers]);
 
-  // Deep-link: auto-open drawer for initial affiliate
+  // Deep-link: auto-open drawer for initial affiliate (one-shot)
+  const hasAutoOpened = useRef(false);
   useEffect(() => {
-    if (initialAffiliateId && rowData.length > 0 && !drawerOpen) {
+    if (initialAffiliateId && rowData.length > 0 && !hasAutoOpened.current) {
       const found = rowData.find((r) => r.eId === initialAffiliateId);
       if (found) {
         setSelectedAffiliate(found);
         setDrawerOpen(true);
+        hasAutoOpened.current = true;
       }
     }
-  }, [initialAffiliateId, rowData, drawerOpen]);
+  }, [initialAffiliateId, rowData]);
 
   const handleRowClick = useCallback((data: BusinessAffiliateWithRoles) => {
     if (onRowClick) {
