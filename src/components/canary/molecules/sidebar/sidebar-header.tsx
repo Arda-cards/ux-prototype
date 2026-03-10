@@ -66,7 +66,7 @@ export function ArdaSidebarHeader({
 
   const brandMark = (
     <>
-      <ArdaBrandIcon variant="dark" className="size-4 min-w-4 shrink-0" />
+      <ArdaBrandIcon className="size-4 min-w-4 shrink-0" />
       <span className="truncate font-semibold text-sidebar-accent-foreground group-data-[collapsible=icon]:hidden">
         {name}
       </span>
