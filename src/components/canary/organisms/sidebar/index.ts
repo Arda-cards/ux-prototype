@@ -11,11 +11,7 @@ export {
   type ArdaSidebarHeaderRuntimeConfig,
   type TeamOption,
 } from '../../molecules/sidebar/sidebar-header';
-export {
-  ArdaSidebarNav,
-  type ArdaSidebarNavProps,
-  type ArdaSidebarNavStaticConfig,
-} from '../../molecules/sidebar/sidebar-nav';
+export { ArdaSidebarNav, type ArdaSidebarNavProps } from '../../molecules/sidebar/sidebar-nav';
 export {
   ArdaSidebarNavItem,
   type ArdaSidebarNavItemProps,
@@ -25,7 +21,6 @@ export {
 export {
   ArdaSidebarNavGroup,
   type ArdaSidebarNavGroupProps,
-  type ArdaSidebarNavGroupStaticConfig,
 } from '../../molecules/sidebar/sidebar-nav-group';
 export {
   ArdaSidebarUserMenu,

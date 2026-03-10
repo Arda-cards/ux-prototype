@@ -91,7 +91,7 @@ export function ArdaSidebarUserMenu({
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton tooltip={user.name}>
                 <Avatar className="size-4 shrink-0 rounded-sm bg-sidebar-accent">
-                  {user.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
+                  {user.avatar && <AvatarImage src={user.avatar} alt="" />}
                   <AvatarFallback className="rounded-sm bg-sidebar-accent text-sidebar-accent-foreground text-[10px] font-bold leading-none">
                     {initials}
                   </AvatarFallback>
