@@ -58,7 +58,7 @@ export function ArdaSidebarHeader({
     return (
       <SidebarHeader className={cn('p-2', className)}>
         <div className="flex h-8 items-center gap-2 px-2">
-          <ArdaBrandIcon variant="mono-light" className="size-4 min-w-4 shrink-0" />
+          <ArdaBrandIcon variant="dark" className="size-4 min-w-4 shrink-0" />
           <span className="truncate font-semibold text-sidebar-accent-foreground group-data-[collapsible=icon]:hidden">
             {name}
           </span>
@@ -75,7 +75,7 @@ export function ArdaSidebarHeader({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton>
-                <ArdaBrandIcon variant="mono-light" className="size-4 min-w-4 shrink-0" />
+                <ArdaBrandIcon variant="dark" className="size-4 min-w-4 shrink-0" />
                 <span className="truncate font-semibold text-sidebar-accent-foreground">
                   {name}
                 </span>
