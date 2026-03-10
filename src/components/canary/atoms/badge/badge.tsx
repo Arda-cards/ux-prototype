@@ -19,5 +19,11 @@ export interface ArdaBadgeProps extends React.ComponentProps<'span'> {
  * Use className for context-specific sizing or color overrides.
  */
 export function ArdaBadge({ variant = 'default', className, ...props }: ArdaBadgeProps) {
-  return <Badge variant={variant} className={cn('text-2xs font-semibold', className)} {...props} />;
+  return (
+    <Badge
+      variant={variant}
+      className={cn('rounded-md px-[5px] py-px text-2xs font-semibold', className)}
+      {...props}
+    />
+  );
 }

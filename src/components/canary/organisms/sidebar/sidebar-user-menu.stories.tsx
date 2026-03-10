@@ -78,6 +78,23 @@ export const Collapsed: Story = {
   ),
 };
 
+/** With user role displayed below name. */
+export const WithRole: Story = {
+  render: () => (
+    <ArdaSidebar defaultOpen>
+      <ArdaSidebarUserMenu
+        user={{
+          name: 'Callil Capuozzo',
+          email: 'callil@arda.cards',
+          avatar: '',
+          role: 'Account Admin',
+        }}
+        actions={defaultActions}
+      />
+    </ArdaSidebar>
+  ),
+};
+
 /** Minimal — logout only. */
 export const LogoutOnly: Story = {
   render: () => (

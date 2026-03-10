@@ -222,6 +222,47 @@ export const Interactive: Story = {
   ),
 };
 
+/** Mobile — renders as a Sheet drawer at viewports below 768px. Use the trigger button to open. */
+export const Mobile: Story = {
+  parameters: {
+    viewport: {
+      defaultViewport: 'mobile1',
+    },
+    chromatic: { viewports: [375] },
+  },
+  render: () => (
+    <ArdaSidebar
+      defaultOpen
+      page={
+        <SidebarInset>
+          <header className="flex h-14 items-center gap-2 border-b px-4">
+            <SidebarTrigger className="-ml-1" />
+            <h1 className="text-lg font-semibold">Dashboard</h1>
+          </header>
+          <main className="p-6">
+            <p className="text-muted-foreground text-sm">
+              On mobile viewports (&lt;768px), the sidebar renders as a bottom Sheet drawer instead
+              of a fixed side panel. Tap the trigger button above to toggle.
+            </p>
+          </main>
+        </SidebarInset>
+      }
+    >
+      <ArdaSidebarHeader teamName="Arda Cards" />
+
+      <ArdaSidebarNav>
+        <ArdaSidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
+        <ArdaSidebarNavItem icon={Package} label="Items" />
+        <ArdaSidebarNavItem icon={ShoppingCart} label="Order Queue" badge={3} />
+        <ArdaSidebarNavItem icon={Building2} label="Suppliers" />
+        <ArdaSidebarNavItem icon={Settings} label="Settings" />
+      </ArdaSidebarNav>
+
+      <ArdaSidebarUserMenu user={mockUser} actions={mockActions} />
+    </ArdaSidebar>
+  ),
+};
+
 /** Playground — use Storybook controls to toggle open state. */
 export const Playground: Story = {
   args: {

@@ -9,7 +9,7 @@ const meta: Meta<typeof ArdaBadge> = {
     docs: {
       description: {
         component:
-          'Thin Arda wrapper around shadcn Badge. Adds base sizing (10px font, semibold). ' +
+          'Thin Arda wrapper around shadcn Badge. Rounded-md shape, tight padding, text-2xs (11px) semibold. ' +
           'Use className for context-specific overrides.',
       },
     },
