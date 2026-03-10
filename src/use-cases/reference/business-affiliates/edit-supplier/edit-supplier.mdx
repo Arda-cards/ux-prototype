@@ -28,25 +28,15 @@ modify fields &#8594; click Save to send the PUT request &#8594; receive a succe
   </tbody>
 </table>
 
-## Deferred Scenarios
+## Stories in This Section (continued)
 
 <table>
-  <thead><tr><th>Scenario</th><th>Story</th><th>Notes</th></tr></thead>
+  <thead><tr><th>Story</th><th>Variants</th><th>Description</th></tr></thead>
   <tbody>
     <tr>
-      <td>Clear required field, attempt save</td>
-      <td><code>BA::0004::0002</code> Validation Errors</td>
-      <td>Save button disabled, inline error shown</td>
-    </tr>
-    <tr>
-      <td>Cancel with unsaved changes</td>
-      <td><code>BA::0004::0002</code> Validation Errors</td>
-      <td>Confirm discard dialog before closing</td>
-    </tr>
-    <tr>
-      <td>Network error on save</td>
-      <td><code>BA::0004::0002</code> Validation Errors</td>
-      <td>Error toast, drawer stays in edit mode</td>
+      <td>Validation Errors</td>
+      <td>ClearRequiredField, CancelDiscards, NetworkError</td>
+      <td>Error and edge-case scenarios: clear required Name field (Save disabled), cancel discards changes, network error on save (error toast, edit mode preserved)</td>
     </tr>
   </tbody>
 </table>
