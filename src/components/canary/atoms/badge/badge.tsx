@@ -5,9 +5,15 @@ import type { VariantProps } from 'class-variance-authority';
 // --- Interfaces ---
 
 /** Props for ArdaBadge. */
-export interface ArdaBadgeProps extends React.ComponentProps<'span'> {
+export interface ArdaBadgeProps extends Omit<React.ComponentProps<'span'>, 'children'> {
   /** Visual variant — maps directly to shadcn Badge variants. */
   variant?: VariantProps<typeof badgeVariants>['variant'];
+  /** Numeric count — capped at 99+. When provided, renders as a live status region. */
+  count?: number;
+  /** Maximum count before showing "+". Defaults to 99. */
+  max?: number;
+  /** Content to render. Ignored when `count` is provided. */
+  children?: React.ReactNode;
 }
 
 // --- Component ---
@@ -15,15 +21,29 @@ export interface ArdaBadgeProps extends React.ComponentProps<'span'> {
 /**
  * ArdaBadge — thin Arda wrapper around shadcn Badge.
  *
- * Passes through all shadcn variants unchanged.
- * Use className for context-specific sizing or color overrides.
+ * Supports a `count` prop that auto-caps at 99+ (or a custom `max`).
+ * When `count` is provided the badge gets `role="status"` for live updates.
+ * Falls back to rendering `children` for string/label badges.
  */
-export function ArdaBadge({ variant = 'default', className, ...props }: ArdaBadgeProps) {
+export function ArdaBadge({
+  variant = 'default',
+  count,
+  max = 99,
+  children,
+  className,
+  ...props
+}: ArdaBadgeProps) {
+  const isCount = count !== undefined;
+  const display = isCount ? (count > max ? `${max}+` : String(count)) : children;
+
   return (
     <Badge
       variant={variant}
-      className={cn('rounded-md px-[5px] py-px text-2xs font-semibold', className)}
+      className={cn('rounded-md px-[5px] py-px text-2xs font-semibold tabular-nums', className)}
+      {...(isCount && { role: 'status' })}
       {...props}
-    />
+    >
+      {display}
+    </Badge>
   );
 }

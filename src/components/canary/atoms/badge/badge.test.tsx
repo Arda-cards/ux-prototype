@@ -33,4 +33,42 @@ describe('ArdaBadge', () => {
     render(<ArdaBadge className="custom">5</ArdaBadge>);
     expect(screen.getByText('5')).toHaveClass('custom');
   });
+
+  // --- count prop ---
+
+  it('renders count as text', () => {
+    render(<ArdaBadge count={42} />);
+    expect(screen.getByText('42')).toBeInTheDocument();
+  });
+
+  it('caps count at 99+', () => {
+    render(<ArdaBadge count={150} />);
+    expect(screen.getByText('99+')).toBeInTheDocument();
+  });
+
+  it('shows exact count at boundary', () => {
+    render(<ArdaBadge count={99} />);
+    expect(screen.getByText('99')).toBeInTheDocument();
+  });
+
+  it('supports custom max', () => {
+    render(<ArdaBadge count={10} max={9} />);
+    expect(screen.getByText('9+')).toBeInTheDocument();
+  });
+
+  it('adds role="status" when count is provided', () => {
+    render(<ArdaBadge count={5} />);
+    expect(screen.getByRole('status')).toHaveTextContent('5');
+  });
+
+  it('does not add role="status" for children', () => {
+    render(<ArdaBadge>New</ArdaBadge>);
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  it('count takes precedence over children', () => {
+    render(<ArdaBadge count={7}>ignored</ArdaBadge>);
+    expect(screen.getByText('7')).toBeInTheDocument();
+    expect(screen.queryByText('ignored')).not.toBeInTheDocument();
+  });
 });

@@ -18,7 +18,7 @@ const meta = {
 } satisfies Meta<typeof ArdaBadge>;
 
 export default meta;
-type Story = StoryObj<typeof ArdaBadge>;
+type Story = StoryObj<typeof meta>;
 
 /** Default — uses primary color (Arda orange). */
 export const Default: Story = {
@@ -35,6 +35,21 @@ export const Outline: Story = {
   args: { children: 'New', variant: 'outline' },
 };
 
+/** Numeric count — auto-caps at 99+. */
+export const Count: Story = {
+  args: { count: 42 },
+};
+
+/** High count — displays as 99+. */
+export const HighCount: Story = {
+  args: { count: 150 },
+};
+
+/** Custom max threshold. */
+export const CustomMax: Story = {
+  args: { count: 10, max: 9 },
+};
+
 /** All variants side by side. */
 export const AllVariants: Story = {
   render: () => (
@@ -43,6 +58,7 @@ export const AllVariants: Story = {
       <ArdaBadge variant="secondary">Secondary</ArdaBadge>
       <ArdaBadge variant="outline">Outline</ArdaBadge>
       <ArdaBadge variant="destructive">Destructive</ArdaBadge>
+      <ArdaBadge count={150} />
     </div>
   ),
 };
