@@ -82,7 +82,7 @@ export function ArdaSidebarNavItem({
           {badge !== true && (
             <ArdaBadge
               variant="default"
-              count={typeof badge === 'number' ? badge : undefined}
+              {...(typeof badge === 'number' && { count: badge })}
               className="absolute right-2 top-1/2 -translate-y-1/2 tabular-nums transition-opacity duration-150 motion-reduce:transition-none group-data-[collapsible=icon]:opacity-0"
             >
               {typeof badge === 'string' ? badge : undefined}

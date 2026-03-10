@@ -8,6 +8,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -88,17 +89,17 @@ export function ArdaSidebarUserMenu({
         <SidebarMenuItem>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <SidebarMenuButton>
+              <SidebarMenuButton tooltip={user.name}>
                 <Avatar className="size-4 shrink-0 rounded-sm bg-sidebar-accent">
                   {user.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
-                  <AvatarFallback className="rounded-sm bg-sidebar-accent text-sidebar-accent-foreground text-3xs font-bold">
+                  <AvatarFallback className="rounded-sm bg-sidebar-accent text-sidebar-accent-foreground text-[10px] font-bold leading-none">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
-                <span className="truncate font-medium text-sidebar-accent-foreground">
+                <span className="truncate font-medium text-sidebar-accent-foreground group-data-[collapsible=icon]:hidden">
                   {user.name}
                 </span>
-                <ChevronsUpDown className="ml-auto size-4 shrink-0 text-sidebar-foreground/70" />
+                <ChevronsUpDown className="ml-auto size-4 shrink-0 text-sidebar-foreground/70 group-data-[collapsible=icon]:hidden" />
               </SidebarMenuButton>
             </DropdownMenuTrigger>
 
@@ -108,11 +109,11 @@ export function ArdaSidebarUserMenu({
               align="end"
               sideOffset={4}
             >
-              <div className="px-2 py-1.5">
+              <DropdownMenuLabel className="font-normal">
                 <p className="text-sm font-semibold">{user.name}</p>
                 {user.role && <p className="text-xs text-muted-foreground">{user.role}</p>}
                 <p className="text-xs text-muted-foreground">{user.email}</p>
-              </div>
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
 
               {standardActions.map((action) => (

@@ -6,7 +6,7 @@ import * as SidebarStories from './sidebar.stories';
 
 # ArdaSidebar
 
-Sidebar navigation built on shadcn Sidebar primitives. Dark theme, icon-only collapsed mode, mobile Sheet drawer, Cmd+B toggle.
+Dark sidebar navigation built on shadcn Sidebar primitives. Compound component — compose with sub-components, don't configure with arrays.
 
 **Organism** &#8212; Canary
 
@@ -14,21 +14,65 @@ Sidebar navigation built on shadcn Sidebar primitives. Dark theme, icon-only col
 
 ## Sub-components
 
-- **ArdaSidebarHeader** &#8212; Brand logo + team name. Pass `teams` for a team switcher dropdown.
-- **ArdaSidebarNav** &#8212; Scrollable nav area.
-- **ArdaSidebarNavItem** &#8212; Nav button with icon, label, badge (count or dot), active state. Count badges collapse to dots in icon mode. Navigation is handled by the consumer via `onClick`.
-- **ArdaSidebarNavGroup** &#8212; Collapsible section. Auto-expands when a child is active.
-- **ArdaSidebarUserMenu** &#8212; Footer dropdown with avatar, name, role, and configurable actions.
+| Component | Layer | Purpose |
+|---|---|---|
+| **ArdaSidebarHeader** | molecule | Brand logo + team name. Pass `teams` for a team switcher dropdown. |
+| **ArdaSidebarNav** | molecule | Scrollable nav area. Wraps children in a `<nav>` landmark. |
+| **ArdaSidebarNavItem** | molecule | Nav button with icon, label, optional badge (count or dot), and active state. Count badges collapse to dots in icon-only mode. |
+| **ArdaSidebarNavGroup** | molecule | Collapsible section with chevron. Auto-expands when a child is active. |
+| **ArdaSidebarUserMenu** | molecule | Footer dropdown with avatar, name, role, and configurable actions array. |
+
+All sub-components follow the **StaticConfig / RuntimeConfig** prop split:
+- `StaticConfig` &#8212; design-time props (layout, structure, icons)
+- `RuntimeConfig` &#8212; runtime state (active, badge count, onClick, user data)
+
+---
+
+## Default
+
+Expanded sidebar with nav items, groups, badges, and user menu. Use Cmd+B or the sidebar rail to collapse to icon-only mode.
+
+<Canvas of={SidebarStories.Default} />
+
+## With Badges
+
+Count badges show a number (capped at 99+). `badge={true}` renders a dot indicator. Both degrade to dots when collapsed.
+
+<Canvas of={SidebarStories.WithBadges} />
+
+## With Nav Groups
+
+Collapsible sections. Groups auto-expand if a child has `active={true}`.
+
+<Canvas of={SidebarStories.WithGroups} />
+
+## Composition
+
+Full page layout with `SidebarInset` for the content area.
+
+<Canvas of={SidebarStories.Composition} />
+
+---
+
+## Dark by default
+
+The sidebar applies the `dark` class to the shadcn `<Sidebar>` element, so it renders dark regardless of the app-level theme. The dark sidebar token values (`--sidebar`, `--sidebar-foreground`, etc.) are defined in `globals.css` under `.dark`.
+
+---
+
+## Mobile behavior
+
+Below 768px, the sidebar automatically renders as a Sheet (overlay drawer) instead of a fixed side panel. This is handled by shadcn's `useIsMobile()` hook &#8212; no additional props needed. The Sheet starts closed and opens via `SidebarTrigger` or programmatically via the `useSidebar()` hook.
 
 ---
 
 ## Integration with Next.js
 
-Nav items are routing-agnostic. The consumer controls navigation via `onClick` and active state via a boolean. Typical Next.js App Router usage:
+Nav items are routing-agnostic. The consumer controls navigation via `onClick` and active state via a boolean:
 
 ```tsx
 import { useRouter, usePathname } from 'next/navigation';
-import { Package, ShoppingCart } from 'lucide-react';
+import { Package, ShoppingCart, LogOut, Settings } from 'lucide-react';
 
 function AppSidebar() {
   const router = useRouter();
@@ -66,39 +110,11 @@ function AppSidebar() {
 
 ---
 
-## Usage
-
-### Default
-
-Toggle `defaultOpen` in the controls panel to switch between expanded and collapsed.
-
-<Canvas of={SidebarStories.Default} />
-
-### With Badges
-
-<Canvas of={SidebarStories.WithBadges} />
-
-### With Nav Groups
-
-<Canvas of={SidebarStories.WithGroups} />
-
-### Composition
-
-Full layout with `SidebarInset`. Cmd+B to toggle.
-
-<Canvas of={SidebarStories.Composition} />
-
-### Mobile
-
-Below 768px, the sidebar automatically renders as a Sheet drawer instead of a fixed side panel. This is handled by shadcn's `useIsMobile()` hook &#8212; no additional props needed.
-
----
-
 ## Consumer responsibilities
 
-- **Destructive actions** &#8212; The `destructive` flag on `UserMenuAction` applies red styling, but does not show a confirmation dialog. Wrap destructive `onClick` handlers (e.g. logout) with `ArdaConfirmDialog` at the app level.
-- **Disabled nav items** &#8212; There is no `disabled` prop on `ArdaSidebarNavItem`. If you need to disable a nav item, conditionally omit it or style via `className`.
-- **Reduced motion** &#8212; The sidebar collapse/expand animation does not yet respect `prefers-reduced-motion`. This is an upstream limitation in the shadcn sidebar primitives (`components/ui/sidebar.tsx`).
+- **Destructive actions** &#8212; The `destructive` flag on `UserMenuAction` applies red styling but does not show a confirmation dialog. Wrap destructive `onClick` handlers with `ArdaConfirmDialog` at the app level.
+- **Disabled nav items** &#8212; No `disabled` prop exists on `ArdaSidebarNavItem`. Conditionally omit the item or style via `className`.
+- **Reduced motion** &#8212; Nav item badge transitions and group chevron rotation respect `prefers-reduced-motion`. The sidebar collapse/expand animation is an upstream limitation in the shadcn primitives.
 
 ---
 

@@ -1,6 +1,5 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, fn, within } from 'storybook/test';
+import { expect, fn, userEvent, within } from 'storybook/test';
 import { Settings, ShieldCheck, LogOut } from 'lucide-react';
 
 import { ArdaSidebarUserMenu, type UserMenuAction } from './sidebar-user-menu';
@@ -37,7 +36,7 @@ const meta = {
 } satisfies Meta<typeof ArdaSidebarUserMenu>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
+type Story = StoryObj<typeof ArdaSidebarUserMenu>;
 
 /** Default expanded view with admin, settings, and logout. */
 export const Default: Story = {
@@ -94,6 +93,28 @@ export const WithRole: Story = {
       />
     </ArdaSidebar>
   ),
+};
+
+/** Flyout open — shows the dropdown menu with all actions. */
+export const FlyoutOpen: Story = {
+  render: () => (
+    <ArdaSidebar defaultOpen>
+      <ArdaSidebarUserMenu
+        user={{
+          name: 'Callil Capuozzo',
+          email: 'callil@arda.cards',
+          avatar: '',
+          role: 'Account Admin',
+        }}
+        actions={defaultActions}
+      />
+    </ArdaSidebar>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button', { name: /callil capuozzo/i });
+    await userEvent.click(trigger);
+  },
 };
 
 /** Minimal — logout only. */

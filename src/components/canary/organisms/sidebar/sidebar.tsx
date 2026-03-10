@@ -10,13 +10,8 @@ export interface ArdaSidebarStaticConfig {
   /* --- View / Layout / Controller --- */
   /** Default open state (uncontrolled). */
   defaultOpen?: boolean;
-  /**
-   * Color scheme for the sidebar chrome.
-   * - `"dark"` — always dark background with light text (default)
-   * - `"light"` — always light background with dark text
-   * - `"system"` — follows the user's theme (respects `.dark` on `<html>`)
-   */
-  theme?: 'dark' | 'light' | 'system';
+  /** When true, applies the `dark` class so sidebar uses dark tokens. Defaults to true. */
+  dark?: boolean;
   /** Sidebar content — compose with ArdaSidebarHeader, nav items, ArdaSidebarUserMenu, etc. */
   children: React.ReactNode;
   /** Content to render outside the sidebar but inside the provider (e.g. SidebarInset). */
@@ -42,22 +37,20 @@ export interface ArdaSidebarProps extends ArdaSidebarStaticConfig, ArdaSidebarRu
 /**
  * ArdaSidebar — Arda-branded wrapper around shadcn Sidebar.
  *
+ * Dark by default. Set `dark={false}` to follow app theme instead.
+ *
  * Provides: mobile Sheet, Cmd+B keyboard shortcut, cookie persistence,
  * icon-only collapsed mode with tooltips — all from shadcn primitives.
- *
- * Uses `collapsible="icon"` to collapse to icon-only mode (not offcanvas).
  */
 export function ArdaSidebar({
   defaultOpen = true,
-  theme = 'dark',
+  dark = true,
   open,
   onOpenChange,
   children,
   page,
   className,
 }: ArdaSidebarProps) {
-  // Only spread defined props — shadcn's exactOptionalPropertyTypes
-  // rejects `undefined` for optional props.
   const providerProps = {
     defaultOpen,
     ...(open !== undefined && { open }),
@@ -65,12 +58,8 @@ export function ArdaSidebar({
   };
 
   return (
-    <SidebarProvider {...providerProps}>
-      <Sidebar
-        collapsible="icon"
-        data-sidebar-theme={theme}
-        className={cn('border-sidebar-border', className)}
-      >
+    <SidebarProvider {...providerProps} className={cn(dark && 'dark')}>
+      <Sidebar collapsible="icon" className={cn('border-sidebar-border', className)}>
         {children}
         <SidebarRail />
       </Sidebar>

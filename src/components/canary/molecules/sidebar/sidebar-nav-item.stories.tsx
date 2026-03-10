@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, within } from 'storybook/test';
 import { LayoutDashboard, Package, ShoppingCart, Building2, Settings } from 'lucide-react';
@@ -35,7 +34,7 @@ const meta = {
 } satisfies Meta<typeof ArdaSidebarNavItem>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
+type Story = StoryObj<typeof ArdaSidebarNavItem>;
 
 /** Default inactive state inside a sidebar. */
 export const Default: Story = {

@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 import {
@@ -48,10 +47,11 @@ const meta = {
     docs: {
       description: {
         component:
-          'Arda sidebar organism built on shadcn/ui Sidebar primitives. ' +
-          'Provides mobile Sheet drawer, Cmd+B keyboard shortcut, cookie persistence, ' +
-          'and icon-only collapsed mode with tooltips — all from shadcn. ' +
-          'Arda adds dark theme tokens, brand header, and user menu.',
+          'Arda sidebar organism — dark by default, built on shadcn/ui Sidebar primitives. ' +
+          'Compound component: compose with ArdaSidebarHeader, ArdaSidebarNav, ' +
+          'ArdaSidebarNavItem, ArdaSidebarNavGroup, and ArdaSidebarUserMenu. ' +
+          'Provides mobile Sheet drawer (< 768px), Cmd+B toggle, cookie persistence, ' +
+          'and icon-only collapsed mode with tooltips.',
       },
     },
   },
@@ -60,13 +60,18 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof ArdaSidebar>;
 
-/** Default sidebar — toggle `open` in the controls panel, or use Cmd+B / the sidebar rail. */
+/** Default sidebar. Toggle `open` and `dark` in the controls panel. */
 export const Default: Story = {
   args: {
     open: true,
+    dark: true,
+  },
+  argTypes: {
+    open: { control: 'boolean' },
+    dark: { control: 'boolean' },
   },
   render: (args) => (
-    <ArdaSidebar open={args.open} onOpenChange={args.onOpenChange}>
+    <ArdaSidebar {...args}>
       <ArdaSidebarHeader teamName="Arda Cards" />
 
       <ArdaSidebarNav>
@@ -93,7 +98,7 @@ export const Default: Story = {
   },
 };
 
-/** Nav items with notification badges. */
+/** Nav items with notification badges — count, dot, and active combinations. */
 export const WithBadges: Story = {
   render: () => (
     <ArdaSidebar defaultOpen>
@@ -156,14 +161,18 @@ export const Composition: Story = {
           </header>
           <main className="p-8">
             <p className="text-muted-foreground mb-4">
-              Press <kbd className="px-1.5 py-0.5 text-xs border rounded bg-muted">⌘B</kbd> to
+              Press <kbd className="rounded border bg-muted px-1.5 py-0.5 text-xs">⌘B</kbd> to
               toggle the sidebar. On mobile, it opens as a sheet drawer.
             </p>
             <div className="grid grid-cols-3 gap-4">
-              {['Items', 'Orders', 'Suppliers'].map((label) => (
-                <div key={label} className="rounded-lg border p-6 bg-card text-card-foreground">
+              {[
+                { label: 'Items', value: 142 },
+                { label: 'Orders', value: 38 },
+                { label: 'Suppliers', value: 12 },
+              ].map(({ label, value }) => (
+                <div key={label} className="rounded-lg border bg-card p-6 text-card-foreground">
                   <p className="text-sm text-muted-foreground">{label}</p>
-                  <p className="text-2xl font-bold mt-1">{Math.floor(Math.random() * 500)}</p>
+                  <p className="mt-1 text-2xl font-bold">{value}</p>
                 </div>
               ))}
             </div>

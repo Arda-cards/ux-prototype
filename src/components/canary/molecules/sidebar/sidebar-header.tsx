@@ -66,18 +66,22 @@ export function ArdaSidebarHeader({
 
   const brandMark = (
     <>
-      <ArdaBrandIcon variant="dark" className="size-4 min-w-4 shrink-0" />
-      <span className="truncate font-semibold text-sidebar-accent-foreground">{name}</span>
+      <ArdaBrandIcon className="size-4 min-w-4 shrink-0" />
+      <span className="truncate font-semibold text-sidebar-accent-foreground group-data-[collapsible=icon]:hidden">
+        {name}
+      </span>
     </>
   );
 
-  // Non-interactive header (default)
+  // Non-interactive header (default) — uses SidebarMenuButton for consistent collapsed centering
   if (!teams || teams.length === 0) {
     return (
       <SidebarHeader className={cn('p-2', className)}>
-        <div className="flex h-8 items-center gap-2 px-2 group-data-[collapsible=icon]:px-0">
-          {brandMark}
-        </div>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton tooltip={name}>{brandMark}</SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
     );
   }
