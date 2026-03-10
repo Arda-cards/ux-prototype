@@ -123,7 +123,7 @@ export const LoadingState: Story = {
     // Verify the page header renders while data is loading
     await waitFor(
       () => {
-        expect(canvas.getByText('Suppliers')).toBeVisible();
+        expect(canvas.getByRole('heading', { name: 'Suppliers', level: 1 })).toBeVisible();
       },
       { timeout: 10000 },
     );

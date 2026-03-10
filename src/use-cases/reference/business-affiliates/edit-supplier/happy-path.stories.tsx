@@ -261,14 +261,24 @@ export const Automated: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    // Step 1: Verify the drawer auto-opens in view mode for Apex Medical Distributors
-    const drawerHeading = await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
-    expect(drawerHeading).toBeVisible();
+    // Step 1: Wait for grid to load — find Apex Medical Distributors in the grid cell,
+    // then click the row to open the drawer.
+    // Note: EditableSuppliersPage sets onRowClick on SuppliersPage, which bypasses
+    // the deep-link auto-open; the drawer only opens via an explicit row click.
+    const gridCell = await canvas.findByText(
+      'Apex Medical Distributors',
+      { selector: '[role="gridcell"]' },
+      { timeout: 10000 },
+    );
+    await userEvent.click(gridCell);
 
-    // Step 2: Verify we are in view mode — "Edit" and "Delete" buttons visible
-    const editButton = await canvas.findByRole('button', { name: /^edit$/i }, { timeout: 10000 });
+    // Step 2: Verify the drawer opens in view mode — "Edit" and "Delete" buttons visible
+    const drawer = await canvas.findByRole('dialog', {}, { timeout: 10000 });
+    expect(drawer).toBeVisible();
+    const drawerScope = within(drawer);
+    const editButton = await drawerScope.findByRole('button', { name: /^edit$/i }, { timeout: 10000 });
     expect(editButton).toBeVisible();
-    const deleteButton = canvas.getByRole('button', { name: /^delete$/i });
+    const deleteButton = drawerScope.getByRole('button', { name: /^delete$/i });
     expect(deleteButton).toBeVisible();
 
     // Step 3: Click "Edit" to transition to edit mode

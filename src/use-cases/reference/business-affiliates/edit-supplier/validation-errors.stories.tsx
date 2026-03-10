@@ -71,8 +71,14 @@ export const ClearRequiredField: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    // Step 1: Wait for grid to load, click Apex Medical Distributors to open drawer
-    const firstRow = await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
+    // Step 1: Wait for grid to load, click Apex Medical Distributors to open drawer.
+    // Use selector '[role="gridcell"]' so the click targets the AG Grid cell element
+    // (not a nested text span), which correctly triggers the onRowClicked handler.
+    const firstRow = await canvas.findByText(
+      'Apex Medical Distributors',
+      { selector: '[role="gridcell"]' },
+      { timeout: 10000 },
+    );
     await userEvent.click(firstRow);
 
     // Step 2: Verify drawer opens
@@ -134,8 +140,14 @@ export const CancelDiscards: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    // Step 1: Open drawer for Apex Medical Distributors
-    const firstRow = await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
+    // Step 1: Open drawer for Apex Medical Distributors.
+    // Use selector '[role="gridcell"]' so the click targets the AG Grid cell element,
+    // which correctly triggers the onRowClicked handler.
+    const firstRow = await canvas.findByText(
+      'Apex Medical Distributors',
+      { selector: '[role="gridcell"]' },
+      { timeout: 10000 },
+    );
     await userEvent.click(firstRow);
 
     // Step 2: Verify drawer opens in view mode with original email
@@ -195,15 +207,23 @@ export const NetworkError: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    // Step 1: Open drawer for Apex Medical Distributors
-    const firstRow = await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
+    // Step 1: Open drawer for Apex Medical Distributors.
+    // Use selector '[role="gridcell"]' so the click targets the AG Grid cell element,
+    // which correctly triggers the onRowClicked handler in EditableSuppliersPage.
+    const firstRow = await canvas.findByText(
+      'Apex Medical Distributors',
+      { selector: '[role="gridcell"]' },
+      { timeout: 10000 },
+    );
     await userEvent.click(firstRow);
 
     const drawer = await canvas.findByRole('dialog', {}, { timeout: 10000 });
+    expect(drawer).toBeVisible();
     const drawerScope = within(drawer);
 
     // Step 2: Click "Edit"
     const editButton = await drawerScope.findByRole('button', { name: /edit/i }, { timeout: 10000 });
+    expect(editButton).toBeVisible();
     await userEvent.click(editButton);
 
     // Step 3: Modify the Name field

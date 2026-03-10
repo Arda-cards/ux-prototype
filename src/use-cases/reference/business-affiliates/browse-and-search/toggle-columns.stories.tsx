@@ -26,6 +26,17 @@ export default meta;
 type Story = StoryObj<typeof ToggleColumnsSuppliersPage>;
 
 // ---------------------------------------------------------------------------
+// Helper: query AG Grid column header by colId using DOM selector.
+// AG Grid renders column headers with [col-id="<colId>"] on the header cell.
+// The SortMenuHeader component adds a sort button (⋮) inside each header,
+// so getByRole('columnheader', { name: 'Name' }) fails because the accessible
+// name includes both the column text and the sort-button text.
+// ---------------------------------------------------------------------------
+function getColumnHeader(canvasElement: HTMLElement, colId: string): HTMLElement | null {
+  return canvasElement.querySelector<HTMLElement>(`.ag-header-cell[col-id="${colId}"]`);
+}
+
+// ---------------------------------------------------------------------------
 // Default — open dropdown, uncheck Phone, save, verify Phone hidden
 // ---------------------------------------------------------------------------
 
@@ -36,14 +47,15 @@ export const Default: Story = {
     // 1. Wait for grid to load
     await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
 
-    // 2. Verify all default column headers are visible
+    // 2. Verify all default column headers are visible using DOM selectors
+    //    (avoids accessible-name conflicts from the SortMenuHeader sort button)
     await waitFor(() => {
-      expect(canvas.getByRole('columnheader', { name: 'Name' })).toBeVisible();
-      expect(canvas.getByRole('columnheader', { name: 'Contact' })).toBeVisible();
-      expect(canvas.getByRole('columnheader', { name: 'Phone' })).toBeVisible();
-      expect(canvas.getByRole('columnheader', { name: 'City' })).toBeVisible();
-      expect(canvas.getByRole('columnheader', { name: 'State' })).toBeVisible();
-      expect(canvas.getByRole('columnheader', { name: 'Roles' })).toBeVisible();
+      expect(getColumnHeader(canvasElement, 'name')).toBeTruthy();
+      expect(getColumnHeader(canvasElement, 'contact')).toBeTruthy();
+      expect(getColumnHeader(canvasElement, 'phone')).toBeTruthy();
+      expect(getColumnHeader(canvasElement, 'city')).toBeTruthy();
+      expect(getColumnHeader(canvasElement, 'state')).toBeTruthy();
+      expect(getColumnHeader(canvasElement, 'roles')).toBeTruthy();
     }, { timeout: 10000 });
 
     // 3. Click the "View" dropdown button
@@ -81,17 +93,15 @@ export const Default: Story = {
 
     // 9. Verify "Phone" column header is no longer visible
     await waitFor(() => {
-      expect(
-        canvas.queryByRole('columnheader', { name: 'Phone' }),
-      ).not.toBeInTheDocument();
+      expect(getColumnHeader(canvasElement, 'phone')).toBeFalsy();
     }, { timeout: 10000 });
 
     // 10. Verify all other columns remain visible
-    expect(canvas.getByRole('columnheader', { name: 'Name' })).toBeVisible();
-    expect(canvas.getByRole('columnheader', { name: 'Contact' })).toBeVisible();
-    expect(canvas.getByRole('columnheader', { name: 'City' })).toBeVisible();
-    expect(canvas.getByRole('columnheader', { name: 'State' })).toBeVisible();
-    expect(canvas.getByRole('columnheader', { name: 'Roles' })).toBeVisible();
+    expect(getColumnHeader(canvasElement, 'name')).toBeTruthy();
+    expect(getColumnHeader(canvasElement, 'contact')).toBeTruthy();
+    expect(getColumnHeader(canvasElement, 'city')).toBeTruthy();
+    expect(getColumnHeader(canvasElement, 'state')).toBeTruthy();
+    expect(getColumnHeader(canvasElement, 'roles')).toBeTruthy();
   },
 };
 
@@ -123,22 +133,12 @@ export const HideAll: Story = {
 
     // 5. Verify only Name column header remains (checkbox column has no headerName)
     await waitFor(() => {
-      expect(canvas.getByRole('columnheader', { name: 'Name' })).toBeVisible();
-      expect(
-        canvas.queryByRole('columnheader', { name: 'Contact' }),
-      ).not.toBeInTheDocument();
-      expect(
-        canvas.queryByRole('columnheader', { name: 'Phone' }),
-      ).not.toBeInTheDocument();
-      expect(
-        canvas.queryByRole('columnheader', { name: 'City' }),
-      ).not.toBeInTheDocument();
-      expect(
-        canvas.queryByRole('columnheader', { name: 'State' }),
-      ).not.toBeInTheDocument();
-      expect(
-        canvas.queryByRole('columnheader', { name: 'Roles' }),
-      ).not.toBeInTheDocument();
+      expect(getColumnHeader(canvasElement, 'name')).toBeTruthy();
+      expect(getColumnHeader(canvasElement, 'contact')).toBeFalsy();
+      expect(getColumnHeader(canvasElement, 'phone')).toBeFalsy();
+      expect(getColumnHeader(canvasElement, 'city')).toBeFalsy();
+      expect(getColumnHeader(canvasElement, 'state')).toBeFalsy();
+      expect(getColumnHeader(canvasElement, 'roles')).toBeFalsy();
     }, { timeout: 10000 });
   },
 };

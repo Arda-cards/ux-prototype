@@ -44,8 +44,14 @@ export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    // 1. Wait for the grid to render with data
-    await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
+    // 1. Wait for the grid to render with data.
+    // Use selector: '[role="gridcell"]' to avoid matching the drawer header
+    // which also shows "Apex Medical Distributors" after the deep-link auto-opens.
+    await canvas.findByText(
+      'Apex Medical Distributors',
+      { selector: '[role="gridcell"]' },
+      { timeout: 10000 },
+    );
 
     // 2. Verify the real drawer is automatically open (has role="dialog")
     const drawer = await canvas.findByRole('dialog', {}, { timeout: 10000 });

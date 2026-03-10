@@ -147,16 +147,24 @@ export const NetworkError: Story = {
     // 5. Click Save (triggers POST → 500 response)
     await userEvent.click(saveButton);
 
-    // 6. Verify error toast appears (Sonner portals to document.body, use screen)
-    const errorToast = await screen.findByText(
+    // 6. Verify error toast appears (Sonner portals to document.body, use screen).
+    // Sonner animates toasts in — wait for the text to be in the document, then
+    // wait for visibility separately so the animation-in opacity has completed.
+    await screen.findByText(
       /internal server error|failed to create supplier/i,
       {},
       { timeout: 10000 },
     );
-    expect(errorToast).toBeVisible();
+    await waitFor(
+      () => expect(screen.getByText(/internal server error|failed to create supplier/i)).toBeVisible(),
+      { timeout: 10000 },
+    );
 
     // 7. Verify the drawer remains open
-    expect(canvas.getByRole('dialog')).toBeVisible();
+    await waitFor(
+      () => expect(canvas.getByRole('dialog')).toBeVisible(),
+      { timeout: 10000 },
+    );
 
     // 8. Verify form data is preserved (user can retry)
     expect(nameInput).toHaveValue('Test Supplier Inc.');
@@ -223,16 +231,24 @@ export const DuplicateNameError: Story = {
     // 5. Click Save (triggers POST → 409 response)
     await userEvent.click(saveButton);
 
-    // 6. Verify error toast with duplicate-name message (Sonner portal)
-    const errorToast = await screen.findByText(
+    // 6. Verify error toast with duplicate-name message (Sonner portal).
+    // Sonner animates toasts in — wait for the text to be in the document, then
+    // wait for visibility separately so the animation-in opacity has completed.
+    await screen.findByText(
       /a supplier with this name already exists/i,
       {},
       { timeout: 10000 },
     );
-    expect(errorToast).toBeVisible();
+    await waitFor(
+      () => expect(screen.getByText(/a supplier with this name already exists/i)).toBeVisible(),
+      { timeout: 10000 },
+    );
 
     // 7. Verify the drawer remains open
-    expect(canvas.getByRole('dialog')).toBeVisible();
+    await waitFor(
+      () => expect(canvas.getByRole('dialog')).toBeVisible(),
+      { timeout: 10000 },
+    );
 
     // 8. Verify form data is preserved (user can rename and retry)
     expect(nameInput).toHaveValue('Apex Medical Distributors');

@@ -38,10 +38,12 @@ export const ConfirmDelete: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    // 1. Wait for grid to load
+    // 1. Wait for grid to load.
+    // Use selector '[role="gridcell"]' to target the AG Grid cell element directly,
+    // avoiding ambiguous matches and ensuring the click triggers onRowClicked.
     const firstRow = await canvas.findByText(
       'Apex Medical Distributors',
-      {},
+      { selector: '[role="gridcell"]' },
       { timeout: 10000 },
     );
     expect(firstRow).toBeVisible();
@@ -108,10 +110,12 @@ export const CancelDelete: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    // 1. Wait for grid to load
+    // 1. Wait for grid to load.
+    // Use selector '[role="gridcell"]' to target the AG Grid cell element directly,
+    // avoiding ambiguous matches and ensuring the click triggers onRowClicked.
     const firstRow = await canvas.findByText(
       'Apex Medical Distributors',
-      {},
+      { selector: '[role="gridcell"]' },
       { timeout: 10000 },
     );
     expect(firstRow).toBeVisible();
@@ -143,7 +147,9 @@ export const CancelDelete: Story = {
 
     // 8. Verify drawer is still open with affiliate data
     expect(canvas.getByRole('dialog')).toBeVisible();
-    expect(drawerScope.getByText('Apex Medical Distributors')).toBeVisible();
+    // Use findByRole('heading') to avoid matching both the <h2> title and the
+    // <p> ReadOnlyField value that also renders the affiliate name.
+    expect(drawerScope.getByRole('heading', { name: 'Apex Medical Distributors' })).toBeVisible();
 
     // 9. Verify the row is still present in the grid
     // (The grid row behind the drawer is still in the DOM)

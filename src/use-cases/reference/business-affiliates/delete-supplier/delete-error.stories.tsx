@@ -67,7 +67,8 @@ export const NetworkError: Story = {
     // 3. Open Actions → Delete → Confirm
     const actionsButton = canvas.getByRole('button', { name: 'Actions' });
     await userEvent.click(actionsButton);
-    const deleteItem = await canvas.findByRole('menuitem', { name: /delete/i }, { timeout: 10000 });
+    // Radix DropdownMenuContent portals to document.body — use screen (not canvas)
+    const deleteItem = await screen.findByRole('menuitem', { name: /delete/i }, { timeout: 10000 });
     await userEvent.click(deleteItem);
 
     const dialog = await canvas.findByRole('alertdialog', {}, { timeout: 10000 });

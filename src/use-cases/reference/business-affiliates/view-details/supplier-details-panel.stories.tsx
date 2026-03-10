@@ -41,8 +41,14 @@ export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    // Wait for grid to load, then click first row to open drawer
-    const firstRow = await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
+    // Wait for grid to load, then click first row to open drawer.
+    // Use selector '[role="gridcell"]' to target the AG Grid cell element directly,
+    // avoiding ambiguous matches and ensuring the click triggers onRowClicked.
+    const firstRow = await canvas.findByText(
+      'Apex Medical Distributors',
+      { selector: '[role="gridcell"]' },
+      { timeout: 10000 },
+    );
     await userEvent.click(firstRow);
 
     // 1. Verify the drawer is open (has role="dialog")
@@ -51,8 +57,13 @@ export const Default: Story = {
 
     const drawerScope = within(drawer);
 
-    // 2. Verify the drawer header shows the affiliate name and Building2 icon
-    expect(await drawerScope.findByText('Apex Medical Distributors', {}, { timeout: 10000 })).toBeVisible();
+    // 2. Verify the drawer header shows the affiliate name and Building2 icon.
+    // Use findByRole('heading') to target the <h2> specifically — the drawer also
+    // renders the affiliate name in a ReadOnlyField <p>, so findByText would match
+    // multiple elements and throw "Found multiple elements".
+    expect(
+      await drawerScope.findByRole('heading', { name: 'Apex Medical Distributors' }, { timeout: 10000 }),
+    ).toBeVisible();
     const header = drawer.querySelector('[data-slot="drawer-header"]');
     expect(header).toBeTruthy();
     expect(header!.querySelector('svg')).toBeTruthy();
@@ -107,8 +118,13 @@ export const MinimalData: Story = {
     const canvas = within(canvasElement);
 
     // ColdChain Direct sorts between CleanRoom Solutions and Delta Pharma Group
-    // on page 1 (first 10 of 29 sorted A-Z)
-    const row = await canvas.findByText('ColdChain Direct', {}, { timeout: 10000 });
+    // on page 1 (first 10 of 29 sorted A-Z).
+    // Use selector '[role="gridcell"]' to target the AG Grid cell element directly.
+    const row = await canvas.findByText(
+      'ColdChain Direct',
+      { selector: '[role="gridcell"]' },
+      { timeout: 10000 },
+    );
     await userEvent.click(row);
 
     const drawer = await canvas.findByRole('dialog', {}, { timeout: 10000 });
@@ -153,8 +169,13 @@ export const CloseDrawer: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    // 1. Open drawer by clicking first row
-    const firstRow = await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
+    // 1. Open drawer by clicking first row.
+    // Use selector '[role="gridcell"]' to target the AG Grid cell element directly.
+    const firstRow = await canvas.findByText(
+      'Apex Medical Distributors',
+      { selector: '[role="gridcell"]' },
+      { timeout: 10000 },
+    );
     await userEvent.click(firstRow);
 
     // Verify drawer is open
@@ -183,8 +204,13 @@ export const SectionCollapse: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    // Open drawer for fully-populated affiliate
-    const firstRow = await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
+    // Open drawer for fully-populated affiliate.
+    // Use selector '[role="gridcell"]' to target the AG Grid cell element directly.
+    const firstRow = await canvas.findByText(
+      'Apex Medical Distributors',
+      { selector: '[role="gridcell"]' },
+      { timeout: 10000 },
+    );
     await userEvent.click(firstRow);
 
     const drawer = await canvas.findByRole('dialog', {}, { timeout: 10000 });
@@ -199,7 +225,8 @@ export const SectionCollapse: Story = {
     // --- Identity section: collapse then expand ---
     await userEvent.click(drawerScope.getByText('Identity'));
     await waitFor(() => {
-      expect(drawerScope.queryByText(/^[0-9a-f]{8}-/i)).not.toBeVisible();
+      // Radix Collapsible removes children from DOM when closed (children: isOpen && children)
+      expect(drawerScope.queryByText(/^[0-9a-f]{8}-/i)).not.toBeInTheDocument();
     }, { timeout: 10000 });
 
     await userEvent.click(drawerScope.getByText('Identity'));
@@ -210,7 +237,7 @@ export const SectionCollapse: Story = {
     // --- Contact section: collapse then expand ---
     await userEvent.click(drawerScope.getByText('Contact'));
     await waitFor(() => {
-      expect(drawerScope.queryByText('msantos@apexmedical.com')).not.toBeVisible();
+      expect(drawerScope.queryByText('msantos@apexmedical.com')).not.toBeInTheDocument();
     }, { timeout: 10000 });
 
     await userEvent.click(drawerScope.getByText('Contact'));
@@ -221,7 +248,7 @@ export const SectionCollapse: Story = {
     // --- Address section: collapse then expand ---
     await userEvent.click(drawerScope.getByText('Address'));
     await waitFor(() => {
-      expect(drawerScope.queryByText('10 Summit Rd')).not.toBeVisible();
+      expect(drawerScope.queryByText('10 Summit Rd')).not.toBeInTheDocument();
     }, { timeout: 10000 });
 
     await userEvent.click(drawerScope.getByText('Address'));
@@ -232,7 +259,7 @@ export const SectionCollapse: Story = {
     // --- Legal section: collapse then expand ---
     await userEvent.click(drawerScope.getByText('Legal'));
     await waitFor(() => {
-      expect(drawerScope.queryByText('11-2233445')).not.toBeVisible();
+      expect(drawerScope.queryByText('11-2233445')).not.toBeInTheDocument();
     }, { timeout: 10000 });
 
     await userEvent.click(drawerScope.getByText('Legal'));

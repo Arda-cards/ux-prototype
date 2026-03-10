@@ -58,7 +58,8 @@ export const SingleDelete: Story = {
     await userEvent.click(actionsButton);
 
     // 4. Click "Delete" menu item
-    const deleteItem = await canvas.findByRole('menuitem', { name: /delete/i }, { timeout: 10000 });
+    // Radix DropdownMenuContent portals to document.body — use screen (not canvas)
+    const deleteItem = await screen.findByRole('menuitem', { name: /delete/i }, { timeout: 10000 });
     await userEvent.click(deleteItem);
 
     // 5. Verify confirm dialog opens
@@ -106,7 +107,8 @@ export const BulkDelete: Story = {
     // 3. Open Actions dropdown, click "Delete"
     const actionsButton = canvas.getByRole('button', { name: 'Actions' });
     await userEvent.click(actionsButton);
-    const deleteItem = await canvas.findByRole('menuitem', { name: /delete/i }, { timeout: 10000 });
+    // Radix DropdownMenuContent portals to document.body — use screen (not canvas)
+    const deleteItem = await screen.findByRole('menuitem', { name: /delete/i }, { timeout: 10000 });
     await userEvent.click(deleteItem);
 
     // 4. Verify confirm dialog with bulk message
@@ -146,7 +148,8 @@ export const CancelDelete: Story = {
     // 3. Open Actions → Delete
     const actionsButton = canvas.getByRole('button', { name: 'Actions' });
     await userEvent.click(actionsButton);
-    const deleteItem = await canvas.findByRole('menuitem', { name: /delete/i }, { timeout: 10000 });
+    // Radix DropdownMenuContent portals to document.body — use screen (not canvas)
+    const deleteItem = await screen.findByRole('menuitem', { name: /delete/i }, { timeout: 10000 });
     await userEvent.click(deleteItem);
 
     // 4. Verify confirm dialog opens

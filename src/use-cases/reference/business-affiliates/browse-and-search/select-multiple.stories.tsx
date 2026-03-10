@@ -8,7 +8,7 @@
  * 2 variants: Default, SelectAll.
  */
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, userEvent, waitFor, within } from 'storybook/test';
+import { expect, userEvent, waitFor, within, screen } from 'storybook/test';
 import { SelectMultiplePage } from './select-multiple-page';
 import { businessAffiliateHandlers } from '../_shared/msw-handlers';
 
@@ -70,7 +70,8 @@ export const Default: Story = {
     await userEvent.click(actionsButton);
 
     // 9. Verify "Delete" action is available
-    const deleteItem = await canvas.findByRole('menuitem', { name: /delete/i }, { timeout: 10000 });
+    // Radix DropdownMenuContent portals to document.body — use screen (not canvas) to find it
+    const deleteItem = await screen.findByRole('menuitem', { name: /delete/i }, { timeout: 10000 });
     expect(deleteItem).toBeVisible();
   },
 };

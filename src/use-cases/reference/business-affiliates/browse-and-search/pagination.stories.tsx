@@ -67,7 +67,9 @@ export const Default: Story = {
     }, { timeout: 10000 });
 
     // 3. Verify pagination shows "Page 1"
-    expect(canvas.getByText('Page 1')).toBeVisible();
+    await waitFor(() => {
+      expect(canvas.getByText('Page 1')).toBeVisible();
+    }, { timeout: 10000 });
 
     // 4. Verify "Previous" is disabled on first page
     const prevButton = canvas.getByRole('button', { name: 'Previous page' });
@@ -94,7 +96,9 @@ export const Default: Story = {
     }, { timeout: 10000 });
 
     // 8. Verify pagination shows "Page 2"
-    expect(canvas.getByText('Page 2')).toBeVisible();
+    await waitFor(() => {
+      expect(canvas.getByText('Page 2')).toBeVisible();
+    }, { timeout: 10000 });
 
     // 9. Click "Next page" again
     const nextButton2 = canvas.getByRole('button', { name: 'Next page' });
