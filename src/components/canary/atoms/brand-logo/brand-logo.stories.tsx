@@ -43,14 +43,14 @@ export const Icon: Story = {
 export const AllVariants: Story = {
   render: () => (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-6 bg-sidebar-bg p-6 rounded-lg">
+      <div className="flex items-center gap-6 bg-sidebar p-6 rounded-lg">
         <div className="flex flex-col items-start gap-3">
-          <span className="text-xs text-sidebar-text-muted uppercase tracking-wider">dark</span>
+          <span className="text-xs text-sidebar-foreground/70 uppercase tracking-wider">dark</span>
           <ArdaBrandLogo variant="dark" />
           <ArdaBrandIcon variant="dark" />
         </div>
         <div className="flex flex-col items-start gap-3">
-          <span className="text-xs text-sidebar-text-muted uppercase tracking-wider">
+          <span className="text-xs text-sidebar-foreground/70 uppercase tracking-wider">
             mono-dark
           </span>
           <ArdaBrandLogo variant="mono-dark" />
@@ -76,13 +76,13 @@ export const AllVariants: Story = {
 /** Side by side — expanded vs collapsed on dark background. */
 export const SidebarUsage: Story = {
   render: () => (
-    <div className="bg-sidebar-bg p-6 rounded-lg flex items-center gap-8">
+    <div className="bg-sidebar p-6 rounded-lg flex items-center gap-8">
       <div className="flex flex-col items-start gap-2">
-        <span className="text-xs text-sidebar-text-muted">Expanded</span>
+        <span className="text-xs text-sidebar-foreground/70">Expanded</span>
         <ArdaBrandLogo variant="dark" />
       </div>
       <div className="flex flex-col items-start gap-2">
-        <span className="text-xs text-sidebar-text-muted">Collapsed</span>
+        <span className="text-xs text-sidebar-foreground/70">Collapsed</span>
         <ArdaBrandIcon variant="dark" />
       </div>
     </div>

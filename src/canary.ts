@@ -1,20 +1,38 @@
 // Canary exports — experimental components not yet promoted to stable.
 // Consumers: import { ... } from '@arda-cards/ui-components/canary';
 
-export { CanaryAtomPlaceholder } from './components/canary/atoms/canary-placeholder/canary-placeholder';
-export type {
-  CanaryAtomPlaceholderProps,
-  CanaryAtomPlaceholderStaticConfig,
-} from './components/canary/atoms/canary-placeholder/canary-placeholder';
+// Atoms
+export { ArdaBadge } from './components/canary/atoms/badge/badge';
+export type { ArdaBadgeProps } from './components/canary/atoms/badge/badge';
 
-export { CanaryMoleculePlaceholder } from './components/canary/molecules/canary-placeholder/canary-placeholder';
-export type {
-  CanaryMoleculePlaceholderProps,
-  CanaryMoleculePlaceholderStaticConfig,
-} from './components/canary/molecules/canary-placeholder/canary-placeholder';
+export { ArdaBrandLogo, ArdaBrandIcon } from './components/canary/atoms/brand-logo/brand-logo';
 
-export { CanaryOrganismPlaceholder } from './components/canary/organisms/canary-placeholder/canary-placeholder';
+export { ArdaIconLabel } from './components/canary/atoms/icon-label/icon-label';
+export type { ArdaIconLabelProps } from './components/canary/atoms/icon-label/icon-label';
+
+export { ArdaDetailField } from './components/canary/atoms/detail-field/detail-field';
+export type { ArdaDetailFieldProps } from './components/canary/atoms/detail-field/detail-field';
+
+// Organisms — Sidebar
+export { ArdaSidebar } from './components/canary/organisms/sidebar/sidebar';
+export type { ArdaSidebarProps } from './components/canary/organisms/sidebar/sidebar';
+
+export { ArdaSidebarHeader } from './components/canary/organisms/sidebar/sidebar-header';
 export type {
-  CanaryOrganismPlaceholderProps,
-  CanaryOrganismPlaceholderStaticConfig,
-} from './components/canary/organisms/canary-placeholder/canary-placeholder';
+  ArdaSidebarHeaderProps,
+  TeamOption,
+} from './components/canary/organisms/sidebar/sidebar-header';
+
+export { ArdaSidebarNav } from './components/canary/organisms/sidebar/sidebar-nav';
+
+export { ArdaSidebarNavItem } from './components/canary/organisms/sidebar/sidebar-nav-item';
+export type { ArdaSidebarNavItemProps } from './components/canary/organisms/sidebar/sidebar-nav-item';
+
+export { ArdaSidebarNavGroup } from './components/canary/organisms/sidebar/sidebar-nav-group';
+export type { ArdaSidebarNavGroupProps } from './components/canary/organisms/sidebar/sidebar-nav-group';
+
+export { ArdaSidebarUserMenu } from './components/canary/organisms/sidebar/sidebar-user-menu';
+export type {
+  ArdaSidebarUserMenuProps,
+  UserMenuAction,
+} from './components/canary/organisms/sidebar/sidebar-user-menu';

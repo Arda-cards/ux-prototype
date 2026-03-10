@@ -1,12 +1,6 @@
 'use client';
 
-import { createContext, useContext } from 'react';
-
-export interface SidebarContextValue {
-  collapsed: boolean;
-}
-
-const SidebarContext = createContext<SidebarContextValue>({ collapsed: false });
-
-export const SidebarProvider = SidebarContext.Provider;
-export const useSidebar = () => useContext(SidebarContext);
+// Re-export shadcn sidebar context hook as the canonical way to access sidebar state.
+// This replaces our custom SidebarContext — shadcn handles state, mobile detection,
+// keyboard shortcuts, and cookie persistence.
+export { useSidebar } from '@/components/ui/sidebar';

@@ -57,20 +57,15 @@
   --status-default-text: #0a0a0a;
   --status-default-border: #e5e5e5;
 
-  /* Sidebar Chrome */
-  --sidebar-bg: #0a0a0a;
-  --sidebar-tooltip-bg: #1a1a1a;
-  --sidebar-text: #a3a3a3;
-  --sidebar-text-active: #ffffff;
-  --sidebar-text-muted: #737373;
+  /* Sidebar Chrome — shadcn standard sidebar tokens */
+  --sidebar: #0a0a0a;
+  --sidebar-foreground: #d4d4d4;
+  --sidebar-primary: #fc5a29;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1a1a1a;
+  --sidebar-accent-foreground: #ffffff;
   --sidebar-border: #262626;
-  --sidebar-hover: #1a1a1a;
-  --sidebar-active-bg: #1a1a1a;
-  --sidebar-active-indicator: #fc5a29;
-  --sidebar-gradient-start: rgba(252, 90, 41, 0.08);
-  --sidebar-gradient-end: rgba(255, 255, 255, 0.04);
-  --sidebar-width-expanded: 240px;
-  --sidebar-width-collapsed: 56px;
+  --sidebar-ring: #fc5a29;
 
   /* Table Chrome */
   --table-header-bg: #f9fafb;
@@ -165,16 +160,15 @@
   --color-status-default-text: var(--status-default-text);
   --color-status-default-border: var(--status-default-border);
 
-  /* Sidebar tokens */
-  --color-sidebar-bg: var(--sidebar-bg);
-  --color-sidebar-tooltip-bg: var(--sidebar-tooltip-bg);
-  --color-sidebar-text: var(--sidebar-text);
-  --color-sidebar-text-active: var(--sidebar-text-active);
-  --color-sidebar-text-muted: var(--sidebar-text-muted);
+  /* Sidebar tokens — shadcn standard names for Tailwind v4 */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-hover: var(--sidebar-hover);
-  --color-sidebar-active-bg: var(--sidebar-active-bg);
-  --color-sidebar-active-indicator: var(--sidebar-active-indicator);
+  --color-sidebar-ring: var(--sidebar-ring);
 
   /* Table tokens */
   --color-table-header-bg: var(--table-header-bg);

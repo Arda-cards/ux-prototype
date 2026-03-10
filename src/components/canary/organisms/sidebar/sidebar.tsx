@@ -1,50 +1,58 @@
 'use client';
 
-import { useMemo } from 'react';
-
 import { cn } from '@/lib/utils';
-import { SidebarProvider, type SidebarContextValue } from './sidebar-context';
+import { SidebarProvider, Sidebar, SidebarRail } from '@/components/ui/sidebar';
 
 // --- Interfaces ---
 
 export interface ArdaSidebarProps {
-  /** Whether the sidebar is in collapsed (icon-only) mode. */
-  collapsed?: boolean;
-  /** Sidebar content — compose with ArdaSidebarHeader, ArdaSidebarNav, ArdaSidebarUserMenu, etc. */
+  /** Default open state (uncontrolled). */
+  defaultOpen?: boolean;
+  /** Controlled open state. */
+  open?: boolean;
+  /** Called when sidebar open state changes. */
+  onOpenChange?: (open: boolean) => void;
+  /** Sidebar content — compose with ArdaSidebarHeader, nav items, ArdaSidebarUserMenu, etc. */
   children: React.ReactNode;
-  /** Additional CSS classes applied to the aside element. */
+  /** Content to render outside the sidebar but inside the provider (e.g. SidebarInset). */
+  page?: React.ReactNode;
+  /** Additional CSS classes applied to the sidebar. */
   className?: string;
 }
 
 // --- Component ---
 
-export function ArdaSidebar({ collapsed = false, children, className }: ArdaSidebarProps) {
-  const ctx = useMemo<SidebarContextValue>(() => ({ collapsed }), [collapsed]);
+/**
+ * ArdaSidebar — Arda-branded wrapper around shadcn Sidebar.
+ *
+ * Provides: mobile Sheet, Cmd+B keyboard shortcut, cookie persistence,
+ * icon-only collapsed mode with tooltips — all from shadcn primitives.
+ *
+ * Uses `collapsible="icon"` to collapse to icon-only mode (not offcanvas).
+ */
+export function ArdaSidebar({
+  defaultOpen = true,
+  open,
+  onOpenChange,
+  children,
+  page,
+  className,
+}: ArdaSidebarProps) {
+  // Only spread defined props — shadcn's exactOptionalPropertyTypes
+  // rejects `undefined` for optional props.
+  const providerProps = {
+    defaultOpen,
+    ...(open !== undefined && { open }),
+    ...(onOpenChange !== undefined && { onOpenChange }),
+  };
 
   return (
-    <SidebarProvider value={ctx}>
-      <aside
-        aria-label="Main navigation"
-        data-collapsed={collapsed}
-        className={cn(
-          'fixed inset-y-0 left-0 bg-sidebar-bg text-white flex flex-col z-50 overflow-hidden',
-          'transition-all duration-200 motion-reduce:transition-none',
-          '[contain:layout_style]',
-          collapsed ? 'w-[var(--sidebar-width-collapsed)]' : 'w-[var(--sidebar-width-expanded)]',
-          className,
-        )}
-      >
-        {/* Background gradient — the subtle warm glow */}
-        <div
-          className="absolute top-0 right-[-300px] w-[400px] h-full pointer-events-none skew-x-[-20deg] origin-top-right transition-colors"
-          style={{
-            background:
-              'linear-gradient(180deg, var(--sidebar-gradient-end) 0%, var(--sidebar-gradient-start) 100%)',
-          }}
-        />
-
+    <SidebarProvider {...providerProps}>
+      <Sidebar collapsible="icon" className={cn('border-sidebar-border', className)}>
         {children}
-      </aside>
+        <SidebarRail />
+      </Sidebar>
+      {page}
     </SidebarProvider>
   );
 }

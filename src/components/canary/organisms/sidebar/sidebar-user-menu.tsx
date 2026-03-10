@@ -1,0 +1,129 @@
+'use client';
+
+import { type LucideIcon, ChevronsUpDown } from 'lucide-react';
+
+import { cn } from '@/lib/utils';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  SidebarFooter,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  useSidebar,
+} from '@/components/ui/sidebar';
+
+// --- Interfaces ---
+
+/** A single action in the user menu flyout. */
+export interface UserMenuAction {
+  /** Unique key for React list rendering. */
+  key: string;
+  /** Display label. */
+  label: string;
+  /** Lucide icon shown before the label. */
+  icon: LucideIcon;
+  /** Called when this action is selected. */
+  onClick: () => void;
+  /** When true, renders with destructive styling (red text). */
+  destructive?: boolean;
+}
+
+/** Props for ArdaSidebarUserMenu. */
+export interface ArdaSidebarUserMenuProps {
+  /* --- Model / Data Binding --- */
+  /** User information. */
+  user: {
+    name: string;
+    email: string;
+    avatar?: string;
+    /** Role or subtitle shown below the name in the dropdown. */
+    role?: string;
+  };
+  /** Menu actions rendered in the flyout dropdown. Logout should be last and marked destructive. */
+  actions: UserMenuAction[];
+
+  /* --- View / Layout / Controller --- */
+  /** Additional CSS classes. */
+  className?: string;
+}
+
+// --- Component ---
+
+export function ArdaSidebarUserMenu({ user, actions, className }: ArdaSidebarUserMenuProps) {
+  const { isMobile } = useSidebar();
+
+  const initials = user.name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+
+  // Split actions: non-destructive first, then destructive (separated)
+  const standardActions = actions.filter((a) => !a.destructive);
+  const destructiveActions = actions.filter((a) => a.destructive);
+
+  return (
+    <SidebarFooter className={cn('p-2', className)}>
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <SidebarMenuButton>
+                <Avatar className="size-4 shrink-0 rounded-sm bg-sidebar-accent">
+                  {user.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
+                  <AvatarFallback className="rounded-sm bg-sidebar-accent text-sidebar-accent-foreground text-3xs font-bold">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="truncate font-medium text-sidebar-accent-foreground">
+                  {user.name}
+                </span>
+                <ChevronsUpDown className="ml-auto size-4 shrink-0 text-sidebar-foreground/70" />
+              </SidebarMenuButton>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent
+              className="w-[--radix-dropdown-menu-trigger-width] min-w-48 rounded-lg"
+              side={isMobile ? 'bottom' : 'right'}
+              align="end"
+              sideOffset={4}
+            >
+              <div className="px-2 py-1.5">
+                <p className="text-sm font-semibold">{user.name}</p>
+                {user.role && <p className="text-xs text-muted-foreground">{user.role}</p>}
+                <p className="text-xs text-muted-foreground">{user.email}</p>
+              </div>
+              <DropdownMenuSeparator />
+
+              {standardActions.map((action) => (
+                <DropdownMenuItem key={action.key} onClick={action.onClick}>
+                  <action.icon />
+                  {action.label}
+                </DropdownMenuItem>
+              ))}
+
+              {destructiveActions.length > 0 && standardActions.length > 0 && (
+                <DropdownMenuSeparator />
+              )}
+
+              {destructiveActions.map((action) => (
+                <DropdownMenuItem key={action.key} onClick={action.onClick} variant="destructive">
+                  <action.icon />
+                  {action.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    </SidebarFooter>
+  );
+}

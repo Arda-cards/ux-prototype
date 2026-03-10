@@ -1,0 +1,29 @@
+{/* icon-label.mdx */}
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Components/Canary/Atoms/Icon Label" />
+
+# ArdaIconLabel
+
+Icon + text label pair. Context-free &#8212; renders a Lucide icon at 16px alongside truncated text.
+
+**Atom** &#8212; Canary
+
+---
+
+## Usage
+
+```tsx
+import { Package } from 'lucide-react';
+import { ArdaIconLabel } from './icon-label';
+
+<ArdaIconLabel icon={Package} label="Items" />
+```
+
+## Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `icon` | `LucideIcon` | Lucide icon component. Required. |
+| `label` | `string` | Text label. Required. |
+| `className` | `string` | Additional CSS classes. |

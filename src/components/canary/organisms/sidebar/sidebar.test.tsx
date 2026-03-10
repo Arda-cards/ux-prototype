@@ -6,36 +6,7 @@ import { ArdaSidebar } from './sidebar';
 import { ArdaSidebarHeader } from './sidebar-header';
 
 describe('ArdaSidebar', () => {
-  it('renders as a complementary landmark (aside)', () => {
-    render(
-      <ArdaSidebar>
-        <div>Content</div>
-      </ArdaSidebar>,
-    );
-    expect(screen.getByRole('complementary')).toBeInTheDocument();
-  });
-
-  it('applies expanded width by default', () => {
-    render(
-      <ArdaSidebar>
-        <div>Content</div>
-      </ArdaSidebar>,
-    );
-    const aside = screen.getByRole('complementary');
-    expect(aside.className).toContain('w-[var(--sidebar-width-expanded)]');
-  });
-
-  it('applies collapsed width when collapsed', () => {
-    render(
-      <ArdaSidebar collapsed>
-        <div>Content</div>
-      </ArdaSidebar>,
-    );
-    const aside = screen.getByRole('complementary');
-    expect(aside.className).toContain('w-[var(--sidebar-width-collapsed)]');
-  });
-
-  it('renders children', () => {
+  it('renders children inside the sidebar provider', () => {
     render(
       <ArdaSidebar>
         <div data-testid="child">Hello</div>
@@ -44,80 +15,56 @@ describe('ArdaSidebar', () => {
     expect(screen.getByTestId('child')).toBeInTheDocument();
   });
 
-  it('applies className to the aside element', () => {
-    render(
+  it('applies className to the sidebar', () => {
+    const { container } = render(
       <ArdaSidebar className="test-sidebar">
         <div>Content</div>
       </ArdaSidebar>,
     );
-    expect(screen.getByRole('complementary')).toHaveClass('test-sidebar');
+    const sidebar = container.querySelector('[data-slot="sidebar-container"]');
+    expect(sidebar?.className).toContain('test-sidebar');
   });
 
-  it('sets data-collapsed attribute', () => {
-    const { rerender } = render(
+  it('renders expanded by default', () => {
+    const { container } = render(
       <ArdaSidebar>
         <div>Content</div>
       </ArdaSidebar>,
     );
-    const aside = screen.getByRole('complementary');
-    expect(aside).toHaveAttribute('data-collapsed', 'false');
-
-    rerender(
-      <ArdaSidebar collapsed>
-        <div>Content</div>
-      </ArdaSidebar>,
-    );
-    expect(aside).toHaveAttribute('data-collapsed', 'true');
+    const wrapper = container.querySelector('[data-state]');
+    expect(wrapper).toHaveAttribute('data-state', 'expanded');
   });
 
-  it('has contain layout style for paint isolation', () => {
-    render(
-      <ArdaSidebar>
+  it('renders collapsed when defaultOpen is false', () => {
+    const { container } = render(
+      <ArdaSidebar defaultOpen={false}>
         <div>Content</div>
       </ArdaSidebar>,
     );
-    const aside = screen.getByRole('complementary');
-    expect(aside.className).toContain('[contain:layout_style]');
-  });
-
-  it('has motion-reduce class for prefers-reduced-motion', () => {
-    render(
-      <ArdaSidebar>
-        <div>Content</div>
-      </ArdaSidebar>,
-    );
-    const aside = screen.getByRole('complementary');
-    expect(aside.className).toContain('motion-reduce:transition-none');
-  });
-
-  it('includes the background gradient element', () => {
-    render(
-      <ArdaSidebar>
-        <div>Content</div>
-      </ArdaSidebar>,
-    );
-    const aside = screen.getByRole('complementary');
-    const gradient = aside.querySelector('.pointer-events-none');
-    expect(gradient).toBeInTheDocument();
+    const wrapper = container.querySelector('[data-state]');
+    expect(wrapper).toHaveAttribute('data-state', 'collapsed');
   });
 });
 
 describe('ArdaSidebarHeader', () => {
-  it('renders children in a bordered header region', () => {
+  it('renders team name alongside logo', () => {
     render(
-      <ArdaSidebarHeader>
-        <span>Logo</span>
-      </ArdaSidebarHeader>,
+      <ArdaSidebar>
+        <ArdaSidebarHeader teamName="Arda Cards" />
+      </ArdaSidebar>,
     );
-    expect(screen.getByText('Logo')).toBeInTheDocument();
+    expect(screen.getByText('Arda Cards')).toBeInTheDocument();
+    expect(screen.getByAltText('Arda')).toBeInTheDocument();
   });
 
-  it('applies className', () => {
-    const { container } = render(
-      <ArdaSidebarHeader className="test-header">
-        <span>Logo</span>
-      </ArdaSidebarHeader>,
+  it('renders custom children instead of default header', () => {
+    render(
+      <ArdaSidebar>
+        <ArdaSidebarHeader>
+          <span>Custom</span>
+        </ArdaSidebarHeader>
+      </ArdaSidebar>,
     );
-    expect(container.firstChild).toHaveClass('test-header');
+    expect(screen.getByText('Custom')).toBeInTheDocument();
   });
 });

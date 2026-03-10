@@ -1,0 +1,101 @@
+{/* sidebar.mdx */}
+import { Meta, Canvas, ArgTypes } from '@storybook/addon-docs/blocks';
+import * as SidebarStories from './sidebar.stories';
+
+<Meta of={SidebarStories} />
+
+# ArdaSidebar
+
+Sidebar navigation built on shadcn Sidebar primitives. Dark theme, icon-only collapsed mode, mobile Sheet drawer, Cmd+B toggle.
+
+**Organism** &#8212; Canary
+
+---
+
+## Sub-components
+
+- **ArdaSidebarHeader** &#8212; Brand logo + team name. Pass `teams` for a team switcher dropdown.
+- **ArdaSidebarNav** &#8212; Scrollable nav area.
+- **ArdaSidebarNavItem** &#8212; Nav button with icon, label, badge (count or dot), active state. Count badges collapse to dots in icon mode. Navigation is handled by the consumer via `onClick`.
+- **ArdaSidebarNavGroup** &#8212; Collapsible section. Auto-expands when a child is active.
+- **ArdaSidebarUserMenu** &#8212; Footer dropdown with avatar, name, role, and configurable actions.
+
+---
+
+## Integration with Next.js
+
+Nav items are routing-agnostic. The consumer controls navigation via `onClick` and active state via a boolean. Typical Next.js App Router usage:
+
+```tsx
+import { useRouter, usePathname } from 'next/navigation';
+import { Package, ShoppingCart } from 'lucide-react';
+
+function AppSidebar() {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  return (
+    <ArdaSidebar defaultOpen>
+      <ArdaSidebarHeader teamName="Arda Cards" />
+      <ArdaSidebarNav>
+        <ArdaSidebarNavItem
+          icon={Package}
+          label="Items"
+          active={pathname === '/items'}
+          onClick={() => router.push('/items')}
+        />
+        <ArdaSidebarNavItem
+          icon={ShoppingCart}
+          label="Order Queue"
+          active={pathname === '/order-queue'}
+          onClick={() => router.push('/order-queue')}
+          badge={readyToOrderCount > 0 ? readyToOrderCount : undefined}
+        />
+      </ArdaSidebarNav>
+      <ArdaSidebarUserMenu
+        user={{ name: 'Jane Doe', email: 'jane@arda.cards', role: 'Account Admin' }}
+        actions={[
+          { key: 'settings', label: 'Settings', icon: Settings, onClick: () => router.push('/settings') },
+          { key: 'logout', label: 'Log out', icon: LogOut, onClick: handleSignOut, destructive: true },
+        ]}
+      />
+    </ArdaSidebar>
+  );
+}
+```
+
+---
+
+## Usage
+
+### Expanded
+
+<Canvas of={SidebarStories.Expanded} />
+
+### Collapsed
+
+<Canvas of={SidebarStories.Collapsed} />
+
+### With Badges
+
+<Canvas of={SidebarStories.WithBadges} />
+
+### With Nav Groups
+
+<Canvas of={SidebarStories.WithGroups} />
+
+### Composition
+
+Full layout with `SidebarInset`. Cmd+B to toggle.
+
+<Canvas of={SidebarStories.Composition} />
+
+### Playground
+
+<Canvas of={SidebarStories.Playground} />
+
+---
+
+## Props
+
+<ArgTypes of={SidebarStories} />

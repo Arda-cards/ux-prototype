@@ -1,0 +1,29 @@
+{/* brand-logo.mdx */}
+import { Meta, Canvas, ArgTypes } from '@storybook/addon-docs/blocks';
+import * as BrandLogoStories from './brand-logo.stories';
+
+<Meta of={BrandLogoStories} />
+
+# ArdaBrandLogo / ArdaBrandIcon
+
+Brand logo in 4 variants: dark, light, mono-dark, mono-light. `ArdaBrandLogo` is the full wordmark (55&#215;30), `ArdaBrandIcon` is the compact square (30&#215;30).
+
+**Atom** &#8212; Canary
+
+---
+
+## Usage
+
+<Canvas of={BrandLogoStories.Wordmark} />
+
+<Canvas of={BrandLogoStories.Icon} />
+
+<Canvas of={BrandLogoStories.AllVariants} />
+
+<Canvas of={BrandLogoStories.SidebarUsage} />
+
+---
+
+## Props
+
+<ArgTypes of={BrandLogoStories} />

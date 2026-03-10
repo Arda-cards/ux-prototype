@@ -338,7 +338,7 @@ interface ArdaSidebarUserMenuProps {
 - [x] `<nav>` landmark with `aria-label="Primary"`
 - [x] `<ul>/<li>` structure in nav (screen readers announce "X of Y items")
 - [x] Nav group uses disclosure pattern (not treeview)
-- [ ] Nav group auto-expands when child is active
+- [x] Nav group auto-expands when child is active
 - [x] User menu logout accessible in collapsed mode
 - [x] Each molecule composes only atoms from Phase 1
 - [x] Stories show molecules in both collapsed and expanded states
@@ -418,12 +418,12 @@ type ArdaSidebarProps = ArdaSidebarStaticConfig & ArdaSidebarRuntimeConfig;
 
 **Acceptance Criteria — Phase 3:**
 - [x] Compound component API (children, not navItems array)
-- [ ] `data-collapsed` attribute drives styling (not class toggling)
-- [ ] `contain: layout style` on sidebar root
-- [ ] `prefers-reduced-motion` respected
+- [x] `data-collapsed` attribute drives styling (not class toggling)
+- [x] `contain: layout style` on sidebar root
+- [x] `prefers-reduced-motion` respected — `motion-reduce:transition-none` on all animated elements
 - [x] Background gradient renders correctly
 - [x] All existing sidebar tokens from globals.css used correctly
-- [ ] Keyboard shortcut support (Cmd+B to toggle, document in story)
+- [x] Keyboard shortcut support (Cmd+B to toggle, document in story)
 - [x] Pass `focus-visible` check — all interactive elements have visible focus rings
 
 ---
@@ -455,7 +455,7 @@ Capture the atoms-up build process as a workflow doc, but write it at the end ba
 After implementation, run the design review skills:
 
 - [ ] `/design:critique` — spacing, typography, contrast, alignment, visual hierarchy
-- [ ] `/design:audit` — accessibility, responsiveness, design system adherence
+- [x] `/design:audit` — accessibility, responsiveness, design system adherence (ran, fixed high-priority items)
 
 Fix any issues found before considering the sidebar complete.
 

@@ -5,10 +5,20 @@ import { describe, it, expect } from 'vitest';
 import { Boxes } from 'lucide-react';
 
 import { ArdaSidebarNavGroup } from './sidebar-nav-group';
+import { ArdaSidebar } from './sidebar';
+
+function renderInSidebar(ui: React.ReactElement) {
+  return render(<ArdaSidebar defaultOpen>{ui}</ArdaSidebar>);
+}
+
+/** Mock component with active prop for auto-expand testing. */
+function MockActiveChild({ active: _active = true }: { active?: boolean }) {
+  return <li data-testid="active-child">Active item</li>;
+}
 
 describe('ArdaSidebarNavGroup', () => {
   it('renders the group label', () => {
-    render(
+    renderInSidebar(
       <ArdaSidebarNavGroup label="Inventory" icon={Boxes}>
         <li>Item</li>
       </ArdaSidebarNavGroup>,
@@ -17,7 +27,7 @@ describe('ArdaSidebarNavGroup', () => {
   });
 
   it('is collapsed by default (children hidden)', () => {
-    render(
+    renderInSidebar(
       <ArdaSidebarNavGroup label="Inventory">
         <li>Hidden child</li>
       </ArdaSidebarNavGroup>,
@@ -26,7 +36,7 @@ describe('ArdaSidebarNavGroup', () => {
   });
 
   it('expands when defaultExpanded is true', () => {
-    render(
+    renderInSidebar(
       <ArdaSidebarNavGroup label="Inventory" defaultExpanded>
         <li>Visible child</li>
       </ArdaSidebarNavGroup>,
@@ -36,7 +46,7 @@ describe('ArdaSidebarNavGroup', () => {
 
   it('toggles open/closed on click', async () => {
     const user = userEvent.setup();
-    render(
+    renderInSidebar(
       <ArdaSidebarNavGroup label="Inventory">
         <li>Child</li>
       </ArdaSidebarNavGroup>,
@@ -48,18 +58,18 @@ describe('ArdaSidebarNavGroup', () => {
     expect(screen.queryByText('Child')).not.toBeInTheDocument();
   });
 
-  it('renders only children when collapsed (sidebar collapsed mode)', () => {
-    render(
-      <ArdaSidebarNavGroup label="Inventory" collapsed>
-        <li>Direct child</li>
+  it('auto-expands when a child has active=true', () => {
+    renderInSidebar(
+      <ArdaSidebarNavGroup label="Analytics">
+        <li data-testid="child">Sales</li>
+        <MockActiveChild active />
       </ArdaSidebarNavGroup>,
     );
-    expect(screen.getByText('Direct child')).toBeVisible();
-    expect(screen.queryByText('Inventory')).not.toBeInTheDocument();
+    expect(screen.getByTestId('active-child')).toBeVisible();
   });
 
-  it('applies className to the wrapper li', () => {
-    const { container } = render(
+  it('applies className', () => {
+    const { container } = renderInSidebar(
       <ArdaSidebarNavGroup label="Inventory" className="test-group">
         <li>Item</li>
       </ArdaSidebarNavGroup>,

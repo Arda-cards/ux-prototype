@@ -1,0 +1,29 @@
+{/* badge.mdx */}
+import { Meta, Canvas, ArgTypes } from '@storybook/addon-docs/blocks';
+import * as BadgeStories from './badge.stories';
+
+<Meta of={BadgeStories} />
+
+# ArdaBadge
+
+Thin wrapper around shadcn Badge with Arda base sizing (10px font, semibold). Passes all shadcn Badge variants through unchanged.
+
+**Atom** &#8212; Canary
+
+---
+
+## Usage
+
+<Canvas of={BadgeStories.Default} />
+
+<Canvas of={BadgeStories.Secondary} />
+
+<Canvas of={BadgeStories.Outline} />
+
+<Canvas of={BadgeStories.AllVariants} />
+
+---
+
+## Props
+
+<ArgTypes of={BadgeStories} />
