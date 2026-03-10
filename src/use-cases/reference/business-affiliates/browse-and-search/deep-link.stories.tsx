@@ -12,6 +12,7 @@ import { expect, within, waitFor } from 'storybook/test';
 import { SuppliersPage } from '../_shared/suppliers-page';
 import { businessAffiliateHandlers } from '../_shared/msw-handlers';
 import { mockBusinessAffiliates } from '../_shared/mock-data';
+import { storyStepDelay } from '../_shared/story-step-delay';
 
 // The first affiliate alphabetically is "Apex Medical Distributors"
 const firstAffiliate = mockBusinessAffiliates[0].payload;
@@ -56,6 +57,8 @@ export const Default: Story = {
     // 2. Verify the real drawer is automatically open (has role="dialog")
     const drawer = await canvas.findByRole('dialog', {}, { timeout: 10000 });
     expect(drawer).toBeVisible();
+
+    await storyStepDelay();
 
     // 3. Verify the drawer shows the correct affiliate name in its heading
     const drawerScope = within(drawer);

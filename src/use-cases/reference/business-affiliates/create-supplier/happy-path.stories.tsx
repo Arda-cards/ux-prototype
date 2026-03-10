@@ -13,6 +13,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { within, expect, waitFor, userEvent, screen } from 'storybook/test';
 import { CreatableSuppliersPage } from './creatable-suppliers-page';
 import { businessAffiliateHandlers, resetAffiliateStore } from '../_shared/msw-handlers';
+import { storyStepDelay } from '../_shared/story-step-delay';
 
 // ---------------------------------------------------------------------------
 // Meta
@@ -52,6 +53,7 @@ export const Automated: Story = {
 
     // Wait for grid to load with at least one supplier
     await canvas.findByText('Apex Medical Distributors', {}, { timeout: 5000 });
+    await storyStepDelay();
 
     // Step 1: Click "+ Add Supplier" button in toolbar
     const addButton = canvas.getByRole('button', { name: 'Add Supplier' });
@@ -81,6 +83,7 @@ export const Automated: Story = {
 
     // Step 7: Verify Cancel is present
     expect(drawerScope.getByRole('button', { name: /^cancel$/i })).toBeVisible();
+    await storyStepDelay();
 
     // Step 8: Type "Fastenal Corp." in the Name field
     const nameInput = drawerScope.getByLabelText('Name');
@@ -90,6 +93,7 @@ export const Automated: Story = {
     await waitFor(() => {
       expect(saveButton).toBeEnabled();
     });
+    await storyStepDelay();
 
     // Step 10: Click Contact section header to expand
     await userEvent.click(drawerScope.getByText('Contact'));
@@ -107,6 +111,7 @@ export const Automated: Story = {
     await userEvent.type(lastNameInput, 'Chen');
     await userEvent.type(emailInput, 'sarah.chen@fastenal.com');
     await userEvent.type(phoneInput, '+1-507-454-5374');
+    await storyStepDelay();
 
     // Step 14: Click Address section header to expand
     await userEvent.click(drawerScope.getByText('Address'));
@@ -128,6 +133,7 @@ export const Automated: Story = {
     await userEvent.type(stateInput, 'MN');
     await userEvent.type(postalCodeInput, '55987');
     await userEvent.type(countryInput, 'US');
+    await storyStepDelay();
 
     // Step 17: Click Legal section header to expand
     await userEvent.click(drawerScope.getByText('Legal'));
@@ -144,6 +150,7 @@ export const Automated: Story = {
     // Step 20: Fill notes field
     const notesInput = drawerScope.getByLabelText('Notes');
     await userEvent.type(notesInput, 'Preferred vendor for fasteners and MRO supplies.');
+    await storyStepDelay();
 
     // Step 21: Click Save
     await userEvent.click(saveButton);

@@ -11,6 +11,7 @@ import { expect, within, waitFor } from 'storybook/test';
 import { http, HttpResponse } from 'msw';
 import { SuppliersPage } from '../_shared/suppliers-page';
 import { businessAffiliateHandlers } from '../_shared/msw-handlers';
+import { storyStepDelay } from '../_shared/story-step-delay';
 
 const meta: Meta<typeof SuppliersPage> = {
   title: 'Use Cases/Reference/Business Affiliates/BA-0001 Browse and Search/0001 View Suppliers List',
@@ -42,6 +43,8 @@ export const Default: Story = {
     const firstRow = await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
     expect(firstRow).toBeVisible();
 
+    await storyStepDelay();
+
     // 2. Verify "+ Add Supplier" toolbar button (use exact name to avoid sidebar match)
     const addButton = canvas.getByRole('button', { name: 'Add Supplier' });
     expect(addButton).toBeVisible();
@@ -49,6 +52,8 @@ export const Default: Story = {
     // 3. Verify page header (use heading role to avoid sidebar "Suppliers" text)
     expect(canvas.getByRole('heading', { name: 'Suppliers', level: 1 })).toBeVisible();
     expect(canvas.getByText('Business affiliates with a Vendor role.')).toBeVisible();
+
+    await storyStepDelay();
 
     // 4. Verify search input
     const searchInput = canvas.getByPlaceholderText('Search suppliers...');
@@ -93,6 +98,8 @@ export const EmptyState: Story = {
     // 2. Verify guidance text
     expect(canvas.getByText(/add your first supplier/i)).toBeVisible();
 
+    await storyStepDelay();
+
     // 3. Verify "Add Supplier" buttons exist (toolbar + empty state CTA)
     const addButtons = canvas.getAllByRole('button', { name: /add supplier/i });
     expect(addButtons.length).toBeGreaterThanOrEqual(2);
@@ -127,6 +134,8 @@ export const LoadingState: Story = {
       },
       { timeout: 10000 },
     );
+
+    await storyStepDelay();
 
     // Verify no data rows are visible (still loading)
     expect(canvas.queryByText('Apex Medical Distributors')).not.toBeInTheDocument();

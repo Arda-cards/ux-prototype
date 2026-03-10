@@ -21,6 +21,7 @@ import {
   businessAffiliateHandlers,
   resetAffiliateStore,
 } from '../_shared/msw-handlers';
+import { storyStepDelay } from '../_shared/story-step-delay';
 
 // ---------------------------------------------------------------------------
 // Meta
@@ -58,6 +59,7 @@ export const EmptyNameBlocked: Story = {
 
     // 1. Wait for grid to load (confirms page rendering)
     await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
+    await storyStepDelay();
 
     // 2. Click "+ Add Supplier" to open the create drawer
     const addButton = canvas.getByRole('button', { name: 'Add Supplier' });
@@ -72,6 +74,7 @@ export const EmptyNameBlocked: Story = {
     // 4. Verify Save is disabled (Name is empty on open)
     const saveButton = drawerScope.getByRole('button', { name: /^save$/i });
     expect(saveButton).toBeDisabled();
+    await storyStepDelay();
 
     // 5. Click into the Name field to focus it
     const nameInput = drawerScope.getByLabelText(/^name$/i);
@@ -125,6 +128,7 @@ export const NetworkError: Story = {
 
     // 1. Wait for grid to load
     await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
+    await storyStepDelay();
 
     // 2. Open create drawer
     const addButton = canvas.getByRole('button', { name: 'Add Supplier' });
@@ -133,6 +137,7 @@ export const NetworkError: Story = {
     const drawer = await canvas.findByRole('dialog', {}, { timeout: 10000 });
     expect(drawer).toBeVisible();
     const drawerScope = within(drawer);
+    await storyStepDelay();
 
     // 3. Type a supplier name
     const nameInput = drawerScope.getByLabelText(/^name$/i);
@@ -143,6 +148,7 @@ export const NetworkError: Story = {
     await waitFor(() => {
       expect(saveButton).toBeEnabled();
     }, { timeout: 10000 });
+    await storyStepDelay();
 
     // 5. Click Save (triggers POST → 500 response)
     await userEvent.click(saveButton);
@@ -209,6 +215,7 @@ export const DuplicateNameError: Story = {
 
     // 1. Wait for grid to load
     await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
+    await storyStepDelay();
 
     // 2. Open create drawer
     const addButton = canvas.getByRole('button', { name: 'Add Supplier' });
@@ -217,6 +224,7 @@ export const DuplicateNameError: Story = {
     const drawer = await canvas.findByRole('dialog', {}, { timeout: 10000 });
     expect(drawer).toBeVisible();
     const drawerScope = within(drawer);
+    await storyStepDelay();
 
     // 3. Type a name that intentionally duplicates an existing supplier
     const nameInput = drawerScope.getByLabelText(/^name$/i);
@@ -227,6 +235,7 @@ export const DuplicateNameError: Story = {
     await waitFor(() => {
       expect(saveButton).toBeEnabled();
     }, { timeout: 10000 });
+    await storyStepDelay();
 
     // 5. Click Save (triggers POST → 409 response)
     await userEvent.click(saveButton);

@@ -11,6 +11,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within, screen } from 'storybook/test';
 import { SelectMultiplePage } from './select-multiple-page';
 import { businessAffiliateHandlers } from '../_shared/msw-handlers';
+import { storyStepDelay } from '../_shared/story-step-delay';
 
 const meta: Meta<typeof SelectMultiplePage> = {
   title: 'Use Cases/Reference/Business Affiliates/BA-0001 Browse and Search/0005 Select Multiple',
@@ -42,6 +43,8 @@ export const Default: Story = {
     const actionsButton = canvas.getByRole('button', { name: 'Actions' });
     expect(actionsButton).toBeDisabled();
 
+    await storyStepDelay();
+
     // 3. Click checkbox on row 1
     const checkboxes = canvas.getAllByRole('checkbox');
     // checkboxes[0] = header select-all, checkboxes[1] = row 1, checkboxes[2] = row 2, etc.
@@ -57,6 +60,8 @@ export const Default: Story = {
       expect(actionsButton).toBeEnabled();
     }, { timeout: 10000 });
 
+    await storyStepDelay();
+
     // 6. Click checkbox on row 3
     await userEvent.click(checkboxes[3]);
 
@@ -65,6 +70,8 @@ export const Default: Story = {
       expect(checkboxes[1]).toBeChecked();
       expect(checkboxes[3]).toBeChecked();
     }, { timeout: 10000 });
+
+    await storyStepDelay();
 
     // 8. Open the Actions dropdown
     await userEvent.click(actionsButton);
@@ -86,6 +93,8 @@ export const SelectAll: Story = {
     // 1. Wait for grid to load
     await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
 
+    await storyStepDelay();
+
     // 2. Click the header checkbox (select all)
     const checkboxes = canvas.getAllByRole('checkbox');
     const headerCheckbox = checkboxes[0];
@@ -106,6 +115,8 @@ export const SelectAll: Story = {
       const allCheckboxes = canvas.getAllByRole('checkbox');
       expect(allCheckboxes[0]).toBeChecked();
     }, { timeout: 10000 });
+
+    await storyStepDelay();
 
     // 5. Click the header checkbox again (deselect all)
     const freshCheckboxes = canvas.getAllByRole('checkbox');

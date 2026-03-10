@@ -11,6 +11,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, screen, userEvent, waitFor, within } from 'storybook/test';
 import { PanelDeletableSuppliersPage } from './panel-deletable-suppliers-page';
 import { businessAffiliateHandlers, resetAffiliateStore } from '../_shared/msw-handlers';
+import { storyStepDelay } from '../_shared/story-step-delay';
 
 const meta: Meta<typeof PanelDeletableSuppliersPage> = {
   title: 'Use Cases/Reference/Business Affiliates/BA-0005 Delete Supplier/0002 Delete from Detail Panel',
@@ -47,6 +48,7 @@ export const ConfirmDelete: Story = {
       { timeout: 10000 },
     );
     expect(firstRow).toBeVisible();
+    await storyStepDelay();
 
     // 2. Click the first row to open the drawer
     await userEvent.click(firstRow);
@@ -55,6 +57,7 @@ export const ConfirmDelete: Story = {
     const drawer = await canvas.findByRole('dialog', {}, { timeout: 10000 });
     expect(drawer).toBeVisible();
     const drawerScope = within(drawer);
+    await storyStepDelay();
 
     // 4. Click Delete button in the drawer footer
     const deleteButton = drawerScope.getByRole('button', { name: /delete/i });
@@ -74,6 +77,7 @@ export const ConfirmDelete: Story = {
         /are you sure you want to delete Apex Medical Distributors\?/i,
       ),
     ).toBeVisible();
+    await storyStepDelay();
 
     // 8. Click the "Delete" confirm button
     const confirmButton = dialogScope.getByRole('button', { name: /delete/i });
@@ -83,6 +87,7 @@ export const ConfirmDelete: Story = {
     await waitFor(() => {
       expect(canvas.queryByRole('alertdialog')).not.toBeInTheDocument();
     }, { timeout: 10000 });
+    await storyStepDelay();
 
     // 10. Verify success toast (Sonner renders via portal to document.body)
     const toastText = await screen.findByText(/supplier deleted successfully/i, {}, { timeout: 10000 });
@@ -121,6 +126,7 @@ export const CancelDelete: Story = {
       { timeout: 10000 },
     );
     expect(firstRow).toBeVisible();
+    await storyStepDelay();
 
     // 2. Click the first row to open the drawer
     await userEvent.click(firstRow);
@@ -129,6 +135,7 @@ export const CancelDelete: Story = {
     const drawer = await canvas.findByRole('dialog', {}, { timeout: 10000 });
     expect(drawer).toBeVisible();
     const drawerScope = within(drawer);
+    await storyStepDelay();
 
     // 4. Click Delete button in the drawer footer
     const deleteButton = drawerScope.getByRole('button', { name: /delete/i });
@@ -137,6 +144,7 @@ export const CancelDelete: Story = {
     // 5. Verify confirm dialog appears
     const dialog = await canvas.findByRole('alertdialog', {}, { timeout: 10000 });
     expect(dialog).toBeVisible();
+    await storyStepDelay();
 
     // 6. Click "Cancel"
     const cancelButton = within(dialog).getByRole('button', { name: /cancel/i });

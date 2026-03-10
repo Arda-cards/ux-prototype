@@ -12,6 +12,7 @@ import {
   businessAffiliateHandlers,
   resetAffiliateStore,
 } from '../_shared/msw-handlers';
+import { storyStepDelay } from '../_shared/story-step-delay';
 
 // Build handlers with the DELETE override — replace the default DELETE handler
 // with one that always returns 500. Keep all other handlers intact.
@@ -59,10 +60,12 @@ export const NetworkError: Story = {
 
     // 1. Wait for grid to load
     await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
+    await storyStepDelay();
 
     // 2. Select a row
     const checkboxes = canvas.getAllByRole('checkbox');
     await userEvent.click(checkboxes[1]);
+    await storyStepDelay();
 
     // 3. Open Actions → Delete → Confirm
     const actionsButton = canvas.getByRole('button', { name: 'Actions' });
@@ -73,12 +76,14 @@ export const NetworkError: Story = {
 
     const dialog = await canvas.findByRole('alertdialog', {}, { timeout: 10000 });
     const confirmButton = within(dialog).getByRole('button', { name: /delete/i });
+    await storyStepDelay();
     await userEvent.click(confirmButton);
 
     // 4. Verify dialog closes
     await waitFor(() => {
       expect(canvas.queryByRole('alertdialog')).not.toBeInTheDocument();
     }, { timeout: 10000 });
+    await storyStepDelay();
 
     // 5. Verify error toast (Sonner portal — use screen)
     const errorToast = await screen.findByText(/failed to delete/i, {}, { timeout: 10000 });

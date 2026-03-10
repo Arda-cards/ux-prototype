@@ -17,6 +17,7 @@ import {
   businessAffiliateHandlers,
   resetAffiliateStore,
 } from '../_shared/msw-handlers';
+import { storyStepDelay } from '../_shared/story-step-delay';
 
 // ---------------------------------------------------------------------------
 // Meta
@@ -85,6 +86,8 @@ export const ClearRequiredField: Story = {
     const drawer = await canvas.findByRole('dialog', {}, { timeout: 10000 });
     const drawerScope = within(drawer);
 
+    await storyStepDelay();
+
     // Step 3: Click "Edit" to enter edit mode
     const editButton = await drawerScope.findByRole('button', { name: /edit/i }, { timeout: 10000 });
     await userEvent.click(editButton);
@@ -94,6 +97,8 @@ export const ClearRequiredField: Story = {
     const cancelButton = drawerScope.getByRole('button', { name: /cancel/i });
     expect(saveButton).toBeVisible();
     expect(cancelButton).toBeVisible();
+
+    await storyStepDelay();
 
     // Step 5: Locate Name field and clear it
     // In edit mode the Name input has id="edit-name" and aria-label="Name"
@@ -111,6 +116,8 @@ export const ClearRequiredField: Story = {
         drawerScope.queryByText(/required/i) !== null;
       expect(isDisabled || hasError).toBe(true);
     }, { timeout: 10000 });
+
+    await storyStepDelay();
 
     // Step 7: Type a new name
     await userEvent.type(nameInput, 'Updated Supplier Name');
@@ -155,6 +162,8 @@ export const CancelDiscards: Story = {
     const drawerScope = within(drawer);
     expect(await drawerScope.findByText('msantos@apexmedical.com', {}, { timeout: 10000 })).toBeVisible();
 
+    await storyStepDelay();
+
     // Step 3: Click "Edit"
     const editButton = await drawerScope.findByRole('button', { name: /edit/i }, { timeout: 10000 });
     await userEvent.click(editButton);
@@ -164,12 +173,16 @@ export const CancelDiscards: Story = {
     // In edit mode, the contact email input has id="contact-email" and aria-label="Email"
     const emailInput = drawerScope.getByLabelText(/^email$/i) as HTMLInputElement;
 
+    await storyStepDelay();
+
     // Step 5: Clear email and type new value
     await userEvent.clear(emailInput);
     await userEvent.type(emailInput, 'changed@example.com');
 
     // Confirm the new value is in the input
     expect(emailInput.value).toBe('changed@example.com');
+
+    await storyStepDelay();
 
     // Step 6: Click "Cancel"
     const cancelButton = drawerScope.getByRole('button', { name: /cancel/i });
@@ -221,6 +234,8 @@ export const NetworkError: Story = {
     expect(drawer).toBeVisible();
     const drawerScope = within(drawer);
 
+    await storyStepDelay();
+
     // Step 2: Click "Edit"
     const editButton = await drawerScope.findByRole('button', { name: /edit/i }, { timeout: 10000 });
     expect(editButton).toBeVisible();
@@ -233,6 +248,8 @@ export const NetworkError: Story = {
     );
     await userEvent.clear(nameInput);
     await userEvent.type(nameInput, 'Modified Supplier Name');
+
+    await storyStepDelay();
 
     // Step 4: Click "Save"
     const saveButton = drawerScope.getByRole('button', { name: /save/i });
@@ -249,6 +266,8 @@ export const NetworkError: Story = {
     await waitFor(() => {
       expect(toastText).toBeVisible();
     }, { timeout: 10000 });
+
+    await storyStepDelay();
 
     // Step 6: Verify drawer stays in edit mode
     await waitFor(() => {

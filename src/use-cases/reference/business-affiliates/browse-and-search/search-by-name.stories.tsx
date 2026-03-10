@@ -10,6 +10,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within, waitFor, userEvent } from 'storybook/test';
 import { SuppliersPage } from '../_shared/suppliers-page';
 import { businessAffiliateHandlers } from '../_shared/msw-handlers';
+import { storyStepDelay } from '../_shared/story-step-delay';
 
 const meta: Meta<typeof SuppliersPage> = {
   title: 'Use Cases/Reference/Business Affiliates/BA-0001 Browse and Search/0002 Search by Name',
@@ -46,6 +47,8 @@ export const Default: Story = {
     // 1. Wait for initial grid load
     await canvas.findByText('Apex Medical Distributors', {}, { timeout: 5000 });
 
+    await storyStepDelay();
+
     // 2. Locate search input
     const searchInput = canvas.getByPlaceholderText('Search suppliers...');
     expect(searchInput).toBeVisible();
@@ -65,6 +68,8 @@ export const Default: Story = {
     // 5. Verify additional matching affiliates are visible
     expect(canvas.getByText('Medical Essentials')).toBeVisible();
     expect(canvas.getByText('National Freight Medical')).toBeVisible();
+
+    await storyStepDelay();
 
     // 6. Clear the search input
     await user.clear(searchInput);
@@ -91,6 +96,8 @@ export const NoResults: Story = {
 
     // 1. Wait for initial grid load
     await canvas.findByText('Apex Medical Distributors', {}, { timeout: 5000 });
+
+    await storyStepDelay();
 
     // 2. Type a non-matching search term
     const searchInput = canvas.getByPlaceholderText('Search suppliers...');

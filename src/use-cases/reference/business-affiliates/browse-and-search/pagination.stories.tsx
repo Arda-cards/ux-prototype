@@ -13,6 +13,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { within, expect, waitFor, userEvent } from 'storybook/test';
 import { SuppliersPage } from '../_shared/suppliers-page';
 import { businessAffiliateHandlers, resetAffiliateStore } from '../_shared/msw-handlers';
+import { storyStepDelay } from '../_shared/story-step-delay';
 
 const meta: Meta<typeof SuppliersPage> = {
   title: 'Use Cases/Reference/Business Affiliates/BA-0001 Browse and Search/0006 Pagination',
@@ -65,6 +66,8 @@ export const Default: Story = {
     const prevButton = canvas.getByRole('button', { name: 'Previous page' });
     expect(prevButton).toBeDisabled();
 
+    await storyStepDelay();
+
     // 4. Click "Next page"
     const nextButton = canvas.getByRole('button', { name: 'Next page' });
     expect(nextButton).toBeEnabled();
@@ -80,6 +83,8 @@ export const Default: Story = {
       expect(canvas.getByText('Page 2')).toBeVisible();
     }, { timeout: 10000 });
 
+    await storyStepDelay();
+
     // 7. Click "Next page" again
     const nextButton2 = canvas.getByRole('button', { name: 'Next page' });
     await userEvent.click(nextButton2);
@@ -94,6 +99,8 @@ export const Default: Story = {
       const nextButton3 = canvas.getByRole('button', { name: 'Next page' });
       expect(nextButton3).toBeDisabled();
     }, { timeout: 10000 });
+
+    await storyStepDelay();
 
     // 10. Click "Previous page"
     const prevButton3 = canvas.getByRole('button', { name: 'Previous page' });

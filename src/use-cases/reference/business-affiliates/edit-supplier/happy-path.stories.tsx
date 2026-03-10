@@ -14,6 +14,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { within, expect, waitFor, userEvent, screen } from 'storybook/test';
 import { EditableSuppliersPage } from './editable-suppliers-page';
 import { businessAffiliateHandlers, resetAffiliateStore, affiliateStore } from '../_shared/msw-handlers';
+import { storyStepDelay } from '../_shared/story-step-delay';
 
 // ---------------------------------------------------------------------------
 // Meta
@@ -281,6 +282,8 @@ export const Automated: Story = {
     const deleteButton = drawerScope.getByRole('button', { name: /^delete$/i });
     expect(deleteButton).toBeVisible();
 
+    await storyStepDelay();
+
     // Step 3: Click "Edit" to transition to edit mode
     await userEvent.click(editButton);
 
@@ -293,6 +296,8 @@ export const Automated: Story = {
       expect(canvas.queryByRole('button', { name: /^edit$/i })).not.toBeInTheDocument();
     }, { timeout: 10000 });
 
+    await storyStepDelay();
+
     // Step 5: Locate the contact email field (Contact section is expanded since Apex has contact data)
     const emailInput = canvas.getByLabelText(/^email$/i) as HTMLInputElement;
     expect(emailInput).toBeVisible();
@@ -301,6 +306,8 @@ export const Automated: Story = {
     await userEvent.clear(emailInput);
     await userEvent.type(emailInput, 'newemail@example.com');
 
+    await storyStepDelay();
+
     // Step 7: Locate the city field (Address section is expanded since Apex has address data)
     const cityInput = canvas.getByLabelText(/^city$/i) as HTMLInputElement;
     expect(cityInput).toBeVisible();
@@ -308,6 +315,8 @@ export const Automated: Story = {
     // Step 8: Clear current city ("Denver") and type new value
     await userEvent.clear(cityInput);
     await userEvent.type(cityInput, 'New York');
+
+    await storyStepDelay();
 
     // Step 9: Click "Save"
     await userEvent.click(saveButton);
@@ -318,12 +327,16 @@ export const Automated: Story = {
       expect(toastText).toBeVisible();
     }, { timeout: 10000 });
 
+    await storyStepDelay();
+
     // Step 11: Verify drawer returns to view mode (Save button disappears, Edit button reappears)
     await waitFor(() => {
       expect(canvas.queryByRole('button', { name: /^save$/i })).not.toBeInTheDocument();
     }, { timeout: 10000 });
     const editButtonAfterSave = await canvas.findByRole('button', { name: /^edit$/i }, { timeout: 10000 });
     expect(editButtonAfterSave).toBeVisible();
+
+    await storyStepDelay();
 
     // Step 12: Verify the updated email shows in view mode
     expect(canvas.getByText('newemail@example.com')).toBeVisible();

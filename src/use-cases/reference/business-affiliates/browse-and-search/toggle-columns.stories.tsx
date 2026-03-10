@@ -8,6 +8,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within, waitFor, userEvent } from 'storybook/test';
 import { businessAffiliateHandlers } from '../_shared/msw-handlers';
 import { ToggleColumnsSuppliersPage } from './toggle-columns-page';
+import { storyStepDelay } from '../_shared/story-step-delay';
 
 const meta: Meta<typeof ToggleColumnsSuppliersPage> = {
   title:
@@ -58,6 +59,8 @@ export const Default: Story = {
       expect(getColumnHeader(canvasElement, 'roles')).toBeTruthy();
     }, { timeout: 10000 });
 
+    await storyStepDelay();
+
     // 3. Click the "View" dropdown button
     const viewButton = canvas.getByRole('button', {
       name: /toggle column visibility/i,
@@ -81,6 +84,8 @@ export const Default: Story = {
     // 6. Verify "Save" and "Cancel" buttons
     expect(canvas.getByRole('button', { name: 'Save' })).toBeVisible();
     expect(canvas.getByRole('button', { name: 'Cancel' })).toBeVisible();
+
+    await storyStepDelay();
 
     // 7. Uncheck the "Phone" column checkbox
     const phoneCheckbox = canvas.getByLabelText('Phone');
@@ -116,6 +121,8 @@ export const HideAll: Story = {
     // 1. Wait for grid to load
     await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
 
+    await storyStepDelay();
+
     // 2. Click the "View" dropdown button
     const viewButton = canvas.getByRole('button', {
       name: /toggle column visibility/i,
@@ -127,6 +134,8 @@ export const HideAll: Story = {
       expect(canvas.getByRole('button', { name: 'Hide All' })).toBeVisible();
     }, { timeout: 10000 });
     await userEvent.click(canvas.getByRole('button', { name: 'Hide All' }));
+
+    await storyStepDelay();
 
     // 4. Click "Save"
     await userEvent.click(canvas.getByRole('button', { name: 'Save' }));

@@ -10,6 +10,7 @@ import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { http, HttpResponse } from 'msw';
 import { AffiliateTypeahead } from '../_shared/affiliate-typeahead';
 import { businessAffiliateHandlers } from '../_shared/msw-handlers';
+import { storyStepDelay } from '../_shared/story-step-delay';
 
 // ---------------------------------------------------------------------------
 // Default onCreate implementation (shared across stories)
@@ -82,6 +83,7 @@ export const SelectExisting: Story = {
     // 4. Verify dropdown is open
     const listbox = canvas.getByRole('listbox');
     expect(listbox).toBeVisible();
+    await storyStepDelay();
 
     // 5. Click "MedSupply Co."
     await userEvent.click(option);
@@ -122,6 +124,7 @@ export const CreateNew: Story = {
       { timeout: 3000 },
     );
     expect(createOption).toBeVisible();
+    await storyStepDelay();
 
     // 3. Click the create option
     await userEvent.click(createOption);
@@ -223,6 +226,7 @@ export const KeyboardNavigation: Story = {
     await userEvent.type(input, 'MedSupply');
     // Wait for a specific option to appear (not just the listbox container)
     await canvas.findByText('MedSupply Co.', {}, { timeout: 3000 });
+    await storyStepDelay();
 
     // 2. Press ArrowDown — first option highlighted
     await userEvent.keyboard('{ArrowDown}');
@@ -230,6 +234,7 @@ export const KeyboardNavigation: Story = {
       const opts = canvas.getAllByRole('option');
       expect(opts[0]).toHaveAttribute('aria-selected', 'true');
     });
+    await storyStepDelay();
 
     // 3. Press Enter — first option selected
     await userEvent.keyboard('{Enter}');
@@ -265,6 +270,7 @@ export const EscapeDismiss: Story = {
 
     // 2. Verify dropdown is open
     expect(canvas.getByRole('listbox')).toBeVisible();
+    await storyStepDelay();
 
     // 3. Press Escape
     await userEvent.keyboard('{Escape}');
