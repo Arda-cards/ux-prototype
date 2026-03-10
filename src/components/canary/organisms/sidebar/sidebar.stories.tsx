@@ -27,10 +27,10 @@ import { ArdaSidebarNavItem } from '../../molecules/sidebar/sidebar-nav-item';
 import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 
 const mockUser = {
-  name: 'Callil Capuozzo',
-  email: 'callil@arda.cards',
+  name: 'Uriel Eisen',
+  email: 'uriel@arda.cards',
   role: 'Account Admin',
-  avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=CC',
+  avatar: '/canary/images/avatar-placeholder.jpg',
 };
 
 const mockActions: UserMenuAction[] = [

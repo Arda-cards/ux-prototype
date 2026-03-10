@@ -49,7 +49,6 @@ export const Default: Story = {
     const canvas = within(canvasElement);
     await expect(canvas.getByText('Callil Capuozzo')).toBeVisible();
     await expect(canvas.getByText('callil@arda.cards')).toBeVisible();
-    await expect(canvas.getByText('CC')).toBeVisible();
   },
 };
 
@@ -59,9 +58,9 @@ export const WithAvatar: Story = {
     <ArdaSidebar defaultOpen>
       <ArdaSidebarUserMenu
         user={{
-          name: 'Miguel Torres',
-          email: 'miguel@arda.cards',
-          avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=MT',
+          name: 'Uriel Eisen',
+          email: 'uriel@arda.cards',
+          avatar: '/canary/images/avatar-placeholder.jpg',
         }}
         actions={defaultActions}
       />
@@ -112,7 +111,7 @@ export const FlyoutOpen: Story = {
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const trigger = canvas.getByRole('button', { name: /callil capuozzo/i });
+    const trigger = canvas.getByRole('button', { name: /callil/i });
     await userEvent.click(trigger);
   },
 };

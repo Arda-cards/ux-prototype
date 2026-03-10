@@ -57,7 +57,7 @@ export const AllVariants: Story = {
           <ArdaBrandIcon variant="mono-dark" />
         </div>
       </div>
-      <div className="flex items-center gap-6 bg-white border p-6 rounded-lg">
+      <div className="flex items-center gap-6 bg-background border p-6 rounded-lg">
         <div className="flex flex-col items-start gap-3">
           <span className="text-xs text-muted-foreground uppercase tracking-wider">light</span>
           <ArdaBrandLogo variant="light" />

@@ -61,32 +61,40 @@ export const AllColors: Story = {
         Tailwind classes (not hardcoded hex values) in all components.
       </p>
 
+      {/* ── shadcn semantic tokens ── */}
+
       <ColorGroup
-        title="Brand"
+        title="Brand / Primary"
         colors={[
           {
-            name: 'Primary (Orange)',
-            variable: '--base-primary',
+            name: 'Primary (Arda Orange)',
+            variable: '--primary',
             tailwind: 'bg-primary / text-primary',
             hex: '#FC5A29',
           },
           {
             name: 'Primary Foreground',
-            variable: '--base-primary-foreground',
+            variable: '--primary-foreground',
             tailwind: 'text-primary-foreground',
-            hex: '#FAFAFA',
+            hex: '#FFFFFF',
           },
           {
-            name: 'Secondary',
-            variable: '--base-secondary',
-            tailwind: 'bg-secondary',
-            hex: '#F5F5F5',
+            name: 'Primary Hover',
+            variable: '--primary-hover',
+            tailwind: 'hover:bg-primary-hover',
+            hex: '#D14A1F',
           },
           {
-            name: 'Destructive',
-            variable: '--base-destructive',
-            tailwind: 'bg-destructive / text-destructive',
-            hex: '#DC2626',
+            name: 'Primary Active',
+            variable: '--primary-active',
+            tailwind: 'active:bg-primary-active',
+            hex: '#A83B18',
+          },
+          {
+            name: 'Primary Muted',
+            variable: '--primary-muted',
+            tailwind: 'bg-primary-muted',
+            hex: '#FEF7F5',
           },
         ]}
       />
@@ -96,249 +104,339 @@ export const AllColors: Story = {
         colors={[
           {
             name: 'Background',
-            variable: '--base-background',
+            variable: '--background',
             tailwind: 'bg-background',
             hex: '#FFFFFF',
           },
           {
             name: 'Foreground',
-            variable: '--base-foreground',
+            variable: '--foreground',
             tailwind: 'text-foreground',
             hex: '#0A0A0A',
           },
           {
-            name: 'Muted Foreground',
-            variable: '--base-muted-foreground',
-            tailwind: 'text-muted-foreground',
-            hex: '#737373',
+            name: 'Card',
+            variable: '--card',
+            tailwind: 'bg-card',
+            hex: '#FFFFFF',
           },
           {
-            name: 'Accent Foreground',
-            variable: '--base-accent-foreground',
-            tailwind: 'text-accent-foreground',
-            hex: '#171717',
+            name: 'Card Foreground',
+            variable: '--card-foreground',
+            tailwind: 'text-card-foreground',
+            hex: '#0A0A0A',
+          },
+          {
+            name: 'Popover',
+            variable: '--popover',
+            tailwind: 'bg-popover',
+            hex: '#FFFFFF',
+          },
+          {
+            name: 'Popover Foreground',
+            variable: '--popover-foreground',
+            tailwind: 'text-popover-foreground',
+            hex: '#0A0A0A',
           },
         ]}
       />
 
       <ColorGroup
-        title="Borders / Input"
+        title="Secondary / Muted / Accent"
+        colors={[
+          {
+            name: 'Secondary',
+            variable: '--secondary',
+            tailwind: 'bg-secondary',
+            hex: '#F5F5F5',
+          },
+          {
+            name: 'Secondary Foreground',
+            variable: '--secondary-foreground',
+            tailwind: 'text-secondary-foreground',
+            hex: '#171717',
+          },
+          {
+            name: 'Muted',
+            variable: '--muted',
+            tailwind: 'bg-muted',
+            hex: '#F5F5F5',
+          },
+          {
+            name: 'Muted Foreground',
+            variable: '--muted-foreground',
+            tailwind: 'text-muted-foreground',
+            hex: '#737373',
+          },
+          {
+            name: 'Accent',
+            variable: '--accent',
+            tailwind: 'bg-accent',
+            hex: '#F5F5F5',
+          },
+          {
+            name: 'Accent Foreground',
+            variable: '--accent-foreground',
+            tailwind: 'text-accent-foreground',
+            hex: '#171717',
+          },
+          {
+            name: 'Accent Light',
+            variable: '--accent-light',
+            tailwind: 'bg-accent-light',
+            hex: '#FEF7F5',
+          },
+        ]}
+      />
+
+      <ColorGroup
+        title="Destructive"
+        colors={[
+          {
+            name: 'Destructive',
+            variable: '--destructive',
+            tailwind: 'bg-destructive / text-destructive',
+            hex: '#DC2626',
+          },
+          {
+            name: 'Destructive Foreground',
+            variable: '--destructive-foreground',
+            tailwind: 'text-destructive-foreground',
+            hex: '#FFFFFF',
+          },
+          {
+            name: 'Destructive Hover BG',
+            variable: '--destructive-foreground-light-hover',
+            tailwind: 'hover:bg-destructive-foreground-light-hover',
+            hex: '#FEF2F2',
+          },
+        ]}
+      />
+
+      <ColorGroup
+        title="Borders / Input / Ring"
         colors={[
           {
             name: 'Border',
-            variable: '--base-border',
+            variable: '--border',
             tailwind: 'border-border',
             hex: '#E5E5E5',
           },
           {
             name: 'Input',
-            variable: '--base-input',
+            variable: '--input',
             tailwind: 'border-input',
             hex: '#E5E5E5',
           },
           {
             name: 'Ring (Focus)',
-            variable: '--focus-ring',
+            variable: '--ring',
             tailwind: 'ring-ring',
-            hex: '#3B82F6',
+            hex: '#FC5A29',
           },
         ]}
       />
 
-      <ColorGroup
-        title="Status Colors"
-        colors={[
-          {
-            name: 'Success BG',
-            variable: '--status-success-bg',
-            tailwind: 'bg-status-success-bg',
-            hex: '#DCFCE7',
-          },
-          {
-            name: 'Success Text',
-            variable: '--status-success-text',
-            tailwind: 'text-status-success-text',
-            hex: '#166534',
-          },
-          {
-            name: 'Success Border',
-            variable: '--status-success-border',
-            tailwind: 'border-status-success-border',
-            hex: '#BBF7D0',
-          },
-          {
-            name: 'Warning BG',
-            variable: '--status-warning-bg',
-            tailwind: 'bg-status-warning-bg',
-            hex: '#FEF3C7',
-          },
-          {
-            name: 'Warning Text',
-            variable: '--status-warning-text',
-            tailwind: 'text-status-warning-text',
-            hex: '#92400E',
-          },
-          {
-            name: 'Warning Border',
-            variable: '--status-warning-border',
-            tailwind: 'border-status-warning-border',
-            hex: '#FDE68A',
-          },
-          {
-            name: 'Info BG',
-            variable: '--status-info-bg',
-            tailwind: 'bg-status-info-bg',
-            hex: '#DBEAFE',
-          },
-          {
-            name: 'Info Text',
-            variable: '--status-info-text',
-            tailwind: 'text-status-info-text',
-            hex: '#1E40AF',
-          },
-          {
-            name: 'Info Border',
-            variable: '--status-info-border',
-            tailwind: 'border-status-info-border',
-            hex: '#BFDBFE',
-          },
-          {
-            name: 'Destructive BG',
-            variable: '--status-destructive-bg',
-            tailwind: 'bg-status-destructive-bg',
-            hex: '#FEE2E2',
-          },
-          {
-            name: 'Destructive Text',
-            variable: '--status-destructive-text',
-            tailwind: 'text-status-destructive-text',
-            hex: '#991B1B',
-          },
-          {
-            name: 'Destructive Border',
-            variable: '--status-destructive-border',
-            tailwind: 'border-status-destructive-border',
-            hex: '#FECACA',
-          },
-          {
-            name: 'Default BG',
-            variable: '--status-default-bg',
-            tailwind: 'bg-status-default-bg',
-            hex: '#F5F5F5',
-          },
-          {
-            name: 'Default Text',
-            variable: '--status-default-text',
-            tailwind: 'text-status-default-text',
-            hex: '#0A0A0A',
-          },
-          {
-            name: 'Default Border',
-            variable: '--status-default-border',
-            tailwind: 'border-status-default-border',
-            hex: '#E5E5E5',
-          },
-        ]}
-      />
+      {/* ── Sidebar tokens ── */}
 
       <ColorGroup
-        title="Sidebar Chrome"
+        title="Sidebar (Light)"
         colors={[
           {
             name: 'Sidebar BG',
-            variable: '--sidebar-bg',
-            tailwind: 'bg-sidebar-bg',
-            hex: '#0A0A0A',
+            variable: '--sidebar',
+            tailwind: 'bg-sidebar',
+            hex: '#FAFAFA',
           },
           {
-            name: 'Sidebar Tooltip BG',
-            variable: '--sidebar-tooltip-bg',
-            tailwind: 'bg-sidebar-tooltip-bg',
-            hex: '#1A1A1A',
+            name: 'Sidebar Foreground',
+            variable: '--sidebar-foreground',
+            tailwind: 'text-sidebar-foreground',
+            hex: '#171717',
           },
           {
-            name: 'Sidebar Text',
-            variable: '--sidebar-text',
-            tailwind: 'text-sidebar-text',
-            hex: 'rgba(255,255,255,0.7)',
+            name: 'Sidebar Primary',
+            variable: '--sidebar-primary',
+            tailwind: 'bg-sidebar-primary',
+            hex: '#FC5A29',
           },
           {
-            name: 'Sidebar Text Active',
-            variable: '--sidebar-text-active',
-            tailwind: 'text-sidebar-text-active',
+            name: 'Sidebar Primary Foreground',
+            variable: '--sidebar-primary-foreground',
+            tailwind: 'text-sidebar-primary-foreground',
             hex: '#FFFFFF',
           },
           {
-            name: 'Sidebar Text Muted',
-            variable: '--sidebar-text-muted',
-            tailwind: 'text-sidebar-text-muted',
-            hex: 'rgba(255,255,255,0.4)',
+            name: 'Sidebar Accent',
+            variable: '--sidebar-accent',
+            tailwind: 'bg-sidebar-accent',
+            hex: '#F5F5F5',
+          },
+          {
+            name: 'Sidebar Accent Foreground',
+            variable: '--sidebar-accent-foreground',
+            tailwind: 'text-sidebar-accent-foreground',
+            hex: '#171717',
           },
           {
             name: 'Sidebar Border',
             variable: '--sidebar-border',
             tailwind: 'border-sidebar-border',
-            hex: 'rgba(255,255,255,0.1)',
+            hex: '#E5E5E5',
           },
           {
-            name: 'Sidebar Hover',
-            variable: '--sidebar-hover',
-            tailwind: 'hover:bg-sidebar-hover',
-            hex: 'rgba(255,255,255,0.1)',
-          },
-          {
-            name: 'Sidebar Active BG',
-            variable: '--sidebar-active-bg',
-            tailwind: 'bg-sidebar-active-bg',
-            hex: 'rgba(255,255,255,0.1)',
-          },
-          {
-            name: 'Active Indicator',
-            variable: '--sidebar-active-indicator',
-            tailwind: 'bg-sidebar-active-indicator',
+            name: 'Sidebar Ring',
+            variable: '--sidebar-ring',
+            tailwind: 'ring-sidebar-ring',
             hex: '#FC5A29',
           },
         ]}
       />
 
       <ColorGroup
-        title="Table Chrome"
+        title="Sidebar (Dark)"
         colors={[
           {
-            name: 'Table Header BG',
-            variable: '--table-header-bg',
-            tailwind: 'bg-table-header-bg',
-            hex: '#F9FAFB',
+            name: 'Sidebar BG',
+            variable: '--sidebar (dark)',
+            tailwind: 'bg-sidebar',
+            hex: '#0A0A0A',
           },
           {
-            name: 'Table Row Hover',
-            variable: '--table-row-hover',
-            tailwind: 'hover:bg-table-row-hover',
+            name: 'Sidebar Foreground',
+            variable: '--sidebar-foreground (dark)',
+            tailwind: 'text-sidebar-foreground',
+            hex: '#D4D4D4',
+          },
+          {
+            name: 'Sidebar Primary',
+            variable: '--sidebar-primary (dark)',
+            tailwind: 'bg-sidebar-primary',
+            hex: '#FC5A29',
+          },
+          {
+            name: 'Sidebar Accent',
+            variable: '--sidebar-accent (dark)',
+            tailwind: 'bg-sidebar-accent',
+            hex: '#1A1A1A',
+          },
+          {
+            name: 'Sidebar Accent Foreground',
+            variable: '--sidebar-accent-foreground (dark)',
+            tailwind: 'text-sidebar-accent-foreground',
+            hex: '#FFFFFF',
+          },
+          {
+            name: 'Sidebar Border',
+            variable: '--sidebar-border (dark)',
+            tailwind: 'border-sidebar-border',
+            hex: '#262626',
+          },
+        ]}
+      />
+
+      {/* ── Figma / legacy tokens ── */}
+
+      <ColorGroup
+        title="Form"
+        colors={[
+          {
+            name: 'Form Separator',
+            variable: '--form-separator',
+            tailwind: 'border-form-separator',
+            hex: '#E5E5E5',
+          },
+          {
+            name: 'Form Text Primary',
+            variable: '--form-text-primary',
+            tailwind: 'text-form-text-primary',
+            hex: '#0A0A0A',
+          },
+          {
+            name: 'Form Text Secondary',
+            variable: '--form-text-secondary',
+            tailwind: 'text-form-text-secondary',
+            hex: '#737373',
+          },
+          {
+            name: 'Form Background',
+            variable: '--form-background',
+            tailwind: 'bg-form-background',
+            hex: '#FFFFFF',
+          },
+          {
+            name: 'Form Background Secondary',
+            variable: '--form-background-secondary',
+            tailwind: 'bg-form-background-secondary',
             hex: '#F3F4F6',
+          },
+          {
+            name: 'Form Switch Active',
+            variable: '--form-switch-active',
+            tailwind: 'bg-form-switch-active',
+            hex: '#FC5A29',
+          },
+          {
+            name: 'Form Switch Inactive',
+            variable: '--form-switch-inactive',
+            tailwind: 'bg-form-switch-inactive',
+            hex: '#E5E5E5',
           },
         ]}
       />
 
       <ColorGroup
-        title="Accent / Utility"
+        title="Utility"
         colors={[
           {
-            name: 'Accent Blue',
-            variable: '--accent-blue',
-            tailwind: 'bg-accent-blue / text-accent-blue',
-            hex: '#3B82F6',
+            name: 'Link',
+            variable: '--colors-link-light',
+            tailwind: 'text-link',
+            hex: '#0A68F3',
           },
           {
-            name: 'Focus Ring',
-            variable: '--focus-ring',
-            tailwind: 'ring-focus-ring',
-            hex: '#3B82F6',
+            name: 'Hover Color',
+            variable: '--hover-color',
+            tailwind: 'hover:bg-hover-color',
+            hex: '#282828',
+          },
+        ]}
+      />
+
+      {/* ── Charts ── */}
+
+      <ColorGroup
+        title="Charts"
+        colors={[
+          {
+            name: 'Chart 1 (Orange)',
+            variable: '--chart-1',
+            tailwind: 'text-chart-1',
+            hex: '#FC5A29',
           },
           {
-            name: 'Star Color',
-            variable: '--star-color',
-            tailwind: 'text-star / bg-star',
-            hex: '#FBBF24',
+            name: 'Chart 2',
+            variable: '--chart-2',
+            tailwind: 'text-chart-2',
+            hex: '#2AA198',
+          },
+          {
+            name: 'Chart 3',
+            variable: '--chart-3',
+            tailwind: 'text-chart-3',
+            hex: '#3A6B8A',
+          },
+          {
+            name: 'Chart 4',
+            variable: '--chart-4',
+            tailwind: 'text-chart-4',
+            hex: '#C4A840',
+          },
+          {
+            name: 'Chart 5',
+            variable: '--chart-5',
+            tailwind: 'text-chart-5',
+            hex: '#D4A030',
           },
         ]}
       />

@@ -16,8 +16,8 @@ interface AssetCardProps {
 function AssetCard({ src, label }: AssetCardProps) {
   const isSvg = src.endsWith('.svg');
   return (
-    <div className="flex flex-col items-center gap-2 p-4 rounded-lg border border-border bg-white">
-      <div className="w-full h-32 flex items-center justify-center bg-table-header-bg rounded-md p-3">
+    <div className="flex flex-col items-center gap-2 p-4 rounded-lg border border-border bg-background">
+      <div className="w-full h-32 flex items-center justify-center bg-neutral-100 rounded-md p-3">
         <img
           src={src}
           alt={label}
@@ -57,56 +57,41 @@ export const Gallery: Story = {
       <h2 className="text-2xl font-bold text-foreground mb-6">Brand Assets</h2>
 
       <AssetGroup
-        title="Logos"
+        title="Brand Logos"
         assets={[
-          { src: '/canary/images/ArdaLogoV1.svg', label: 'ArdaLogoV1.svg' },
-          { src: '/canary/images/ArdaLogoBlack.svg', label: 'ArdaLogoBlack.svg' },
-          { src: '/canary/images/ArdaLogoMobileV1.svg', label: 'ArdaLogoMobileV1.svg' },
-          { src: '/canary/images/ArdaLogoBlackMobile.svg', label: 'ArdaLogoBlackMobile.svg' },
-          { src: '/canary/images/ArdaTempLogo.svg', label: 'ArdaTempLogo.svg' },
-          { src: '/canary/images/ArdaTempLogoMobile.svg', label: 'ArdaTempLogoMobile.svg' },
-          { src: '/canary/images/LogoArdaGris.svg', label: 'LogoArdaGris.svg' },
-          { src: '/canary/images/LogoArdaGrisShort.svg', label: 'LogoArdaGrisShort.svg' },
-          { src: '/canary/images/LogoArdaGrisv2.svg', label: 'LogoArdaGrisv2.svg' },
-          { src: '/canary/images/logoArdaCards.svg', label: 'logoArdaCards.svg' },
-          { src: '/canary/images/ShadcnDesignLogo.svg', label: 'ShadcnDesignLogo.svg' },
+          { src: '/canary/images/arda-logo-dark.svg', label: 'arda-logo-dark.svg' },
+          { src: '/canary/images/arda-logo-light.svg', label: 'arda-logo-light.svg' },
+          { src: '/canary/images/arda-logo-small-dark.svg', label: 'arda-logo-small-dark.svg' },
+          { src: '/canary/images/arda-logo-small-light.svg', label: 'arda-logo-small-light.svg' },
         ]}
       />
 
       <AssetGroup
-        title="Theme Indicators"
+        title="Monochrome Logos"
         assets={[
-          { src: '/canary/images/theme-light.svg', label: 'theme-light.svg' },
-          { src: '/canary/images/theme-dark.svg', label: 'theme-dark.svg' },
-          { src: '/canary/images/theme-system.svg', label: 'theme-system.svg' },
+          { src: '/canary/images/arda-logo-mono-dark.svg', label: 'arda-logo-mono-dark.svg' },
+          { src: '/canary/images/arda-logo-mono-light.svg', label: 'arda-logo-mono-light.svg' },
+          {
+            src: '/canary/images/arda-logo-small-mono-dark.svg',
+            label: 'arda-logo-small-mono-dark.svg',
+          },
+          {
+            src: '/canary/images/arda-logo-small-mono-light.svg',
+            label: 'arda-logo-small-mono-light.svg',
+          },
         ]}
       />
 
       <AssetGroup
-        title="Branding"
+        title="Placeholders"
         assets={[
-          { src: '/canary/images/QRC.svg', label: 'QRC.svg' },
-          { src: '/canary/images/SidebarFooter.svg', label: 'SidebarFooter.svg' },
+          { src: '/canary/images/avatar-placeholder.jpg', label: 'avatar-placeholder.jpg' },
           { src: '/canary/images/imageExampleCard.png', label: 'imageExampleCard.png' },
-          { src: '/canary/images/PlaceholderVideo.svg', label: 'PlaceholderVideo.svg' },
-        ]}
-      />
-
-      <AssetGroup
-        title="Decorative"
-        assets={[
-          { src: '/canary/images/Puddle1.svg', label: 'Puddle1.svg' },
-          { src: '/canary/images/Puddle2.svg', label: 'Puddle2.svg' },
-          { src: '/canary/images/Puddle3.svg', label: 'Puddle3.svg' },
-          { src: '/canary/images/Puddle4.svg', label: 'Puddle4.svg' },
           {
             src: '/canary/images/Addtoorderqueueanimation.svg',
             label: 'Addtoorderqueueanimation.svg',
           },
-          {
-            src: '/canary/images/Variant=Overlapping boxes.svg',
-            label: 'Variant=Overlapping boxes.svg',
-          },
+          { src: '/canary/images/Puddle1.svg', label: 'Puddle1.svg' },
         ]}
       />
     </div>

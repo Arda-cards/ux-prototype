@@ -100,7 +100,7 @@ export const WithChildren: Story = {
  */
 export const Composition: Story = {
   render: () => (
-    <div className="w-[400px] space-y-3 p-4 border rounded-lg">
+    <div className="flex w-[400px] flex-col gap-3 p-4 border rounded-lg">
       <ArdaDetailField label="Link" fallback="No link available" />
       <ArdaDetailField label="SKU" value="ITEM-001-A" />
       <ArdaDetailField label="General Ledger Code" value="4200-100" />
