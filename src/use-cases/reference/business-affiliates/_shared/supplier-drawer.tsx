@@ -489,6 +489,10 @@ interface CreateModeBodyProps {
 }
 
 function CreateModeBody({ nameValue, onNameChange }: CreateModeBodyProps) {
+  // Show "Name is required" error after the field is blurred while empty (BA::0003::0002)
+  const [nameBlurred, setNameBlurred] = useState(false);
+  const showNameError = nameBlurred && !nameValue.trim();
+
   return (
     <div className="space-y-1 divide-y divide-gray-100 py-2">
       {/* Identity section — always expanded */}
@@ -504,9 +508,21 @@ function CreateModeBody({ nameValue, onNameChange }: CreateModeBodyProps) {
             placeholder="Supplier name"
             value={nameValue}
             onChange={(e) => onNameChange(e.target.value)}
-            className="w-full h-9 rounded-md border border-gray-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
+            onBlur={() => setNameBlurred(true)}
+            className={cn(
+              'w-full h-9 rounded-md border px-3 text-sm focus:outline-none focus:ring-1',
+              showNameError
+                ? 'border-red-400 focus:ring-red-300'
+                : 'border-gray-200 focus:ring-gray-300',
+            )}
             aria-label="Name"
+            aria-describedby={showNameError ? 'create-name-error' : undefined}
           />
+          {showNameError && (
+            <p id="create-name-error" className="text-xs text-red-500 mt-0.5">
+              Name is required
+            </p>
+          )}
         </div>
       </CollapsibleSection>
 
