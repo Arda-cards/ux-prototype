@@ -18,6 +18,7 @@ import {
 import { ArdaItemDetailsCardPreview } from '../../molecules/item-details/item-details-card-preview';
 import type { ToolbarAction, OverflowAction } from '../../atoms/action-toolbar/action-toolbar';
 import type { LucideIcon } from 'lucide-react';
+import { XIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 // --- Interfaces ---
@@ -133,7 +134,15 @@ export function ArdaItemDetails({
 
   return (
     <ArdaDrawer open={open} onOpenChange={handleOpenChange} size={size} className={className}>
-      <ArdaDrawerHeader>
+      <ArdaDrawerHeader className="relative">
+        {/* Close button */}
+        <button
+          onClick={() => onOpenChange(false)}
+          className="absolute right-4 top-4 rounded-sm text-muted-foreground opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          aria-label="Close"
+        >
+          <XIcon className="size-4" />
+        </button>
         {/* Visually hidden title for screen readers (Radix requirement) */}
         <ArdaDrawerTitle className="sr-only">{title || 'Item Details'}</ArdaDrawerTitle>
         <ArdaDrawerDescription className="sr-only">

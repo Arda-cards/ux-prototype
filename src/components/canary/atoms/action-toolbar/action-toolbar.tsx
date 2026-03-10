@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -109,7 +110,7 @@ export function ArdaActionToolbar({ actions, overflowActions, className }: ArdaA
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="min-w-48">
             {overflowActions?.map((item) => (
-              <span key={item.key}>
+              <React.Fragment key={item.key}>
                 {item.separatorBefore && <DropdownMenuSeparator />}
                 <DropdownMenuItem
                   onClick={item.onAction}
@@ -117,7 +118,7 @@ export function ArdaActionToolbar({ actions, overflowActions, className }: ArdaA
                 >
                   {item.label}
                 </DropdownMenuItem>
-              </span>
+              </React.Fragment>
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
