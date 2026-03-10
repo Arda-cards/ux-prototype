@@ -23,19 +23,16 @@ const LOGO_PATHS: Record<'full' | 'small', Record<BrandLogoVariant, string>> = {
 
 // --- Interfaces ---
 
-export interface ArdaBrandLogoProps {
+/** Shared props for brand logo components. */
+interface ArdaBrandBaseProps {
   /** Color variant. Use "dark" on dark backgrounds, "light" on light backgrounds. */
   variant?: BrandLogoVariant;
   /** Additional CSS classes. */
   className?: string;
 }
 
-export interface ArdaBrandIconProps {
-  /** Color variant. Use "dark" on dark backgrounds, "light" on light backgrounds. */
-  variant?: BrandLogoVariant;
-  /** Additional CSS classes. */
-  className?: string;
-}
+export type ArdaBrandLogoProps = ArdaBrandBaseProps;
+export type ArdaBrandIconProps = ArdaBrandBaseProps;
 
 // --- Components ---
 

@@ -34,8 +34,17 @@ export interface UserMenuAction {
   destructive?: boolean;
 }
 
-/** Props for ArdaSidebarUserMenu. */
-export interface ArdaSidebarUserMenuProps {
+/** Design-time configuration for ArdaSidebarUserMenu. */
+export interface ArdaSidebarUserMenuStaticConfig {
+  /* --- View / Layout / Controller --- */
+  /** Whether the sidebar is in mobile mode. Controls dropdown placement direction. */
+  isMobile?: boolean;
+  /** Additional CSS classes. */
+  className?: string;
+}
+
+/** Runtime configuration for ArdaSidebarUserMenu. */
+export interface ArdaSidebarUserMenuRuntimeConfig {
   /* --- Model / Data Binding --- */
   /** User information. */
   user: {
@@ -47,13 +56,11 @@ export interface ArdaSidebarUserMenuProps {
   };
   /** Menu actions rendered in the flyout dropdown. Logout should be last and marked destructive. */
   actions: UserMenuAction[];
-
-  /* --- View / Layout / Controller --- */
-  /** Whether the sidebar is in mobile mode. Controls dropdown placement direction. */
-  isMobile?: boolean;
-  /** Additional CSS classes. */
-  className?: string;
 }
+
+/** Combined props for ArdaSidebarUserMenu. */
+export interface ArdaSidebarUserMenuProps
+  extends ArdaSidebarUserMenuStaticConfig, ArdaSidebarUserMenuRuntimeConfig {}
 
 // --- Component ---
 

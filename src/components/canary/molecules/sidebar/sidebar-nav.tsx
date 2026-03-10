@@ -1,3 +1,5 @@
+'use client';
+
 import {
   SidebarContent,
   SidebarGroup,
@@ -8,8 +10,8 @@ import {
 
 // --- Interfaces ---
 
-/** Props for ArdaSidebarNav. */
-export interface ArdaSidebarNavProps {
+/** Design-time configuration for ArdaSidebarNav. */
+export interface ArdaSidebarNavStaticConfig {
   /* --- View / Layout / Controller --- */
   /** ArdaSidebarNavItem and ArdaSidebarNavGroup children. */
   children: React.ReactNode;
@@ -18,6 +20,9 @@ export interface ArdaSidebarNavProps {
   /** Additional CSS classes. */
   className?: string;
 }
+
+/** Combined props for ArdaSidebarNav. No runtime config — pure presentational. */
+export interface ArdaSidebarNavProps extends ArdaSidebarNavStaticConfig {}
 
 // --- Component ---
 

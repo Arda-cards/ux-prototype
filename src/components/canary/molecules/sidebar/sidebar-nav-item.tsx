@@ -8,14 +8,8 @@ import { ArdaBadge } from '../../atoms/badge/badge';
 
 // --- Interfaces ---
 
-/** Props for ArdaSidebarNavItem. */
-export interface ArdaSidebarNavItemProps {
-  /* --- Model / Data Binding --- */
-  /** Whether this item is the currently active route. */
-  active?: boolean;
-  /** Count badge (number or short label), or `true` for a dot indicator. */
-  badge?: number | string | true;
-
+/** Design-time configuration for ArdaSidebarNavItem. */
+export interface ArdaSidebarNavItemStaticConfig {
   /* --- View / Layout / Controller --- */
   /** Lucide icon component rendered before the label. */
   icon: LucideIcon;
@@ -23,9 +17,22 @@ export interface ArdaSidebarNavItemProps {
   label: string;
   /** Additional CSS classes. */
   className?: string;
+}
+
+/** Runtime configuration for ArdaSidebarNavItem. */
+export interface ArdaSidebarNavItemRuntimeConfig {
+  /* --- Model / Data Binding --- */
+  /** Whether this item is the currently active route. */
+  active?: boolean;
+  /** Count badge (number or short label), or `true` for a dot indicator. */
+  badge?: number | string | true;
   /** Called when the nav item is clicked. Use with router.push() for navigation. */
   onClick?: (e: React.MouseEvent) => void;
 }
+
+/** Combined props for ArdaSidebarNavItem. */
+export interface ArdaSidebarNavItemProps
+  extends ArdaSidebarNavItemStaticConfig, ArdaSidebarNavItemRuntimeConfig {}
 
 // --- Component ---
 
@@ -75,9 +82,10 @@ export function ArdaSidebarNavItem({
           {badge !== true && (
             <ArdaBadge
               variant="default"
+              count={typeof badge === 'number' ? badge : undefined}
               className="absolute right-2 top-1/2 -translate-y-1/2 tabular-nums transition-opacity duration-150 motion-reduce:transition-none group-data-[collapsible=icon]:opacity-0"
             >
-              {badge}
+              {typeof badge === 'string' ? badge : undefined}
             </ArdaBadge>
           )}
         </>

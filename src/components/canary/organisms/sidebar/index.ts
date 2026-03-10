@@ -7,19 +7,31 @@ export {
 export {
   ArdaSidebarHeader,
   type ArdaSidebarHeaderProps,
+  type ArdaSidebarHeaderStaticConfig,
+  type ArdaSidebarHeaderRuntimeConfig,
+  type TeamOption,
 } from '../../molecules/sidebar/sidebar-header';
-export { ArdaSidebarNav } from '../../molecules/sidebar/sidebar-nav';
+export {
+  ArdaSidebarNav,
+  type ArdaSidebarNavProps,
+  type ArdaSidebarNavStaticConfig,
+} from '../../molecules/sidebar/sidebar-nav';
 export {
   ArdaSidebarNavItem,
   type ArdaSidebarNavItemProps,
+  type ArdaSidebarNavItemStaticConfig,
+  type ArdaSidebarNavItemRuntimeConfig,
 } from '../../molecules/sidebar/sidebar-nav-item';
 export {
   ArdaSidebarNavGroup,
   type ArdaSidebarNavGroupProps,
+  type ArdaSidebarNavGroupStaticConfig,
 } from '../../molecules/sidebar/sidebar-nav-group';
 export {
   ArdaSidebarUserMenu,
   type ArdaSidebarUserMenuProps,
+  type ArdaSidebarUserMenuStaticConfig,
+  type ArdaSidebarUserMenuRuntimeConfig,
   type UserMenuAction,
 } from '../../molecules/sidebar/sidebar-user-menu';
 export { useSidebar } from './sidebar-context';

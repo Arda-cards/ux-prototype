@@ -194,6 +194,29 @@
   --sidebar-ring: #fc5a29;
 }
 
+/* Sidebar theme overrides — scoped to data attribute, no wrapper divs */
+[data-sidebar-theme='dark'] {
+  --sidebar: #0a0a0a;
+  --sidebar-foreground: #d4d4d4;
+  --sidebar-primary: #fc5a29;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1a1a1a;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #262626;
+  --sidebar-ring: #fc5a29;
+}
+
+[data-sidebar-theme='light'] {
+  --sidebar: hsl(0 0% 98%);
+  --sidebar-foreground: #171717;
+  --sidebar-primary: #fc5a29;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f5f5f5;
+  --sidebar-accent-foreground: #171717;
+  --sidebar-border: #e5e5e5;
+  --sidebar-ring: #fc5a29;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -244,7 +267,9 @@ iframe {
 
 /* Custom sidebar hover effects */
 .sidebar-menu-button-hover {
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  transition:
+    background-color 0.2s ease-in-out,
+    color 0.2s ease-in-out;
 }
 
 .sidebar-menu-button-hover:hover {

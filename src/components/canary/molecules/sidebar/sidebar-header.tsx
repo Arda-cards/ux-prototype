@@ -28,16 +28,27 @@ export interface TeamOption {
   onSelect: () => void;
 }
 
-export interface ArdaSidebarHeaderProps {
+/** Design-time configuration for ArdaSidebarHeader. */
+export interface ArdaSidebarHeaderStaticConfig {
+  /* --- View / Layout / Controller --- */
   /** Team or workspace name displayed next to the logo. */
   teamName?: string;
-  /** When provided, renders a team switcher dropdown. */
-  teams?: TeamOption[];
   /** Additional CSS classes. */
   className?: string;
   /** Optional children to render instead of the default logo + team name. */
   children?: React.ReactNode;
 }
+
+/** Runtime configuration for ArdaSidebarHeader. */
+export interface ArdaSidebarHeaderRuntimeConfig {
+  /* --- Model / Data Binding --- */
+  /** When provided, renders a team switcher dropdown. */
+  teams?: TeamOption[];
+}
+
+/** Combined props for ArdaSidebarHeader. */
+export interface ArdaSidebarHeaderProps
+  extends ArdaSidebarHeaderStaticConfig, ArdaSidebarHeaderRuntimeConfig {}
 
 // --- Component ---
 
@@ -53,15 +64,19 @@ export function ArdaSidebarHeader({
 
   const name = teamName ?? 'Arda';
 
+  const brandMark = (
+    <>
+      <ArdaBrandIcon variant="dark" className="size-4 min-w-4 shrink-0" />
+      <span className="truncate font-semibold text-sidebar-accent-foreground">{name}</span>
+    </>
+  );
+
   // Non-interactive header (default)
   if (!teams || teams.length === 0) {
     return (
       <SidebarHeader className={cn('p-2', className)}>
-        <div className="flex h-8 items-center gap-2 px-2">
-          <ArdaBrandIcon variant="dark" className="size-4 min-w-4 shrink-0" />
-          <span className="truncate font-semibold text-sidebar-accent-foreground group-data-[collapsible=icon]:hidden">
-            {name}
-          </span>
+        <div className="flex h-8 items-center gap-2 px-2 group-data-[collapsible=icon]:px-0">
+          {brandMark}
         </div>
       </SidebarHeader>
     );
@@ -75,10 +90,7 @@ export function ArdaSidebarHeader({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton>
-                <ArdaBrandIcon variant="dark" className="size-4 min-w-4 shrink-0" />
-                <span className="truncate font-semibold text-sidebar-accent-foreground">
-                  {name}
-                </span>
+                {brandMark}
                 <ChevronsUpDown className="ml-auto size-4 shrink-0 text-sidebar-foreground/70" />
               </SidebarMenuButton>
             </DropdownMenuTrigger>

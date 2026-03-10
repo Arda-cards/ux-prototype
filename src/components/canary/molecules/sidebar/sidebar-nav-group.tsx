@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import { useRef, Children, isValidElement } from 'react';
 import { type LucideIcon, ChevronRight } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -9,8 +9,8 @@ import { SidebarMenuItem, SidebarMenuButton, SidebarMenuSub } from '@/components
 
 // --- Interfaces ---
 
-/** Props for ArdaSidebarNavGroup. */
-export interface ArdaSidebarNavGroupProps {
+/** Design-time configuration for ArdaSidebarNavGroup. */
+export interface ArdaSidebarNavGroupStaticConfig {
   /* --- View / Layout / Controller --- */
   /** Group label text. */
   label: string;
@@ -24,12 +24,15 @@ export interface ArdaSidebarNavGroupProps {
   className?: string;
 }
 
+/** Combined props for ArdaSidebarNavGroup. No runtime config — pure presentational. */
+export interface ArdaSidebarNavGroupProps extends ArdaSidebarNavGroupStaticConfig {}
+
 // --- Helpers ---
 
 /** Check if any child ArdaSidebarNavItem has active=true (auto-expand support). */
-function hasActiveChild(children: React.ReactNode): boolean {
-  return React.Children.toArray(children).some(
-    (child) => React.isValidElement<{ active?: boolean }>(child) && child.props.active === true,
+function hasActiveChild(node: React.ReactNode): boolean {
+  return Children.toArray(node).some(
+    (child) => isValidElement<{ active?: boolean }>(child) && child.props.active === true,
   );
 }
 
@@ -47,9 +50,9 @@ export function ArdaSidebarNavGroup({
   children,
   className,
 }: ArdaSidebarNavGroupProps) {
-  // Only compute at mount — hasActiveChild walks the React tree and the result
+  // Compute once at mount — hasActiveChild walks the React tree and the result
   // is only meaningful as the initial value for the uncontrolled Collapsible.
-  const [shouldExpand] = React.useState(() => defaultExpanded || hasActiveChild(children));
+  const shouldExpand = useRef(defaultExpanded || hasActiveChild(children)).current;
 
   return (
     <Collapsible defaultOpen={shouldExpand} className={cn('group/collapsible', className)}>

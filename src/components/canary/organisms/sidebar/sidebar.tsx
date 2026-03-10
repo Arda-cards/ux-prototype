@@ -64,20 +64,16 @@ export function ArdaSidebar({
     ...(onOpenChange !== undefined && { onOpenChange }),
   };
 
-  const sidebar = (
-    <Sidebar collapsible="icon" className={cn('border-sidebar-border', className)}>
-      {children}
-      <SidebarRail />
-    </Sidebar>
-  );
-
   return (
     <SidebarProvider {...providerProps}>
-      {theme === 'system' ? (
-        sidebar
-      ) : (
-        <div className={theme === 'dark' ? 'dark' : 'light'}>{sidebar}</div>
-      )}
+      <Sidebar
+        collapsible="icon"
+        data-sidebar-theme={theme}
+        className={cn('border-sidebar-border', className)}
+      >
+        {children}
+        <SidebarRail />
+      </Sidebar>
       {page}
     </SidebarProvider>
   );
