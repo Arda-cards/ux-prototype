@@ -59,25 +59,34 @@ export const Gallery: Story = {
       <AssetGroup
         title="Brand Logos"
         assets={[
-          { src: '/canary/images/arda-logo-dark.svg', label: 'arda-logo-dark.svg' },
-          { src: '/canary/images/arda-logo-light.svg', label: 'arda-logo-light.svg' },
-          { src: '/canary/images/arda-logo-small-dark.svg', label: 'arda-logo-small-dark.svg' },
-          { src: '/canary/images/arda-logo-small-light.svg', label: 'arda-logo-small-light.svg' },
+          { src: '/canary/images/arda-logo-default.svg', label: 'arda-logo-default.svg' },
+          { src: '/canary/images/arda-logo-inverted.svg', label: 'arda-logo-inverted.svg' },
+          {
+            src: '/canary/images/arda-logo-small-default.svg',
+            label: 'arda-logo-small-default.svg',
+          },
+          {
+            src: '/canary/images/arda-logo-small-inverted.svg',
+            label: 'arda-logo-small-inverted.svg',
+          },
         ]}
       />
 
       <AssetGroup
         title="Monochrome Logos"
         assets={[
-          { src: '/canary/images/arda-logo-mono-dark.svg', label: 'arda-logo-mono-dark.svg' },
-          { src: '/canary/images/arda-logo-mono-light.svg', label: 'arda-logo-mono-light.svg' },
+          { src: '/canary/images/arda-logo-mono.svg', label: 'arda-logo-mono.svg' },
           {
-            src: '/canary/images/arda-logo-small-mono-dark.svg',
-            label: 'arda-logo-small-mono-dark.svg',
+            src: '/canary/images/arda-logo-mono-inverted.svg',
+            label: 'arda-logo-mono-inverted.svg',
           },
           {
-            src: '/canary/images/arda-logo-small-mono-light.svg',
-            label: 'arda-logo-small-mono-light.svg',
+            src: '/canary/images/arda-logo-small-mono.svg',
+            label: 'arda-logo-small-mono.svg',
+          },
+          {
+            src: '/canary/images/arda-logo-small-mono-inverted.svg',
+            label: 'arda-logo-small-mono-inverted.svg',
           },
         ]}
       />

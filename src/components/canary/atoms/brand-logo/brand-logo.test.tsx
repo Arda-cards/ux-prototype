@@ -8,25 +8,25 @@ describe('ArdaBrandLogo', () => {
     render(<ArdaBrandLogo />);
     const img = screen.getByAltText('Arda');
     expect(img).toBeInTheDocument();
-    expect(img).toHaveAttribute('src', '/images/brand/arda-logo-dark.svg');
+    expect(img).toHaveAttribute('src', '/images/brand/arda-logo-default.svg');
   });
 
   it('renders inverted variant', () => {
     render(<ArdaBrandLogo variant="inverted" />);
-    expect(screen.getByAltText('Arda')).toHaveAttribute('src', '/images/brand/arda-logo-light.svg');
+    expect(screen.getByAltText('Arda')).toHaveAttribute(
+      'src',
+      '/images/brand/arda-logo-inverted.svg',
+    );
   });
 
   it('renders mono variants', () => {
     const { rerender } = render(<ArdaBrandLogo variant="mono" />);
-    expect(screen.getByAltText('Arda')).toHaveAttribute(
-      'src',
-      '/images/brand/arda-logo-mono-dark.svg',
-    );
+    expect(screen.getByAltText('Arda')).toHaveAttribute('src', '/images/brand/arda-logo-mono.svg');
 
     rerender(<ArdaBrandLogo variant="mono-inverted" />);
     expect(screen.getByAltText('Arda')).toHaveAttribute(
       'src',
-      '/images/brand/arda-logo-mono-light.svg',
+      '/images/brand/arda-logo-mono-inverted.svg',
     );
   });
 
@@ -41,14 +41,14 @@ describe('ArdaBrandIcon', () => {
     render(<ArdaBrandIcon />);
     const img = screen.getByAltText('Arda');
     expect(img).toBeInTheDocument();
-    expect(img).toHaveAttribute('src', '/images/brand/arda-logo-small-dark.svg');
+    expect(img).toHaveAttribute('src', '/images/brand/arda-logo-small-default.svg');
   });
 
   it('renders inverted variant', () => {
     render(<ArdaBrandIcon variant="inverted" />);
     expect(screen.getByAltText('Arda')).toHaveAttribute(
       'src',
-      '/images/brand/arda-logo-small-light.svg',
+      '/images/brand/arda-logo-small-inverted.svg',
     );
   });
 
