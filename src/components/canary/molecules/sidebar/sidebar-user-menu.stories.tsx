@@ -4,7 +4,7 @@ import { expect, fn, within } from 'storybook/test';
 import { Settings, ShieldCheck, LogOut } from 'lucide-react';
 
 import { ArdaSidebarUserMenu, type UserMenuAction } from './sidebar-user-menu';
-import { ArdaSidebar } from './sidebar';
+import { ArdaSidebar } from '../../organisms/sidebar/sidebar';
 
 const mockUser = {
   name: 'Callil Capuozzo',
@@ -18,8 +18,8 @@ const defaultActions: UserMenuAction[] = [
   { key: 'logout', label: 'Log out', icon: LogOut, onClick: fn(), destructive: true },
 ];
 
-const meta: Meta<typeof ArdaSidebarUserMenu> = {
-  title: 'Components/Canary/Organisms/Sidebar/User Menu',
+const meta = {
+  title: 'Components/Canary/Molecules/Sidebar/UserMenu',
   component: ArdaSidebarUserMenu,
   parameters: {
     layout: 'fullscreen',
@@ -33,10 +33,11 @@ const meta: Meta<typeof ArdaSidebarUserMenu> = {
       },
     },
   },
-};
+  tags: ['autodocs'],
+} satisfies Meta<typeof ArdaSidebarUserMenu>;
 
 export default meta;
-type Story = StoryObj<typeof ArdaSidebarUserMenu>;
+type Story = StoryObj<typeof meta>;
 
 /** Default expanded view with admin, settings, and logout. */
 export const Default: Story = {

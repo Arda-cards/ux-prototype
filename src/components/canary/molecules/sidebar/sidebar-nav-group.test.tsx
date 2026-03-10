@@ -5,7 +5,7 @@ import { describe, it, expect } from 'vitest';
 import { Boxes } from 'lucide-react';
 
 import { ArdaSidebarNavGroup } from './sidebar-nav-group';
-import { ArdaSidebar } from './sidebar';
+import { ArdaSidebar } from '../../organisms/sidebar/sidebar';
 
 function renderInSidebar(ui: React.ReactElement) {
   return render(<ArdaSidebar defaultOpen>{ui}</ArdaSidebar>);

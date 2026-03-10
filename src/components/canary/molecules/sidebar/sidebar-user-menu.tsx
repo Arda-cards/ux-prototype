@@ -16,7 +16,6 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  useSidebar,
 } from '@/components/ui/sidebar';
 
 // --- Interfaces ---
@@ -50,15 +49,20 @@ export interface ArdaSidebarUserMenuProps {
   actions: UserMenuAction[];
 
   /* --- View / Layout / Controller --- */
+  /** Whether the sidebar is in mobile mode. Controls dropdown placement direction. */
+  isMobile?: boolean;
   /** Additional CSS classes. */
   className?: string;
 }
 
 // --- Component ---
 
-export function ArdaSidebarUserMenu({ user, actions, className }: ArdaSidebarUserMenuProps) {
-  const { isMobile } = useSidebar();
-
+export function ArdaSidebarUserMenu({
+  user,
+  actions,
+  isMobile = false,
+  className,
+}: ArdaSidebarUserMenuProps) {
   const initials = user.name
     .split(/\s+/)
     .filter(Boolean)

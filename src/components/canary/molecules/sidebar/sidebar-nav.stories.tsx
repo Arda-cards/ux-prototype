@@ -5,10 +5,10 @@ import { LayoutDashboard, Package, ShoppingCart, Building2, Settings } from 'luc
 
 import { ArdaSidebarNav } from './sidebar-nav';
 import { ArdaSidebarNavItem } from './sidebar-nav-item';
-import { ArdaSidebar } from './sidebar';
+import { ArdaSidebar } from '../../organisms/sidebar/sidebar';
 
-const meta: Meta<typeof ArdaSidebarNav> = {
-  title: 'Components/Canary/Organisms/Sidebar/Nav',
+const meta = {
+  title: 'Components/Canary/Molecules/Sidebar/Nav',
   component: ArdaSidebarNav,
   parameters: {
     layout: 'fullscreen',
@@ -20,10 +20,11 @@ const meta: Meta<typeof ArdaSidebarNav> = {
       },
     },
   },
-};
+  tags: ['autodocs'],
+} satisfies Meta<typeof ArdaSidebarNav>;
 
 export default meta;
-type Story = StoryObj<typeof ArdaSidebarNav>;
+type Story = StoryObj<typeof meta>;
 
 /** Default with a set of nav items. */
 export const Default: Story = {

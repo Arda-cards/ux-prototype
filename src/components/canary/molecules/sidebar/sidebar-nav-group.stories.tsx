@@ -5,11 +5,11 @@ import { Package, ShoppingCart, Boxes } from 'lucide-react';
 
 import { ArdaSidebarNavGroup } from './sidebar-nav-group';
 import { ArdaSidebarNavItem } from './sidebar-nav-item';
-import { ArdaSidebar } from './sidebar';
+import { ArdaSidebar } from '../../organisms/sidebar/sidebar';
 import { ArdaSidebarNav } from './sidebar-nav';
 
-const meta: Meta<typeof ArdaSidebarNavGroup> = {
-  title: 'Components/Canary/Organisms/Sidebar/Nav Group',
+const meta = {
+  title: 'Components/Canary/Molecules/Sidebar/NavGroup',
   component: ArdaSidebarNavGroup,
   parameters: {
     layout: 'fullscreen',
@@ -21,10 +21,11 @@ const meta: Meta<typeof ArdaSidebarNavGroup> = {
       },
     },
   },
-};
+  tags: ['autodocs'],
+} satisfies Meta<typeof ArdaSidebarNavGroup>;
 
 export default meta;
-type Story = StoryObj<typeof ArdaSidebarNavGroup>;
+type Story = StoryObj<typeof meta>;
 
 /** Collapsed by default — click to expand. */
 export const Default: Story = {

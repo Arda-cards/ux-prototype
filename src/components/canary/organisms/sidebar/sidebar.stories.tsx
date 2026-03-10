@@ -17,11 +17,14 @@ import {
 } from 'lucide-react';
 
 import { ArdaSidebar } from './sidebar';
-import { ArdaSidebarHeader } from './sidebar-header';
-import { ArdaSidebarNav } from './sidebar-nav';
-import { ArdaSidebarNavGroup } from './sidebar-nav-group';
-import { ArdaSidebarUserMenu, type UserMenuAction } from './sidebar-user-menu';
-import { ArdaSidebarNavItem } from './sidebar-nav-item';
+import { ArdaSidebarHeader } from '../../molecules/sidebar/sidebar-header';
+import { ArdaSidebarNav } from '../../molecules/sidebar/sidebar-nav';
+import { ArdaSidebarNavGroup } from '../../molecules/sidebar/sidebar-nav-group';
+import {
+  ArdaSidebarUserMenu,
+  type UserMenuAction,
+} from '../../molecules/sidebar/sidebar-user-menu';
+import { ArdaSidebarNavItem } from '../../molecules/sidebar/sidebar-nav-item';
 import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 
 const mockUser = {

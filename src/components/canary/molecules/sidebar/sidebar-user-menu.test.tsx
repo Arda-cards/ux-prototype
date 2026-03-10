@@ -5,7 +5,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { Settings, ShieldCheck, LogOut } from 'lucide-react';
 
 import { ArdaSidebarUserMenu, type UserMenuAction } from './sidebar-user-menu';
-import { ArdaSidebar } from './sidebar';
+import { ArdaSidebar } from '../../organisms/sidebar/sidebar';
 
 const mockUser = {
   name: 'Callil Capuozzo',

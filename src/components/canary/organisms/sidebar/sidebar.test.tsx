@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 
 import { ArdaSidebar } from './sidebar';
-import { ArdaSidebarHeader } from './sidebar-header';
+import { ArdaSidebarHeader } from '../../molecules/sidebar/sidebar-header';
 
 describe('ArdaSidebar', () => {
   it('renders children inside the sidebar provider', () => {

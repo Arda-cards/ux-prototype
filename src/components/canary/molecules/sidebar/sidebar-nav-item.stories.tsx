@@ -4,11 +4,11 @@ import { expect, fn, within } from 'storybook/test';
 import { LayoutDashboard, Package, ShoppingCart, Building2, Settings } from 'lucide-react';
 
 import { ArdaSidebarNavItem } from './sidebar-nav-item';
-import { ArdaSidebar } from './sidebar';
+import { ArdaSidebar } from '../../organisms/sidebar/sidebar';
 import { ArdaSidebarNav } from './sidebar-nav';
 
-const meta: Meta<typeof ArdaSidebarNavItem> = {
-  title: 'Components/Canary/Organisms/Sidebar/Nav Item',
+const meta = {
+  title: 'Components/Canary/Molecules/Sidebar/NavItem',
   component: ArdaSidebarNavItem,
   parameters: {
     layout: 'fullscreen',
@@ -28,13 +28,14 @@ const meta: Meta<typeof ArdaSidebarNavItem> = {
     icon: { table: { category: 'View' } },
     label: { control: 'text', table: { category: 'View' } },
   },
+  tags: ['autodocs'],
   args: {
     onClick: fn(),
   },
-};
+} satisfies Meta<typeof ArdaSidebarNavItem>;
 
 export default meta;
-type Story = StoryObj<typeof ArdaSidebarNavItem>;
+type Story = StoryObj<typeof meta>;
 
 /** Default inactive state inside a sidebar. */
 export const Default: Story = {

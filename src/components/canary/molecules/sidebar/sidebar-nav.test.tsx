@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 
 import { ArdaSidebarNav } from './sidebar-nav';
-import { ArdaSidebar } from './sidebar';
+import { ArdaSidebar } from '../../organisms/sidebar/sidebar';
 
 function renderInSidebar(ui: React.ReactElement) {
   return render(<ArdaSidebar defaultOpen>{ui}</ArdaSidebar>);
