@@ -73,19 +73,3 @@ export const AllVariants: Story = {
     </div>
   ),
 };
-
-/** Side by side — expanded vs collapsed on dark background. */
-export const SidebarUsage: Story = {
-  render: () => (
-    <div className="bg-sidebar p-6 rounded-lg flex items-center gap-8">
-      <div className="flex flex-col items-start gap-2">
-        <span className="text-xs text-sidebar-foreground/70">Expanded</span>
-        <ArdaBrandLogo variant="dark" />
-      </div>
-      <div className="flex flex-col items-start gap-2">
-        <span className="text-xs text-sidebar-foreground/70">Collapsed</span>
-        <ArdaBrandIcon variant="dark" />
-      </div>
-    </div>
-  ),
-};
