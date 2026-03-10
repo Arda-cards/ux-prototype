@@ -1,6 +1,8 @@
 // Canary exports — in-development components not yet promoted to stable.
 // Consumers: import { ... } from '@arda-cards/design-system/canary';
 
+// --- Placeholders ---
+
 export { CanaryAtomPlaceholder } from './components/canary/atoms/canary-placeholder/canary-placeholder';
 export type {
   CanaryAtomPlaceholderProps,
@@ -21,12 +23,47 @@ export type {
 
 // --- Atoms ---
 
+export { ArdaBadge } from './components/canary/atoms/badge/badge';
+export type { ArdaBadgeProps } from './components/canary/atoms/badge/badge';
+
+export { ArdaBrandLogo, ArdaBrandIcon } from './components/canary/atoms/brand-logo/brand-logo';
+
+export { ArdaIconLabel } from './components/canary/atoms/icon-label/icon-label';
+export type { ArdaIconLabelProps } from './components/canary/atoms/icon-label/icon-label';
+
 export {
-  ArdaDetailField,
-  detailFieldVariants,
-} from './components/canary/atoms/detail-field/detail-field';
+  ArdaReadOnlyField,
+  readOnlyFieldVariants,
+} from './components/canary/atoms/read-only-field/read-only-field';
 export type {
-  ArdaDetailFieldProps,
-  ArdaDetailFieldStaticConfig,
-  ArdaDetailFieldRuntimeConfig,
-} from './components/canary/atoms/detail-field/detail-field';
+  ArdaReadOnlyFieldProps,
+  ArdaReadOnlyFieldStaticConfig,
+  ArdaReadOnlyFieldRuntimeConfig,
+} from './components/canary/atoms/read-only-field/read-only-field';
+
+// --- Molecules — Sidebar ---
+
+export { ArdaSidebarHeader } from './components/canary/molecules/sidebar/sidebar-header';
+export type {
+  ArdaSidebarHeaderProps,
+  TeamOption,
+} from './components/canary/molecules/sidebar/sidebar-header';
+
+export { ArdaSidebarNav } from './components/canary/molecules/sidebar/sidebar-nav';
+
+export { ArdaSidebarNavItem } from './components/canary/molecules/sidebar/sidebar-nav-item';
+export type { ArdaSidebarNavItemProps } from './components/canary/molecules/sidebar/sidebar-nav-item';
+
+export { ArdaSidebarNavGroup } from './components/canary/molecules/sidebar/sidebar-nav-group';
+export type { ArdaSidebarNavGroupProps } from './components/canary/molecules/sidebar/sidebar-nav-group';
+
+export { ArdaSidebarUserMenu } from './components/canary/molecules/sidebar/sidebar-user-menu';
+export type {
+  ArdaSidebarUserMenuProps,
+  UserMenuAction,
+} from './components/canary/molecules/sidebar/sidebar-user-menu';
+
+// --- Organisms — Sidebar ---
+
+export { ArdaSidebar } from './components/canary/organisms/sidebar/sidebar';
+export type { ArdaSidebarProps } from './components/canary/organisms/sidebar/sidebar';
