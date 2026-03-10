@@ -59,7 +59,7 @@ export const Default: Story = {
 
     // 3. Verify the drawer shows the correct affiliate name in its heading
     const drawerScope = within(drawer);
-    expect(drawerScope.getByText('Apex Medical Distributors')).toBeVisible();
+    expect(drawerScope.getByRole('heading', { name: 'Apex Medical Distributors' })).toBeVisible();
 
     // 4. Verify the drawer shows the affiliate's entity ID (in Identity section)
     expect(drawerScope.getByText(firstAffiliate.eId)).toBeVisible();

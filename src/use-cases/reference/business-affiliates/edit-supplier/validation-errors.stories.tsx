@@ -246,7 +246,9 @@ export const NetworkError: Story = {
       {},
       { timeout: 10000 },
     );
-    expect(toastText).toBeVisible();
+    await waitFor(() => {
+      expect(toastText).toBeVisible();
+    }, { timeout: 10000 });
 
     // Step 6: Verify drawer stays in edit mode
     await waitFor(() => {

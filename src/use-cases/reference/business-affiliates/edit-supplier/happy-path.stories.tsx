@@ -298,7 +298,7 @@ export const Automated: Story = {
     expect(emailInput).toBeVisible();
 
     // Step 6: Clear current email and type new value
-    await userEvent.triple_click(emailInput);
+    await userEvent.clear(emailInput);
     await userEvent.type(emailInput, 'newemail@example.com');
 
     // Step 7: Locate the city field (Address section is expanded since Apex has address data)
@@ -306,7 +306,7 @@ export const Automated: Story = {
     expect(cityInput).toBeVisible();
 
     // Step 8: Clear current city ("Denver") and type new value
-    await userEvent.triple_click(cityInput);
+    await userEvent.clear(cityInput);
     await userEvent.type(cityInput, 'New York');
 
     // Step 9: Click "Save"
@@ -314,7 +314,9 @@ export const Automated: Story = {
 
     // Step 10: Verify success toast (Sonner renders via portal to document.body — use screen)
     const toastText = await screen.findByText(/supplier updated successfully/i, {}, { timeout: 10000 });
-    expect(toastText).toBeVisible();
+    await waitFor(() => {
+      expect(toastText).toBeVisible();
+    }, { timeout: 10000 });
 
     // Step 11: Verify drawer returns to view mode (Save button disappears, Edit button reappears)
     await waitFor(() => {

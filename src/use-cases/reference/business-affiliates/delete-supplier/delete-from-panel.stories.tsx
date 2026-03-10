@@ -86,7 +86,9 @@ export const ConfirmDelete: Story = {
 
     // 10. Verify success toast (Sonner renders via portal to document.body)
     const toastText = await screen.findByText(/supplier deleted successfully/i, {}, { timeout: 10000 });
-    expect(toastText).toBeVisible();
+    await waitFor(() => {
+      expect(toastText).toBeVisible();
+    }, { timeout: 10000 });
 
     // 11. Verify the drawer is closed (key remount resets SuppliersPage state)
     await waitFor(() => {

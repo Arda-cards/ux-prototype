@@ -79,7 +79,9 @@ export const SingleDelete: Story = {
 
     // 8. Verify success toast (Sonner renders via portal to document.body)
     const toastText = await screen.findByText(/supplier deleted successfully/i, {}, { timeout: 10000 });
-    expect(toastText).toBeVisible();
+    await waitFor(() => {
+      expect(toastText).toBeVisible();
+    }, { timeout: 10000 });
 
     // 9. Verify the deleted row is gone — "Apex Medical Distributors" should no longer appear
     await waitFor(() => {
@@ -127,7 +129,9 @@ export const BulkDelete: Story = {
 
     // 7. Verify success toast (Sonner portal — use screen)
     const toastText = await screen.findByText(/suppliers deleted successfully/i, {}, { timeout: 10000 });
-    expect(toastText).toBeVisible();
+    await waitFor(() => {
+      expect(toastText).toBeVisible();
+    }, { timeout: 10000 });
   },
 };
 

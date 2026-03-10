@@ -82,7 +82,9 @@ export const NetworkError: Story = {
 
     // 5. Verify error toast (Sonner portal — use screen)
     const errorToast = await screen.findByText(/failed to delete/i, {}, { timeout: 10000 });
-    expect(errorToast).toBeVisible();
+    await waitFor(() => {
+      expect(errorToast).toBeVisible();
+    }, { timeout: 10000 });
 
     // 6. Verify the row is still present (not removed after failed delete)
     expect(canvas.getByText('Apex Medical Distributors')).toBeVisible();
