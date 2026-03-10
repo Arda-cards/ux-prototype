@@ -7,14 +7,14 @@ import '@/styles/vendored/globals.css';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { http, HttpResponse } from 'msw';
 import { SidebarProvider, SidebarInset } from '@frontend/components/ui/sidebar';
-import { BusinessAffiliatesSidebar } from '../components/business-affiliates-sidebar';
+import { BusinessAffiliatesSidebar } from '../_shared/suppliers-sidebar';
 import { ArdaGrid } from '@frontend/components/table';
 import { Button } from '@frontend/components/ui/button';
 import type { ArdaApiResponse, ArdaQueryResponse } from '@frontend/types/arda-api';
 import { ArdaSupplierDrawer } from '@/components/extras/organisms/reference/business-affiliates/supplier-drawer/supplier-drawer';
 import type { BusinessAffiliate } from '@/types/extras';
-import type { BusinessAffiliateWithRoles } from '../types';
-import { suppliersColumnDefs, suppliersDefaultColDef } from '../column-defs';
+import type { BusinessAffiliateWithRoles } from '../_shared/types';
+import { suppliersColumnDefs, suppliersDefaultColDef } from '../_shared/column-defs';
 import { ImportSuppliersModal } from './import-suppliers-modal';
 
 /** Convert our use-case type to the drawer's expected BusinessAffiliate shape. */
@@ -353,7 +353,7 @@ function SuppliersPageWithDrawer() {
 }
 
 const meta: Meta<typeof SuppliersPage> = {
-  title: 'Use Cases/Reference/Business Affiliates/Pages/Suppliers List View',
+  title: 'Use Cases/Reference/Business Affiliates/Ignore/Pages/Suppliers List View',
   component: SuppliersPage,
   parameters: {
     layout: 'fullscreen',
