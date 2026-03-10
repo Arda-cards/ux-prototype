@@ -338,10 +338,13 @@ export const Automated: Story = {
 
     await storyStepDelay();
 
-    // Step 12: Verify the updated email shows in view mode
-    expect(canvas.getByText('newemail@example.com')).toBeVisible();
+    // Step 12: Verify the updated email shows in view mode (scope to drawer to avoid
+    // matching the grid cell which also updates with the new email)
+    const drawerAfterSave = await canvas.findByRole('dialog', {}, { timeout: 10000 });
+    const viewScope = within(drawerAfterSave);
+    expect(viewScope.getByText('newemail@example.com')).toBeVisible();
 
     // Step 13: Verify the updated city shows in view mode
-    expect(canvas.getByText('New York')).toBeVisible();
+    expect(viewScope.getByText('New York')).toBeVisible();
   },
 };
