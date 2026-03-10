@@ -18,6 +18,127 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [2.1.0] - 2026-03-06
+
+### Added
+
+- Procurement use-case documentation pages: Context, References, Orders, and Receiving
+- Persona documentation pages: Alan (Account Admin), David (Purchasing Manager),
+  Irene (Inventory Manager), Keisha (Receiving Clerk), Sam (Shop-Floor Worker)
+- Storybook sidebar ordering for procurement use-case section
+
+### Fixed
+
+- Disabled HTTP Basic Authentication on Vercel Edge middleware, Express server, and Storybook
+  dev middleware — the Storybook site is now publicly accessible without credentials
+- Updated stakeholder instructions, README, and Makefile to reflect removal of auth
+
+## [2.0.0] - 2026-03-05
+
+### Added
+
+- Dedicated type barrel entry points following the three-tier maturity model:
+  `types`, `types/canary`, `types/extras`, `types/date-time`, `types/canary-date-time`,
+  `types/extras-date-time` — each with ESM, CJS, and `.d.ts` outputs
+- `package.json` subpath exports and `typesVersions` entries for all six type barrels
+- Vite build entry points for type barrels in `vite.config.ts`
+- "Importing Types" documentation section in the "Using the Design System" workflow page
+- Co-located mock data files for stories and tests under
+  `organisms/reference/business-affiliates/mocks/` and `organisms/reference/items/mocks/`
+
+### Changed
+
+- Domain model types (`BusinessAffiliate`, `Item`, `Money`, `PaginationData`, etc.)
+  are now published from `types/extras` barrel instead of the `extras` component barrel —
+  consumers should import types from `@arda-cards/design-system/types/extras`
+- Timezone utilities (`IANA_TIMEZONES`, `searchTimezones`, etc.) moved to
+  `types/extras-date-time` barrel to avoid bundling ~66 KB of IANA data with basic types
+- All internal component, story, test, and mock imports updated to use type barrels
+  instead of leaf-path imports
+- "Package Exports" documentation reorganized into Components / Types / Styles subsections
+
+### Removed
+
+- `sampleAffiliates` and `sampleItemSupplies` removed from published type files and
+  the `extras` barrel — replaced by co-located mock files for stories/tests
+- `ModelCurrency`, `ModelMoney`, `ModelTimeUnit`, `ModelDuration` aliased re-exports
+  removed from `extras` barrel
+- Duplicate type definitions (`Currency`, `Money`, `TimeUnit`, `Duration`,
+  `OrderMechanism`, `ItemClassification`, `Locator`) removed from `item-drawer.tsx` —
+  now imported from `types/extras` barrel
+- Domain type re-exports removed from `extras` component barrel (types are now in
+  dedicated type barrels only)
+
+### Fixed
+
+- Added missing `@testing-library/dom` dev dependency (peer dependency of
+  `@testing-library/react` that was never installed, causing test file load failures)
+
+## [1.18.0] - 2026-03-05
+
+### Added
+
+- TypeScript declaration files (`.d.ts`) now emitted alongside JS/CJS outputs via `vite-plugin-dts`
+  with rolled-up declarations per entry point (`index.d.ts`, `canary.d.ts`, `extras.d.ts`)
+- `tsconfig.build.json` for library-only declaration generation (excludes stories, tests, vendored)
+- CSS design tokens preset: `styles/tokens.css` (Nominal) and `styles/canary/tokens.css` (Canary)
+  providing minimal CSS custom properties for consumers with their own Tailwind setup
+- Consumer documentation: peer dependencies table, CSS token reference, and token import options
+  in README and Storybook "Using the Design System" workflow page
+- Coverage thresholds enforced via Vitest: statements 85%, branches 75%, functions 65%, lines 85%
+- `coverage:summary` script and `make coverage-summary` target
+
+### Fixed
+
+- Moved `ag-grid-community`, `ag-grid-react`, and `lucide-react` from `dependencies` to
+  `peerDependencies` to prevent version conflicts with consuming applications
+  (kept in `devDependencies` for local Storybook development)
+- Externalized `ag-grid-community`, `ag-grid-react`, and `lucide-react` in Vite build —
+  extras bundle reduced ~90% (extras.js 1,607 kB to 162 kB)
+- `ArdaDetailField` `fallback` prop JSDoc now clarifies it has no effect when `children` is provided
+
+## [1.17.0] - 2026-03-04
+
+### Added
+
+- CSS architecture: three-theme system (Nominal, Canary, Vendored) with dedicated `src/styles/` directories
+  and CSS layer system (`base` and `theme-override` layers)
+- CSS Layer System documentation page explaining the cascade architecture
+- Canary visual elements: Colors, Icons, and Assets stories mirroring vendored versions
+- Vendored visual elements: Colors, Icons, and Assets stories separated from nominal
+- Canary and vendored image assets under `public/canary/images/` and `public/vendored/images/`
+- Using the Design System documentation page: installation, exports, styles, assets, and
+  auto-generated "Current Content" inventory
+- `tools/update-package-contents.js`: script to regenerate the package contents inventory
+  from barrel files, styles, and assets
+- `tools/copy-dist-assets.js`: post-build script to copy styles and assets into `dist/`
+- Package exports for styles (`./styles`, `./styles/*`) and assets (`./assets/*`)
+- ArdaDetailField exported from `src/canary.ts` barrel (first real canary component export)
+- Publishing workflow: barrel export instructions, package contents regeneration guide,
+  concrete code example for adding canary exports
+- Canary components workflow: Phase 4 now includes barrel file export step with
+  `update-package-contents.js` regeneration
+- Canary components example: Phase 4 barrel export section and lesson learned about
+  the barrel export gap
+- Layout integrity smoke tests: sidebar visibility (5 stories) and AG Grid data
+  visibility (2 stories) using `elementFromPoint`
+- Storybook render smoke tests: batched into groups of 20 for better timeout handling
+
+### Fixed
+
+- Suppliers List View: AG Grid zero-height rows caused by flex chain break
+  (`min-h-0 overflow-hidden` on parent containers)
+- Suppliers List View: invisible sidebar caused by missing vendored CSS import
+- Smoke test timeout: increased from 5 to 10 minutes, stories batched to avoid
+  single-test timeout
+- AG Grid theme: added `--ag-row-hover-color` token for row hover styling
+- Storybook preview: normalized decorator to use Nominal theme by default
+- Renamed `src/styles/extras/` to track-specific directories (`src/styles/`,
+  `src/styles/canary/`, `src/styles/vendored/`)
+- Dev Witness stories: consistent `@/styles/vendored/globals.css` imports
+- Documentation terminology: standardized "stable" to "Nominal" across all docs
+- Package name references: updated to `@arda-cards/design-system` in docs
+
 ## [1.16.0] - 2026-03-02
 
 ### Added

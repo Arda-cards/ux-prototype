@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 import ReceivingPage from '@frontend/app/receiving/page';
-import '@/styles/extras/vendored-theme.css';
+import '@/styles/vendored/globals.css';
 
 const meta: Meta<typeof ReceivingPage> = {
   title: 'Dev Witness/Transactions/Receiving',

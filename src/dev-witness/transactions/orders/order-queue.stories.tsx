@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 import { http, HttpResponse } from 'msw';
 import OrderQueuePage from '@frontend/app/order-queue/page';
-import '@/styles/extras/vendored-theme.css';
+import '@/styles/vendored/globals.css';
 
 const meta: Meta<typeof OrderQueuePage> = {
   title: 'Dev Witness/Transactions/Orders/Order Queue',

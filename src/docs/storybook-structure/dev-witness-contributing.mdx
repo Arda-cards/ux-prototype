@@ -16,7 +16,7 @@ Each Dev Witness page story lives in `src/dev-witness/` and follows a consistent
 // src/dev-witness/<section>/my-page.stories.tsx
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import MyPage from '@frontend/app/my-page/page';
-import '@/styles/extras/vendored-theme.css';
+import '@/styles/vendored/globals.css';
 
 const meta: Meta<typeof MyPage> = {
   title: 'Dev Witness/Section/My Page',
@@ -42,7 +42,7 @@ Key points:
 
 - The `title` must start with `Dev Witness/` so the `withFullAppProviders` decorator activates. Use a minimum three-level title (`Dev Witness/Section/Page`) matching the application&#8217;s navigation structure. See the [Page Inventory](?path=/docs/docs-storybook-structure-dev-witness-integration--docs#page-inventory) for the section taxonomy.
 - The `tags` array should include `app-route:<path>` for route traceability.
-- Import `@/styles/extras/vendored-theme.css` to apply the production application&#8217;s CSS custom properties.
+- Import `@/styles/vendored/globals.css` to apply the production application&#8217;s CSS custom properties. This file uses the `theme-override` CSS layer so vendored tokens take precedence over the Nominal base theme. See the [CSS Layer System](?path=/docs/docs-css-layer-system--docs) for details.
 - Set `pathname` in `args` to match the application route. For dynamic routes, provide a concrete value (e.g., `/item/item-001`).
 
 ### 2. Handle Dynamic Routes

@@ -1,5 +1,5 @@
 {
-  "name": "@arda-cards/ui-components",
+  "name": "@arda-cards/design-system",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -21,7 +21,39 @@
       "import": "./dist/extras.js",
       "require": "./dist/extras.cjs"
     },
-    "./styles": "./dist/styles/globals.css"
+    "./types": {
+      "types": "./dist/types.d.ts",
+      "import": "./dist/types.js",
+      "require": "./dist/types.cjs"
+    },
+    "./types/canary": {
+      "types": "./dist/types-canary.d.ts",
+      "import": "./dist/types-canary.js",
+      "require": "./dist/types-canary.cjs"
+    },
+    "./types/extras": {
+      "types": "./dist/types-extras.d.ts",
+      "import": "./dist/types-extras.js",
+      "require": "./dist/types-extras.cjs"
+    },
+    "./types/date-time": {
+      "types": "./dist/types-date-time.d.ts",
+      "import": "./dist/types-date-time.js",
+      "require": "./dist/types-date-time.cjs"
+    },
+    "./types/canary-date-time": {
+      "types": "./dist/types-canary-date-time.d.ts",
+      "import": "./dist/types-canary-date-time.js",
+      "require": "./dist/types-canary-date-time.cjs"
+    },
+    "./types/extras-date-time": {
+      "types": "./dist/types-extras-date-time.d.ts",
+      "import": "./dist/types-extras-date-time.js",
+      "require": "./dist/types-extras-date-time.cjs"
+    },
+    "./styles": "./dist/styles/globals.css",
+    "./styles/*": "./dist/styles/*",
+    "./assets/*": "./dist/assets/*"
   },
   "typesVersions": {
     "*": {
@@ -30,6 +62,24 @@
       ],
       "extras": [
         "./dist/extras.d.ts"
+      ],
+      "types": [
+        "./dist/types.d.ts"
+      ],
+      "types/canary": [
+        "./dist/types-canary.d.ts"
+      ],
+      "types/extras": [
+        "./dist/types-extras.d.ts"
+      ],
+      "types/date-time": [
+        "./dist/types-date-time.d.ts"
+      ],
+      "types/canary-date-time": [
+        "./dist/types-canary-date-time.d.ts"
+      ],
+      "types/extras-date-time": [
+        "./dist/types-extras-date-time.d.ts"
       ]
     }
   },
@@ -44,12 +94,13 @@
     "storybook": "storybook dev -p 6006",
     "install:vendored": "node tools/install-vendored-deps.js",
     "build-storybook": "node tools/install-vendored-deps.js && storybook build",
-    "build:lib": "vite build",
+    "build:lib": "LIB_BUILD=true vite build && node tools/copy-dist-assets.js",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "test": "vitest --run",
     "test:watch": "vitest",
     "test:coverage": "vitest --run --coverage",
+    "coverage:summary": "npx vitest --run --coverage 2>&1 | tail -5",
     "test:storybook": "test-storybook --testTimeout 30000",
     "test:storybook:ci": "concurrently -k -s first \"http-server storybook-static --port 6006 --silent\" \"wait-on tcp:6006 && test-storybook --testTimeout 30000\"",
     "test:vrt": "playwright test --project=vrt",
@@ -58,29 +109,15 @@
     "serve": "node tools/server.js"
   },
   "dependencies": {
-    "@base-ui/react": "^1.2.0",
-    "@hookform/resolvers": "^5.2.2",
-    "ag-grid-community": "^34.3.1",
-    "ag-grid-react": "^34.3.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "cmdk": "^1.1.1",
-    "date-fns": "^4.1.0",
-    "embla-carousel-react": "^8.6.0",
-    "input-otp": "^1.4.2",
-    "lucide-react": "^0.563.0",
-    "next-themes": "^0.4.6",
     "radix-ui": "^1.4.3",
-    "react-day-picker": "^9.14.0",
-    "react-hook-form": "^7.71.2",
-    "react-resizable-panels": "^4.7.2",
-    "recharts": "^2.15.4",
-    "sonner": "^2.0.7",
-    "tailwind-merge": "^3.4.0",
-    "vaul": "^1.1.2",
-    "zod": "^4.3.6"
+    "tailwind-merge": "^3.4.0"
   },
   "peerDependencies": {
+    "ag-grid-community": "^34.0.0",
+    "ag-grid-react": "^34.0.0",
+    "lucide-react": ">=0.400.0",
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0"
   },
@@ -90,17 +127,20 @@
     "@storybook/addon-docs": "^10.2.8",
     "@storybook/react-vite": "^10.2.8",
     "@storybook/test-runner": "^0.24.2",
-    "@tailwindcss/postcss": "^4",
-    "@testing-library/jest-dom": "^6.6.0",
-    "@testing-library/react": "^16.1.0",
-    "@testing-library/user-event": "^14.5.0",
+    "@tailwindcss/postcss": "^4.1.7",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
     "@typescript-eslint/eslint-plugin": "^8.55.0",
     "@typescript-eslint/parser": "^8.55.0",
     "@vitejs/plugin-react": "^4.3.0",
     "@vitest/coverage-v8": "^3.0.0",
+    "ag-grid-community": "^34.3.1",
+    "ag-grid-react": "^34.3.1",
     "agentation": "^2.3.1",
     "concurrently": "^9.1.0",
     "eslint": "^9",
@@ -112,18 +152,18 @@
     "express-basic-auth": "^1.2.1",
     "http-server": "^14.1.1",
     "jsdom": "^26.0.0",
+    "lucide-react": "^0.563.0",
     "msw": "^2.12.10",
     "msw-storybook-addon": "^2.0.6",
     "prettier": "^3.4.0",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
-    "react-redux": "^9.2.0",
-    "redux-persist": "^6.0.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
     "storybook": "^10.2.8",
-    "tailwindcss": "^4",
+    "tailwindcss": "^4.1.7",
     "tw-animate-css": "^1.4.0",
-    "typescript": "^5",
+    "typescript": "5.9.3",
     "vite": "^6.0.0",
+    "vite-plugin-dts": "^4.5.4",
     "vitest": "^3.0.0",
     "wait-on": "^8.0.0"
   },

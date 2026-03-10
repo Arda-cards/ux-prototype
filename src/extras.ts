@@ -1,5 +1,5 @@
 // Extras exports — supplementary components that extend the core library.
-// Consumers: import { ... } from '@arda-cards/ui-components/extras';
+// Consumers: import { ... } from '@arda-cards/design-system/extras';
 
 // --- Extras Placeholders ---
 
@@ -87,15 +87,8 @@ export type {
   ArdaItemDrawerRuntimeConfig,
   ItemData,
   ItemDrawerMode,
-  Supply,
-  Money,
-  Quantity,
-  Duration,
-  Locator,
-  ItemClassification,
-  OrderMechanism,
-  Currency,
-  TimeUnit,
+  Quantity as ItemDrawerQuantity,
+  Supply as ItemDrawerSupply,
 } from './components/extras/organisms/item-drawer/item-drawer';
 
 export { ArdaItemSupplySection } from './components/extras/organisms/reference/items/item-supply-section/item-supply-section';
@@ -148,41 +141,6 @@ export {
   type EntityDataGridProps,
   type EntityDataGridRef,
 } from './components/extras/organisms/shared/entity-data-grid';
-
-// --- Types — Model ---
-
-export type {
-  Currency as ModelCurrency,
-  Money as ModelMoney,
-} from './types/extras/model/general/money';
-export type {
-  PostalAddress,
-  CountrySymbol,
-  GeoLocation,
-} from './types/extras/model/general/geo/postal-address';
-export type {
-  TimeUnit as ModelTimeUnit,
-  Duration as ModelDuration,
-} from './types/extras/model/general/time/duration';
-export type { CompanyInformation } from './types/extras/model/assets/company-information';
-export type { Contact } from './types/extras/model/assets/contact';
-export { getContactDisplayName } from './types/extras/model/assets/contact';
-
-// --- Types — Reference ---
-
-export type {
-  BusinessAffiliate,
-  BusinessAffiliateRoleDetails,
-  BusinessRole,
-  BusinessRoleType,
-} from './types/extras/reference/business-affiliates/business-affiliate';
-export { sampleAffiliates } from './types/extras/reference/business-affiliates/business-affiliate';
-
-export type {
-  ItemSupply,
-  SupplyDesignation,
-} from './types/extras/reference/business-affiliates/item-supply';
-export { sampleItemSupplies } from './types/extras/reference/business-affiliates/item-supply';
 
 // --- Utilities ---
 

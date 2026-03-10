@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 import ScanPage from '@frontend/app/scan/page';
-import '@/styles/extras/vendored-theme.css';
+import '@/styles/vendored/globals.css';
 
 const meta: Meta<typeof ScanPage> = {
   title: 'Dev Witness/Resources/Kanban Cards/Scan',

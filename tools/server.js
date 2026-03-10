@@ -1,23 +1,24 @@
-// server.js - serves built storybook with basic auth
+// server.js - serves built storybook (basic auth disabled)
 import express from 'express';
-import basicAuth from 'express-basic-auth';
+// import basicAuth from 'express-basic-auth';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const PORT = process.env.PORT || 8080;
-const SECRET = process.env.STORYBOOK_SECRET || 'ArdaSecretPrototypes';
+// const SECRET = process.env.STORYBOOK_SECRET || 'ArdaSecretPrototypes';
 
 const app = express();
 
-app.use(
-  basicAuth({
-    users: { arda: SECRET },
-    challenge: true,
-    realm: 'Arda Prototypes',
-  }),
-);
+// Basic auth — disabled. Uncomment to re-enable.
+// app.use(
+//   basicAuth({
+//     users: { arda: SECRET },
+//     challenge: true,
+//     realm: 'Arda Prototypes',
+//   }),
+// );
 
 app.use(express.static(path.join(__dirname, '..', 'storybook-static')));
 

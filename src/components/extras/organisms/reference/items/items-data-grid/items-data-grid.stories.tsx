@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { ArdaItemsDataGrid } from './items-data-grid';
 import { mockPublishedItems } from '@/components/extras/molecules/data-grid/presets/items/items-mock-data';
-import type { Item } from '@/types/extras/reference/items/item-domain';
+import type { Item } from '@/types/extras';
 
 const meta: Meta<typeof ArdaItemsDataGrid> = {
   title: 'Components/Extras/Organisms/Reference/Items/Items Data Grid',

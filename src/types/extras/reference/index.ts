@@ -1,4 +1,16 @@
-export type { QuantityUnit, Quantity, OrderMechanism } from './items/item-domain';
+export type {
+  QuantityUnit,
+  Quantity,
+  OrderMechanism,
+  Item,
+  Supply,
+  ItemStatus,
+  ItemClassification,
+  CardSize,
+  LabelSize,
+  BreadcrumbSize,
+  ItemColor,
+} from './items/item-domain';
 
 export type {
   BusinessRoleType,
@@ -6,7 +18,5 @@ export type {
   BusinessAffiliate,
   BusinessAffiliateRoleDetails,
 } from './business-affiliates/business-affiliate';
-export { sampleAffiliates } from './business-affiliates/business-affiliate';
 
 export type { SupplyDesignation, ItemSupply } from './business-affiliates/item-supply';
-export { sampleItemSupplies } from './business-affiliates/item-supply';

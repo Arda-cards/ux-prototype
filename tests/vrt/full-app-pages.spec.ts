@@ -1,28 +1,29 @@
 import { test, expect } from '@playwright/test';
+import { disableAnimationsAndSettle } from './vrt-helpers';
 
 /**
- * Visual Regression Tests for all 10 Dev Witness page stories.
+ * Visual Regression Tests for Dev Witness page stories.
  *
  * Each test navigates to the Storybook iframe URL for a story's Default
  * variant, waits for rendering to stabilise, then captures a full-page
  * screenshot and compares it against the committed baseline.
  *
- * Story ID format: storybook lowercases the title path and joins with
+ * Story ID format: Storybook lowercases the title path and joins with
  * double hyphens for the group separator and single hyphens within words.
- * Example: "Dev Witness/Dashboard" -> "dev-witness-dashboard--default"
+ * Example: "Dev Witness/Home/Dashboard" -> "dev-witness-home-dashboard--default"
  */
 
 const STORIES = [
-  { name: 'Account Profile', id: 'dev-witness-account-profile--default' },
-  { name: 'Company Settings', id: 'dev-witness-company-settings--default' },
-  { name: 'Dashboard', id: 'dev-witness-dashboard--default' },
-  { name: 'Item Detail', id: 'dev-witness-item-detail--default' },
-  { name: 'Items Grid', id: 'dev-witness-items-grid--default' },
-  { name: 'Kanban Card', id: 'dev-witness-kanban-card--default' },
-  { name: 'Order Queue', id: 'dev-witness-order-queue--default' },
-  { name: 'Receiving', id: 'dev-witness-receiving--default' },
-  { name: 'Scan', id: 'dev-witness-scan--default' },
-  { name: 'Sign In', id: 'dev-witness-sign-in--default' },
+  { name: 'Settings — Account',    id: 'dev-witness-system-settings--account' },
+  { name: 'Settings — Companies',  id: 'dev-witness-system-settings--companies' },
+  { name: 'Dashboard',             id: 'dev-witness-home-dashboard--default' },
+  { name: 'Item Detail',           id: 'dev-witness-reference-items-item-detail--default' },
+  { name: 'Items Grid',            id: 'dev-witness-reference-items-items-grid--default' },
+  { name: 'Kanban Card',           id: 'dev-witness-resources-kanban-cards-kanban-card--default' },
+  { name: 'Order Queue',           id: 'dev-witness-transactions-orders-order-queue--default' },
+  { name: 'Receiving',             id: 'dev-witness-transactions-receiving--default' },
+  { name: 'Scan',                  id: 'dev-witness-resources-kanban-cards-scan--default' },
+  { name: 'Sign In',               id: 'dev-witness-system-authentication-sign-in--default' },
 ] as const;
 
 for (const story of STORIES) {
@@ -33,25 +34,12 @@ for (const story of STORIES) {
       { waitUntil: 'networkidle' },
     );
 
-    // Give async renders (lazy data, animations) time to settle.
-    // Disable CSS animations/transitions for deterministic screenshots.
-    await page.addStyleTag({
-      content: `
-        *, *::before, *::after {
-          animation-duration: 0s !important;
-          animation-delay: 0s !important;
-          transition-duration: 0s !important;
-          transition-delay: 0s !important;
-        }
-      `,
-    });
+    await disableAnimationsAndSettle(page);
 
-    // Wait a short period for any final paints.
-    await page.waitForTimeout(1000);
-
-    // Full-page screenshot comparison.
+    // Viewport-only screenshot (1280×900) — deterministic across macOS and Linux.
+    // fullPage: true captures scroll bounds which vary by platform font rendering.
     await expect(page).toHaveScreenshot(`${story.id}.png`, {
-      fullPage: true,
+      clip: { x: 0, y: 0, width: 1280, height: 900 },
     });
   });
 }

@@ -1,0 +1,424 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Use Cases/Procurement/Domain Reference" />
+
+# Procurement Domain Reference
+
+This document defines the domain concepts, data model, entity lifecycles, field
+specifications, and scope constraints that underpin the procurement use cases.
+For the use cases themselves, see the individual pages linked from the
+<a href="?path=/docs/use-cases-procurement-reading-guide--docs">Reading Guide</a>.
+
+## Source Documents
+
+<table>
+  <thead>
+    <tr>
+      <th>Tag</th>
+      <th>Source</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>D09</strong></td>
+      <td>Demo202509 Ordering Workflow</td>
+      <td>
+        User-centric and card-centric procurement workflow. Defines the four-step
+        cycle (queue &#8594; in progress &#8594; ordered &#8594; received) plus an
+        alternate flow that skips formal receiving.
+      </td>
+    </tr>
+    <tr>
+      <td><strong>MVP2-C</strong></td>
+      <td>Purchase Orders &#8212; Core Use Cases</td>
+      <td>
+        Technical specifications with API routes, sequence diagrams, and field
+        defaults for listing, viewing, creating from cards, updating headers,
+        and adding/removing lines.
+      </td>
+    </tr>
+    <tr>
+      <td><strong>MVP2-A</strong></td>
+      <td>Purchase Orders &#8212; Additional Use Cases</td>
+      <td>
+        Extended creation modes: empty order, copy of existing, from header and
+        lines, from item list. Also covers single-line addition and submission
+        workflow (not yet implemented).
+      </td>
+    </tr>
+    <tr>
+      <td><strong>PO-V1</strong></td>
+      <td>PO V1 Use Cases (Lite + Full)</td>
+      <td>
+        Actor-goal use cases with two scope tiers. Lite covers the simplified
+        &#8220;Generate PO from Order Queue&#8221; flow. Full adds PO management,
+        edit, receiving, and cancellation.
+      </td>
+    </tr>
+    <tr>
+      <td><strong>PO-OQ</strong></td>
+      <td>Order Queue Sequence Diagrams</td>
+      <td>
+        Detailed sequence diagrams for current and proposed Order Queue
+        implementations, including card entry points and API call flows.
+      </td>
+    </tr>
+    <tr>
+      <td><strong>E2E</strong></td>
+      <td>End-to-End Test Use Cases</td>
+      <td>
+        Playwright-level use cases verifying front-end behavior: page loads,
+        card state transitions, tab switching, search/filter, and API call
+        expectations.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+## Personas
+
+Three primary personas drive the procurement workflows (see
+<a href="?path=/docs/docs-personas-overview--docs">Domain Personas</a> for full
+profiles):
+
+- <a href="?path=/docs/docs-personas-david-purchasing-manager--docs">**David Dealsworth**</a>
+  (Purchasing Manager) &#8212; Processes orders through the queue, creates and
+  submits POs, generates vendor-ready PDFs, and manages the order lifecycle.
+  David is the primary actor for all Order Queue and Orders use cases.
+
+- <a href="?path=/docs/docs-personas-keisha-receiving-clerk--docs">**Keisha Clerkson**</a>
+  (Receiving Clerk) &#8212; Processes deliveries at the dock, marks items received
+  against POs, and transitions cards to FULFILLED. Keisha owns the Receiving
+  workflow.
+
+- <a href="?path=/docs/docs-personas-irene-inventory-manager--docs">**Irene Itemsworth**</a>
+  (Inventory Manager) /
+  <a href="?path=/docs/docs-personas-sam-shop-floor-worker--docs">**Sam Scansworth**</a>
+  (Shop Floor Worker) &#8212; Trigger the procurement loop by adding cards to the
+  Order Queue from the Items page, QR scan, or card detail view.
+
+## Current Scope Constraints
+
+The current release operates under these simplifications:
+
+- **Vendor = Supplier**: The organization that sells goods is also the one that
+  fulfills (ships) them. These are the same entity.
+- **Customer = Consumer = Tenant**: The Arda tenant is both the buyer and the
+  receiver. No separate organizational identities.
+- **No freight operators** or other third parties (insurers, financing) are
+  tracked by the system.
+- **No standalone organization management**: Vendor/supplier information lives
+  only within Item Supply records and PO headers, not as independently managed
+  Business Affiliate entities (though the BA module exists for reference data).
+
+## Domain Concepts
+
+The procurement domain centers on two entity lifecycles that interlock:
+
+### Purchase Order Lifecycle
+
+An order progresses through up to eleven states on the happy path:
+
+`NEW` &#8594; `APPROVED` &#8594; `SUBMITTED` &#8594; `IN_PROCESS` &#8594;
+`PARTIALLY_RECEIVED` &#8594; `RECEIVED` &#8594; `CLOSED`
+
+Non-happy-path states: `CANCELLED`, `REJECTED`, `DISPUTED`.
+
+The lifecycle is driven by **signals** that trigger state transitions:
+
+<table>
+  <thead>
+    <tr>
+      <th>Signal</th>
+      <th>Effect</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>approve</code></td>
+      <td>Fields and lines become fixed and read-only</td>
+    </tr>
+    <tr>
+      <td><code>submit</code></td>
+      <td>Order sent to vendor; triggers order-method-specific actions (open URL, generate email/PDF)</td>
+    </tr>
+    <tr>
+      <td><code>accept</code></td>
+      <td>Vendor has accepted the order</td>
+    </tr>
+    <tr>
+      <td><code>ship</code></td>
+      <td>Vendor has started fulfillment</td>
+    </tr>
+    <tr>
+      <td><code>receive</code></td>
+      <td>Goods received; contains item and quantity parameters recorded against PO lines</td>
+    </tr>
+    <tr>
+      <td><code>complete_receive</code></td>
+      <td>All expected goods received (manual trigger; no automatic reconciliation in this release)</td>
+    </tr>
+    <tr>
+      <td><code>complete</code></td>
+      <td>Order closed from a material flow perspective</td>
+    </tr>
+    <tr>
+      <td><code>cancel</code></td>
+      <td>Order cancelled; no future goods expected</td>
+    </tr>
+    <tr>
+      <td><code>reject</code></td>
+      <td>Customer rejects delivered goods (records event only in this release)</td>
+    </tr>
+    <tr>
+      <td><code>dispute</code></td>
+      <td>Business issue requiring vendor resolution; prevents closing</td>
+    </tr>
+  </tbody>
+</table>
+
+**Composite signals** allow shortcuts from any state. For example, `submit` from
+`NEW` is equivalent to `[approve, submit]`. `complete` from any state executes
+the shortest signal sequence to reach `CLOSED`.
+
+### Kanban Card Lifecycle (Procurement Segment)
+
+A Kanban Card represents a quantity of work-in-progress inventory. In the
+procurement workflow, a card traverses:
+
+`AVAILABLE`/`FULFILLED` &#8594; `REQUESTING` &#8594; `REQUESTED` &#8594;
+`IN_PROCESS` &#8594; `FULFILLED`
+
+Each transition maps to a user action:
+
+- **Add to Cart** &#8594; card fires `request` event &#8594; `REQUESTING`
+- **Start Order** (or PO `accept`) &#8594; card fires `accept` event &#8594; `REQUESTED`
+- **Submit PO** &#8594; card fires `start-processing` event &#8594; `IN_PROCESS`
+- **Receive** &#8594; card fires `receive` event &#8594; `FULFILLED`
+
+Cards are attached to PO lines via the `servicedCards` array, which tracks which
+cards contribute to each line and their individual quantities.
+
+**Important**: A card is always associated with exactly one Item, but an Item may
+have zero, one, or many cards. When ordering &#8220;from the Items page,&#8221;
+the system finds the first card associated with the item that is not already in
+the Order Queue.
+
+### Key Entities
+
+**Purchase Order** &#8212; The central document. Contains a header with vendor,
+delivery, and financial information plus an ordered list of lines.
+
+**Order Line (PoLine)** &#8212; One line per item being purchased. Tracks
+quantity ordered, unit cost, total cost, and quantity received. Lines can be
+linked to catalog items or free-form (no item reference).
+
+**Item** &#8212; Reference data describing a material. Contains name,
+description, SKU, classification, and supply references (primary, secondary,
+default). The `preferredSupply()` lookup returns the most relevant supply record.
+
+**ItemSupply** &#8212; Links an Item to a vendor with ordering details: supplier
+name, SKU, order method, URL, order quantity, unit cost, and average lead time.
+
+**BusinessAffiliate** &#8212; An organization (vendor, customer, carrier) with
+contact, address, and legal information. Referenced indirectly through ItemSupply
+vendor fields.
+
+**KanbanCard** &#8212; Represents a physical card on the shop floor. Carries a
+serial number, item reference, quantity, and lifecycle state.
+
+### Order Method
+
+The method used to place an order with a vendor. Determines what happens at
+submit time:
+
+`UNKNOWN` | `PURCHASE_ORDER` | `EMAIL` | `PHONE` | `IN_STORE` | `ONLINE` |
+`RFQ` | `PRODUCTION` | `TASK` | `THIRD_PARTY` | `OTHER`
+
+### Purchase Order Fields
+
+**Header fields:**
+
+<table>
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Type</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>orderNumber</code></td>
+      <td>String</td>
+      <td>System-generated (<code>PO-000001</code>). Read-only.</td>
+    </tr>
+    <tr>
+      <td><code>status</code></td>
+      <td>Enum</td>
+      <td>Current lifecycle state. Read-only.</td>
+    </tr>
+    <tr>
+      <td><code>orderDate</code></td>
+      <td>Date</td>
+      <td>Set when the order is submitted. Editable with special permissions.</td>
+    </tr>
+    <tr>
+      <td><code>allowPartial</code></td>
+      <td>Boolean</td>
+      <td>Whether partial deliveries are accepted. Default: <code>true</code>.</td>
+    </tr>
+    <tr>
+      <td><code>deliverBy</code></td>
+      <td>Date</td>
+      <td>Expected complete delivery date. Default: now + 7 days.</td>
+    </tr>
+    <tr>
+      <td><code>deliveryAddress</code></td>
+      <td>Address</td>
+      <td>Ship-to address (line1, line2, city, state, postal code, country).</td>
+    </tr>
+    <tr>
+      <td><code>supplierName</code></td>
+      <td>String</td>
+      <td>Vendor name. Required for submission.</td>
+    </tr>
+    <tr>
+      <td><code>supplierAddress</code></td>
+      <td>Address</td>
+      <td>Vendor postal address.</td>
+    </tr>
+    <tr>
+      <td><code>orderMethod</code></td>
+      <td>OrderMethod</td>
+      <td>How the order is placed with the vendor.</td>
+    </tr>
+    <tr>
+      <td><code>procurement</code></td>
+      <td>Contact</td>
+      <td>Customer-side contact (name, job title, email, phone, address).</td>
+    </tr>
+    <tr>
+      <td><code>sales</code></td>
+      <td>Contact</td>
+      <td>Vendor-side contact.</td>
+    </tr>
+    <tr>
+      <td><code>goodsValue</code></td>
+      <td>Money</td>
+      <td>Sum of all line costs. Computed, read-only.</td>
+    </tr>
+    <tr>
+      <td><code>taxesAndFees</code></td>
+      <td>Map</td>
+      <td>Named charges (e.g., &#8220;Sales Tax&#8221;, &#8220;Shipping&#8221;).</td>
+    </tr>
+    <tr>
+      <td><code>totalAmount</code></td>
+      <td>Money</td>
+      <td><code>goodsValue</code> + sum of <code>taxesAndFees</code>. Computed.</td>
+    </tr>
+    <tr>
+      <td><code>termsAndConditions</code></td>
+      <td>String</td>
+      <td>Free-form T&#38;C text.</td>
+    </tr>
+    <tr>
+      <td><code>notes</code></td>
+      <td>String</td>
+      <td>Visible to vendor. Remains editable after submission.</td>
+    </tr>
+    <tr>
+      <td><code>privateNotes</code></td>
+      <td>String</td>
+      <td>Internal only. Remains editable after submission.</td>
+    </tr>
+  </tbody>
+</table>
+
+**Line fields:**
+
+<table>
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Type</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>item</code></td>
+      <td>Reference</td>
+      <td>Item eId, name, and version rId. Blank for free-form lines.</td>
+    </tr>
+    <tr>
+      <td><code>title</code></td>
+      <td>String</td>
+      <td>Display name; defaults to supplier SKU or item name.</td>
+    </tr>
+    <tr>
+      <td><code>supplierSku</code></td>
+      <td>String</td>
+      <td>Vendor&#8217;s catalog number for the item.</td>
+    </tr>
+    <tr>
+      <td><code>quantity</code></td>
+      <td>Quantity</td>
+      <td>Amount + unit of measure. Required for submission.</td>
+    </tr>
+    <tr>
+      <td><code>unitCost</code></td>
+      <td>Money</td>
+      <td>Cost per unit. Populated from ItemSupply if available.</td>
+    </tr>
+    <tr>
+      <td><code>cost</code></td>
+      <td>Money</td>
+      <td>Total line cost (<code>quantity &#215; unitCost</code>).</td>
+    </tr>
+    <tr>
+      <td><code>received</code></td>
+      <td>Quantity</td>
+      <td>Amount received so far. Editable after submission.</td>
+    </tr>
+    <tr>
+      <td><code>notes</code></td>
+      <td>String</td>
+      <td>Per-line instructions to vendor.</td>
+    </tr>
+    <tr>
+      <td><code>servicedCards</code></td>
+      <td>Array</td>
+      <td>Kanban Cards contributing to this line, with per-card quantities.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Order Line Sub-Lifecycle
+
+Lines have their own states tracking the freshness of their item reference:
+
+- **BLANK** &#8212; No item assigned to the line.
+- **CURRENT** &#8212; Item reference is up to date.
+- **STALE** &#8212; The referenced item has been edited since the line was created.
+  The system auto-refreshes on inspection, preserving user edits to quantity and
+  notes.
+- **INVALID** &#8212; The referenced item has been deleted. The line must be
+  edited (assign a new item) or removed before the PO can be approved.
+
+---
+
+## Implementation Gaps
+
+The following areas are specified but not yet implemented in the backend:
+
+- **Submit Order** &#8212; Status transitions and vendor communication triggers
+  are not wired into the `operations` service.
+- **Process Order (Receive, Complete, Cancel)** &#8212; Core lifecycle stubs only;
+  no API routes or business logic.
+- **Create by Copy** &#8212; No service exists; callers must manually orchestrate.
+
+These gaps affect which use cases can be demonstrated as fully interactive
+Storybook stories versus documentation-only entries.

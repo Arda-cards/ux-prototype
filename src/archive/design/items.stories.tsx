@@ -7,7 +7,7 @@ import { ArdaButton } from '@/components/extras/atoms/button/button';
 import { ArdaItemsDataGrid } from '@/components/extras/organisms/reference/items/items-data-grid/items-data-grid';
 import { ArdaItemDrawer, sampleItem } from '@/components/extras/organisms/item-drawer/item-drawer';
 import { mockPublishedItems } from '@/components/extras/molecules/data-grid/presets/items/items-mock-data';
-import { sampleItemSupplies } from '@/types/extras/reference/business-affiliates/item-supply';
+import { sampleItemSupplies } from '@/components/extras/organisms/reference/items/mocks/sample-item-supplies';
 import { AppLayout } from '@/archive/shared/app-layout';
 
 const meta: Meta = {

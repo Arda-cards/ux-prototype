@@ -1,6 +1,9 @@
 /* eslint-disable eqeqeq -- intentional != null for nullish checks (null | undefined) */
 import React, { useState, useEffect, useCallback } from 'react';
 import { Building2 } from 'lucide-react';
+// Vendored CSS — ensures Tailwind scans the gitignored vendored directory
+// so responsive classes like `hidden md:block` on AppSidebar are generated.
+import '@/styles/vendored/globals.css';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { http, HttpResponse } from 'msw';
 import { SidebarProvider, SidebarInset } from '@frontend/components/ui/sidebar';
@@ -9,7 +12,7 @@ import { ArdaGrid } from '@frontend/components/table';
 import { Button } from '@frontend/components/ui/button';
 import type { ArdaApiResponse, ArdaQueryResponse } from '@frontend/types/arda-api';
 import { ArdaSupplierDrawer } from '@/components/extras/organisms/reference/business-affiliates/supplier-drawer/supplier-drawer';
-import type { BusinessAffiliate } from '@/types/extras/reference/business-affiliates/business-affiliate';
+import type { BusinessAffiliate } from '@/types/extras';
 import type { BusinessAffiliateWithRoles } from '../types';
 import { suppliersColumnDefs, suppliersDefaultColDef } from '../column-defs';
 import { ImportSuppliersModal } from './import-suppliers-modal';
@@ -86,7 +89,7 @@ function SuppliersEmptyState({
       <div className="flex flex-col items-center gap-2 w-full">
         <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center p-2 relative">
           <div className="absolute inset-0 flex items-center justify-center z-0">
-            <img src="/images/Puddle1.svg" alt="" className="w-full h-full object-contain" />
+            <img src="/vendored/images/Puddle1.svg" alt="" className="w-full h-full object-contain" />
           </div>
           <Building2 className="w-[42px] h-[42px] sm:w-[52px] sm:h-[52px] text-[#0A0A0A] absolute left-[calc(50%-21px)] sm:left-[calc(50%-26px)] top-[20%] z-10" />
         </div>
@@ -184,8 +187,8 @@ function SuppliersPage() {
   return (
     <SidebarProvider>
       <BusinessAffiliatesSidebar />
-      <SidebarInset>
-        <div className="flex min-h-svh flex-col">
+      <SidebarInset className="overflow-hidden">
+        <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
           {/* Page header */}
           <div className="w-full px-10 pt-4 mt-2 md:px-8 md:pt-6">
             <h1 className="text-2xl font-bold tracking-tight">Suppliers</h1>
@@ -195,7 +198,7 @@ function SuppliersPage() {
           </div>
 
           {/* Grid or empty state */}
-          <div className="flex-1 px-10 py-4 md:px-8">
+          <div className="flex-1 px-10 py-4 md:px-8 min-h-0">
             {!loading && !error && rowData.length === 0 ? (
               <SuppliersEmptyState
                 onAddSupplier={handleAddSupplier}
@@ -303,15 +306,15 @@ function SuppliersPageWithDrawer() {
   return (
     <SidebarProvider>
       <BusinessAffiliatesSidebar />
-      <SidebarInset>
-        <div className="flex min-h-svh flex-col">
+      <SidebarInset className="overflow-hidden">
+        <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
           <div className="w-full px-10 pt-4 mt-2 md:px-8 md:pt-6">
             <h1 className="text-2xl font-bold tracking-tight">Suppliers</h1>
             <p className="text-sm text-muted-foreground mt-1">
               Business affiliates with a Vendor role.
             </p>
           </div>
-          <div className="flex-1 px-10 py-4 md:px-8">
+          <div className="flex-1 px-10 py-4 md:px-8 min-h-0">
             {!loading && !error && rowData.length === 0 ? (
               <SuppliersEmptyState
                 onAddSupplier={handleAddSupplier}

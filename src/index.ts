@@ -1,5 +1,5 @@
-// Stable exports — core components promoted from canary/extras.
-// Consumers: import { ... } from '@arda-cards/ui-components';
+// Nominal exports — production-ready components.
+// Consumers: import { ... } from '@arda-cards/design-system';
 
 // Atoms
 export { StableAtomPlaceholder } from './components/atoms/stable-placeholder/stable-placeholder';

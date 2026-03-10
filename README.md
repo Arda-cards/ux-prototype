@@ -1,4 +1,4 @@
-# @arda-cards/ui-components
+# @arda-cards/design-system
 
 ![CI](https://github.com/Arda-cards/ux-prototype/actions/workflows/ci.yml/badge.svg)
 ![Deploy](https://github.com/Arda-cards/ux-prototype/actions/workflows/deploy-pages.yml/badge.svg)
@@ -10,12 +10,12 @@ A shared React component library and interactive prototype gallery for Arda, bui
 
 The Storybook gallery is deployed to two environments:
 
-| Environment                 | URL                                        | Access                               | Deploys on                   |
-| --------------------------- | ------------------------------------------ | ------------------------------------ | ---------------------------- |
-| **Vercel** (external)       | https://ux-prototype-tau.vercel.app/       | Password-protected (HTTP Basic Auth) | CLI deploy (`vercel --prod`) |
+| Environment                 | URL                                        | Access              | Deploys on                   |
+| --------------------------- | ------------------------------------------ | ------------------- | ---------------------------- |
+| **Vercel** (external)       | https://ux-prototype-tau.vercel.app/       | Public (no auth)    | CLI deploy (`vercel --prod`) |
 | **GitHub Pages** (internal) | https://arda-cards.github.io/ux-prototype/ | Repo collaborators via GitHub login  | Push to `main`               |
 
-**Vercel** is the primary site for sharing with stakeholders. Credentials are stored in **1Password** under the **Arda-SystemsOAM** vault.
+**Vercel** is the primary site for sharing with stakeholders.
 
 **GitHub Pages** is for team-internal use. Access is restricted to repository collaborators who authenticate with their GitHub account (Settings > Pages > visibility).
 
@@ -57,7 +57,7 @@ make check            # Run all checks (lint + typecheck)
 make test             # Run unit tests
 make test-coverage    # Run unit tests with coverage
 make test-storybook   # Run Storybook interaction tests
-make serve            # Serve built Storybook with basic auth
+make serve            # Serve built Storybook locally
 make preview          # Build then serve Storybook
 make publish          # Build library and publish to GitHub Packages
 make clean            # Remove build artifacts and node_modules
@@ -67,17 +67,17 @@ make clean            # Remove build artifacts and node_modules
 
 ```
 src/
-  index.ts            # Stable entry point
+  index.ts            # Nominal entry point
   canary.ts           # Canary entry point
   extras.ts           # Extras entry point
-  components/         # Stable components
+  components/         # Nominal components (production-ready)
     atoms/            #   Buttons, inputs, badges, etc.
     molecules/        #   Cards, form groups, nav items, etc.
     organisms/        #   Headers, sidebars, data tables, etc.
-  canary/             # Experimental components (canary → stable OK, not reverse)
-    components/       #   atoms/, molecules/, organisms/
-  extras/             # Supplementary components (extras → stable OK, not reverse)
-    components/       #   atoms/, molecules/, organisms/
+    canary/           # Canary components (being developed/tested)
+      atoms/, molecules/, organisms/
+    extras/           # Off-maturity-track examples/reference
+      atoms/, molecules/, organisms/
   visual-elements/    # Design tokens, colors, typography
   applications/       # Full-page application mocks
   use-cases/          # User workflow scenarios
@@ -88,16 +88,16 @@ src/
 
 ## Published Package
 
-The library is published to GitHub Packages as `@arda-cards/ui-components`. It is built with Vite 6 in library mode (ESM + CJS) from three entry points: `src/index.ts` (stable), `src/canary.ts` (experimental), and `src/extras.ts` (supplementary).
+The library is published to GitHub Packages as `@arda-cards/design-system`. It is built with Vite 6 in library mode (ESM + CJS) from three entry points: `src/index.ts` (stable), `src/canary.ts` (experimental), and `src/extras.ts` (supplementary).
 
 ### Export Paths
 
 | Export | Resolves to | Description |
 |---|---|---|
-| `@arda-cards/ui-components` | `dist/index.js` (ESM) / `dist/index.cjs` (CJS) | Stable components, types, and utilities |
-| `@arda-cards/ui-components/canary` | `dist/canary.js` (ESM) / `dist/canary.cjs` (CJS) | Experimental components (API may change) |
-| `@arda-cards/ui-components/extras` | `dist/extras.js` (ESM) / `dist/extras.cjs` (CJS) | Supplementary components |
-| `@arda-cards/ui-components/styles` | `dist/styles/globals.css` | Tailwind CSS v4 stylesheet |
+| `@arda-cards/design-system` | `dist/index.js` (ESM) / `dist/index.cjs` (CJS) | Nominal components, types, and utilities |
+| `@arda-cards/design-system/canary` | `dist/canary.js` (ESM) / `dist/canary.cjs` (CJS) | Experimental components (API may change) |
+| `@arda-cards/design-system/extras` | `dist/extras.js` (ESM) / `dist/extras.cjs` (CJS) | Supplementary components |
+| `@arda-cards/design-system/styles` | `dist/styles/globals.css` | Tailwind CSS v4 stylesheet |
 
 ### Exported Components
 
@@ -127,7 +127,7 @@ The `./canary` subpath contains experimental components that are not yet part of
 
 ```typescript
 // Consumer usage
-import { CanaryAtomPlaceholder } from '@arda-cards/ui-components/canary';
+import { CanaryAtomPlaceholder } from '@arda-cards/design-system/canary';
 ```
 
 **Dependency direction**: canary components may import from stable (`@/components/`, `@/lib/`), but stable code must never import from `@/canary/`. This is enforced by an ESLint `no-restricted-imports` rule.
@@ -140,14 +140,31 @@ The `./extras` subpath contains supplementary components that extend the core li
 
 ```typescript
 // Consumer usage
-import { ExtrasAtomPlaceholder } from '@arda-cards/ui-components/extras';
+import { ExtrasAtomPlaceholder } from '@arda-cards/design-system/extras';
 ```
 
 **Dependency direction**: extras components may import from stable (`@/components/`, `@/lib/`), but stable code must never import from `@/extras/`. This is enforced by an ESLint `no-restricted-imports` rule.
 
 ### Peer Dependencies
 
-React 18 or 19 (`react`, `react-dom`). Bundled dependencies include AG Grid, Lucide icons, `class-variance-authority`, `clsx`, and `tailwind-merge`.
+| Package | Version | Required for |
+|---------|---------|-------------|
+| `react` | ^18.0.0 \|\| ^19.0.0 | All components |
+| `react-dom` | ^18.0.0 \|\| ^19.0.0 | All components |
+| `ag-grid-community` | ^34.0.0 | Extras data-grid components |
+| `ag-grid-react` | ^34.0.0 | Extras data-grid components |
+| `lucide-react` | >=0.400.0 | Icon components |
+
+Bundled dependencies (no need to install separately): `class-variance-authority`, `clsx`, `tailwind-merge`.
+
+### CSS Design Tokens
+
+Components use Tailwind classes (`text-foreground`, `text-muted-foreground`, `bg-background`, etc.) that resolve to CSS custom properties the consumer must define. Two options:
+
+- **Full theme**: `import '@arda-cards/design-system/styles'` — Tailwind base, fonts, all tokens
+- **Tokens only**: `import '@arda-cards/design-system/styles/tokens.css'` — minimal custom properties for light/dark
+
+See the Storybook **Using the Design System** doc for the complete token reference.
 
 ## Changelog
 

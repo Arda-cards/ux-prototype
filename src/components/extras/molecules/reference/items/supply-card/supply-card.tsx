@@ -5,7 +5,7 @@ import { Pencil, Trash2, MoreHorizontal, Star } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { ArdaBadge } from '@/components/extras/atoms/badge/badge';
-import type { SupplyDesignation } from '@/types/extras/reference/business-affiliates/item-supply';
+import type { SupplyDesignation } from '@/types/extras';
 
 /* ------------------------------------------------------------------ */
 /*  Config Interfaces                                                  */

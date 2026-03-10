@@ -4,8 +4,7 @@
 
 The prototype environment is live at: https://ux-prototype-tau.vercel.app/
 
-- **User:** `arda`
-- **Password:** `ArdaSecretPrototypes`
+No authentication is required — the site is publicly accessible.
 
 ## Leaving Feedback with the Commenting Tool
 

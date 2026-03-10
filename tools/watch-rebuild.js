@@ -86,7 +86,7 @@ ${SEPARATOR}
   Storybook Preview Server
 ${SEPARATOR}
 
-  Server:    http://localhost:${PORT}  (basic-auth: arda / <secret>)
+  Server:    http://localhost:${PORT}
   Watching:  src/**/*.{ts,tsx,mdx,css,json}
   Debounce:  ${DEBOUNCE_MS / 1000}s after last file change
 

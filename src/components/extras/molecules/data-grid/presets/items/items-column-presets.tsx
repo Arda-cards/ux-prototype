@@ -7,8 +7,8 @@ import type {
   LabelSize,
   BreadcrumbSize,
   OrderMechanism,
-} from '@/types/extras/reference/items/item-domain';
-import type { Money } from '@/types/extras/model';
+  Money,
+} from '@/types/extras';
 
 import { createSelectCellEditor } from '@/components/extras/atoms/select-cell-editor/select-cell-editor';
 import { createTypeaheadCellEditor } from '@/components/extras/atoms/typeahead-cell-editor/typeahead-cell-editor';

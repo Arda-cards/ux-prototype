@@ -1,0 +1,7 @@
+/* Vendored theme — imports the arda-frontend-app CSS and ensures Tailwind
+   scans the gitignored vendored directory for class usage (md:block, etc.).
+   Uses @import (not @import url()) so PostCSS inlines it in the same
+   processing context as the @source directive. */
+@import "../../vendored/arda-frontend/app/globals.css";
+
+@source "../../vendored/arda-frontend";

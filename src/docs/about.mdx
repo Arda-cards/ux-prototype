@@ -4,7 +4,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 # Arda User Experience
 
-This Storybook site is the living documentation and prototype gallery for **@arda-cards/ui-components** &#8212; the shared React component library for the Arda platform.
+This Storybook site is the living documentation and prototype gallery for **@arda-cards/design-system** &#8212; the shared React component library for the Arda platform.
 
 It serves three audiences:
 
@@ -191,11 +191,13 @@ Reference documentation for contributors and consumers of the library. You are h
 
 The component library, organized by **Atomic Design** level and **maturity stage**:
 
-**Stable** (`@arda-cards/ui-components`) &#8212; Promoted, production-ready components. Currently contains placeholders while existing components are being reorganized.
+**Nominal** (`@arda-cards/design-system`) &#8212; Production-ready components that define the target design system. The root directory of each element type (components, styles, images) corresponds to the Nominal category. Currently contains placeholders while existing components are being reorganized.
 
-**Canary** (`@arda-cards/ui-components/canary`) &#8212; Experimental components not yet promoted to stable. The canary&#8594;stable dependency direction is enforced by ESLint boundary rules.
+**Canary** (`@arda-cards/design-system/canary`) &#8212; Components being developed and tested before promotion to Nominal. The canary&#8594;Nominal dependency direction is enforced by ESLint boundary rules. Together with Nominal, Canary forms the **maturity promotion track**.
 
-**Extras** (`@arda-cards/ui-components/extras`) &#8212; Supplementary components that extend the core library. All previously stable components (atoms, molecules, organisms) currently live here.
+**Extras** (`@arda-cards/design-system/extras`) &#8212; Off-maturity-track components used as examples or reference implementations only. Not actively maintained toward promotion. All previously stable components (atoms, molecules, organisms) currently live here.
+
+**Vendored** (not exported) &#8212; A witness of the current live application (`arda-frontend-app`), imported into the Storybook for side-by-side comparison. Vendored artifacts are not part of the published package and no design element should depend on them. Extraction from Vendored to Canary involves redesign, not simple promotion.
 
 Within each stage, components are organized by atomic level:
 

@@ -4,7 +4,7 @@ import { useEffect, useId, useRef } from 'react';
 import { X, Building2 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
-import type { BusinessAffiliate } from '@/types/extras/reference/business-affiliates/business-affiliate';
+import type { BusinessAffiliate } from '@/types/extras';
 import { ArdaSupplierViewer } from '@/components/extras/organisms/reference/business-affiliates/arda-supplier-viewer';
 import { supplierTabs } from '@/components/extras/organisms/reference/business-affiliates/arda-supplier-viewer/configs/stepped-layout';
 import { supplierFieldOrder } from '@/components/extras/organisms/reference/business-affiliates/arda-supplier-viewer/configs/continuous-scroll-layout';
