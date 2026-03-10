@@ -2,7 +2,6 @@
 
 import { useRef, useCallback, useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 
 // --- Interfaces ---
@@ -23,6 +22,8 @@ export interface ArdaItemDetailsCardPreviewProps {
   renderCard?: (index: number) => React.ReactNode;
   /** Empty state content when no cards exist. */
   emptyState?: React.ReactNode;
+  /** Content rendered below the navigation, inside the preview area. */
+  children?: React.ReactNode;
   /** Additional CSS classes. */
   className?: string;
 }
@@ -49,6 +50,7 @@ export function ArdaItemDetailsCardPreview({
   loading,
   renderCard,
   emptyState,
+  children,
   className,
 }: ArdaItemDetailsCardPreviewProps) {
   const hasCards = totalCards > 0;
@@ -105,7 +107,7 @@ export function ArdaItemDetailsCardPreview({
     <div className={cn('w-full border-b border-border bg-muted/40 py-4', className)}>
       {/* Loading */}
       {loading && (
-        <div className="flex w-full items-center justify-center py-16">
+        <div className="flex w-full items-center justify-center py-16" role="status">
           <Loader2
             className="size-5 animate-spin motion-reduce:animate-none text-muted-foreground"
             aria-hidden="true"
@@ -120,7 +122,7 @@ export function ArdaItemDetailsCardPreview({
           {emptyState ?? (
             <div className="text-center">
               <p className="text-sm font-medium text-foreground">No cards yet</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Create kanban cards to track this item on the shop floor.
               </p>
             </div>
@@ -128,12 +130,12 @@ export function ArdaItemDetailsCardPreview({
         </div>
       )}
 
-      {/* Card carousel */}
+      {/* Card carousel with lightbox-style arrows */}
       {!loading && hasCards && (
-        <div className="flex flex-col gap-2">
+        <div className="relative">
           {/* Carousel track — overflow hidden, swipeable */}
           <div
-            className="overflow-hidden touch-pan-y select-none"
+            className="overflow-hidden touch-pan-y select-none py-2"
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
@@ -167,34 +169,34 @@ export function ArdaItemDetailsCardPreview({
             </div>
           </div>
 
-          {/* Navigation — single compact row, 44px+ touch targets */}
-          <div className="flex items-center justify-center gap-1 px-5">
-            <Button
-              variant="ghost"
-              size="sm"
+          {/* Previous arrow */}
+          {hasPrev && (
+            <button
+              type="button"
               onClick={goPrev}
-              disabled={!hasPrev}
-              className="size-9 p-0"
+              className="absolute left-0 top-1/2 -translate-y-1/2 flex size-11 items-center justify-center rounded-full text-muted-foreground transition-colors motion-reduce:transition-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               aria-label="Previous card"
             >
               <ChevronLeft className="size-4" />
-            </Button>
-            <span className="min-w-[3rem] text-center text-sm text-muted-foreground font-mono tabular-nums">
-              {currentIndex} / {totalCards}
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
+            </button>
+          )}
+
+          {/* Next arrow */}
+          {hasNext && (
+            <button
+              type="button"
               onClick={goNext}
-              disabled={!hasNext}
-              className="size-9 p-0"
+              className="absolute right-0 top-1/2 -translate-y-1/2 flex size-11 items-center justify-center rounded-full text-muted-foreground transition-colors motion-reduce:transition-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               aria-label="Next card"
             >
               <ChevronRight className="size-4" />
-            </Button>
-          </div>
+            </button>
+          )}
         </div>
       )}
+
+      {/* Slot for actions or other content */}
+      {children}
     </div>
   );
 }

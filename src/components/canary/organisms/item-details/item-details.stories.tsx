@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { SquarePen, Printer, Dock, Tag, Hash, ScanLine, Copy, Trash2 } from 'lucide-react';
+import { SquarePen, Printer, ShoppingCart, Tag, Hash, ScanLine, Copy, Trash2 } from 'lucide-react';
 
 import { ArdaItemDetails } from './item-details';
 import type { ToolbarAction, OverflowAction, DetailFieldDef } from './index';
@@ -40,7 +40,7 @@ const sampleFields: DetailFieldDef[] = [
 
 const sampleActions: ToolbarAction[] = [
   { key: 'edit', label: 'Edit', icon: SquarePen, onAction: noop },
-  { key: 'cart', label: 'Queue', icon: Dock, onAction: noop },
+  { key: 'cart', label: 'Queue', icon: ShoppingCart, onAction: noop },
   { key: 'print', label: 'Print', icon: Printer, onAction: noop },
 ];
 

@@ -8,7 +8,6 @@ import {
   ArdaDrawerTitle,
   ArdaDrawerDescription,
   ArdaDrawerBody,
-  ArdaDrawerFooter,
 } from '../../atoms/drawer/drawer';
 import { ArdaItemDetailsHeader } from '../../molecules/item-details/item-details-header';
 import {
@@ -19,7 +18,6 @@ import { ArdaItemDetailsCardPreview } from '../../molecules/item-details/item-de
 import type { ToolbarAction, OverflowAction } from '../../atoms/action-toolbar/action-toolbar';
 import type { LucideIcon } from 'lucide-react';
 import { XIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 // --- Interfaces ---
 
@@ -126,8 +124,7 @@ export function ArdaItemDetails({
     onOpenChange(nextOpen);
   };
 
-  // Only show toolbar on the details tab
-  const showToolbar = activeTab === 'details';
+  const hasActions = (actions?.length ?? 0) > 0 || (overflowActions?.length ?? 0) > 0;
 
   return (
     <ArdaDrawer open={open} onOpenChange={handleOpenChange} size={size} className={className}>
@@ -166,35 +163,25 @@ export function ArdaItemDetails({
               loading={cardsLoading}
               renderCard={renderCard}
               emptyState={cardEmptyState}
-            />
-            {showToolbar && (actions?.length || overflowActions?.length) && (
-              <div className="border-b border-border px-5 py-4">
-                <ArdaItemDetailsHeader
-                  activeTab={activeTab}
-                  onTabChange={setActiveTab}
-                  tabs={[]}
-                  actions={actions}
-                  overflowActions={overflowActions}
-                />
-              </div>
-            )}
+            >
+              {hasActions && (
+                <div className="px-5 pt-2 pb-1">
+                  <ArdaItemDetailsHeader
+                    activeTab={activeTab}
+                    onTabChange={setActiveTab}
+                    tabs={[]}
+                    actions={actions}
+                    overflowActions={overflowActions}
+                  />
+                </div>
+              )}
+            </ArdaItemDetailsCardPreview>
             {fields && <ArdaItemDetailsContent fields={fields} />}
           </>
         ) : (
           renderCardsTab?.()
         )}
       </ArdaDrawerBody>
-
-      <ArdaDrawerFooter>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onOpenChange(false)}
-          className="h-9 min-w-[72px] px-4 text-sm font-medium"
-        >
-          Done
-        </Button>
-      </ArdaDrawerFooter>
     </ArdaDrawer>
   );
 }

@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { ToolbarAction, OverflowAction } from '../../atoms/action-toolbar/action-toolbar';
+import { ArdaGridAction } from '../../atoms/grid-action/grid-action';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Loader2, CircleDot, MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import React from 'react';
 
@@ -106,74 +107,38 @@ export function ArdaItemDetailsHeader({
       {hasActions && (
         <div className="flex flex-wrap items-start justify-center gap-x-4 gap-y-2">
           {/* Primary actions */}
-          {visiblePrimary.map((action) => {
-            const Icon = action.icon;
-            const shortLabel = action.label.split(' ')[0];
-            return (
-              <button
-                key={action.key}
-                type="button"
-                onClick={action.onAction}
-                disabled={action.disabled || action.loading}
-                className="flex flex-col items-center gap-1.5 rounded-md py-1 text-foreground/70 transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
-                aria-label={action.label}
-              >
-                <div className="flex size-11 items-center justify-center rounded-xl bg-muted">
-                  {action.loading ? (
-                    <Loader2 className="size-5 animate-spin" aria-hidden="true" />
-                  ) : (
-                    <Icon className="size-5" aria-hidden="true" />
-                  )}
-                </div>
-                <span className="text-xs leading-tight">
-                  {action.loading ? 'Wait…' : shortLabel}
-                </span>
-              </button>
-            );
-          })}
+          {visiblePrimary.map((action) => (
+            <ArdaGridAction
+              key={action.key}
+              icon={action.icon}
+              label={action.label}
+              onAction={action.onAction}
+              loading={action.loading}
+              disabled={action.disabled}
+            />
+          ))}
 
           {/* Overflow actions promoted to the grid (ones with icons) */}
-          {visibleOverflow.map((action) => {
-            const Icon = action.icon!;
-            const shortLabel = action.label.split(' ')[0];
-            return (
-              <button
-                key={action.key}
-                type="button"
-                onClick={action.onAction}
-                className={cn(
-                  'flex flex-col items-center gap-1.5 rounded-md py-1 text-foreground/70 transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
-                  action.destructive && 'text-destructive/70 hover:text-destructive',
-                )}
-                aria-label={action.label}
-              >
-                <div
-                  className={cn(
-                    'flex size-11 items-center justify-center rounded-xl bg-muted',
-                    action.destructive && 'bg-destructive/10',
-                  )}
-                >
-                  <Icon className="size-5" aria-hidden="true" />
-                </div>
-                <span className="text-xs leading-tight">{shortLabel}</span>
-              </button>
-            );
-          })}
+          {visibleOverflow.map((action) => (
+            <ArdaGridAction
+              key={action.key}
+              icon={action.icon!}
+              label={action.label}
+              onAction={action.onAction}
+              destructive={action.destructive}
+            />
+          ))}
 
           {/* "More" cell — always last, opens dropdown with remaining actions */}
           {showMore && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  className="flex flex-col items-center gap-1.5 rounded-md py-1 text-foreground/70 transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                  aria-label="More actions"
-                >
-                  <div className="flex size-11 items-center justify-center rounded-xl bg-muted">
-                    <MoreHorizontal className="size-5" aria-hidden="true" />
-                  </div>
-                  <span className="text-xs leading-tight">More</span>
-                </button>
+                <ArdaGridAction
+                  icon={MoreHorizontal}
+                  label="More actions"
+                  shortLabel="More"
+                  onAction={() => {}}
+                />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-48">
                 {moreItems.map((item) => (

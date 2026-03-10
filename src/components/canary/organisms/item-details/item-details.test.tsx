@@ -31,11 +31,11 @@ describe('ArdaItemDetails', () => {
     expect(screen.getByText('$5.00')).toBeInTheDocument();
   });
 
-  it('shows Done button that closes the drawer', async () => {
+  it('shows Close button that closes the drawer', async () => {
     const user = userEvent.setup();
     const onOpenChange = vi.fn();
     render(<ArdaItemDetails {...defaultProps} onOpenChange={onOpenChange} />);
-    await user.click(screen.getByRole('button', { name: 'Done' }));
+    await user.click(screen.getByRole('button', { name: 'Close' }));
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
@@ -55,7 +55,6 @@ describe('ArdaItemDetails', () => {
       <ArdaItemDetails {...defaultProps} cardCount={3} renderCard={(i) => <div>Card {i}</div>} />,
     );
     expect(screen.getByText('Card 1')).toBeInTheDocument();
-    expect(screen.getByText('1 / 3')).toBeInTheDocument();
   });
 
   it('shows loading state for cards', () => {

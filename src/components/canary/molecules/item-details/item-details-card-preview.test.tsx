@@ -33,19 +33,7 @@ describe('ArdaItemDetailsCardPreview', () => {
     expect(screen.getByText('Card 1')).toBeInTheDocument();
   });
 
-  it('shows card counter in navigation', () => {
-    render(
-      <ArdaItemDetailsCardPreview
-        currentIndex={1}
-        totalCards={5}
-        onIndexChange={() => {}}
-        renderCard={() => <div>Card</div>}
-      />,
-    );
-    expect(screen.getByText('1 / 5')).toBeInTheDocument();
-  });
-
-  it('navigates to next card', async () => {
+  it('navigates to a different card on click', async () => {
     const user = userEvent.setup();
     const onIndexChange = vi.fn();
     render(
@@ -53,34 +41,25 @@ describe('ArdaItemDetailsCardPreview', () => {
         currentIndex={1}
         totalCards={3}
         onIndexChange={onIndexChange}
-        renderCard={() => <div>Card</div>}
+        renderCard={(i) => <div>Card {i}</div>}
       />,
     );
-    await user.click(screen.getByRole('button', { name: 'Next card' }));
+    // Click on card 2 (inactive card)
+    await user.click(screen.getByRole('button', { name: 'Go to card 2' }));
     expect(onIndexChange).toHaveBeenCalledWith(2);
   });
 
-  it('disables previous button on first card', () => {
+  it('renders children slot', () => {
     render(
       <ArdaItemDetailsCardPreview
         currentIndex={1}
-        totalCards={3}
+        totalCards={1}
         onIndexChange={() => {}}
         renderCard={() => <div>Card</div>}
-      />,
+      >
+        <div>Actions here</div>
+      </ArdaItemDetailsCardPreview>,
     );
-    expect(screen.getByRole('button', { name: 'Previous card' })).toBeDisabled();
-  });
-
-  it('disables next button on last card', () => {
-    render(
-      <ArdaItemDetailsCardPreview
-        currentIndex={3}
-        totalCards={3}
-        onIndexChange={() => {}}
-        renderCard={() => <div>Card</div>}
-      />,
-    );
-    expect(screen.getByRole('button', { name: 'Next card' })).toBeDisabled();
+    expect(screen.getByText('Actions here')).toBeInTheDocument();
   });
 });
