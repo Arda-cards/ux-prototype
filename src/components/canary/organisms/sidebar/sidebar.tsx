@@ -5,13 +5,11 @@ import { SidebarProvider, Sidebar, SidebarRail } from '@/components/ui/sidebar';
 
 // --- Interfaces ---
 
-export interface ArdaSidebarProps {
+/** Design-time configuration for ArdaSidebar. */
+export interface ArdaSidebarStaticConfig {
+  /* --- View / Layout / Controller --- */
   /** Default open state (uncontrolled). */
   defaultOpen?: boolean;
-  /** Controlled open state. */
-  open?: boolean;
-  /** Called when sidebar open state changes. */
-  onOpenChange?: (open: boolean) => void;
   /** Sidebar content — compose with ArdaSidebarHeader, nav items, ArdaSidebarUserMenu, etc. */
   children: React.ReactNode;
   /** Content to render outside the sidebar but inside the provider (e.g. SidebarInset). */
@@ -19,6 +17,18 @@ export interface ArdaSidebarProps {
   /** Additional CSS classes applied to the sidebar. */
   className?: string;
 }
+
+/** Runtime configuration for ArdaSidebar. */
+export interface ArdaSidebarRuntimeConfig {
+  /* --- Model / Data Binding --- */
+  /** Controlled open state. */
+  open?: boolean;
+  /** Called when sidebar open state changes. */
+  onOpenChange?: (open: boolean) => void;
+}
+
+/** Combined props for ArdaSidebar. */
+export interface ArdaSidebarProps extends ArdaSidebarStaticConfig, ArdaSidebarRuntimeConfig {}
 
 // --- Component ---
 

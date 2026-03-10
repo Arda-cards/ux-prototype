@@ -1,4 +1,9 @@
-export { ArdaSidebar, type ArdaSidebarProps } from './sidebar';
+export {
+  ArdaSidebar,
+  type ArdaSidebarProps,
+  type ArdaSidebarStaticConfig,
+  type ArdaSidebarRuntimeConfig,
+} from './sidebar';
 export {
   ArdaSidebarHeader,
   type ArdaSidebarHeaderProps,
