@@ -3,20 +3,19 @@
  *
  * Renders the full app shell (sidebar + main pane) with an AG Grid
  * table showing business affiliates. Includes search, pagination,
- * column visibility, and a placeholder detail drawer.
- *
- * The real detail drawer is deferred to the View Details story (BA::0002::0001).
+ * column visibility, and the SupplierDrawer detail panel.
  */
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Building2, X, ChevronLeft, ChevronRight, Columns3, Plus } from 'lucide-react';
+import { Building2, ChevronLeft, ChevronRight, Columns3, Plus } from 'lucide-react';
 import '@/styles/vendored/globals.css';
 import { SidebarProvider, SidebarInset } from '@frontend/components/ui/sidebar';
 import { ArdaGrid } from '@frontend/components/table';
 import { Button } from '@frontend/components/ui/button';
 import type { ArdaApiResponse, ArdaQueryResponse } from '@frontend/types/arda-api';
-import type { BusinessAffiliateWithRoles, BusinessRoleType } from './types';
+import type { BusinessAffiliateWithRoles } from './types';
 import { suppliersColumnDefs, suppliersDefaultColDef } from './column-defs';
 import { BusinessAffiliatesSidebar } from './suppliers-sidebar';
+import { SupplierDrawer } from './supplier-drawer';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -37,18 +36,6 @@ interface SuppliersPageProps {
    */
   columnVisibilityOverride?: Set<string>;
 }
-
-// ---------------------------------------------------------------------------
-// Role badge colors (shared with column-defs but used in drawer too)
-// ---------------------------------------------------------------------------
-
-const roleBadgeColors: Record<BusinessRoleType, string> = {
-  VENDOR: 'bg-blue-100 text-blue-800',
-  CUSTOMER: 'bg-green-100 text-green-800',
-  CARRIER: 'bg-amber-100 text-amber-800',
-  OPERATOR: 'bg-purple-100 text-purple-800',
-  OTHER: 'bg-gray-100 text-gray-800',
-};
 
 // ---------------------------------------------------------------------------
 // Empty State
@@ -89,75 +76,6 @@ function SuppliersEmptyState({ onAddSupplier }: { onAddSupplier: () => void }) {
         >
           Add Supplier
         </Button>
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Placeholder Drawer
-// ---------------------------------------------------------------------------
-
-function PlaceholderDrawer({
-  affiliate,
-  onClose,
-}: {
-  affiliate: BusinessAffiliateWithRoles;
-  onClose: () => void;
-}) {
-  return (
-    <div
-      className="fixed top-0 right-0 h-full w-[400px] bg-white border-l border-gray-200 shadow-xl z-50 flex flex-col"
-      data-testid="placeholder-drawer"
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold truncate">{affiliate.name}</h2>
-        <button
-          onClick={onClose}
-          className="p-1 rounded-md hover:bg-gray-100"
-          aria-label="Close drawer"
-        >
-          <X className="w-5 h-5" />
-        </button>
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-        <div>
-          <p className="text-xs text-muted-foreground">Entity ID</p>
-          <p className="text-sm font-mono">{affiliate.eId}</p>
-        </div>
-
-        <div>
-          <p className="text-xs text-muted-foreground mb-1">Roles</p>
-          <div className="flex gap-1 flex-wrap">
-            {affiliate.roles.map((role) => (
-              <span
-                key={role}
-                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${roleBadgeColors[role]}`}
-              >
-                {role.charAt(0) + role.slice(1).toLowerCase()}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {affiliate.contact && (
-          <div>
-            <p className="text-xs text-muted-foreground">Contact</p>
-            <p className="text-sm">{affiliate.contact.name}</p>
-            {affiliate.contact.email && (
-              <p className="text-sm text-muted-foreground">{affiliate.contact.email}</p>
-            )}
-          </div>
-        )}
-
-        <div className="mt-8 p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-          <p className="text-xs text-muted-foreground text-center italic">
-            Full details panel — see View Details story (BA::0002::0001)
-          </p>
-        </div>
       </div>
     </div>
   );
@@ -463,11 +381,19 @@ export function SuppliersPage({
         </div>
       </SidebarInset>
 
-      {/* Placeholder detail drawer */}
+      {/* Supplier detail drawer */}
       {drawerOpen && selectedAffiliate && (
-        <PlaceholderDrawer
+        <SupplierDrawer
+          open={drawerOpen}
+          mode="view"
           affiliate={selectedAffiliate}
           onClose={() => setDrawerOpen(false)}
+          onEdit={() => {
+            // Placeholder: future stories wire this to edit mode transition
+          }}
+          onDelete={() => {
+            // Placeholder: future stories wire this to confirm dialog
+          }}
         />
       )}
     </SidebarProvider>

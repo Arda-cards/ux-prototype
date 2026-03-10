@@ -1,0 +1,42 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { docsUrl } from '../../../links';
+
+<Meta title="Use Cases/Reference/Business Affiliates/View Details/Description" />
+
+# Business Affiliates: View Details
+
+<a href={docsUrl('/product/use-cases/reference-data/suppliers/business-affiliates/#refba0002----view-supplier-details')}
+   target="_blank" rel="noopener">
+  View full specification &#8594;
+</a>
+
+The Supplier Details Panel opens as a side drawer when a row is clicked in the suppliers list.
+It shows all affiliate fields organized in collapsible sections: Identity, Contact, Address,
+Legal, and Notes.
+
+Each section expands or collapses independently. Sections with data default to expanded;
+sections with no data default to collapsed and show an empty-state message when expanded.
+
+## Scenarios
+
+<table>
+  <thead><tr><th>ID</th><th>Scenario</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>BA::0002::0001</td>
+      <td>Supplier Details Panel</td>
+      <td>Implemented</td>
+    </tr>
+  </tbody>
+</table>
+
+## Shared Drawer Component
+
+The `SupplierDrawer` component (`_shared/supplier-drawer.tsx`) supports three modes:
+
+- **view** — Read-only field display with Edit and Delete action buttons (this story)
+- **create** — Blank form with Save and Cancel buttons (BA::0003::0001)
+- **edit** — Pre-populated editable form with Save and Cancel buttons (BA::0004::0001)
+
+Create mode (BA::0003::0001) and Edit mode (BA::0004::0001) reuse this same drawer component
+with different `mode` props.

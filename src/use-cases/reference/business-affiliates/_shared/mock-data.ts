@@ -1,13 +1,16 @@
 /**
  * Mock BusinessAffiliate data for Storybook stories.
  *
- * 28 affiliates sorted A–Z by name, covering edge cases:
+ * 29 affiliates sorted A–Z by name, covering edge cases:
  * - 3+ with no contact field
  * - 2+ with no legal field
  * - 2+ with no mainAddress field
  * - 3+ with multiple roles
  * - 1+ with only CARRIER role (no VENDOR)
+ * - 1 minimal (name + roles only): ColdChain Direct
  * - Names spread A–Z for sort testing
+ *
+ * Fully-populated affiliate (all fields including notes): Apex Medical Distributors
  */
 import type { ArdaResult } from '@frontend/types/arda-api';
 import { MOCK_TENANT_ID } from '@frontend/mocks/data/mockUser';
@@ -71,6 +74,7 @@ const sampleAffiliates: BusinessAffiliateWithRoles[] = [
       postalCode: '94105',
       country: { symbol: 'US', name: 'United States' },
     },
+    notes: 'Key distributor for West Coast facilities. Net-30 payment terms.',
     roles: ['VENDOR', 'CUSTOMER'],
   },
   {
@@ -117,6 +121,7 @@ const sampleAffiliates: BusinessAffiliateWithRoles[] = [
       postalCode: '33101',
       country: { symbol: 'US', name: 'United States' },
     },
+    notes: 'International supplier. Requires customs documentation for all orders.',
     roles: ['VENDOR'],
   },
   {
@@ -204,11 +209,25 @@ const sampleAffiliates: BusinessAffiliateWithRoles[] = [
 
   // --- 18 new affiliates ---
 
-  // No contact field (3 affiliates)
+  // Fully-populated affiliate (all fields including notes) — used by Default story
   {
     eId: generateUUID(),
     name: 'Apex Medical Distributors',
-    legal: { name: 'Apex Medical Distributors Inc.', taxId: '11-2233445' },
+    legal: {
+      name: 'Apex Medical Distributors Inc.',
+      taxId: '11-2233445',
+      registrationId: 'REG-2024-0042',
+      naicsCode: '423450',
+    },
+    contact: {
+      name: 'Dr. Maria Santos',
+      salutation: 'Dr.',
+      firstName: 'Maria',
+      lastName: 'Santos',
+      jobTitle: 'Procurement Director',
+      email: 'msantos@apexmedical.com',
+      phone: '(555) 123-4567',
+    },
     mainAddress: {
       addressLine1: '10 Summit Rd',
       city: 'Denver',
@@ -216,6 +235,7 @@ const sampleAffiliates: BusinessAffiliateWithRoles[] = [
       postalCode: '80201',
       country: { symbol: 'US', name: 'United States' },
     },
+    notes: 'Preferred vendor for surgical instruments. Annual contract renewal in Q3.',
     roles: ['VENDOR'],
   },
   {
@@ -444,6 +464,13 @@ const sampleAffiliates: BusinessAffiliateWithRoles[] = [
       postalCode: '85701',
       country: { symbol: 'US', name: 'United States' },
     },
+    roles: ['VENDOR'],
+  },
+
+  // Minimal-data affiliate (name + roles only) — used by MinimalData story
+  {
+    eId: generateUUID(),
+    name: 'ColdChain Direct',
     roles: ['VENDOR'],
   },
 ];

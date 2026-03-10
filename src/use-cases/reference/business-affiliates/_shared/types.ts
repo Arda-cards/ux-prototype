@@ -12,6 +12,10 @@ export type BusinessRoleType = 'VENDOR' | 'CUSTOMER' | 'CARRIER' | 'OPERATOR' | 
 
 export interface Contact {
   name: string;
+  salutation?: string;
+  firstName?: string;
+  lastName?: string;
+  jobTitle?: string;
   email?: string;
   phone?: string;
   address?: geo.PostalAddress;
@@ -20,6 +24,8 @@ export interface Contact {
 export interface CompanyInformation {
   name: string;
   taxId?: string;
+  registrationId?: string;
+  naicsCode?: string;
   website?: string;
 }
 
@@ -31,6 +37,7 @@ export interface BusinessAffiliatePayload {
   mainAddress?: geo.PostalAddress;
   contacts?: Record<string, Contact>;
   addresses?: Record<string, geo.PostalAddress>;
+  notes?: string;
 }
 
 export interface BusinessRolePayload {

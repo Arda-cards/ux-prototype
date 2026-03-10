@@ -2,8 +2,8 @@
  * BA::0001::0007 — Deep Link
  *
  * Verifies that SuppliersPage correctly handles the `initialAffiliateId` prop
- * by automatically opening the placeholder detail drawer for the specified
- * affiliate and displaying the target entity's details.
+ * by automatically opening the detail drawer for the specified affiliate and
+ * displaying the target entity's details.
  *
  * 1 variant: Default.
  */
@@ -33,7 +33,7 @@ type Story = StoryObj<typeof SuppliersPage>;
 
 /**
  * Default — renders SuppliersPage with `initialAffiliateId` set to the eId of
- * the first mock affiliate (Apex Medical Distributors). The placeholder drawer
+ * the first mock affiliate (Apex Medical Distributors). The detail drawer
  * should open automatically, showing the affiliate name and entity ID.
  */
 export const Default: Story = {
@@ -47,15 +47,15 @@ export const Default: Story = {
     // 1. Wait for the grid to render with data
     await canvas.findByText('Apex Medical Distributors', {}, { timeout: 5000 });
 
-    // 2. Verify the placeholder drawer is automatically open
-    const drawer = await canvas.findByTestId('placeholder-drawer', {}, { timeout: 5000 });
+    // 2. Verify the real drawer is automatically open (has role="dialog")
+    const drawer = await canvas.findByRole('dialog', {}, { timeout: 5000 });
     expect(drawer).toBeVisible();
 
     // 3. Verify the drawer shows the correct affiliate name in its heading
     const drawerScope = within(drawer);
     expect(drawerScope.getByText('Apex Medical Distributors')).toBeVisible();
 
-    // 4. Verify the drawer shows the affiliate's entity ID
+    // 4. Verify the drawer shows the affiliate's entity ID (in Identity section)
     expect(drawerScope.getByText(firstAffiliate.eId)).toBeVisible();
 
     // 5. Verify the drawer is scoped within canvasElement (not a portal)
