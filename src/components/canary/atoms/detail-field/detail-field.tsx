@@ -17,7 +17,7 @@ const detailFieldVariants = cva('flex flex-col gap-1', {
 
 // --- Interfaces ---
 
-/** Design-time configuration for DetailField. */
+/** Static configuration for DetailField. */
 export interface DetailFieldStaticConfig extends VariantProps<typeof detailFieldVariants> {
   /* --- View / Layout / Controller --- */
   /** The field label displayed above the value. */

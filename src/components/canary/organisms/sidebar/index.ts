@@ -25,7 +25,6 @@ export {
 export {
   SidebarUserMenu,
   type SidebarUserMenuProps,
-  type SidebarUserMenuStaticConfig,
   type SidebarUserMenuRuntimeConfig,
   type UserMenuAction,
 } from '../../molecules/sidebar/sidebar-user-menu';

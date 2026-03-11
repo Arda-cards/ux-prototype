@@ -40,7 +40,7 @@ import { toast } from 'sonner';
 import { DeleteConfirmationModal } from '@frontend/components/common/DeleteConfirmationModal';
 import { useAuthErrorHandler } from '@frontend/hooks/useAuthErrorHandler';
 import { extractKanbanRecords } from '@frontend/lib/kanbanResponseParser';
-import { ArdaDetailField } from '@/components/canary/atoms/detail-field/detail-field';
+import { DetailField } from '@/components/canary/atoms/detail-field/detail-field';
 
 // Types for API response
 interface KanbanCardResult {
@@ -1090,24 +1090,24 @@ export function ItemDetailsPanel({
 
                 {/* Item Details */}
                 <div className="w-full px-4 sm:px-6 space-y-3 py-4 mb-6">
-                  <ArdaDetailField label="Link" fallback="No link available">
+                  <DetailField label="Link" fallback="No link available">
                     {item.link ? <TruncatedLink href={item.link} className="w-full" /> : undefined}
-                  </ArdaDetailField>
-                  <ArdaDetailField
+                  </DetailField>
+                  <DetailField
                     label="SKU"
                     value={item.sku || undefined}
                     fallback="No SKU available"
                   />
-                  <ArdaDetailField
+                  <DetailField
                     label="General Ledger Code"
                     value={item.generalLedgerCode || undefined}
                     fallback="No GL Code available"
                   />
-                  <ArdaDetailField
+                  <DetailField
                     label="Unit price"
                     value={`$${item.unitPrice?.toFixed(2) || '0.00'}`}
                   />
-                  <ArdaDetailField label="Number of cards" value={String(totalCards)} />
+                  <DetailField label="Number of cards" value={String(totalCards)} />
                 </div>
               </>
             ) : (

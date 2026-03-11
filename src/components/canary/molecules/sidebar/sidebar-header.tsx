@@ -28,13 +28,11 @@ export interface TeamOption {
   onSelect: () => void;
 }
 
-/** Design-time configuration for ArdaSidebarHeader. */
+/** Static configuration for ArdaSidebarHeader. */
 export interface ArdaSidebarHeaderStaticConfig {
   /* --- View / Layout / Controller --- */
   /** Team or workspace name displayed next to the logo. */
   teamName?: string;
-  /** Additional CSS classes. */
-  className?: string;
   /** Optional children to render instead of the default logo + team name. */
   children?: React.ReactNode;
 }
@@ -48,7 +46,10 @@ export interface ArdaSidebarHeaderRuntimeConfig {
 
 /** Combined props for ArdaSidebarHeader. */
 export interface ArdaSidebarHeaderProps
-  extends ArdaSidebarHeaderStaticConfig, ArdaSidebarHeaderRuntimeConfig {}
+  extends ArdaSidebarHeaderStaticConfig, ArdaSidebarHeaderRuntimeConfig {
+  /** Additional CSS classes. */
+  className?: string;
+}
 
 // --- Component ---
 

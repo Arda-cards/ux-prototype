@@ -8,15 +8,13 @@ import { ArdaBadge } from '../../atoms/badge/badge';
 
 // --- Interfaces ---
 
-/** Design-time configuration for SidebarNavItem. */
+/** Static configuration for SidebarNavItem. */
 export interface SidebarNavItemStaticConfig {
   /* --- View / Layout / Controller --- */
   /** Lucide icon component rendered before the label. */
   icon: LucideIcon;
   /** Text label for the navigation item. */
   label: string;
-  /** Additional CSS classes. */
-  className?: string;
 }
 
 /** Runtime configuration for SidebarNavItem. */
@@ -32,7 +30,10 @@ export interface SidebarNavItemRuntimeConfig {
 
 /** Combined props for SidebarNavItem. */
 export interface SidebarNavItemProps
-  extends SidebarNavItemStaticConfig, SidebarNavItemRuntimeConfig {}
+  extends SidebarNavItemStaticConfig, SidebarNavItemRuntimeConfig {
+  /** Additional CSS classes. */
+  className?: string;
+}
 
 // --- Component ---
 

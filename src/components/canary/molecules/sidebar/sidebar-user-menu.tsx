@@ -35,18 +35,11 @@ export interface UserMenuAction {
   destructive?: boolean;
 }
 
-/** Design-time configuration for SidebarUserMenu. */
-export interface SidebarUserMenuStaticConfig {
-  /* --- View / Layout / Controller --- */
-  /** Whether the sidebar is in mobile mode. Controls dropdown placement direction. */
-  isMobile?: boolean;
-  /** Additional CSS classes. */
-  className?: string;
-}
-
 /** Runtime configuration for SidebarUserMenu. */
 export interface SidebarUserMenuRuntimeConfig {
   /* --- Model / Data Binding --- */
+  /** Whether the sidebar is in mobile mode. Controls dropdown placement direction. */
+  isMobile?: boolean;
   /** User information. */
   user: {
     name: string;
@@ -60,8 +53,10 @@ export interface SidebarUserMenuRuntimeConfig {
 }
 
 /** Combined props for SidebarUserMenu. */
-export interface SidebarUserMenuProps
-  extends SidebarUserMenuStaticConfig, SidebarUserMenuRuntimeConfig {}
+export interface SidebarUserMenuProps extends SidebarUserMenuRuntimeConfig {
+  /** Additional CSS classes. */
+  className?: string;
+}
 
 // --- Component ---
 

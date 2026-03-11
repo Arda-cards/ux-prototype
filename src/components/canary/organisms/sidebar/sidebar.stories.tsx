@@ -150,7 +150,7 @@ export const Composition: Story = {
   render: () => (
     <ArdaSidebar
       defaultOpen
-      page={
+      content={
         <SidebarInset>
           <header className="flex h-14 items-center gap-2 border-b px-4">
             <SidebarTrigger className="-ml-1" />

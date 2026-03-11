@@ -5,7 +5,7 @@ import { SidebarProvider, Sidebar, SidebarRail } from '@/components/ui/sidebar';
 
 // --- Interfaces ---
 
-/** Design-time configuration for ArdaSidebar. */
+/** Static configuration for ArdaSidebar. */
 export interface ArdaSidebarStaticConfig {
   /* --- View / Layout / Controller --- */
   /** Default open state (uncontrolled). */
@@ -15,9 +15,7 @@ export interface ArdaSidebarStaticConfig {
   /** Sidebar content — compose with ArdaSidebarHeader, nav items, SidebarUserMenu, etc. */
   children: React.ReactNode;
   /** Content to render outside the sidebar but inside the provider (e.g. SidebarInset). */
-  page?: React.ReactNode;
-  /** Additional CSS classes applied to the sidebar. */
-  className?: string;
+  content?: React.ReactNode;
 }
 
 /** Runtime configuration for ArdaSidebar. */
@@ -30,7 +28,10 @@ export interface ArdaSidebarRuntimeConfig {
 }
 
 /** Combined props for ArdaSidebar. */
-export interface ArdaSidebarProps extends ArdaSidebarStaticConfig, ArdaSidebarRuntimeConfig {}
+export interface ArdaSidebarProps extends ArdaSidebarStaticConfig, ArdaSidebarRuntimeConfig {
+  /** Additional CSS classes applied to the sidebar. */
+  className?: string;
+}
 
 // --- Component ---
 
@@ -48,7 +49,7 @@ export function ArdaSidebar({
   open,
   onOpenChange,
   children,
-  page,
+  content,
   className,
 }: ArdaSidebarProps) {
   const providerProps = {
@@ -63,7 +64,7 @@ export function ArdaSidebar({
         {children}
         <SidebarRail />
       </Sidebar>
-      {page}
+      {content}
     </SidebarProvider>
   );
 }
