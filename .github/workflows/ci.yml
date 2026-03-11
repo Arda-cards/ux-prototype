@@ -30,6 +30,14 @@ jobs:
           npx concurrently -k -s first -n "SB,TEST" \
             "npx http-server storybook-static --port 6006 --silent" \
             "npx wait-on http://127.0.0.1:6006 && npm run test:storybook"
+      # Rebuild with subpath base and verify deployment works under /ux-prototype/
+      - run: npm run build-storybook
+        env:
+          STORYBOOK_BASE: /ux-prototype/
+      - run: |
+          npx concurrently -k -s first -n "SB,TEST" \
+            "node tests/smoke/subpath-server.mjs 6007 /ux-prototype/" \
+            "npx wait-on http://127.0.0.1:6007/ux-prototype/ && npx playwright test --project=subpath-deployment"
 
   vrt:
     if: ${{ ! github.event.pull_request.draft }}

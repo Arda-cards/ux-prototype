@@ -7,8 +7,18 @@ import { handlers } from '@frontend/mocks/handlers';
 import '../src/styles/globals.css';
 import '../src/styles/ag-theme-arda.css';
 
-// MSW initialization — runs once before any story mounts
-initialize({ onUnhandledRequest: 'bypass' });
+// MSW initialization — runs once before any story mounts.
+// When Storybook is built with a non-root base path (e.g., /ux-prototype/ on
+// GitHub Pages), Vite sets import.meta.env.BASE_URL accordingly. MSW must
+// register its service worker at the correct path — otherwise the browser
+// rejects the registration because the default `/mockServiceWorker.js` falls
+// outside the deployment scope.
+initialize({
+  onUnhandledRequest: 'bypass',
+  serviceWorker: {
+    url: `${import.meta.env.BASE_URL}mockServiceWorker.js`,
+  },
+});
 
 const preview: Preview = {
   decorators: [withAgentation, withFullAppProviders],

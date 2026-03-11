@@ -33,6 +33,13 @@ const config: StorybookConfig = {
     options: {},
   },
   viteFinal: async (config) => {
+    // Allow overriding the base path for subpath deployments (e.g., GitHub Pages).
+    // Set STORYBOOK_BASE=/ux-prototype/ in the build environment to serve
+    // all assets relative to that path. Defaults to '/' for local development.
+    if (process.env.STORYBOOK_BASE) {
+      config.base = process.env.STORYBOOK_BASE;
+    }
+
     const { resolve } = await import('node:path');
 
     config.resolve = config.resolve || {};
@@ -73,6 +80,26 @@ const config: StorybookConfig = {
     // for SSR-safe lazy loading, but Vite (ESM-only) cannot handle require().
     // This transform rewrites it at build time without modifying files on disk.
     config.plugins = config.plugins || [];
+
+    // Workaround for @storybook/builder-vite bug: the vite-inject-mocker
+    // plugin hardcodes `src="/vite-inject-mocker-entry.js"` in the HTML
+    // without respecting Vite's `base` config. When deployed under a subpath
+    // (e.g., /ux-prototype/), this causes a 404. This plugin rewrites the
+    // path to include the base prefix.
+    if (config.base && config.base !== '/') {
+      const base = config.base;
+      config.plugins.push({
+        name: 'fix-mocker-entry-base-path',
+        enforce: 'post' as const,
+        transformIndexHtml(html) {
+          return html.replace(
+            'src="/vite-inject-mocker-entry.js"',
+            `src="${base}vite-inject-mocker-entry.js"`,
+          );
+        },
+      });
+    }
+
     config.plugins.push({
       name: 'vendored-cjs-to-esm',
       enforce: 'pre' as const,
