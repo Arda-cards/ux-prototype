@@ -58,9 +58,12 @@ export const Default: Story = {
     await canvas.findByText('Apex Medical Distributors', {}, { timeout: 10000 });
 
     // 2. Verify pagination shows "Page 1"
-    await waitFor(() => {
-      expect(canvas.getByText('Page 1')).toBeVisible();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(canvas.getByText('Page 1')).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
 
     // 3. Verify "Previous" is disabled on first page
     const prevButton = canvas.getByRole('button', { name: 'Previous page' });
@@ -79,9 +82,12 @@ export const Default: Story = {
     await canvas.findByText('Horizon Diagnostics', {}, { timeout: 10000 });
 
     // 6. Verify pagination shows "Page 2"
-    await waitFor(() => {
-      expect(canvas.getByText('Page 2')).toBeVisible();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(canvas.getByText('Page 2')).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
 
     await storyStepDelay();
 
@@ -95,10 +101,13 @@ export const Default: Story = {
     await canvas.findByText('QuickShip Logistics', {}, { timeout: 10000 });
 
     // 9. Verify "Next" is disabled on last page
-    await waitFor(() => {
-      const nextButton3 = canvas.getByRole('button', { name: 'Next page' });
-      expect(nextButton3).toBeDisabled();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        const nextButton3 = canvas.getByRole('button', { name: 'Next page' });
+        expect(nextButton3).toBeDisabled();
+      },
+      { timeout: 10000 },
+    );
 
     await storyStepDelay();
 
@@ -113,8 +122,11 @@ export const Default: Story = {
     await canvas.findByText('Horizon Diagnostics', {}, { timeout: 10000 });
 
     // 12. Verify pagination shows "Page 2" again
-    await waitFor(() => {
-      expect(canvas.getByText('Page 2')).toBeVisible();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(canvas.getByText('Page 2')).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
   },
 };

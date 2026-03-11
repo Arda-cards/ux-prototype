@@ -241,7 +241,11 @@ const sampleAffiliates: BusinessAffiliateWithRoles[] = [
   {
     eId: generateUUID(),
     name: 'Delta Pharma Group',
-    legal: { name: 'Delta Pharma Group LLC', taxId: '22-3344556', website: 'https://deltapharma.com' },
+    legal: {
+      name: 'Delta Pharma Group LLC',
+      taxId: '22-3344556',
+      website: 'https://deltapharma.com',
+    },
     mainAddress: {
       addressLine1: '400 Pharma Park',
       city: 'Raleigh',
@@ -314,7 +318,11 @@ const sampleAffiliates: BusinessAffiliateWithRoles[] = [
     eId: generateUUID(),
     name: 'Keystone Medical Group',
     legal: { name: 'Keystone Medical Group Inc.', taxId: '88-9900112' },
-    contact: { name: 'Frank Miller', email: 'fmiller@keystonemedical.com', phone: '(555) 666-7777' },
+    contact: {
+      name: 'Frank Miller',
+      email: 'fmiller@keystonemedical.com',
+      phone: '(555) 666-7777',
+    },
     mainAddress: {
       addressLine1: '900 Cornerstone Ave',
       city: 'Philadelphia',
@@ -371,7 +379,11 @@ const sampleAffiliates: BusinessAffiliateWithRoles[] = [
   {
     eId: generateUUID(),
     name: 'Lumina Therapeutics',
-    legal: { name: 'Lumina Therapeutics Corp.', taxId: '99-0011223', website: 'https://luminatx.com' },
+    legal: {
+      name: 'Lumina Therapeutics Corp.',
+      taxId: '99-0011223',
+      website: 'https://luminatx.com',
+    },
     contact: { name: 'Jack Reeves', email: 'jreeves@luminatx.com', phone: '(555) 202-3030' },
     mainAddress: {
       addressLine1: '3400 Bright St',
@@ -413,7 +425,11 @@ const sampleAffiliates: BusinessAffiliateWithRoles[] = [
   {
     eId: generateUUID(),
     name: 'Vanguard Specialty Labs',
-    legal: { name: 'Vanguard Specialty Labs Inc.', taxId: '77-8899001', website: 'https://vanguardlabs.com' },
+    legal: {
+      name: 'Vanguard Specialty Labs Inc.',
+      taxId: '77-8899001',
+      website: 'https://vanguardlabs.com',
+    },
     contact: { name: 'Olivia Grant', email: 'ogrant@vanguardlabs.com', phone: '(555) 505-6060' },
     mainAddress: {
       addressLine1: '200 Vanguard Blvd',

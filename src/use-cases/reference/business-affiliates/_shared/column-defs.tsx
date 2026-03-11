@@ -6,10 +6,7 @@
  */
 import React from 'react';
 import type { ColDef, ICellRendererParams } from 'ag-grid-community';
-import {
-  SelectAllHeaderComponent,
-  SelectionCheckboxCell,
-} from './grid-cell-renderers';
+import { SelectAllHeaderComponent, SelectionCheckboxCell } from './grid-cell-renderers';
 import type { BusinessAffiliateWithRoles, BusinessRoleType } from './types';
 
 const roleBadgeColors: Record<BusinessRoleType, string> = {

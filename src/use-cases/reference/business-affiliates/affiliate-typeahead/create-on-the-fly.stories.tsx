@@ -31,7 +31,8 @@ const defaultOnCreate = async (name: string) => {
 // ---------------------------------------------------------------------------
 
 const meta: Meta<typeof AffiliateTypeahead> = {
-  title: 'Use Cases/Reference/Business Affiliates/BR-0002 Affiliate Typeahead/0002 Create on the Fly',
+  title:
+    'Use Cases/Reference/Business Affiliates/BR-0002 Affiliate Typeahead/0002 Create on the Fly',
   component: AffiliateTypeahead,
   parameters: {
     layout: 'centered',

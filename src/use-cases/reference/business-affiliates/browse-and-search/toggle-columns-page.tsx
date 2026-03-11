@@ -31,22 +31,15 @@ const ALL_COLUMN_IDS = new Set(ALL_COLUMNS.map((c) => c.id));
 // ---------------------------------------------------------------------------
 
 export function ToggleColumnsSuppliersPage() {
-  const [visibleColumns, setVisibleColumns] = useState<Set<string>>(
-    new Set(ALL_COLUMN_IDS),
-  );
+  const [visibleColumns, setVisibleColumns] = useState<Set<string>>(new Set(ALL_COLUMN_IDS));
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [pendingColumns, setPendingColumns] = useState<Set<string>>(
-    new Set(ALL_COLUMN_IDS),
-  );
+  const [pendingColumns, setPendingColumns] = useState<Set<string>>(new Set(ALL_COLUMN_IDS));
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close on outside click — behaves as Cancel (pending changes discarded)
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setDropdownOpen(false);
         // Pending changes are discarded; visibleColumns is untouched.
       }
@@ -138,9 +131,6 @@ export function ToggleColumnsSuppliersPage() {
   );
 
   return (
-    <SuppliersPage
-      toolbarActions={() => viewDropdown}
-      columnVisibilityOverride={visibleColumns}
-    />
+    <SuppliersPage toolbarActions={() => viewDropdown} columnVisibilityOverride={visibleColumns} />
   );
 }

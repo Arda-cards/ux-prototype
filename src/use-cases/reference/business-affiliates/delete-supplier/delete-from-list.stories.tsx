@@ -70,7 +70,9 @@ export const SingleDelete: Story = {
     const dialog = await canvas.findByRole('alertdialog', {}, { timeout: 10000 });
     expect(dialog).toBeVisible();
     expect(within(dialog).getByText('Delete Supplier')).toBeVisible();
-    expect(within(dialog).getByText(/are you sure you want to delete this supplier/i)).toBeVisible();
+    expect(
+      within(dialog).getByText(/are you sure you want to delete this supplier/i),
+    ).toBeVisible();
     await storyStepDelay();
 
     // 6. Click "Delete" confirm button
@@ -78,21 +80,34 @@ export const SingleDelete: Story = {
     await userEvent.click(confirmButton);
 
     // 7. Verify dialog closes
-    await waitFor(() => {
-      expect(canvas.queryByRole('alertdialog')).not.toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(canvas.queryByRole('alertdialog')).not.toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
     await storyStepDelay();
 
     // 8. Verify success toast (Sonner renders via portal to document.body)
-    const toastText = await screen.findByText(/supplier deleted successfully/i, {}, { timeout: 10000 });
-    await waitFor(() => {
-      expect(toastText).toBeVisible();
-    }, { timeout: 10000 });
+    const toastText = await screen.findByText(
+      /supplier deleted successfully/i,
+      {},
+      { timeout: 10000 },
+    );
+    await waitFor(
+      () => {
+        expect(toastText).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
 
     // 9. Verify the deleted row is gone — "Apex Medical Distributors" should no longer appear
-    await waitFor(() => {
-      expect(canvas.queryByText('Apex Medical Distributors')).not.toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(canvas.queryByText('Apex Medical Distributors')).not.toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
   },
 };
 
@@ -133,15 +148,25 @@ export const BulkDelete: Story = {
     await userEvent.click(confirmButton);
 
     // 6. Verify dialog closes
-    await waitFor(() => {
-      expect(canvas.queryByRole('alertdialog')).not.toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(canvas.queryByRole('alertdialog')).not.toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
 
     // 7. Verify success toast (Sonner portal — use screen)
-    const toastText = await screen.findByText(/suppliers deleted successfully/i, {}, { timeout: 10000 });
-    await waitFor(() => {
-      expect(toastText).toBeVisible();
-    }, { timeout: 10000 });
+    const toastText = await screen.findByText(
+      /suppliers deleted successfully/i,
+      {},
+      { timeout: 10000 },
+    );
+    await waitFor(
+      () => {
+        expect(toastText).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
   },
 };
 
@@ -179,9 +204,12 @@ export const CancelDelete: Story = {
     await userEvent.click(cancelButton);
 
     // 6. Verify dialog closes
-    await waitFor(() => {
-      expect(canvas.queryByRole('alertdialog')).not.toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(canvas.queryByRole('alertdialog')).not.toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
 
     // 7. Verify the row is still present
     expect(canvas.getByText('Apex Medical Distributors')).toBeVisible();

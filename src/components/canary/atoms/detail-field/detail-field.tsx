@@ -17,8 +17,8 @@ const detailFieldVariants = cva('flex flex-col gap-1', {
 
 // --- Interfaces ---
 
-/** Design-time configuration for ArdaDetailField. */
-export interface ArdaDetailFieldStaticConfig extends VariantProps<typeof detailFieldVariants> {
+/** Static configuration for DetailField. */
+export interface DetailFieldStaticConfig extends VariantProps<typeof detailFieldVariants> {
   /* --- View / Layout / Controller --- */
   /** The field label displayed above the value. */
   label: string;
@@ -27,8 +27,8 @@ export interface ArdaDetailFieldStaticConfig extends VariantProps<typeof detailF
   fallback?: string;
 }
 
-/** Runtime configuration for ArdaDetailField. */
-export interface ArdaDetailFieldRuntimeConfig {
+/** Runtime configuration for DetailField. */
+export interface DetailFieldRuntimeConfig {
   /* --- Model / Data Binding --- */
   /** The field value to display as plain text. */
   value?: string;
@@ -36,22 +36,19 @@ export interface ArdaDetailFieldRuntimeConfig {
   children?: React.ReactNode;
 }
 
-/** Combined props for ArdaDetailField. */
-export interface ArdaDetailFieldProps
-  extends
-    ArdaDetailFieldStaticConfig,
-    ArdaDetailFieldRuntimeConfig,
-    React.HTMLAttributes<HTMLDivElement> {}
+/** Combined props for DetailField. */
+export interface DetailFieldProps
+  extends DetailFieldStaticConfig, DetailFieldRuntimeConfig, React.HTMLAttributes<HTMLDivElement> {}
 
 // --- Component ---
 
 /**
- * ArdaDetailField — a read-only label/value pair for entity detail views.
+ * DetailField — a read-only label/value pair for entity detail views.
  *
  * Built from scratch (no shadcn/ui or AG Grid analog).
  * Extracted from `vendored/arda-frontend/components/items/ItemDetailsPanel.tsx` lines 1161-1204.
  */
-export function ArdaDetailField({
+export function DetailField({
   label,
   value,
   fallback = '\u2014',
@@ -59,13 +56,13 @@ export function ArdaDetailField({
   children,
   className,
   ...props
-}: ArdaDetailFieldProps) {
+}: DetailFieldProps) {
   const displayValue = children ?? (value !== undefined && value !== '' ? value : fallback);
 
   return (
     <div className={cn(detailFieldVariants({ variant }), className)} {...props}>
       <span className="text-sm text-muted-foreground font-medium">{label}</span>
-      <span className="text-base text-foreground font-semibold break-all">{displayValue}</span>
+      <span className="text-base text-foreground font-semibold break-words">{displayValue}</span>
     </div>
   );
 }

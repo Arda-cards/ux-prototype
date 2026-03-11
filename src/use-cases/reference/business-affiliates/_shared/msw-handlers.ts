@@ -203,7 +203,9 @@ export const businessAffiliateHandlers = [
     const contactName = body.contact
       ? [body.contact.salutation, body.contact.firstName, body.contact.lastName]
           .filter(Boolean)
-          .join(' ') || body.contact.firstName || ''
+          .join(' ') ||
+        body.contact.firstName ||
+        ''
       : undefined;
 
     // Create affiliate with silent VENDOR role assignment (per SD-3)

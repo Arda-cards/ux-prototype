@@ -14,7 +14,8 @@ import { businessAffiliateHandlers, resetAffiliateStore } from '../_shared/msw-h
 import { storyStepDelay } from '../_shared/story-step-delay';
 
 const meta: Meta<typeof PanelDeletableSuppliersPage> = {
-  title: 'Use Cases/Reference/Business Affiliates/BA-0005 Delete Supplier/0002 Delete from Detail Panel',
+  title:
+    'Use Cases/Reference/Business Affiliates/BA-0005 Delete Supplier/0002 Delete from Detail Panel',
   component: PanelDeletableSuppliersPage,
   parameters: {
     layout: 'fullscreen',
@@ -73,9 +74,7 @@ export const ConfirmDelete: Story = {
 
     // 7. Verify dialog message contains the affiliate name
     expect(
-      dialogScope.getByText(
-        /are you sure you want to delete Apex Medical Distributors\?/i,
-      ),
+      dialogScope.getByText(/are you sure you want to delete Apex Medical Distributors\?/i),
     ).toBeVisible();
     await storyStepDelay();
 
@@ -84,28 +83,42 @@ export const ConfirmDelete: Story = {
     await userEvent.click(confirmButton);
 
     // 9. Verify dialog closes
-    await waitFor(() => {
-      expect(canvas.queryByRole('alertdialog')).not.toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(canvas.queryByRole('alertdialog')).not.toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
     await storyStepDelay();
 
     // 10. Verify success toast (Sonner renders via portal to document.body)
-    const toastText = await screen.findByText(/supplier deleted successfully/i, {}, { timeout: 10000 });
-    await waitFor(() => {
-      expect(toastText).toBeVisible();
-    }, { timeout: 10000 });
+    const toastText = await screen.findByText(
+      /supplier deleted successfully/i,
+      {},
+      { timeout: 10000 },
+    );
+    await waitFor(
+      () => {
+        expect(toastText).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
 
     // 11. Verify the drawer is closed (key remount resets SuppliersPage state)
-    await waitFor(() => {
-      expect(canvas.queryByRole('dialog')).not.toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(canvas.queryByRole('dialog')).not.toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
 
     // 12. Verify the deleted row is gone from the grid
-    await waitFor(() => {
-      expect(
-        canvas.queryByText('Apex Medical Distributors'),
-      ).not.toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(canvas.queryByText('Apex Medical Distributors')).not.toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
   },
 };
 
@@ -151,9 +164,12 @@ export const CancelDelete: Story = {
     await userEvent.click(cancelButton);
 
     // 7. Verify dialog closes
-    await waitFor(() => {
-      expect(canvas.queryByRole('alertdialog')).not.toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(canvas.queryByRole('alertdialog')).not.toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
 
     // 8. Verify drawer is still open with affiliate data
     expect(canvas.getByRole('dialog')).toBeVisible();
