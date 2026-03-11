@@ -68,8 +68,9 @@ export const SingleDelete: Story = {
 
     // 5. Verify confirm dialog opens
     const dialog = await canvas.findByRole('alertdialog', {}, { timeout: 10000 });
-    expect(dialog).toBeVisible();
-    expect(within(dialog).getByText('Delete Supplier')).toBeVisible();
+    await waitFor(() => {
+      expect(within(dialog).getByText('Delete Supplier')).toBeVisible();
+    }, { timeout: 10000 });
     expect(within(dialog).getByText(/are you sure you want to delete this supplier/i)).toBeVisible();
     await storyStepDelay();
 
@@ -124,7 +125,9 @@ export const BulkDelete: Story = {
 
     // 4. Verify confirm dialog with bulk message
     const dialog = await canvas.findByRole('alertdialog', {}, { timeout: 10000 });
-    expect(within(dialog).getByText('Delete Suppliers')).toBeVisible();
+    await waitFor(() => {
+      expect(within(dialog).getByText('Delete Suppliers')).toBeVisible();
+    }, { timeout: 10000 });
     expect(within(dialog).getByText(/delete 3 suppliers/i)).toBeVisible();
     await storyStepDelay();
 
@@ -171,7 +174,9 @@ export const CancelDelete: Story = {
 
     // 4. Verify confirm dialog opens
     const dialog = await canvas.findByRole('alertdialog', {}, { timeout: 10000 });
-    expect(dialog).toBeVisible();
+    await waitFor(() => {
+      expect(dialog).toBeVisible();
+    }, { timeout: 10000 });
     await storyStepDelay();
 
     // 5. Click "Cancel"
