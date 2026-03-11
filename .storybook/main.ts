@@ -27,7 +27,7 @@ const config: StorybookConfig = {
     '../src/use-cases/**/*.mdx',
     '../src/use-cases/**/*.stories.@(ts|tsx)',
   ],
-  addons: ['@storybook/addon-docs', 'msw-storybook-addon'],
+  addons: ['@storybook/addon-docs', '@storybook/addon-links', 'msw-storybook-addon'],
   framework: {
     name: '@storybook/react-vite',
     options: {},
