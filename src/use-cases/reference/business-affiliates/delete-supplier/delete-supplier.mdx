@@ -1,0 +1,46 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { docsUrl } from '../../../links';
+
+<Meta title="Use Cases/Reference/Business Affiliates/BA-0005 Delete Supplier/Description" />
+
+# Business Affiliates: Delete Supplier
+
+<a href={docsUrl('/product/use-cases/reference-data/suppliers/business-affiliates/#refba0005----delete-business-affiliate')}
+   target="_blank" rel="noopener">
+  View full specification &#8594;
+</a>
+
+Delete one or more business affiliates from the suppliers list. Uses a confirmation
+dialog before executing the delete and displays a toast notification for success or
+error feedback.
+
+## Stories in This Section
+
+<table>
+  <thead><tr><th>Story</th><th>File</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Single Delete / Bulk Delete / Cancel Delete</td>
+      <td><code>delete-from-list.stories.tsx</code></td>
+      <td>Delete from the list view via row selection and Actions dropdown</td>
+    </tr>
+    <tr>
+      <td>Network Error</td>
+      <td><code>delete-error.stories.tsx</code></td>
+      <td>Server returns 500 &#8212; error toast shown, row preserved</td>
+    </tr>
+  </tbody>
+</table>
+
+## Deferred Scenarios
+
+<table>
+  <thead><tr><th>Scenario</th><th>Story</th><th>Depends On</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Delete from Detail Panel</td>
+      <td><code>BA::0005::0002</code></td>
+      <td>Full supplier drawer (View Details story)</td>
+    </tr>
+  </tbody>
+</table>

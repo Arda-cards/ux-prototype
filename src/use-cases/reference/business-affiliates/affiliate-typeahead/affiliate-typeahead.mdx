@@ -1,0 +1,43 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { docsUrl } from '../../../links';
+
+<Meta title="Use Cases/Reference/Business Affiliates/BR-0002 Affiliate Typeahead/Description" />
+
+# Affiliate Typeahead: Create on the Fly
+
+<a href={docsUrl('/product/use-cases/reference-data/suppliers/business-roles/#refbr0002----add-and-edit-business-roles')}
+   target="_blank" rel="noopener">
+  View full specification &#8594;
+</a>
+
+The `AffiliateTypeahead` is a self-contained component for use by the Item Supply
+form. It implements the create-on-the-fly pattern:
+
+1. User types a supplier name in the typeahead input.
+2. After a 250ms debounce, the system queries `GET /api/arda/business-affiliate/lookup`.
+3. The dropdown shows matching affiliates. A &#8220;[+] New supplier&#8221; create
+   option always appears at the bottom when the input has text.
+4. Selecting the create option calls `POST /api/arda/business-affiliate`. The VENDOR
+   role is assigned silently (per SD-3).
+
+## Scenarios
+
+<table>
+  <thead><tr><th>ID</th><th>Scenario</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>BR::0002::0002</td>
+      <td>Create on the Fly</td>
+      <td>Implemented</td>
+    </tr>
+  </tbody>
+</table>
+
+## Component API
+
+The `AffiliateTypeahead` accepts:
+
+- `onSelect(eId, name)` &#8212; called when an existing affiliate is selected
+- `onCreate(name)` &#8212; async callback for create-on-the-fly (optional; if omitted, the create option is hidden)
+- `roleFilter` &#8212; filter lookup results by role (e.g., `VENDOR`)
+- `placeholder` &#8212; input placeholder text
