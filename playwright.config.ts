@@ -46,9 +46,21 @@ export default defineConfig({
     {
       name: 'smoke',
       testDir: './tests/smoke',
+      testIgnore: ['**/subpath-deployment*'],
       timeout: 600000, // 10 min per batch — stories are split into batches of ~20
       use: {
         ...devices['Desktop Chrome'],
+        viewport: { width: 1280, height: 900 },
+      },
+    },
+    {
+      name: 'subpath-deployment',
+      testDir: './tests/smoke',
+      testMatch: ['**/subpath-deployment*'],
+      timeout: 60000,
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: 'http://localhost:6007',
         viewport: { width: 1280, height: 900 },
       },
     },
