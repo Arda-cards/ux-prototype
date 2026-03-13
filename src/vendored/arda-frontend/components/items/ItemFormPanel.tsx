@@ -276,6 +276,12 @@ export const ItemFormPanel = ({
   const [showTableOfContents, setShowTableOfContents] = useState(false);
   const [imageFieldError, setImageFieldError] = useState<string | null>(null);
 
+  const DATA_URI_IMAGE_ERROR =
+    'Incompatible image format. Please use a valid image URL.';
+
+  const isDataUri = (url: string | undefined): boolean =>
+    !!(url && url.trim().toLowerCase().startsWith('data:'));
+
   // Refs for table of contents navigation
   const primarySupplierRef = useRef<HTMLDivElement>(null);
   const secondarySupplierRef = useRef<HTMLDivElement>(null);
@@ -609,12 +615,16 @@ export const ItemFormPanel = ({
   };
 
   const handleItemCardChange = (newForm: Partial<ItemCardForm>) => {
-    // Clear image error if image URL is being changed
+    // Validate image URL if it is being changed
     if (newForm.imageUrl !== undefined && newForm.imageUrl !== form.imageUrl) {
-      setImageFieldError(null);
-      setErrors((prevErrors) =>
-        prevErrors.filter((error) => error !== 'Incompatible image format'),
-      );
+      if (isDataUri(newForm.imageUrl)) {
+        setImageFieldError(DATA_URI_IMAGE_ERROR);
+      } else {
+        setImageFieldError(null);
+        setErrors((prevErrors) =>
+          prevErrors.filter((error) => error !== 'Incompatible image format'),
+        );
+      }
     }
 
     // Update form with changes from ItemCard
@@ -737,6 +747,11 @@ export const ItemFormPanel = ({
       newErrors.push('Check your card details');
     }
 
+    if (isDataUri(form.imageUrl)) {
+      setImageFieldError(DATA_URI_IMAGE_ERROR);
+      newErrors.push('Incompatible image format');
+    }
+
     setErrors(newErrors);
 
     // If there are errors, show all error states
@@ -762,7 +777,11 @@ export const ItemFormPanel = ({
       // Create item using all form data
       const newItem: Partial<Item> = {
         name: form.name,
-        imageUrl: form.imageUrl?.trim() === '' ? undefined : form.imageUrl,
+        imageUrl: (() => {
+          const url = form.imageUrl?.trim();
+          if (!url || isDataUri(url)) return undefined;
+          return url;
+        })(),
         classification:
           form.classification.type || form.classification.subType
             ? {
@@ -1009,14 +1028,16 @@ export const ItemFormPanel = ({
         try {
           const draftItem = await createDraftItem(itemToEdit.entityId);
           const mergedForPut: Partial<Item> = { ...draftItem };
-          (
-            Object.keys(newItem) as Array<keyof Partial<Item>>
-          ).forEach((key) => {
-            (mergedForPut as Record<string, unknown>)[key] = (newItem as Record<string, unknown>)[key];
-          });
+          (Object.keys(newItem) as Array<keyof Partial<Item>>).forEach(
+            (key) => {
+              (mergedForPut as Record<string, unknown>)[key] = (
+                newItem as Record<string, unknown>
+              )[key];
+            },
+          );
           resultItem = await updateItem(
             draftItem.entityId,
-            mergedForPut as Item
+            mergedForPut as Item,
           );
 
           toast.success('Item updated successfully');
@@ -1082,7 +1103,7 @@ export const ItemFormPanel = ({
 
       if (isImageFormatError) {
         setImageFieldError(
-          'Incompatible image format. Please use a valid image URL or upload an image file.',
+          'Incompatible image format. Please use a valid image URL.',
         );
         setErrors(['Incompatible image format']);
         setShowAllErrors(true);

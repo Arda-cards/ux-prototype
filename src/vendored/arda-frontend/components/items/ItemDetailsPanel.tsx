@@ -22,7 +22,7 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import { cn } from '@frontend/lib/utils';
 import { ItemDetailsPanelProps } from '@frontend/constants/interfaces';
 import type { ItemCard } from '@frontend/constants/types';
-import { useOrderQueue } from '@frontend/contexts/OrderQueueContext';
+import { useOrderQueue } from '@frontend/store/hooks/useOrderQueue';
 import { TruncatedLink } from '@frontend/components/common/TruncatedLink';
 import OrderQueueToast from '@frontend/components/ui/order-queue-toast';
 import { useOrderQueueToast } from '@frontend/hooks/useOrderQueueToast';
@@ -39,6 +39,7 @@ import { toast } from 'sonner';
 import { DeleteConfirmationModal } from '@frontend/components/common/DeleteConfirmationModal';
 import { useAuthErrorHandler } from '@frontend/hooks/useAuthErrorHandler';
 import { extractKanbanRecords } from '@frontend/lib/kanbanResponseParser';
+import { ArdaDetailField } from '@arda-cards/design-system/canary';
 
 // Types for API response
 interface KanbanCardResult {
@@ -1157,51 +1158,35 @@ export function ItemDetailsPanel({
                 </div>
 
                 {/* Item Details */}
-                <div className='w-full px-4 sm:px-6 space-y-3 py-4 mb-6'>
-                  <div className='flex flex-col gap-1'>
-                    <span className='text-sm text-[#737373] font-medium'>
-                      Link
-                    </span>
+                <div data-testid="item-detail-fields" className='w-full px-4 sm:px-6 space-y-3 py-4 mb-6'>
+                  <ArdaDetailField label='Link'>
                     {item.link ? (
                       <TruncatedLink href={item.link} className='w-full' />
                     ) : (
-                      <span className='text-base text-[#737373] font-normal'>
+                      <span className='text-base text-muted-foreground font-normal'>
                         No link available
                       </span>
                     )}
-                  </div>
-                  <div className='flex flex-col gap-1'>
-                    <span className='text-sm text-[#737373] font-medium'>
-                      SKU
-                    </span>
-                    <span className='text-base text-[#0a0a0a] font-semibold break-all'>
-                      {item.sku || 'No SKU available'}
-                    </span>
-                  </div>
-                  <div className='flex flex-col gap-1'>
-                    <span className='text-sm text-[#737373] font-medium'>
-                      General Ledger Code
-                    </span>
-                    <span className='text-base text-[#0a0a0a] font-semibold break-all'>
-                      {item.generalLedgerCode || 'No GL Code available'}
-                    </span>
-                  </div>
-                  <div className='flex flex-col gap-1'>
-                    <span className='text-sm text-[#737373] font-medium'>
-                      Unit price
-                    </span>
-                    <span className='text-base text-[#0a0a0a] font-semibold'>
-                      ${item.unitPrice?.toFixed(2) || '0.00'}
-                    </span>
-                  </div>
-                  <div className='flex flex-col gap-1'>
-                    <span className='text-sm text-[#737373] font-medium'>
-                      Number of cards
-                    </span>
-                    <span className='text-sm text-[#0a0a0a] font-semibold'>
+                  </ArdaDetailField>
+                  <ArdaDetailField
+                    label='SKU'
+                    value={item.sku}
+                    fallback='No SKU available'
+                  />
+                  <ArdaDetailField
+                    label='General Ledger Code'
+                    value={item.generalLedgerCode}
+                    fallback='No GL Code available'
+                  />
+                  <ArdaDetailField
+                    label='Unit price'
+                    value={`$${item.unitPrice?.toFixed(2) || '0.00'}`}
+                  />
+                  <ArdaDetailField label='Number of cards'>
+                    <span className='text-sm text-foreground font-semibold'>
                       {totalCards}
                     </span>
-                  </div>
+                  </ArdaDetailField>
                 </div>
               </>
             ) : (

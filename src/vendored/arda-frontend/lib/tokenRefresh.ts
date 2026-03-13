@@ -6,6 +6,7 @@ import { store } from '@frontend/store/store';
 import { selectAccessToken, selectRefreshToken, selectTokens } from '@frontend/store/selectors/authSelectors';
 import { refreshTokensThunk } from '@frontend/store/thunks/authThunks';
 import { debugLog, debugError, debugWarn } from '@frontend/lib/utils';
+import { STORAGE_KEYS, TOKEN_EXPIRY_BUFFER_MS } from '@frontend/store/constants/storageKeys';
 
 interface TokenInfo {
   accessToken: string;
@@ -75,7 +76,7 @@ export function shouldRefreshTokens(accessToken?: string): boolean {
 
   // Fallback to localStorage for backward compatibility
   if (!token && typeof window !== 'undefined') {
-    token = localStorage.getItem('accessToken') || undefined;
+    token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN) || undefined;
   }
 
   if (!token) return false;
@@ -84,9 +85,8 @@ export function shouldRefreshTokens(accessToken?: string): boolean {
     const payload = JSON.parse(atob(token.split('.')[1]));
     const expiresAt = payload.exp * 1000;
     const now = Date.now();
-    const fiveMinutes = 5 * 60 * 1000;
 
-    return expiresAt - now < fiveMinutes;
+    return expiresAt - now < TOKEN_EXPIRY_BUFFER_MS;
   } catch {
     return true; // If we can't decode, assume refresh needed
   }
@@ -117,7 +117,7 @@ export async function ensureValidTokens(
 
   // Fallback to localStorage for backward compatibility
   if (!token && typeof window !== 'undefined') {
-    token = localStorage.getItem('accessToken') || undefined;
+    token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN) || undefined;
   }
 
   if (!token) {

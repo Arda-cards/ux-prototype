@@ -911,6 +911,11 @@ body .ag-dnd-ghost * {
 .ag-theme-arda .ag-center-cols-viewport {
   min-width: 100%;
   overflow-x: auto !important;
+  padding-bottom: 8px !important;
+}
+
+.ag-theme-arda .ag-center-cols-viewport::-webkit-scrollbar-track {
+  margin-top: 5px;
 }
 
 /* Checkbox styling */
@@ -1186,21 +1191,29 @@ body .ag-dnd-ghost * {
    Popup editor (isPopup: true editors — select dropdowns)
    ================================ */
 
+/* AG Grid popup wrapper hierarchy (appended to popupParent / document.body):
+     .ag-popup > .ag-popup-child > .ag-popup-editor
+   High z-index so the popup paints above grid rows and the pagination bar. */
+.ag-popup,
+.ag-popup-child {
+  overflow: visible !important;
+  z-index: 1000 !important;
+}
+
 /* Container injected by AG Grid when isPopup: true.
-   Orange border matches inline editing cells — the popup IS the visible edit area. */
+   Orange ring uses inset box-shadow — it renders INSIDE the element's bounds
+   so it can never be clipped by any parent overflow:hidden, regardless of how
+   deep in the AG Grid popup container hierarchy the element sits. */
 .ag-theme-arda .ag-popup-editor {
   background-color: #fff;
-  border: 2px solid var(--ag-input-focus-border-color);
   border-radius: 6px;
   box-shadow:
+    inset 0 0 0 2px var(--ag-input-focus-border-color),
     0 4px 6px -1px rgb(0 0 0 / 10%),
     0 2px 4px -2px rgb(0 0 0 / 10%);
-  padding: 2px;
-  min-width: 160px;
-
-  /* overflow:visible so the native <select> arrow is never clipped,
-     even when the column is narrower than the select's min-width */
-  overflow: visible;
+  padding: 4px;
+  overflow: hidden;
+  z-index: 1000;
 }
 
 /* Native <select> inside the popup */
@@ -1459,4 +1472,31 @@ body .ag-dnd-ghost * {
 .ag-theme-arda .ag-cell-inline-editing .ag-cell-editor input {
   padding-left: 8px !important;
   padding-right: 8px !important;
+}
+
+/* DropdownSelectRenderer — Radix Select trigger rendered in the cell.
+   Layout/resets handled via Tailwind classes on the trigger; only
+   grid-specific overrides live here. */
+.ag-theme-arda .ag-dropdown-select {
+  font-size: var(--ag-font-size);
+  font-family: var(--ag-font-family);
+  color: var(--ag-foreground-color);
+  cursor: pointer;
+}
+
+/* Orange outline when the trigger is focused OR the dropdown is open. */
+.ag-theme-arda .ag-cell:focus-within:has(.ag-dropdown-select),
+.ag-theme-arda .ag-cell:has(.ag-dropdown-select[data-state="open"]) {
+  outline: 2px solid var(--ag-input-focus-border-color) !important;
+  outline-offset: -1px !important;
+  z-index: 2 !important;
+}
+
+/* Lift the ROW above adjacent rows so the cell's bottom outline
+   is not clipped by the row below's stacking context.
+   AG Grid rows are already position:absolute, so z-index works without
+   adding position:relative (which would break the row layout). */
+.ag-theme-arda .ag-row:has(.ag-dropdown-select:focus),
+.ag-theme-arda .ag-row:has(.ag-dropdown-select[data-state="open"]) {
+  z-index: 2 !important;
 }

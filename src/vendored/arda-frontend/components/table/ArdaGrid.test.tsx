@@ -988,3 +988,33 @@ describe('ArdaGrid', () => {
     });
   });
 });
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Step 4.3 — onFirstDataRendered and onRowDataUpdated passthrough
+// ─────────────────────────────────────────────────────────────────────────────
+describe('ArdaGrid — Step 4.3: prop passthrough to AgGridReact', () => {
+  it('passes onFirstDataRendered through to AgGridReact', () => {
+    const onFirstDataRendered = jest.fn();
+    render(
+      <ArdaGrid
+        rowData={minimalRowData}
+        columnDefs={minimalColumnDefs}
+        onFirstDataRendered={onFirstDataRendered}
+      />
+    );
+    expect(_lastAgGridProps?.onFirstDataRendered).toBe(onFirstDataRendered);
+  });
+
+  it('passes onRowDataUpdated through to AgGridReact', () => {
+    const onRowDataUpdated = jest.fn();
+    render(
+      <ArdaGrid
+        rowData={minimalRowData}
+        columnDefs={minimalColumnDefs}
+        onRowDataUpdated={onRowDataUpdated}
+      />
+    );
+    expect(_lastAgGridProps?.onRowDataUpdated).toBe(onRowDataUpdated);
+  });
+});

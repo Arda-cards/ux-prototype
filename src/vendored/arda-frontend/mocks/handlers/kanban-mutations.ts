@@ -39,6 +39,24 @@ export const kanbanMutationHandlers = [
     const { cardId } = params;
     console.log(`[MSW] GET /api/arda/kanban/kanban-card/${cardId}`);
 
+    // E2E: When __msw_error_kanban_card flag is set, return 500 error
+    if (typeof window !== 'undefined' && (window as unknown as Record<string, unknown>).__msw_error_kanban_card) {
+      console.log('[MSW] __msw_error_kanban_card flag set — returning 500 error');
+      return HttpResponse.json(
+        { ok: false, status: 500, error: 'Internal Server Error' },
+        { status: 500 }
+      );
+    }
+
+    // E2E: When __msw_auth_error_kanban_card flag is set, return 401 error
+    if (typeof window !== 'undefined' && (window as unknown as Record<string, unknown>).__msw_auth_error_kanban_card) {
+      console.log('[MSW] __msw_auth_error_kanban_card flag set — returning 401 error');
+      return HttpResponse.json(
+        { ok: false, status: 401, error: 'unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const card = cardsStore.find((c) => c.payload.eId === cardId || c.rId === cardId);
 
     if (!card) {

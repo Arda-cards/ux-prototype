@@ -8,9 +8,10 @@ import { AppSidebar } from '@frontend/components/app-sidebar';
 import { AppHeader } from '@frontend/components/common/app-header';
 import { SidebarProvider, SidebarInset } from '@frontend/components/ui/sidebar';
 import { useJWT } from '@frontend/store/hooks/useJWT';
-import { useOrderQueue } from '@frontend/contexts/OrderQueueContext';
+import { useOrderQueue } from '@frontend/store/hooks/useOrderQueue';
 import { useAuth } from '@frontend/store/hooks/useAuth';
 import { Button } from '@frontend/components/ui/button';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@frontend/components/ui/tooltip';
 import { Input } from '@frontend/components/ui/input';
 import { SquareCheckBig } from 'lucide-react';
 import {
@@ -1198,6 +1199,43 @@ export default function OrderQueuePage() {
     }
   };
 
+  const handleRemoveFromQueue = async (item: OrderItem) => {
+    try {
+      if (!token || !isTokenValid) {
+        return;
+      }
+
+      const response = await fetch(
+        `/api/arda/kanban/kanban-card/${item.id}/event/fulfill`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.ok) {
+          toast.success('Removed from order queue');
+          await triggerDataRefresh();
+        } else {
+          toast.error('Failed to remove from order queue');
+        }
+      } else {
+        toast.error('Failed to remove from order queue');
+      }
+    } catch (error) {
+      console.error('Error removing from order queue:', error);
+      if (handleAuthError(error)) {
+        return;
+      }
+      toast.error('Error removing from order queue');
+    }
+  };
+
   // Helper function to process items status change
   const processItemsStatusChange = async (
     items: OrderItem[],
@@ -2107,6 +2145,21 @@ export default function OrderQueuePage() {
                             Complete order
                           </Button>
                         )}
+                        {(item.status === 'Requesting' || item.status === 'Requested') && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant='outline'
+                                size='sm'
+                                onClick={() => handleRemoveFromQueue(item)}
+                                className='bg-background text-foreground border-border'
+                              >
+                                Remove
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Removes this line item from the order queue.</TooltipContent>
+                          </Tooltip>
+                        )}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant='outline' size='sm' className='p-2'>
@@ -2518,6 +2571,21 @@ export default function OrderQueuePage() {
                                   <SquareCheckBig className='h-4 w-4' />
                                   Complete order
                                 </Button>
+                              )}
+                              {(item.status === 'Requesting' || item.status === 'Requested') && (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant='outline'
+                                      size='sm'
+                                      onClick={() => handleRemoveFromQueue(item)}
+                                      className='bg-background text-foreground border-border'
+                                    >
+                                      Remove
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Removes this line item from the order queue.</TooltipContent>
+                                </Tooltip>
                               )}
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>

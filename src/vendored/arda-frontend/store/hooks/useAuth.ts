@@ -2,6 +2,7 @@
 
 import { useCallback } from 'react';
 import { useAppDispatch, useAppSelector } from '../hooks';
+import { STORAGE_KEYS, TOKEN_EXPIRY_BUFFER_MS } from '../constants/storageKeys';
 import {
   selectUser,
   selectAuthLoading,
@@ -80,7 +81,7 @@ export function useAuth() {
   const respondToNewPasswordChallenge = useCallback(
     async (session: string, newPassword: string) => {
       const email = typeof window !== 'undefined'
-        ? localStorage.getItem('userEmail') || ''
+        ? localStorage.getItem(STORAGE_KEYS.USER_EMAIL) || ''
         : '';
 
       if (!email) {
@@ -124,9 +125,8 @@ export function useAuth() {
     if (!expiresAt) return false;
 
     const now = Date.now();
-    const fiveMinutes = 5 * 60 * 1000;
 
-    if (expiresAt - now < fiveMinutes) {
+    if (expiresAt - now < TOKEN_EXPIRY_BUFFER_MS) {
       const result = await dispatch(refreshTokensThunk());
       if (refreshTokensThunk.fulfilled.match(result)) {
         return true;
