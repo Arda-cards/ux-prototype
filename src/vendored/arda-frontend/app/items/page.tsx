@@ -61,6 +61,11 @@ const tabs = isProduction
   ? allTabs.filter((tab) => tab.key === 'published')
   : allTabs;
 
+export const DEFAULT_PAGE_SIZE =
+  process.env.NEXT_PUBLIC_DEPLOY_ENV === 'STAGING' ? 500 : 50;
+
+export const PAGE_SIZE_OPTIONS = [10, 20, 50, 100, 500];
+
 const isDevOrStage = process.env.NEXT_PUBLIC_DEPLOY_ENV !== 'PRODUCTION';
 const devLog = (...args: unknown[]) => {
   if (isDevOrStage) console.log(...args);
@@ -140,10 +145,16 @@ export default function ItemsPage() {
   const [isSavingUnsaved, setIsSavingUnsaved] = useState(false);
   const pendingNavigateRef = useRef<string | null>(null);
 
-  // Page size is fixed at 50
-  const getInitialPageSize = () => {
-    return 50;
-  };
+  // Page size state — initialised from localStorage (if valid), otherwise DEFAULT_PAGE_SIZE
+  const [pageSize, setPageSize] = useState<number>(() => {
+    if (typeof window === 'undefined') return DEFAULT_PAGE_SIZE;
+    const stored = localStorage.getItem('arda-items-page-size');
+    if (stored) {
+      const parsed = parseInt(stored, 10);
+      if (PAGE_SIZE_OPTIONS.includes(parsed)) return parsed;
+    }
+    return DEFAULT_PAGE_SIZE;
+  });
 
   // Pagination state for API - using index-based pagination
   const [paginationData, setPaginationData] = useState<{
@@ -156,7 +167,7 @@ export default function ItemsPage() {
     nextPage?: string;
     previousPage?: string;
   }>({
-    currentPageSize: getInitialPageSize(),
+    currentPageSize: DEFAULT_PAGE_SIZE,
     totalItems: 0,
     currentPage: 1,
     hasNextPage: false,
@@ -505,7 +516,7 @@ export default function ItemsPage() {
   // Function to fetch real data from ARDA with index-based pagination
   const fetchArdaItems = useCallback(
     async (
-      pageSize: number = 50,
+      pageSize: number = DEFAULT_PAGE_SIZE,
       pageIndex: number = 0,
       searchQuery?: string,
       showLoading: boolean = true,
@@ -843,6 +854,17 @@ export default function ItemsPage() {
     debouncedSearch,
   ]);
 
+  // Page size change handler — resets to page 1 and persists choice
+  const handlePageSizeChange = useCallback(
+    (newSize: number) => {
+      setPageSize(newSize);
+      localStorage.setItem('arda-items-page-size', String(newSize));
+      // Reset to first page with the new size
+      fetchArdaItems(newSize, 0, debouncedSearch);
+    },
+    [fetchArdaItems, debouncedSearch],
+  );
+
   // Load items immediately on component mount
   useEffect(() => {
     // Don't fetch if auth is still loading
@@ -865,7 +887,7 @@ export default function ItemsPage() {
     // Mark as loaded before making the request to prevent duplicate calls
     hasLoadedRef.current = true;
     isInitialLoadRef.current = true;
-    fetchArdaItems(getInitialPageSize(), 0, debouncedSearch);
+    fetchArdaItems(pageSize, 0, debouncedSearch);
     // Only depend on user and authLoading for initial load, debouncedSearch is handled separately
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, authLoading]);
@@ -925,7 +947,7 @@ export default function ItemsPage() {
     }
 
     // Reset to first page when search changes
-    fetchArdaItems(getInitialPageSize(), 0, debouncedSearch);
+    fetchArdaItems(pageSize, 0, debouncedSearch);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch]);
 
@@ -2217,7 +2239,7 @@ export default function ItemsPage() {
                             }))
                           }
                         >
-                          Classification
+                          Type
                         </DropdownMenuCheckboxItem>
                         <DropdownMenuCheckboxItem
                           onSelect={(e) => e.preventDefault()}
@@ -2888,6 +2910,9 @@ export default function ItemsPage() {
                   onNextPage={handleNextPage}
                   onPreviousPage={handlePreviousPage}
                   onFirstPage={handleFirstPage}
+                  pageSize={pageSize}
+                  pageSizeOptions={PAGE_SIZE_OPTIONS}
+                  onPageSizeChange={handlePageSizeChange}
                   isLoading={loadingArdaItems}
                   itemCardsMap={itemCardsMap}
                   ensureCardsForItem={ensureCardsForItem}

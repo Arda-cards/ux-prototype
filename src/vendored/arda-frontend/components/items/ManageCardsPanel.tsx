@@ -607,13 +607,23 @@ export function ManageCardsPanel({
       const jwtToken = localStorage.getItem('idToken');
 
       const response = await fetch(
-        `/api/arda/kanban/kanban-card/query-by-item?eId=${item.eid}`,
+        `/api/arda/kanban/kanban-card/query-details-by-item`,
         {
-          method: 'GET',
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${jwtToken}`,
           },
+          body: JSON.stringify({
+            filter: {
+              eq: item.eid,
+              locator: 'ITEM_REFERENCE_entity_id',
+            },
+            paginate: {
+              index: 0,
+              size: 100,
+            },
+          }),
         }
       );
 

@@ -22,6 +22,9 @@ jest.mock('@/app/items/ItemTableAGGrid', () => {
         onPreviousPage?: () => void;
         onFirstPage?: () => void;
         onRefreshRequested?: () => void;
+        pageSize?: number;
+        pageSizeOptions?: number[];
+        onPageSizeChange?: (newSize: number) => void;
       },
       _ref: React.Ref<unknown>,
     ) => (
@@ -78,6 +81,19 @@ jest.mock('@/app/items/ItemTableAGGrid', () => {
         >
           Refresh
         </button>
+        {/* Expose page size props for testing */}
+        <span data-testid="page-size-value">{props.pageSize}</span>
+        {props.pageSizeOptions && (
+          <select
+            data-testid="mock-page-size-select"
+            value={props.pageSize}
+            onChange={(e) => props.onPageSizeChange?.(Number(e.target.value))}
+          >
+            {props.pageSizeOptions.map((size: number) => (
+              <option key={size} value={size}>{size}</option>
+            ))}
+          </select>
+        )}
       </div>
     ),
   );
@@ -340,7 +356,7 @@ jest.mock('@/contexts/JWTContext', () => ({
   useJWT: () => ({ token: 'mock-token', isTokenValid: () => true }),
 }));
 
-jest.mock('@/contexts/OrderQueueContext', () => ({
+jest.mock('@/store/hooks/useOrderQueue', () => ({
   useOrderQueue: () => ({ refreshOrderQueueData: jest.fn(), orderQueueData: [] }),
 }));
 
@@ -2927,5 +2943,145 @@ describe('ItemsPage', () => {
 
       expect(screen.getByTestId('mock-ag-grid')).toBeInTheDocument();
     });
+  });
+
+  // ── Page size (Issue #744) ────────────────────────────────────────────────
+  describe('page size configuration', () => {
+    it('page size dropdown renders with default size selected', async () => {
+      render(<ItemsPage />);
+      await screen.findByTestId('mock-ag-grid');
+
+      // The mock grid exposes pageSize via data-testid="page-size-value"
+      const pageSizeEl = screen.getByTestId('page-size-value');
+      // Default in test env (no NEXT_PUBLIC_DEPLOY_ENV) should be 50
+      expect(pageSizeEl.textContent).toBe('50');
+
+      // The page size select dropdown should be present
+      const selectEl = screen.getByTestId('mock-page-size-select');
+      expect(selectEl).toBeInTheDocument();
+      expect((selectEl as HTMLSelectElement).value).toBe('50');
+
+      // All options should be rendered
+      const options = selectEl.querySelectorAll('option');
+      expect(options).toHaveLength(5);
+      expect(Array.from(options).map((o) => o.value)).toEqual([
+        '10',
+        '20',
+        '50',
+        '100',
+        '500',
+      ]);
+    });
+
+    it('selecting a new page size from dropdown re-fetches items and persists to localStorage', async () => {
+      render(<ItemsPage />);
+      await screen.findByTestId('mock-ag-grid');
+
+      // Clear mock calls from initial render
+      (queryItems as jest.Mock).mockClear();
+
+      // Change the page size to 100
+      const selectEl = screen.getByTestId('mock-page-size-select');
+      fireEvent.change(selectEl, { target: { value: '100' } });
+
+      // Verify queryItems was called with the new page size
+      await waitFor(() => {
+        expect(queryItems).toHaveBeenCalledWith(
+          expect.objectContaining({
+            paginate: expect.objectContaining({ size: 100, index: 0 }),
+          }),
+        );
+      });
+
+      // Verify localStorage was updated
+      expect(localStorage.getItem('arda-items-page-size')).toBe('100');
+    });
+
+    it('page resets to 1 when page size changes', async () => {
+      // Set up mock with pagination that indicates page 2
+      (queryItems as jest.Mock).mockResolvedValue({
+        items: defaultItems,
+        pagination: { thisPage: 'page2', nextPage: 'page3', previousPage: 'page1' },
+      });
+
+      render(<ItemsPage />);
+      await screen.findByTestId('mock-ag-grid');
+
+      // Navigate to page 2 first
+      fireEvent.click(screen.getByTestId('next-page-btn'));
+
+      await waitFor(() => {
+        expect(queryItems).toHaveBeenCalled();
+      });
+
+      // Clear mock calls
+      (queryItems as jest.Mock).mockClear();
+
+      // Change page size - should reset to page 1 (index 0)
+      const selectEl = screen.getByTestId('mock-page-size-select');
+      fireEvent.change(selectEl, { target: { value: '20' } });
+
+      await waitFor(() => {
+        expect(queryItems).toHaveBeenCalledWith(
+          expect.objectContaining({
+            paginate: expect.objectContaining({ size: 20, index: 0 }),
+          }),
+        );
+      });
+    });
+
+    it('reads page size from localStorage on mount', async () => {
+      localStorage.setItem('arda-items-page-size', '100');
+
+      render(<ItemsPage />);
+      await screen.findByTestId('mock-ag-grid');
+
+      const pageSizeEl = screen.getByTestId('page-size-value');
+      expect(pageSizeEl.textContent).toBe('100');
+    });
+
+    it('falls back to DEFAULT_PAGE_SIZE when localStorage has invalid value', async () => {
+      localStorage.setItem('arda-items-page-size', '999');
+
+      render(<ItemsPage />);
+      await screen.findByTestId('mock-ag-grid');
+
+      const pageSizeEl = screen.getByTestId('page-size-value');
+      expect(pageSizeEl.textContent).toBe('50');
+    });
+  });
+});
+
+// ── DEFAULT_PAGE_SIZE environment-based tests ─────────────────────────────
+// These tests re-import the module with different env vars to test the
+// module-level constant.
+describe('DEFAULT_PAGE_SIZE constant', () => {
+  const originalEnv = process.env;
+
+  beforeEach(() => {
+    jest.resetModules();
+    process.env = { ...originalEnv };
+  });
+
+  afterEach(() => {
+    process.env = originalEnv;
+  });
+
+  it('is 500 when NEXT_PUBLIC_DEPLOY_ENV is STAGING', async () => {
+    process.env.NEXT_PUBLIC_DEPLOY_ENV = 'STAGING';
+    const mod = await import('@frontend/app/items/page');
+    expect(mod.DEFAULT_PAGE_SIZE).toBe(500);
+  });
+
+  it('is 50 when NEXT_PUBLIC_DEPLOY_ENV is PRODUCTION', async () => {
+    process.env.NEXT_PUBLIC_DEPLOY_ENV = 'PRODUCTION';
+    const mod = await import('@frontend/app/items/page');
+    expect(mod.DEFAULT_PAGE_SIZE).toBe(50);
+  });
+
+  it('is 50 when NEXT_PUBLIC_DEPLOY_ENV is not set', async () => {
+    delete process.env.NEXT_PUBLIC_DEPLOY_ENV;
+    const mod = await import('@frontend/app/items/page');
+    expect(mod.DEFAULT_PAGE_SIZE).toBe(50);
   });
 });

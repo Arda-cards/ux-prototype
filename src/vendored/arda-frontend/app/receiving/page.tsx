@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import dynamic from 'next/dynamic';
+import Image from 'next/image';
 import { AppSidebar } from '@frontend/components/app-sidebar';
 import { AppHeader } from '@frontend/components/common/app-header';
 import { SidebarProvider, SidebarInset } from '@frontend/components/ui/sidebar';
@@ -94,6 +95,7 @@ interface ReceivingItem {
   fulfilledAt?: string;
   link?: string;
   notes?: string;
+  image?: string;
 }
 
 interface SupplierGroup {
@@ -301,46 +303,19 @@ export default function ReceivingPage() {
           },
         };
 
-        // For fulfilled status, use the general query endpoint with status filter
-        // since there's no dedicated /details/fulfilled endpoint in the backend
-        let response;
-        if (status === 'fulfilled') {
-          const queryRequestBody = {
-            filter: {
-              eq: 'FULFILLED',
-              locator: 'status',
-            },
-            paginate: {
-              index: pageIndex,
-              size: pageSize,
-            },
-          };
-
-          response = await fetch(`/api/arda/kanban/kanban-card/query`, {
+        const response = await fetch(
+          `/api/arda/kanban/kanban-card/details/${status}`,
+          {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify(queryRequestBody),
-          });
-        } else {
-          // For in-process, use the dedicated endpoint
-          response = await fetch(
-            `/api/arda/kanban/kanban-card/details/${status}`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify(requestBody),
-            },
-          );
-        }
+            body: JSON.stringify(requestBody),
+          },
+        );
 
         if (!response.ok) {
-          console.error(`${status} cards response not ok:`, response.status);
           if (response.status === 401) {
             console.error(
               `Authentication failed for ${status} cards - JWT token missing or invalid`,
@@ -374,6 +349,45 @@ export default function ReceivingPage() {
 
         // Store original API data
         setOriginalApiData(results);
+
+        // Enrich results with item imageUrl when not already present in the card payload
+        const itemImageCache = new Map<string, string>();
+        const missingImageEIds = [
+          ...new Set(
+            results
+              .map((r: KanbanCardResponse['results'][0]) => {
+                const p = r.payload || r;
+                const hasImage = p.itemDetails?.imageUrl || (p as Record<string, unknown>).imageUrl;
+                const eId = (p as Record<string, unknown>).eId as string ||
+                  (p.itemDetails as Record<string, unknown> | undefined)?.eId as string ||
+                  ((p as Record<string, unknown>).item as Record<string, unknown> | undefined)?.eId as string;
+                return hasImage ? null : eId;
+              })
+              .filter(Boolean) as string[]
+          ),
+        ];
+        if (missingImageEIds.length > 0) {
+          await Promise.all(
+            missingImageEIds.map(async (eId) => {
+              try {
+                const itemRes = await fetch(`/api/arda/items/${encodeURIComponent(eId)}`, {
+                  headers: { Authorization: `Bearer ${token}` },
+                });
+                if (itemRes.ok) {
+                  const itemData = await itemRes.json();
+                  const imageUrl =
+                    itemData?.data?.payload?.imageUrl ||
+                    itemData?.data?.imageUrl ||
+                    itemData?.payload?.imageUrl ||
+                    '';
+                  if (imageUrl) itemImageCache.set(eId, imageUrl);
+                }
+              } catch {
+                // ignore per-item fetch failures
+              }
+            })
+          );
+        }
 
         // Group items by supplier
         const supplierMap = new Map<string, ReceivingItem[]>();
@@ -414,6 +428,14 @@ export default function ReceivingPage() {
             // Check if primarySupply exists in itemDetails
             const primarySupply = itemDetails.primarySupply;
 
+            const itemEId = (itemDetails as Record<string, unknown>)?.eId as string || cardId;
+
+            // Extract the time the card was last transitioned (e.g. when it was fulfilled)
+            const lastEventMs =
+              (payload as Record<string, unknown> & { lastEvent?: { when?: { effective?: number } } })
+                ?.lastEvent?.when?.effective ?? 0;
+            const fulfilledAt = lastEventMs ? new Date(lastEventMs).toISOString() : undefined;
+
             if (!primarySupply) {
               // Use default values when primarySupply is not available
               const orderItem: ReceivingItem = {
@@ -434,6 +456,8 @@ export default function ReceivingPage() {
                   (result.payload as { notes?: string })?.notes ||
                   itemDetails?.cardNotesDefault ||
                   '',
+                image: itemDetails?.imageUrl || itemImageCache.get(itemEId) || '',
+                fulfilledAt,
               };
 
               // Add to default supplier group
@@ -496,6 +520,8 @@ export default function ReceivingPage() {
                 (result.payload as { notes?: string })?.notes ||
                 itemDetails?.cardNotesDefault ||
                 '',
+              image: itemDetails?.imageUrl || itemImageCache.get(itemEId) || '',
+              fulfilledAt,
             };
 
             // Add to supplier group
@@ -623,17 +649,18 @@ export default function ReceivingPage() {
           pageSize,
         );
 
-        // Get fulfilled items to exclude duplicates
-        const fulfilledResult = await fetchKanbanCardDetails(
-          'fulfilled',
-          0,
-          1000,
-        );
-        const fulfilledItemIds = new Set(
-          fulfilledResult.supplierGroups.flatMap((group) =>
-            group.items.map((item) => item.id),
-          ),
-        );
+        // Get fulfilled items to exclude duplicates (best-effort — ignore if endpoint fails)
+        let fulfilledItemIds = new Set<string>();
+        try {
+          const fulfilledResult = await fetchKanbanCardDetails('fulfilled', 0, 1000);
+          fulfilledItemIds = new Set(
+            fulfilledResult.supplierGroups.flatMap((group) =>
+              group.items.map((item) => item.id),
+            ),
+          );
+        } catch {
+          // continue without deduplication
+        }
 
         // Filter for items with status 'in_proccess' only AND exclude items that are already fulfilled
         const inProgressSupplierData = result.supplierGroups
@@ -1449,18 +1476,16 @@ export default function ReceivingPage() {
           </div>
 
           {/* Controls */}
-          <div className='flex flex-col gap-4'>
-            <div className='flex items-center justify-between gap-4'>
-              <div className='relative max-w-xs w-full'>
-                <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
-                <Input
-                  type='text'
-                  placeholder='Search Items'
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className='pl-10'
-                />
-              </div>
+          <div className='flex items-center gap-4'>
+            <div className='relative max-w-xs w-full'>
+              <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
+              <Input
+                type='text'
+                placeholder='Search Items'
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className='pl-10'
+              />
             </div>
 
             {/* Receive All Button - Only show on inTransit tab when there are items to receive */}
@@ -1468,17 +1493,15 @@ export default function ReceivingPage() {
               getFilteredItems.some(
                 (item) => item.status === 'in_proccess',
               ) && (
-                <div className='flex justify-start'>
-                  <Button
-                    variant='outline'
-                    size='sm'
-                    onClick={handleReceiveAll}
-                    className='bg-white border-black text-black hover:bg-gray-100 flex items-center gap-2'
-                  >
-                    <Package className='w-4 h-4' />
-                    Receive All
-                  </Button>
-                </div>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  onClick={handleReceiveAll}
+                  className='bg-white border-black text-black hover:bg-gray-100 flex items-center gap-2'
+                >
+                  <Package className='w-4 h-4' />
+                  Receive All
+                </Button>
               )}
           </div>
 
@@ -1513,14 +1536,69 @@ export default function ReceivingPage() {
             ) : (
               // Show all items in a flat list
               <div className='space-y-2'>
-                {getFilteredItems.map((item) => (
+                {getFilteredItems.map((item) => {
+                  const getSafeImageSrc = () => {
+                    if (!item.image) {
+                      return '';
+                    }
+                    if (
+                      item.image.startsWith('http://') ||
+                      item.image.startsWith('https://')
+                    ) {
+                      return item.image;
+                    }
+                    return '';
+                  };
+
+                  const imageSrc = getSafeImageSrc();
+
+                  return (
                   <div
                     key={item.id}
                     className='border border-border rounded-lg p-4 flex items-center justify-between hover:bg-muted/30 transition-colors bg-card shadow-sm'
                   >
                     <div className='flex items-center gap-4 flex-1'>
                       <div className={`p-2.5 rounded-lg `}>
-                        {item.status === 'in_proccess' ? (
+                        {imageSrc ? (
+                          <div className='relative w-[50px] h-[50px] flex-shrink-0 rounded-md overflow-hidden'>
+                            {imageSrc.startsWith('data:') ? (
+                              <Image
+                                src={imageSrc}
+                                alt={item.name}
+                                width={50}
+                                height={50}
+                                className='w-full h-full object-contain'
+                              />
+                            ) : (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={imageSrc}
+                                alt={item.name}
+                                className='w-full h-full object-contain'
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                  const fallback = e.currentTarget.nextElementSibling;
+                                  if (fallback) (fallback as HTMLElement).style.display = 'flex';
+                                }}
+                              />
+                            )}
+                            <div style={{ display: 'none' }} className='w-full h-full items-center justify-center'>
+                              {item.status === 'in_proccess' ? (
+                                <WaitingToBeReceivedIcon width={50} height={50} />
+                              ) : item.status === 'Received' ? (
+                                <ReceivedIcon width={50} height={50} />
+                              ) : item.status === 'Fulfilled' ? (
+                                activeTab === 'received' ? (
+                                  <ReceivedIcon width={50} height={50} />
+                                ) : (
+                                  <RecentlyFulfilledIcon width={50} height={50} />
+                                )
+                              ) : (
+                                getOrderMethodIcon(item.orderMethod)
+                              )}
+                            </div>
+                          </div>
+                        ) : item.status === 'in_proccess' ? (
                           <WaitingToBeReceivedIcon width={50} height={50} />
                         ) : item.status === 'Received' ? (
                           <ReceivedIcon width={50} height={50} />
@@ -1617,7 +1695,8 @@ export default function ReceivingPage() {
                       </DropdownMenu>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
 
                 {/* Load More Button */}
                 {hasMore && !isLoading && (

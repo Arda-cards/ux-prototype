@@ -11,6 +11,7 @@ import {
 import { setJwtPayload, setUserContext, setIsTokenValid } from '../slices/authSlice';
 import { checkAuthThunk } from '../thunks/authThunks';
 import { extractUserContext, type CognitoJWTPayload } from '@frontend/lib/jwt';
+import { TOKEN_EXPIRY_BUFFER_S } from '../constants/storageKeys';
 
 /**
  * useJWT hook - Redux-based JWT hook
@@ -42,8 +43,7 @@ export function useJWT() {
 
       // Update token validity based on expiration
       const now = Date.now() / 1000;
-      const fiveMinutesBuffer = 5 * 60;
-      const isValid = updatedPayload.exp > (now + fiveMinutesBuffer);
+      const isValid = updatedPayload.exp > (now + TOKEN_EXPIRY_BUFFER_S);
       dispatch(setIsTokenValid(isValid));
     },
     [dispatch, payload]

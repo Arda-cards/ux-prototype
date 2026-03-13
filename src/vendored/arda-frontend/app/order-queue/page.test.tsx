@@ -32,7 +32,7 @@ jest.mock('@/store/hooks/useJWT', () => ({
 }));
 
 // Mock useOrderQueue
-jest.mock('@/contexts/OrderQueueContext', () => ({
+jest.mock('@/store/hooks/useOrderQueue', () => ({
   useOrderQueue: jest.fn().mockReturnValue({
     readyToOrderCount: 0,
     setReadyToOrderCount: jest.fn(),
@@ -4083,5 +4083,193 @@ describe('OrderQueuePage', () => {
     }
 
     jest.useRealTimers();
+  });
+
+  // ===== REMOVE FROM ORDER QUEUE (#450) =====
+
+  it('shows Remove button for Requesting items and calls fulfill endpoint on click', async () => {
+    const cardEid = 'card-requesting-remove-1';
+    mockFetchForOrderQueue(
+      [],
+      [],
+      [createMockApiResponse('Supplier A', 'Requesting Item', 'REQUESTING', { payload: { eId: cardEid } })]
+    );
+
+    renderWithAll(<OrderQueuePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Requesting Item')).toBeInTheDocument();
+    });
+
+    // Find remove button by title
+    const removeButtons = screen.getAllByText('Remove');
+    expect(removeButtons.length).toBeGreaterThanOrEqual(1);
+
+    // Mock the fulfill call
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes('/event/fulfill')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ ok: true }),
+        });
+      }
+      // After refresh, return empty
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ data: { results: [] } }),
+      });
+    });
+
+    fireEvent.click(removeButtons[0]);
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/event/fulfill'),
+        expect.objectContaining({ method: 'POST' })
+      );
+    });
+
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith('Removed from order queue');
+    });
+  });
+
+  it('shows Remove button for Requested items and calls fulfill endpoint on click', async () => {
+    const cardEid = 'card-requested-remove-1';
+    mockFetchForOrderQueue(
+      [createMockApiResponse('Supplier B', 'Requested Item', 'REQUESTED', { payload: { eId: cardEid } })],
+      [],
+      []
+    );
+
+    renderWithAll(<OrderQueuePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Requested Item')).toBeInTheDocument();
+    });
+
+    const removeButtons = screen.getAllByText('Remove');
+    expect(removeButtons.length).toBeGreaterThanOrEqual(1);
+
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes('/event/fulfill')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ ok: true }),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ data: { results: [] } }),
+      });
+    });
+
+    fireEvent.click(removeButtons[0]);
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/event/fulfill'),
+        expect.objectContaining({ method: 'POST' })
+      );
+    });
+
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith('Removed from order queue');
+    });
+  });
+
+  it('shows error toast when remove from queue API returns not ok', async () => {
+    mockFetchForOrderQueue(
+      [],
+      [],
+      [createMockApiResponse('Supplier C', 'Error Remove Item', 'REQUESTING')]
+    );
+
+    renderWithAll(<OrderQueuePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Error Remove Item')).toBeInTheDocument();
+    });
+
+    const removeButtons = screen.getAllByText('Remove');
+
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes('/event/fulfill')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ ok: false, error: 'Server error' }),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ data: { results: [] } }),
+      });
+    });
+
+    fireEvent.click(removeButtons[0]);
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('Failed to remove from order queue');
+    });
+  });
+
+  it('shows error toast when remove from queue API response is not ok', async () => {
+    mockFetchForOrderQueue(
+      [],
+      [],
+      [createMockApiResponse('Supplier D', 'HTTP Error Remove Item', 'REQUESTING')]
+    );
+
+    renderWithAll(<OrderQueuePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('HTTP Error Remove Item')).toBeInTheDocument();
+    });
+
+    const removeButtons = screen.getAllByText('Remove');
+
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes('/event/fulfill')) {
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+          json: () => Promise.resolve({ error: 'Internal server error' }),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ data: { results: [] } }),
+      });
+    });
+
+    fireEvent.click(removeButtons[0]);
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('Failed to remove from order queue');
+    });
+  });
+
+  it('does NOT show Remove button for In progress items', async () => {
+    mockFetchForOrderQueue(
+      [],
+      [createMockApiResponse('Supplier E', 'In Progress Item', 'IN_PROCESS')],
+      []
+    );
+
+    renderWithAll(<OrderQueuePage />);
+
+    // Switch to Recently Ordered tab to see In progress items
+    await waitFor(() => {
+      const recentTab = screen.getByText('Recently Ordered');
+      fireEvent.click(recentTab);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('In Progress Item')).toBeInTheDocument();
+    });
+
+    // There should be no Remove buttons for In progress items
+    const removeButtons = screen.queryAllByText('Remove');
+    expect(removeButtons.length).toBe(0);
   });
 });

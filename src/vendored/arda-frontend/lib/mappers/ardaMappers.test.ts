@@ -257,6 +257,47 @@ describe('mapItemToArdaUpdateRequest', () => {
     expect(mapItemToArdaUpdateRequest({ name: 'X' }).taxable).toBe(true);
     expect(mapItemToArdaUpdateRequest({ name: 'X', taxable: false }).taxable).toBe(false);
   });
+
+  // supplyToUpdatePayload: name fallback behavior (commit fdb1595)
+  it('uses "Primary" as supply name when primarySupply supplier is empty', () => {
+    const item: Partial<items.Item> = {
+      name: 'Item',
+      primarySupply: { supplier: '', orderCost: defaultOrderCost },
+    };
+    expect(mapItemToArdaUpdateRequest(item).primarySupply?.name).toBe('Primary');
+  });
+
+  it('uses "Secondary" as supply name when secondarySupply supplier is empty', () => {
+    const item: Partial<items.Item> = {
+      name: 'Item',
+      secondarySupply: { supplier: '', orderCost: defaultOrderCost },
+    };
+    expect(mapItemToArdaUpdateRequest(item).secondarySupply?.name).toBe('Secondary');
+  });
+
+  it('falls back to defaultName when supplier is whitespace-only', () => {
+    const item: Partial<items.Item> = {
+      name: 'Item',
+      primarySupply: { supplier: '   ', orderCost: defaultOrderCost },
+    };
+    expect(mapItemToArdaUpdateRequest(item).primarySupply?.name).toBe('Primary');
+  });
+
+  it('uses supplier value as supply name when supplier is non-empty', () => {
+    const item: Partial<items.Item> = {
+      name: 'Item',
+      primarySupply: { supplier: 'Acme Corp', orderCost: defaultOrderCost },
+    };
+    expect(mapItemToArdaUpdateRequest(item).primarySupply?.name).toBe('Acme Corp');
+  });
+
+  it('prepends https:// to supply URL when protocol is missing', () => {
+    const item: Partial<items.Item> = {
+      name: 'Item',
+      primarySupply: { supplier: 'S', url: 'supplier.com', orderCost: defaultOrderCost },
+    };
+    expect(mapItemToArdaUpdateRequest(item).primarySupply?.url).toBe('https://supplier.com');
+  });
 });
 
 // ---------------------------------------------------------------------------

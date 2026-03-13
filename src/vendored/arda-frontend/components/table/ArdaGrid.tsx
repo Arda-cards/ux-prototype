@@ -141,10 +141,17 @@ export interface ArdaGridProps<T = any> {
   onNextPage?: () => void;
   onPreviousPage?: () => void;
   onFirstPage?: () => void;
+  pageSize?: number;
+  pageSizeOptions?: number[];
+  onPageSizeChange?: (newSize: number) => void;
 
   // Empty state
   emptyStateComponent?: React.ReactNode;
   hasActiveSearch?: boolean;
+
+  // Data-rendered callbacks — used for selection restore without polling
+  onFirstDataRendered?: () => void;
+  onRowDataUpdated?: () => void;
 }
 
 // ─── Sort menu header component ───────────────────────────────────────────────
@@ -299,9 +306,14 @@ const ArdaGrid = forwardRef<ArdaGridRef, ArdaGridProps>(
       onNextPage,
       onPreviousPage,
       onFirstPage,
+      pageSize: pageSizeProp,
+      pageSizeOptions,
+      onPageSizeChange,
       emptyStateComponent,
       hasActiveSearch = false,
       initialState,
+      onFirstDataRendered,
+      onRowDataUpdated,
     },
     ref,
   ) => {
@@ -1179,6 +1191,8 @@ const ArdaGrid = forwardRef<ArdaGridRef, ArdaGridProps>(
               onCellValueChanged={onCellValueChanged}
               onCellEditingStopped={onCellEditingStopped}
               onCellFocused={onCellFocused}
+              onFirstDataRendered={onFirstDataRendered}
+              onRowDataUpdated={onRowDataUpdated}
               loadingOverlayComponent={LoadingOverlay}
               noRowsOverlayComponent={NoRowsOverlay}
             />
@@ -1259,6 +1273,38 @@ const ArdaGrid = forwardRef<ArdaGridRef, ArdaGridProps>(
                   >
                     <>&gt;</>
                   </button>
+
+                  {/* Page size selector */}
+                  {pageSizeOptions && pageSizeOptions.length > 0 && onPageSizeChange && (
+                    <div className='pagination-page-size' style={{ marginLeft: 12 }}>
+                      <label
+                        htmlFor='page-size-select'
+                        style={{ fontSize: 12, marginRight: 4, color: '#666' }}
+                      >
+                        Page size:
+                      </label>
+                      <select
+                        id='page-size-select'
+                        data-testid='page-size-select'
+                        value={pageSizeProp ?? paginationData.currentPageSize}
+                        onChange={(e) => onPageSizeChange(Number(e.target.value))}
+                        style={{
+                          fontSize: 12,
+                          padding: '2px 4px',
+                          border: '1px solid #d1d5db',
+                          borderRadius: 4,
+                          background: 'white',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {pageSizeOptions.map((size) => (
+                          <option key={size} value={size}>
+                            {size}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
