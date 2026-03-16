@@ -81,6 +81,22 @@ const config: StorybookConfig = {
     // This transform rewrites it at build time without modifying files on disk.
     config.plugins = config.plugins || [];
 
+    // Wrap AG Grid CSS in @layer base so it participates in the cascade
+    // correctly in both dev and production builds. Without this, Rollup
+    // code-splits AG Grid CSS into a separate chunk that loses the @layer
+    // context from @import directives, causing unlayered AG Grid defaults
+    // to override the layered Arda theme overrides.
+    config.plugins.push({
+      name: 'wrap-ag-grid-css-in-layer',
+      enforce: 'pre' as const,
+      transform(code, id) {
+        if (id.includes('ag-grid-community') && id.endsWith('.css')) {
+          return { code: `@layer base {\n${code}\n}`, map: null };
+        }
+        return null;
+      },
+    });
+
     // Workaround for @storybook/builder-vite bug: the vite-inject-mocker
     // plugin hardcodes `src="/vite-inject-mocker-entry.js"` in the HTML
     // without respecting Vite's `base` config. When deployed under a subpath

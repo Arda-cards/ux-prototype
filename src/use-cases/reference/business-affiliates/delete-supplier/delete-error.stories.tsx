@@ -72,6 +72,13 @@ export const NetworkError: Story = {
     await userEvent.click(deleteItem);
 
     const dialog = await canvas.findByRole('alertdialog', {}, { timeout: 10000 });
+    // Dialog uses animate-in fade-in — wait for visibility before interacting
+    await waitFor(
+      () => {
+        expect(dialog).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
     const confirmButton = within(dialog).getByRole('button', { name: /delete/i });
     await storyStepDelay();
     await userEvent.click(confirmButton);

@@ -66,7 +66,13 @@ export const ConfirmDelete: Story = {
 
     // 5. Verify confirm dialog appears (inline rendering — within canvasElement)
     const dialog = await canvas.findByRole('alertdialog', {}, { timeout: 10000 });
-    expect(dialog).toBeVisible();
+    // Dialog uses animate-in fade-in — wait for visibility after mount
+    await waitFor(
+      () => {
+        expect(dialog).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
 
     // 6. Verify dialog title
     const dialogScope = within(dialog);
@@ -156,7 +162,13 @@ export const CancelDelete: Story = {
 
     // 5. Verify confirm dialog appears
     const dialog = await canvas.findByRole('alertdialog', {}, { timeout: 10000 });
-    expect(dialog).toBeVisible();
+    // Dialog uses animate-in fade-in — wait for visibility after mount
+    await waitFor(
+      () => {
+        expect(dialog).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
     await storyStepDelay();
 
     // 6. Click "Cancel"
