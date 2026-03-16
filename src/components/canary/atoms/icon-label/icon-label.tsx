@@ -1,13 +1,13 @@
 import { type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export interface ArdaIconLabelProps {
+export interface IconLabelProps {
   icon: LucideIcon;
   label: string;
   className?: string;
 }
 
-export function ArdaIconLabel({ icon: Icon, label, className }: ArdaIconLabelProps) {
+export function IconLabel({ icon: Icon, label, className }: IconLabelProps) {
   return (
     <span
       className={cn('inline-flex items-center gap-2 [&>svg]:size-4 [&>svg]:shrink-0', className)}

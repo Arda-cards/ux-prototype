@@ -8,42 +8,50 @@ import { ArdaBadge } from '../../atoms/badge/badge';
 
 // --- Interfaces ---
 
-/** Props for ArdaSidebarNavItem. */
-export interface ArdaSidebarNavItemProps {
-  /* --- Model / Data Binding --- */
-  /** Whether this item is the currently active route. */
-  active?: boolean;
-  /** Count badge (number or short label), or `true` for a dot indicator. */
-  badge?: number | string | true;
-
+/** Static configuration for SidebarNavItem. */
+export interface SidebarNavItemStaticConfig {
   /* --- View / Layout / Controller --- */
   /** Lucide icon component rendered before the label. */
   icon: LucideIcon;
   /** Text label for the navigation item. */
   label: string;
-  /** Additional CSS classes. */
-  className?: string;
+}
+
+/** Runtime configuration for SidebarNavItem. */
+export interface SidebarNavItemRuntimeConfig {
+  /* --- Model / Data Binding --- */
+  /** Whether this item is the currently active route. */
+  active?: boolean;
+  /** Count badge (number or short label), or `true` for a dot indicator. */
+  badge?: number | string | true;
   /** Called when the nav item is clicked. Use with router.push() for navigation. */
   onClick?: (e: React.MouseEvent) => void;
+}
+
+/** Combined props for SidebarNavItem. */
+export interface SidebarNavItemProps
+  extends SidebarNavItemStaticConfig, SidebarNavItemRuntimeConfig {
+  /** Additional CSS classes. */
+  className?: string;
 }
 
 // --- Component ---
 
 /**
- * ArdaSidebarNavItem — wraps shadcn SidebarMenuItem + SidebarMenuButton.
+ * SidebarNavItem — wraps shadcn SidebarMenuItem + SidebarMenuButton.
  *
  * Renders a button by default. Consumers handle navigation via onClick
  * (e.g. router.push). Tooltips in collapsed mode, badges, and active
  * state are all handled by the shadcn primitives.
  */
-export function ArdaSidebarNavItem({
+export function SidebarNavItem({
   active = false,
   badge,
   icon: Icon,
   label,
   className,
   onClick,
-}: ArdaSidebarNavItemProps) {
+}: SidebarNavItemProps) {
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
@@ -75,9 +83,10 @@ export function ArdaSidebarNavItem({
           {badge !== true && (
             <ArdaBadge
               variant="default"
+              {...(typeof badge === 'number' && { count: badge })}
               className="absolute right-2 top-1/2 -translate-y-1/2 tabular-nums transition-opacity duration-150 motion-reduce:transition-none group-data-[collapsible=icon]:opacity-0"
             >
-              {badge}
+              {typeof badge === 'string' ? badge : undefined}
             </ArdaBadge>
           )}
         </>

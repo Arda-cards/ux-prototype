@@ -2,37 +2,37 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 
-import { ArdaSidebarNav } from './sidebar-nav';
+import { SidebarNav } from './sidebar-nav';
 import { ArdaSidebar } from '../../organisms/sidebar/sidebar';
 
 function renderInSidebar(ui: React.ReactElement) {
   return render(<ArdaSidebar defaultOpen>{ui}</ArdaSidebar>);
 }
 
-describe('ArdaSidebarNav', () => {
+describe('SidebarNav', () => {
   it('renders children', () => {
     renderInSidebar(
-      <ArdaSidebarNav>
+      <SidebarNav>
         <li data-testid="child">Hello</li>
-      </ArdaSidebarNav>,
+      </SidebarNav>,
     );
     expect(screen.getByTestId('child')).toBeInTheDocument();
   });
 
   it('renders a list (SidebarMenu) for children', () => {
     renderInSidebar(
-      <ArdaSidebarNav>
+      <SidebarNav>
         <li>Item</li>
-      </ArdaSidebarNav>,
+      </SidebarNav>,
     );
     expect(screen.getByRole('list')).toBeInTheDocument();
   });
 
   it('renders group label when provided', () => {
     renderInSidebar(
-      <ArdaSidebarNav label="Navigation">
+      <SidebarNav label="Navigation">
         <li>Item</li>
-      </ArdaSidebarNav>,
+      </SidebarNav>,
     );
     expect(screen.getByText('Navigation')).toBeInTheDocument();
   });
