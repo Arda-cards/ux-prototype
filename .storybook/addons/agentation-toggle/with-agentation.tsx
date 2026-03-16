@@ -16,8 +16,7 @@ export const withAgentation: DecoratorFunction<ReactRenderer> = (StoryFn, contex
           onSubmit={(json) => navigator.clipboard.writeText(json)}
           onCopy={(markdown) => navigator.clipboard.writeText(markdown)}
           copyToClipboard
-          // endpoint="http://localhost:4747"  // future MCP integration
-          // sessionId=""                       // future MCP integration
+          endpoint="http://localhost:4747"
         />
       )}
     </>

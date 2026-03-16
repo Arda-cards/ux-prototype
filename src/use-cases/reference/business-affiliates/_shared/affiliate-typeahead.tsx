@@ -218,7 +218,15 @@ export function AffiliateTypeahead({
           break;
       }
     },
-    [isOpen, activeIndex, totalOptions, options, handleSelectOption, handleCreate, showCreateOption],
+    [
+      isOpen,
+      activeIndex,
+      totalOptions,
+      options,
+      handleSelectOption,
+      handleCreate,
+      showCreateOption,
+    ],
   );
 
   // Scroll active option into view
@@ -355,7 +363,9 @@ export function AffiliateTypeahead({
               }}
               onMouseEnter={() => setActiveIndex(options.length)}
             >
-              [+] New supplier: {'\u201C'}{internalValue.trim()}{'\u201D'}
+              [+] New supplier: {'\u201C'}
+              {internalValue.trim()}
+              {'\u201D'}
             </li>
           )}
 
