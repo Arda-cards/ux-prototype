@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
-import { ArdaReadOnlyField } from './read-only-field';
+import { ReadOnlyField } from './read-only-field';
 
 const meta = {
   title: 'Components/Canary/Atoms/ReadOnlyField',
-  component: ArdaReadOnlyField,
+  component: ReadOnlyField,
   parameters: {
     docs: {
       description: {
@@ -38,10 +38,10 @@ const meta = {
       table: { category: 'Runtime' },
     },
   },
-} satisfies Meta<typeof ArdaReadOnlyField>;
+} satisfies Meta<typeof ReadOnlyField>;
 
 export default meta;
-type Story = StoryObj<typeof ArdaReadOnlyField>;
+type Story = StoryObj<typeof ReadOnlyField>;
 
 /** Default rendering with a label and value. */
 export const Default: Story = {
@@ -81,11 +81,11 @@ export const Compact: Story = {
 export const WithChildren: Story = {
   args: { label: 'Link' },
   render: (args) => (
-    <ArdaReadOnlyField {...args}>
+    <ReadOnlyField {...args}>
       <a href="https://example.com" className="text-primary underline break-all">
         https://example.com/very-long-product-link-that-truncates
       </a>
-    </ArdaReadOnlyField>
+    </ReadOnlyField>
   ),
 };
 
@@ -93,11 +93,11 @@ export const WithChildren: Story = {
 export const Composition: Story = {
   render: () => (
     <div className="w-[400px] space-y-3 p-4 border rounded-lg">
-      <ArdaReadOnlyField label="Link" fallback="No link available" />
-      <ArdaReadOnlyField label="SKU" value="ITEM-001-A" />
-      <ArdaReadOnlyField label="General Ledger Code" value="4200-100" />
-      <ArdaReadOnlyField label="Unit price" value="$12.50" />
-      <ArdaReadOnlyField label="Number of cards" value="3" />
+      <ReadOnlyField label="Link" fallback="No link available" />
+      <ReadOnlyField label="SKU" value="ITEM-001-A" />
+      <ReadOnlyField label="General Ledger Code" value="4200-100" />
+      <ReadOnlyField label="Unit price" value="$12.50" />
+      <ReadOnlyField label="Number of cards" value="3" />
     </div>
   ),
 };

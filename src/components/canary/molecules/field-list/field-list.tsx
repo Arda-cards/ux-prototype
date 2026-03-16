@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { ArdaReadOnlyField } from '../../atoms/read-only-field/read-only-field';
+import { ReadOnlyField } from '../../atoms/read-only-field/read-only-field';
 
 // --- Interfaces ---
 
@@ -29,7 +29,7 @@ export interface ArdaFieldListProps {
 /**
  * ArdaFieldList — renders a list of read-only label/value fields with dividers.
  *
- * Data-driven: pass a `fields[]` array. Each field renders as an ArdaReadOnlyField.
+ * Data-driven: pass a `fields[]` array. Each field renders as a ReadOnlyField.
  * For custom value rendering (links, formatted numbers), use the `children` property.
  */
 export function ArdaFieldList({ fields, className }: ArdaFieldListProps) {
@@ -39,9 +39,9 @@ export function ArdaFieldList({ fields, className }: ArdaFieldListProps) {
     <div className={cn('divide-y divide-border/60 px-5', className)}>
       {fields.map((field) => (
         <div key={field.key} className="py-3">
-          <ArdaReadOnlyField label={field.label} value={field.value}>
+          <ReadOnlyField label={field.label} value={field.value}>
             {field.children}
-          </ArdaReadOnlyField>
+          </ReadOnlyField>
         </div>
       ))}
     </div>

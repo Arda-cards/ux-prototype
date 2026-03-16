@@ -17,8 +17,8 @@ const readOnlyFieldVariants = cva('flex flex-col gap-0.5', {
 
 // --- Interfaces ---
 
-/** Design-time configuration for ArdaReadOnlyField. */
-export interface ArdaReadOnlyFieldStaticConfig extends VariantProps<typeof readOnlyFieldVariants> {
+/** Design-time configuration for ReadOnlyField. */
+export interface ReadOnlyFieldStaticConfig extends VariantProps<typeof readOnlyFieldVariants> {
   /* --- View / Layout / Controller --- */
   /** The field label displayed above the value. */
   label: string;
@@ -27,8 +27,8 @@ export interface ArdaReadOnlyFieldStaticConfig extends VariantProps<typeof readO
   fallback?: string;
 }
 
-/** Runtime configuration for ArdaReadOnlyField. */
-export interface ArdaReadOnlyFieldRuntimeConfig {
+/** Runtime configuration for ReadOnlyField. */
+export interface ReadOnlyFieldRuntimeConfig {
   /* --- Model / Data Binding --- */
   /** The field value to display as plain text. */
   value?: string | undefined;
@@ -36,22 +36,22 @@ export interface ArdaReadOnlyFieldRuntimeConfig {
   children?: React.ReactNode | undefined;
 }
 
-/** Combined props for ArdaReadOnlyField. */
-export interface ArdaReadOnlyFieldProps
+/** Combined props for ReadOnlyField. */
+export interface ReadOnlyFieldProps
   extends
-    ArdaReadOnlyFieldStaticConfig,
-    ArdaReadOnlyFieldRuntimeConfig,
+    ReadOnlyFieldStaticConfig,
+    ReadOnlyFieldRuntimeConfig,
     React.HTMLAttributes<HTMLDivElement> {}
 
 // --- Component ---
 
 /**
- * ArdaReadOnlyField — a read-only label/value pair for entity detail views.
+ * ReadOnlyField — a read-only label/value pair for entity detail views.
  *
  * Built from scratch (no shadcn/ui or AG Grid analog).
  * Extracted from `vendored/arda-frontend/components/items/ItemDetailsPanel.tsx` lines 1161-1204.
  */
-export function ArdaReadOnlyField({
+export function ReadOnlyField({
   label,
   value,
   fallback = '\u2014',
@@ -59,7 +59,7 @@ export function ArdaReadOnlyField({
   children,
   className,
   ...props
-}: ArdaReadOnlyFieldProps) {
+}: ReadOnlyFieldProps) {
   const displayValue = children ?? (value !== undefined && value !== '' ? value : fallback);
 
   return (

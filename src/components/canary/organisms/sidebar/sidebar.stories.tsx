@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 import {
@@ -18,20 +17,17 @@ import {
 
 import { ArdaSidebar } from './sidebar';
 import { ArdaSidebarHeader } from '../../molecules/sidebar/sidebar-header';
-import { ArdaSidebarNav } from '../../molecules/sidebar/sidebar-nav';
-import { ArdaSidebarNavGroup } from '../../molecules/sidebar/sidebar-nav-group';
-import {
-  ArdaSidebarUserMenu,
-  type UserMenuAction,
-} from '../../molecules/sidebar/sidebar-user-menu';
-import { ArdaSidebarNavItem } from '../../molecules/sidebar/sidebar-nav-item';
+import { SidebarNav } from '../../molecules/sidebar/sidebar-nav';
+import { SidebarNavGroup } from '../../molecules/sidebar/sidebar-nav-group';
+import { SidebarUserMenu, type UserMenuAction } from '../../molecules/sidebar/sidebar-user-menu';
+import { SidebarNavItem } from '../../molecules/sidebar/sidebar-nav-item';
 import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 
 const mockUser = {
-  name: 'Callil Capuozzo',
-  email: 'callil@arda.cards',
+  name: 'Uriel Eisen',
+  email: 'uriel@arda.cards',
   role: 'Account Admin',
-  avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=CC',
+  avatar: '/canary/images/avatar-placeholder.jpg',
 };
 
 const mockActions: UserMenuAction[] = [
@@ -48,10 +44,11 @@ const meta = {
     docs: {
       description: {
         component:
-          'Arda sidebar organism built on shadcn/ui Sidebar primitives. ' +
-          'Provides mobile Sheet drawer, Cmd+B keyboard shortcut, cookie persistence, ' +
-          'and icon-only collapsed mode with tooltips — all from shadcn. ' +
-          'Arda adds dark theme tokens, brand header, and user menu.',
+          'Arda sidebar organism — dark by default, built on shadcn/ui Sidebar primitives. ' +
+          'Compound component: compose with ArdaSidebarHeader, SidebarNav, ' +
+          'SidebarNavItem, SidebarNavGroup, and SidebarUserMenu. ' +
+          'Provides mobile Sheet drawer (< 768px), Cmd+B toggle, cookie persistence, ' +
+          'and icon-only collapsed mode with tooltips.',
       },
     },
   },
@@ -60,30 +57,35 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof ArdaSidebar>;
 
-/** Default sidebar — toggle `open` in the controls panel, or use Cmd+B / the sidebar rail. */
+/** Default sidebar. Toggle `open` and `dark` in the controls panel. */
 export const Default: Story = {
   args: {
     open: true,
+    dark: true,
+  },
+  argTypes: {
+    open: { control: 'boolean' },
+    dark: { control: 'boolean' },
   },
   render: (args) => (
-    <ArdaSidebar open={args.open} onOpenChange={args.onOpenChange}>
+    <ArdaSidebar {...args}>
       <ArdaSidebarHeader teamName="Arda Cards" />
 
-      <ArdaSidebarNav>
-        <ArdaSidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
-        <ArdaSidebarNavItem icon={Package} label="Items" />
-        <ArdaSidebarNavItem icon={ShoppingCart} label="Order Queue" badge={3} />
-        <ArdaSidebarNavItem icon={Building2} label="Suppliers" />
+      <SidebarNav>
+        <SidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
+        <SidebarNavItem icon={Package} label="Items" />
+        <SidebarNavItem icon={ShoppingCart} label="Order Queue" badge={3} />
+        <SidebarNavItem icon={Building2} label="Suppliers" />
 
-        <ArdaSidebarNavGroup label="Analytics" icon={BarChart3} defaultExpanded>
-          <ArdaSidebarNavItem icon={BarChart3} label="Sales" />
-          <ArdaSidebarNavItem icon={Boxes} label="Inventory" />
-        </ArdaSidebarNavGroup>
+        <SidebarNavGroup label="Analytics" icon={BarChart3} defaultExpanded>
+          <SidebarNavItem icon={BarChart3} label="Sales" />
+          <SidebarNavItem icon={Boxes} label="Inventory" />
+        </SidebarNavGroup>
 
-        <ArdaSidebarNavItem icon={Settings} label="Settings" />
-      </ArdaSidebarNav>
+        <SidebarNavItem icon={Settings} label="Settings" />
+      </SidebarNav>
 
-      <ArdaSidebarUserMenu user={mockUser} actions={mockActions} />
+      <SidebarUserMenu user={mockUser} actions={mockActions} />
     </ArdaSidebar>
   ),
   play: async ({ canvasElement }) => {
@@ -93,21 +95,21 @@ export const Default: Story = {
   },
 };
 
-/** Nav items with notification badges. */
+/** Nav items with notification badges — count, dot, and active combinations. */
 export const WithBadges: Story = {
   render: () => (
     <ArdaSidebar defaultOpen>
       <ArdaSidebarHeader teamName="Arda Cards" />
 
-      <ArdaSidebarNav>
-        <ArdaSidebarNavItem icon={LayoutDashboard} label="Dashboard" />
-        <ArdaSidebarNavItem icon={Package} label="Items" badge={42} />
-        <ArdaSidebarNavItem icon={ShoppingCart} label="Order Queue" badge={3} active />
-        <ArdaSidebarNavItem icon={Building2} label="Suppliers" badge={true} />
-        <ArdaSidebarNavItem icon={Settings} label="Settings" badge={true} active />
-      </ArdaSidebarNav>
+      <SidebarNav>
+        <SidebarNavItem icon={LayoutDashboard} label="Dashboard" />
+        <SidebarNavItem icon={Package} label="Items" badge={42} />
+        <SidebarNavItem icon={ShoppingCart} label="Order Queue" badge={3} active />
+        <SidebarNavItem icon={Building2} label="Suppliers" badge={true} />
+        <SidebarNavItem icon={Settings} label="Settings" badge={true} active />
+      </SidebarNav>
 
-      <ArdaSidebarUserMenu user={mockUser} actions={mockActions} />
+      <SidebarUserMenu user={mockUser} actions={mockActions} />
     </ArdaSidebar>
   ),
 };
@@ -118,27 +120,27 @@ export const WithGroups: Story = {
     <ArdaSidebar defaultOpen>
       <ArdaSidebarHeader teamName="Arda Cards" />
 
-      <ArdaSidebarNav>
-        <ArdaSidebarNavItem icon={LayoutDashboard} label="Dashboard" />
-        <ArdaSidebarNavItem icon={Package} label="Items" />
+      <SidebarNav>
+        <SidebarNavItem icon={LayoutDashboard} label="Dashboard" />
+        <SidebarNavItem icon={Package} label="Items" />
 
-        <ArdaSidebarNavGroup label="Analytics" icon={BarChart3}>
-          <ArdaSidebarNavItem icon={BarChart3} label="Sales" />
-          <ArdaSidebarNavItem icon={Boxes} label="Inventory" active />
-        </ArdaSidebarNavGroup>
+        <SidebarNavGroup label="Analytics" icon={BarChart3}>
+          <SidebarNavItem icon={BarChart3} label="Sales" />
+          <SidebarNavItem icon={Boxes} label="Inventory" active />
+        </SidebarNavGroup>
 
-        <ArdaSidebarNavGroup label="People" icon={Users}>
-          <ArdaSidebarNavItem icon={Users} label="Team" />
-          <ArdaSidebarNavItem icon={ShieldCheck} label="Roles" />
-        </ArdaSidebarNavGroup>
+        <SidebarNavGroup label="People" icon={Users}>
+          <SidebarNavItem icon={Users} label="Team" />
+          <SidebarNavItem icon={ShieldCheck} label="Roles" />
+        </SidebarNavGroup>
 
-        <ArdaSidebarNavGroup label="Content" icon={FileText}>
-          <ArdaSidebarNavItem icon={FileText} label="Pages" />
-          <ArdaSidebarNavItem icon={Tag} label="Tags" />
-        </ArdaSidebarNavGroup>
-      </ArdaSidebarNav>
+        <SidebarNavGroup label="Content" icon={FileText}>
+          <SidebarNavItem icon={FileText} label="Pages" />
+          <SidebarNavItem icon={Tag} label="Tags" />
+        </SidebarNavGroup>
+      </SidebarNav>
 
-      <ArdaSidebarUserMenu user={mockUser} actions={mockActions} />
+      <SidebarUserMenu user={mockUser} actions={mockActions} />
     </ArdaSidebar>
   ),
 };
@@ -148,7 +150,7 @@ export const Composition: Story = {
   render: () => (
     <ArdaSidebar
       defaultOpen
-      page={
+      content={
         <SidebarInset>
           <header className="flex h-14 items-center gap-2 border-b px-4">
             <SidebarTrigger className="-ml-1" />
@@ -156,14 +158,18 @@ export const Composition: Story = {
           </header>
           <main className="p-8">
             <p className="text-muted-foreground mb-4">
-              Press <kbd className="px-1.5 py-0.5 text-xs border rounded bg-muted">⌘B</kbd> to
+              Press <kbd className="rounded border bg-muted px-1.5 py-0.5 text-xs">⌘B</kbd> to
               toggle the sidebar. On mobile, it opens as a sheet drawer.
             </p>
             <div className="grid grid-cols-3 gap-4">
-              {['Items', 'Orders', 'Suppliers'].map((label) => (
-                <div key={label} className="rounded-lg border p-6 bg-card text-card-foreground">
+              {[
+                { label: 'Items', value: 142 },
+                { label: 'Orders', value: 38 },
+                { label: 'Suppliers', value: 12 },
+              ].map(({ label, value }) => (
+                <div key={label} className="rounded-lg border bg-card p-6 text-card-foreground">
                   <p className="text-sm text-muted-foreground">{label}</p>
-                  <p className="text-2xl font-bold mt-1">{Math.floor(Math.random() * 500)}</p>
+                  <p className="mt-1 text-2xl font-bold">{value}</p>
                 </div>
               ))}
             </div>
@@ -173,13 +179,13 @@ export const Composition: Story = {
     >
       <ArdaSidebarHeader teamName="Arda Cards" />
 
-      <ArdaSidebarNav>
-        <ArdaSidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
-        <ArdaSidebarNavItem icon={Package} label="Items" />
-        <ArdaSidebarNavItem icon={ShoppingCart} label="Order Queue" badge={3} />
-      </ArdaSidebarNav>
+      <SidebarNav>
+        <SidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
+        <SidebarNavItem icon={Package} label="Items" />
+        <SidebarNavItem icon={ShoppingCart} label="Order Queue" badge={3} />
+      </SidebarNav>
 
-      <ArdaSidebarUserMenu user={mockUser} actions={mockActions} />
+      <SidebarUserMenu user={mockUser} actions={mockActions} />
     </ArdaSidebar>
   ),
 };

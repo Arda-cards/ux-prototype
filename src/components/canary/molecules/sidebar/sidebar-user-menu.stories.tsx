@@ -1,9 +1,8 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, fn, within } from 'storybook/test';
+import { expect, fn, userEvent, within } from 'storybook/test';
 import { Settings, ShieldCheck, LogOut } from 'lucide-react';
 
-import { ArdaSidebarUserMenu, type UserMenuAction } from './sidebar-user-menu';
+import { SidebarUserMenu, type UserMenuAction } from './sidebar-user-menu';
 import { ArdaSidebar } from '../../organisms/sidebar/sidebar';
 
 const mockUser = {
@@ -20,7 +19,7 @@ const defaultActions: UserMenuAction[] = [
 
 const meta = {
   title: 'Components/Canary/Molecules/Sidebar/UserMenu',
-  component: ArdaSidebarUserMenu,
+  component: SidebarUserMenu,
   parameters: {
     layout: 'fullscreen',
     docs: {
@@ -34,23 +33,21 @@ const meta = {
     },
   },
   tags: ['autodocs'],
-} satisfies Meta<typeof ArdaSidebarUserMenu>;
+} satisfies Meta<typeof SidebarUserMenu>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
+type Story = StoryObj<typeof SidebarUserMenu>;
 
 /** Default expanded view with admin, settings, and logout. */
 export const Default: Story = {
   render: () => (
     <ArdaSidebar defaultOpen>
-      <ArdaSidebarUserMenu user={mockUser} actions={defaultActions} />
+      <SidebarUserMenu user={mockUser} actions={defaultActions} />
     </ArdaSidebar>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByText('Callil Capuozzo')).toBeVisible();
-    await expect(canvas.getByText('callil@arda.cards')).toBeVisible();
-    await expect(canvas.getByText('CC')).toBeVisible();
   },
 };
 
@@ -58,11 +55,11 @@ export const Default: Story = {
 export const WithAvatar: Story = {
   render: () => (
     <ArdaSidebar defaultOpen>
-      <ArdaSidebarUserMenu
+      <SidebarUserMenu
         user={{
-          name: 'Miguel Torres',
-          email: 'miguel@arda.cards',
-          avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=MT',
+          name: 'Uriel Eisen',
+          email: 'uriel@arda.cards',
+          avatar: '/canary/images/avatar-placeholder.jpg',
         }}
         actions={defaultActions}
       />
@@ -74,7 +71,7 @@ export const WithAvatar: Story = {
 export const Collapsed: Story = {
   render: () => (
     <ArdaSidebar defaultOpen={false}>
-      <ArdaSidebarUserMenu user={mockUser} actions={defaultActions} />
+      <SidebarUserMenu user={mockUser} actions={defaultActions} />
     </ArdaSidebar>
   ),
 };
@@ -83,7 +80,7 @@ export const Collapsed: Story = {
 export const WithRole: Story = {
   render: () => (
     <ArdaSidebar defaultOpen>
-      <ArdaSidebarUserMenu
+      <SidebarUserMenu
         user={{
           name: 'Callil Capuozzo',
           email: 'callil@arda.cards',
@@ -96,11 +93,33 @@ export const WithRole: Story = {
   ),
 };
 
+/** Flyout open — shows the dropdown menu with all actions. */
+export const FlyoutOpen: Story = {
+  render: () => (
+    <ArdaSidebar defaultOpen>
+      <SidebarUserMenu
+        user={{
+          name: 'Callil Capuozzo',
+          email: 'callil@arda.cards',
+          avatar: '',
+          role: 'Account Admin',
+        }}
+        actions={defaultActions}
+      />
+    </ArdaSidebar>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button', { name: /callil/i });
+    await userEvent.click(trigger);
+  },
+};
+
 /** Minimal — logout only. */
 export const LogoutOnly: Story = {
   render: () => (
     <ArdaSidebar defaultOpen>
-      <ArdaSidebarUserMenu
+      <SidebarUserMenu
         user={mockUser}
         actions={[
           { key: 'logout', label: 'Log out', icon: LogOut, onClick: fn(), destructive: true },

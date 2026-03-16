@@ -1,6 +1,6 @@
-export { ArdaReadOnlyField, readOnlyFieldVariants } from './read-only-field';
+export { ReadOnlyField, readOnlyFieldVariants } from './read-only-field';
 export type {
-  ArdaReadOnlyFieldProps,
-  ArdaReadOnlyFieldStaticConfig,
-  ArdaReadOnlyFieldRuntimeConfig,
+  ReadOnlyFieldProps,
+  ReadOnlyFieldStaticConfig,
+  ReadOnlyFieldRuntimeConfig,
 } from './read-only-field';

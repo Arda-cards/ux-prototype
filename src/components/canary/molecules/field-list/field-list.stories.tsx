@@ -10,7 +10,7 @@ const meta = {
       description: {
         component:
           'Data-driven list of read-only label/value fields with dividers. ' +
-          'Pass a fields[] array; each renders as an ArdaReadOnlyField.',
+          'Pass a fields[] array; each renders as an ReadOnlyField.',
       },
     },
   },

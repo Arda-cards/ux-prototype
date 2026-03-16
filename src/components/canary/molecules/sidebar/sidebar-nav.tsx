@@ -1,3 +1,5 @@
+'use client';
+
 import {
   SidebarContent,
   SidebarGroup,
@@ -6,32 +8,30 @@ import {
   SidebarMenu,
 } from '@/components/ui/sidebar';
 
-// --- Interfaces ---
-
-/** Props for ArdaSidebarNav. */
-export interface ArdaSidebarNavProps {
-  /* --- View / Layout / Controller --- */
-  /** ArdaSidebarNavItem and ArdaSidebarNavGroup children. */
+export interface SidebarNavProps {
+  /** SidebarNavItem and SidebarNavGroup children. */
   children: React.ReactNode;
   /** Optional group label (e.g. "Navigation", "Platform"). */
   label?: string;
-  /** Additional CSS classes. */
+  /** Accessible label for the nav landmark. Defaults to "Main navigation". */
+  ariaLabel?: string;
   className?: string;
 }
 
-// --- Component ---
-
-/**
- * ArdaSidebarNav — wraps shadcn SidebarContent > SidebarGroup > SidebarMenu.
- * Provides the scrollable nav section of the sidebar.
- */
-export function ArdaSidebarNav({ children, label, className }: ArdaSidebarNavProps) {
+export function SidebarNav({
+  children,
+  label,
+  ariaLabel = 'Main navigation',
+  className,
+}: SidebarNavProps) {
   return (
     <SidebarContent className={className}>
       <SidebarGroup>
         {label && <SidebarGroupLabel>{label}</SidebarGroupLabel>}
         <SidebarGroupContent>
-          <SidebarMenu>{children}</SidebarMenu>
+          <nav aria-label={ariaLabel}>
+            <SidebarMenu>{children}</SidebarMenu>
+          </nav>
         </SidebarGroupContent>
       </SidebarGroup>
     </SidebarContent>

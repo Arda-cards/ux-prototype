@@ -8,7 +8,7 @@ import {
   ArdaDrawerDescription,
   ArdaDrawerBody,
 } from './drawer';
-import { ArdaReadOnlyField } from '../read-only-field/read-only-field';
+import { ReadOnlyField } from '../read-only-field/read-only-field';
 
 const meta = {
   title: 'Components/Canary/Atoms/Drawer',
@@ -46,10 +46,10 @@ export const Default: Story = {
             <ArdaDrawerDescription>View and manage this inventory item.</ArdaDrawerDescription>
           </ArdaDrawerHeader>
           <ArdaDrawerBody className="px-6 py-4 space-y-3">
-            <ArdaReadOnlyField label="SKU" value="WDG-4420-BLK" />
-            <ArdaReadOnlyField label="Supplier" value="McMaster-Carr" />
-            <ArdaReadOnlyField label="Unit Price" value="$12.50" />
-            <ArdaReadOnlyField label="Location" value="Bin A-12" />
+            <ReadOnlyField label="SKU" value="WDG-4420-BLK" />
+            <ReadOnlyField label="Supplier" value="McMaster-Carr" />
+            <ReadOnlyField label="Unit Price" value="$12.50" />
+            <ReadOnlyField label="Location" value="Bin A-12" />
           </ArdaDrawerBody>
         </ArdaDrawer>
       </>

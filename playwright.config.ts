@@ -12,8 +12,7 @@ export default defineConfig({
   outputDir: './tests/test-results',
 
   /* Platform-independent snapshot names so baselines work on macOS and Linux. */
-  snapshotPathTemplate:
-    '{testDir}/{testFileDir}/__snapshots__/{arg}{ext}',
+  snapshotPathTemplate: '{testDir}/{testFileDir}/__snapshots__/{arg}{ext}',
 
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
@@ -46,9 +45,21 @@ export default defineConfig({
     {
       name: 'smoke',
       testDir: './tests/smoke',
+      testIgnore: ['**/subpath-deployment*'],
       timeout: 600000, // 10 min per batch — stories are split into batches of ~20
       use: {
         ...devices['Desktop Chrome'],
+        viewport: { width: 1280, height: 900 },
+      },
+    },
+    {
+      name: 'subpath-deployment',
+      testDir: './tests/smoke',
+      testMatch: ['**/subpath-deployment*'],
+      timeout: 60000,
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: 'http://localhost:6007',
         viewport: { width: 1280, height: 900 },
       },
     },

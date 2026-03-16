@@ -8,6 +8,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -34,9 +35,11 @@ export interface UserMenuAction {
   destructive?: boolean;
 }
 
-/** Props for ArdaSidebarUserMenu. */
-export interface ArdaSidebarUserMenuProps {
+/** Runtime configuration for SidebarUserMenu. */
+export interface SidebarUserMenuRuntimeConfig {
   /* --- Model / Data Binding --- */
+  /** Whether the sidebar is in mobile mode. Controls dropdown placement direction. */
+  isMobile?: boolean;
   /** User information. */
   user: {
     name: string;
@@ -47,22 +50,22 @@ export interface ArdaSidebarUserMenuProps {
   };
   /** Menu actions rendered in the flyout dropdown. Logout should be last and marked destructive. */
   actions: UserMenuAction[];
+}
 
-  /* --- View / Layout / Controller --- */
-  /** Whether the sidebar is in mobile mode. Controls dropdown placement direction. */
-  isMobile?: boolean;
+/** Combined props for SidebarUserMenu. */
+export interface SidebarUserMenuProps extends SidebarUserMenuRuntimeConfig {
   /** Additional CSS classes. */
   className?: string;
 }
 
 // --- Component ---
 
-export function ArdaSidebarUserMenu({
+export function SidebarUserMenu({
   user,
   actions,
   isMobile = false,
   className,
-}: ArdaSidebarUserMenuProps) {
+}: SidebarUserMenuProps) {
   const initials = user.name
     .split(/\s+/)
     .filter(Boolean)
@@ -81,17 +84,17 @@ export function ArdaSidebarUserMenu({
         <SidebarMenuItem>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <SidebarMenuButton>
+              <SidebarMenuButton tooltip={user.name}>
                 <Avatar className="size-4 shrink-0 rounded-sm bg-sidebar-accent">
-                  {user.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
-                  <AvatarFallback className="rounded-sm bg-sidebar-accent text-sidebar-accent-foreground text-3xs font-bold">
+                  {user.avatar && <AvatarImage src={user.avatar} alt="" />}
+                  <AvatarFallback className="rounded-sm bg-sidebar-accent text-sidebar-accent-foreground text-[10px] font-bold leading-none">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
-                <span className="truncate font-medium text-sidebar-accent-foreground">
+                <span className="truncate font-medium text-sidebar-accent-foreground group-data-[collapsible=icon]:hidden">
                   {user.name}
                 </span>
-                <ChevronsUpDown className="ml-auto size-4 shrink-0 text-sidebar-foreground/70" />
+                <ChevronsUpDown className="ml-auto size-4 shrink-0 text-sidebar-foreground/70 group-data-[collapsible=icon]:hidden" />
               </SidebarMenuButton>
             </DropdownMenuTrigger>
 
@@ -101,11 +104,11 @@ export function ArdaSidebarUserMenu({
               align="end"
               sideOffset={4}
             >
-              <div className="px-2 py-1.5">
+              <DropdownMenuLabel className="font-normal">
                 <p className="text-sm font-semibold">{user.name}</p>
                 {user.role && <p className="text-xs text-muted-foreground">{user.role}</p>}
                 <p className="text-xs text-muted-foreground">{user.email}</p>
-              </div>
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
 
               {standardActions.map((action) => (
