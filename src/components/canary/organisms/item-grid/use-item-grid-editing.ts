@@ -138,11 +138,17 @@ export function useItemGridEditing({
         for (const rowId of ids) {
           const changes = pendingChangesRef.current[rowId];
           if (!changes) continue;
-          await onPublishRow?.(rowId, changes);
-          delete pendingChangesRef.current[rowId];
-          dirtyRowIdsRef.current.delete(rowId);
+          setRowState(rowId, 'saving');
+          try {
+            await onPublishRow?.(rowId, changes);
+            delete pendingChangesRef.current[rowId];
+            dirtyRowIdsRef.current.delete(rowId);
+            setRowState(rowId, 'idle');
+          } catch {
+            dirtyRowIdsRef.current.add(rowId);
+            setRowState(rowId, 'error');
+          }
         }
-        setRowStates({});
         notifyDirty();
       },
       discardAll: () => {

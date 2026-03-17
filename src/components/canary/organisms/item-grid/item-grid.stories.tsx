@@ -362,165 +362,163 @@ export const Composition: Story = {
                   await new Promise((r) => setTimeout(r, 500));
                 }}
                 toolbar={
-                  <OverflowToolbar>
-                    {selected.length > 0 ? (
-                      <>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          data-overflow-label="Clear selection"
-                          onClick={() => {
-                            gridRef.current?.api?.deselectAll();
-                            setSelected([]);
-                          }}
-                        >
-                          Clear
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          data-overflow-label="Print cards"
-                          onClick={() => console.log('Print cards for', selected.length, 'items')}
-                        >
-                          <Printer className="mr-1.5 h-4 w-4" />
-                          Print cards
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          data-overflow-label="Add to queue"
-                          onClick={() => console.log('Add to queue', selected.length, 'items')}
-                        >
-                          <ShoppingCart className="mr-1.5 h-4 w-4" />
-                          Add to queue
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          data-overflow-label="Export"
-                          onClick={() => console.log('Export', selected.length, 'items')}
-                        >
-                          <Download className="mr-1.5 h-4 w-4" />
-                          Export
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-destructive hover:text-destructive"
-                          data-overflow-label="Delete"
-                          onClick={() => console.log('Delete', selected.length, 'items')}
-                        >
-                          <Trash2 className="mr-1.5 h-4 w-4" />
-                          Delete
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" data-overflow-label="View columns">
-                              <SlidersHorizontal className="mr-1.5 h-4 w-4" />
-                              View
-                              <ChevronDown className="ml-1 h-3.5 w-3.5" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48">
+                  selected.length > 0 ? (
+                    <OverflowToolbar>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        data-overflow-label="Clear selection"
+                        onClick={() => {
+                          gridRef.current?.api?.deselectAll();
+                          setSelected([]);
+                        }}
+                      >
+                        Clear
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        data-overflow-label="Print cards"
+                        onClick={() => console.log('Print cards for', selected.length, 'items')}
+                      >
+                        <Printer className="mr-1.5 h-4 w-4" />
+                        Print cards
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        data-overflow-label="Add to queue"
+                        onClick={() => console.log('Add to queue', selected.length, 'items')}
+                      >
+                        <ShoppingCart className="mr-1.5 h-4 w-4" />
+                        Add to queue
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        data-overflow-label="Export"
+                        onClick={() => console.log('Export', selected.length, 'items')}
+                      >
+                        <Download className="mr-1.5 h-4 w-4" />
+                        Export
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-destructive hover:text-destructive"
+                        data-overflow-label="Delete"
+                        onClick={() => console.log('Delete', selected.length, 'items')}
+                      >
+                        <Trash2 className="mr-1.5 h-4 w-4" />
+                        Delete
+                      </Button>
+                    </OverflowToolbar>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" size="sm" data-overflow-label="View columns">
+                            <SlidersHorizontal className="mr-1.5 h-4 w-4" />
+                            View
+                            <ChevronDown className="ml-1 h-3.5 w-3.5" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setHiddenColumns(new Set());
+                              const api = gridRef.current?.api;
+                              if (api)
+                                api.setColumnsVisible(
+                                  toggleableColumns.map((c) => c.field),
+                                  true,
+                                );
+                            }}
+                          >
+                            Show all
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          {toggleableColumns.map((col) => (
                             <DropdownMenuItem
-                              onClick={() => {
-                                setHiddenColumns(new Set());
-                                const api = gridRef.current?.api;
-                                if (api)
-                                  api.setColumnsVisible(
-                                    toggleableColumns.map((c) => c.field),
-                                    true,
-                                  );
+                              key={col.field}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                toggleColumn(col.field);
                               }}
+                              className="gap-2"
                             >
-                              Show all
+                              {!hiddenColumns.has(col.field) ? (
+                                <Check className="h-4 w-4" />
+                              ) : (
+                                <span className="h-4 w-4" />
+                              )}
+                              {col.label}
                             </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            {toggleableColumns.map((col) => (
-                              <DropdownMenuItem
-                                key={col.field}
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  toggleColumn(col.field);
-                                }}
-                                className="gap-2"
-                              >
-                                {!hiddenColumns.has(col.field) ? (
-                                  <Check className="h-4 w-4" />
-                                ) : (
-                                  <span className="h-4 w-4" />
-                                )}
-                                {col.label}
-                              </DropdownMenuItem>
-                            ))}
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => console.log('Save view')}>
-                              <Save className="h-4 w-4" />
-                              Save view
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                          ))}
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => console.log('Save view')}>
+                            <Save className="h-4 w-4" />
+                            Save view
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" size="sm" data-overflow-label="Actions">
+                            <CircleCheck className="mr-1.5 h-4 w-4" />
+                            Actions
+                            <ChevronDown className="ml-1 h-3.5 w-3.5" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => console.log('Print cards')}>
+                            <Printer className="mr-2 h-4 w-4" />
+                            Print cards
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => console.log('Print labels')}>
+                            <Tag className="mr-2 h-4 w-4" />
+                            Print labels
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => console.log('Export')}>
+                            <Download className="mr-2 h-4 w-4" />
+                            Export CSV
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      <div className="flex">
+                        <Button
+                          size="sm"
+                          className="rounded-r-none"
+                          data-overflow-label="Add item"
+                          onClick={() => console.log('Add item')}
+                        >
+                          <Plus className="mr-1.5 h-4 w-4" />
+                          Add item
+                        </Button>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" data-overflow-label="Actions">
-                              <CircleCheck className="mr-1.5 h-4 w-4" />
-                              Actions
-                              <ChevronDown className="ml-1 h-3.5 w-3.5" />
+                            <Button
+                              size="sm"
+                              className="rounded-l-none border-l border-primary-foreground/20 px-2"
+                              aria-label="More add options"
+                            >
+                              <ChevronDown className="h-3.5 w-3.5" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => console.log('Print cards')}>
-                              <Printer className="mr-2 h-4 w-4" />
-                              Print cards
+                            <DropdownMenuItem onClick={() => console.log('Import CSV')}>
+                              <Upload className="mr-2 h-4 w-4" />
+                              Import CSV
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => console.log('Print labels')}>
-                              <Tag className="mr-2 h-4 w-4" />
-                              Print labels
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => console.log('Export')}>
-                              <Download className="mr-2 h-4 w-4" />
-                              Export CSV
+                            <DropdownMenuItem onClick={() => console.log('Bulk add')}>
+                              <Plus className="mr-2 h-4 w-4" />
+                              Bulk add
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
-                        <div className="flex">
-                          <Button
-                            size="sm"
-                            className="rounded-r-none"
-                            data-overflow-label="Add item"
-                            onClick={() => console.log('Add item')}
-                          >
-                            <Plus className="mr-1.5 h-4 w-4" />
-                            Add item
-                          </Button>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                size="sm"
-                                className="rounded-l-none border-l border-primary-foreground/20 px-2"
-                                aria-label="More add options"
-                              >
-                                <ChevronDown className="h-3.5 w-3.5" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => console.log('Import CSV')}>
-                                <Upload className="mr-2 h-4 w-4" />
-                                Import CSV
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => console.log('Bulk add')}>
-                                <Plus className="mr-2 h-4 w-4" />
-                                Bulk add
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </>
-                    )}
-                  </OverflowToolbar>
+                      </div>
+                    </div>
+                  )
                 }
               />
             </main>

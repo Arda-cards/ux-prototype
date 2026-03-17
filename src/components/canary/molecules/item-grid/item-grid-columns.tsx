@@ -91,7 +91,7 @@ function NotesCellRenderer(params: ICellRendererParams<Item>) {
     {
       style: {
         color: hasNotes ? 'var(--foreground)' : 'var(--muted-foreground)',
-        opacity: hasNotes ? 1 : 0.4,
+        opacity: hasNotes ? 1 : 0.6,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -295,8 +295,9 @@ export const itemGridColumnDefs: ColDef<Item>[] = createItemGridColumnDefs();
 export function createItemGridColumnDefs(lookups?: ItemGridLookups): ColDef<Item>[] {
   return [
     {
-      headerName: '',
+      headerName: 'Image',
       field: 'imageUrl',
+      headerClass: 'sr-only',
       width: 60,
       sortable: false,
       resizable: false,
@@ -437,8 +438,9 @@ export function createItemGridColumnDefs(lookups?: ItemGridLookups): ColDef<Item
       cellRenderer: BooleanRenderer,
     },
     {
-      headerName: '',
+      headerName: 'Notes',
       field: 'notes',
+      headerClass: 'sr-only',
       width: 52,
       sortable: false,
       resizable: false,

@@ -72,6 +72,12 @@ const gridColorVars = {
   '--ag-checkbox-unchecked-background-color': 'var(--base-background)',
 } as React.CSSProperties;
 
+// Row saving/error visual feedback (injected once, scoped by AG Grid class)
+const rowStateStyles = `
+  .ag-row-saving { background-color: color-mix(in srgb, var(--base-primary) 6%, var(--base-background)) !important; }
+  .ag-row-error { background-color: color-mix(in srgb, var(--destructive) 8%, var(--base-background)) !important; }
+`;
+
 // --- Static config (hoisted outside component) ---
 
 const staticGridOptions: GridOptions<Item> = {
@@ -233,6 +239,8 @@ export function ItemGrid({
       const computedWidth =
         actionsWidth ?? (actionCount ? actionCount * 28 + (actionCount - 1) * 4 + 16 : 200);
       cols.push({
+        // Consumer overrides first, safety defaults after
+        ...actionsRest,
         headerName: '',
         sortable: false,
         resizable: false,
@@ -251,7 +259,6 @@ export function ItemGrid({
           borderRight: 'none',
           padding: '0 4px',
         },
-        ...actionsRest,
       });
     }
     return cols;
@@ -271,6 +278,7 @@ export function ItemGrid({
 
   return (
     <div className={className}>
+      <style dangerouslySetInnerHTML={{ __html: rowStateStyles }} />
       <div className="flex flex-wrap items-center gap-2 pb-4 sm:flex-nowrap sm:gap-3">
         <div className="relative w-full sm:w-auto sm:min-w-40 sm:max-w-72 sm:flex-1 lg:flex-none">
           {searchIcon}
@@ -280,6 +288,7 @@ export function ItemGrid({
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9 shadow-none"
             style={{ height: 'var(--control-height)' }}
+            type="search"
             aria-label="Search items by name or SKU"
           />
         </div>
@@ -309,15 +318,19 @@ export function ItemGrid({
           loading={loading}
           {...(rowSelection ? { rowSelection } : {})}
           {...(editable ? { getRowClass } : {})}
-          onSelectionChanged={enableRowSelection ? handleSelectionChanged : undefined}
-          onRowClicked={onItemClick ? handleRowClicked : undefined}
+          {...(enableRowSelection ? { onSelectionChanged: handleSelectionChanged } : {})}
+          {...(onItemClick ? { onRowClicked: handleRowClicked } : {})}
           loadingOverlayComponent={LoadingOverlay}
           noRowsOverlayComponent={noRowsOverlay}
           pagination={!!pageSize}
           {...(pageSize ? { paginationPageSize: pageSize } : {})}
           paginationPageSizeSelector={false}
-          onCellValueChanged={editable ? handleCellValueChanged : undefined}
-          onCellEditingStopped={editable ? handleCellEditingStopped : undefined}
+          {...(editable
+            ? {
+                onCellValueChanged: handleCellValueChanged,
+                onCellEditingStopped: handleCellEditingStopped,
+              }
+            : {})}
         />
       </div>
     </div>

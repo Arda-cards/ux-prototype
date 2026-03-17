@@ -154,7 +154,7 @@ export function TypeaheadCellEditor({
   };
 
   return (
-    <div className="flex w-60 flex-col bg-popover" role="combobox" aria-expanded={!!hasResults}>
+    <div className="flex w-60 flex-col bg-popover">
       {/* Search input */}
       <div className="flex items-center px-3">
         <input
@@ -165,19 +165,35 @@ export function TypeaheadCellEditor({
           placeholder={placeholder}
           className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           style={{ height: 'var(--control-height)' }}
-          role="searchbox"
+          role="combobox"
           aria-label={placeholder}
           aria-autocomplete="list"
+          aria-expanded={!!hasResults}
+          aria-controls="typeahead-listbox"
+          aria-activedescendant={
+            highlightedIndex >= 0 ? `typeahead-opt-${highlightedIndex}` : undefined
+          }
         />
-        {loading && <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" />}
+        {loading && (
+          <Loader2
+            className="h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground motion-reduce:animate-none"
+            aria-hidden="true"
+          />
+        )}
       </div>
 
       {/* Results list */}
       {hasResults && (
-        <div ref={listRef} className="max-h-48 overflow-y-auto py-1" role="listbox">
+        <div
+          ref={listRef}
+          id="typeahead-listbox"
+          className="max-h-48 overflow-y-auto py-1"
+          role="listbox"
+        >
           {options.map((option, index) => (
             <div
               key={option.value}
+              id={`typeahead-opt-${index}`}
               role="option"
               aria-selected={index === highlightedIndex}
               onMouseDown={(e) => {
