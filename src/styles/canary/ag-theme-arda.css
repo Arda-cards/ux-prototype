@@ -971,4 +971,123 @@ body .ag-dnd-ghost * {
   }
 }
 
+/* ================================
+   Sort menu header component
+   ================================ */
+
+/* Flex wrapper — fills the full header cell */
+.ag-theme-arda .ag-header-cell .arda-sort-header {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  gap: 4px;
+  overflow: hidden;
+}
+
+/* Column name text — truncates if column is narrow */
+.ag-theme-arda .ag-header-cell .arda-sort-header-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--base-foreground);
+
+  /* Let drag events pass through to the header cell */
+  pointer-events: none;
+}
+
+/* ↑ / ↓ indicator shown when column is sorted */
+.ag-theme-arda .ag-header-cell .arda-sort-header-icon {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--ag-input-focus-border-color);
+  pointer-events: none;
+}
+
+/* Center header label for specific columns (e.g. quickActions) */
+.ag-theme-arda .ag-header-cell[col-id='quickActions'] .arda-sort-header {
+  justify-content: center;
+}
+
+/* ⋮ button — hidden until hover, always visible when sorted */
+.ag-theme-arda .ag-header-cell .arda-sort-header-btn {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+
+  /* Override inherited grab cursor */
+  cursor: pointer;
+  color: #737373;
+  font-size: 16px;
+  line-height: 1;
+  opacity: 0;
+  transition:
+    opacity 0.15s,
+    background-color 0.15s;
+
+  /* Must be interactive even when pointer-events are suppressed on siblings */
+  pointer-events: auto !important;
+}
+
+/* Show on header cell hover */
+.ag-theme-arda .ag-header-cell:hover .arda-sort-header-btn {
+  opacity: 1;
+}
+
+/* Always visible when column is sorted (.arda-sort-header-btn-active added by component) */
+.ag-theme-arda .ag-header-cell .arda-sort-header-btn-active {
+  opacity: 1;
+}
+
+.ag-theme-arda .ag-header-cell .arda-sort-header-btn:hover {
+  background-color: #e5e5e5;
+  color: #0a0a0a;
+  opacity: 1;
+}
+
+/* Sort dropdown — rendered in document.body via portal, positioned fixed */
+.arda-sort-menu-dropdown {
+  position: fixed;
+  z-index: 9999;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 10%),
+    0 2px 4px -2px rgb(0 0 0 / 10%);
+  min-width: 160px;
+  padding: 4px;
+  overflow: hidden;
+}
+
+.arda-sort-menu-dropdown button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: var(--ag-font-family, 'Geist', sans-serif);
+  color: #0a0a0a;
+  text-align: left;
+}
+
+.arda-sort-menu-dropdown button:hover {
+  background-color: #f5f5f5;
+}
+
 } /* @layer base */
