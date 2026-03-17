@@ -1,4 +1,4 @@
-import type { AtomMode, AtomProps } from '@/lib/data-types/atom-types';
+import type { AtomMode, AtomProps } from '@/components/extras/atoms/shared/props';
 import { ArdaEnumFieldDisplay, type ArdaEnumFieldDisplayProps } from './enum-field-display';
 import { ArdaEnumFieldEditor, type ArdaEnumFieldEditorProps } from './enum-field-editor';
 

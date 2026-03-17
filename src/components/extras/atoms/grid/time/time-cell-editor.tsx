@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
-import { cn } from '@/lib/utils';
-import { getBrowserTimezone, getTimezoneAbbreviation } from '@/lib/data-types/formatters';
+import { cn } from '@/types/canary/utils';
+import { getBrowserTimezone, getTimezoneAbbreviation } from '@/types/canary/date-time';
 
 /** Design-time configuration for time cell editor. */
 export interface TimeCellEditorStaticConfig {

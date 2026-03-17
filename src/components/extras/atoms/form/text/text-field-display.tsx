@@ -1,4 +1,4 @@
-import { formatText } from '@/lib/data-types/formatters';
+import { formatText } from '@/components/extras/atoms/shared/formatters';
 import { FieldLabel, type FieldLabelProps } from '../field-label';
 
 /** Design-time configuration for text field display. */

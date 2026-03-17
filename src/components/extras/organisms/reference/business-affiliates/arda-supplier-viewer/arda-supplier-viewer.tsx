@@ -1,4 +1,4 @@
-import type { AtomProps } from '@/lib/data-types/atom-types';
+import type { AtomProps } from '@/components/extras/atoms/shared/props';
 import type { BusinessAffiliate } from '@/types/extras';
 import {
   createArdaEntityViewer,

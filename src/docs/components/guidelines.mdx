@@ -74,7 +74,7 @@ Always check the [shadcn/ui component catalog](https://ui.shadcn.com/docs/compon
     <tr>
       <td>Class composition</td>
       <td><code>cn()</code> (clsx + tailwind-merge)</td>
-      <td><code>@/lib/utils</code></td>
+      <td><code>@/types/canary/utils</code></td>
     </tr>
     <tr>
       <td>Icons</td>
@@ -128,7 +128,7 @@ Create an Arda wrapper that imports the shadcn primitive and extends it:
 ```tsx
 import { Button as ShadcnButton, type buttonVariants } from '@/components/ui/button';
 import { cva, type VariantProps } from 'class-variance-authority';
-import { cn } from '@/lib/utils';
+import { cn } from '@/types/canary/utils';
 
 // Arda-specific variant extensions
 const ardaButtonVariants = cva(
@@ -401,7 +401,7 @@ Use CVA (class-variance-authority) for all components with variant dimensions. T
 
 ```tsx
 import { cva, type VariantProps } from 'class-variance-authority';
-import { cn } from '@/lib/utils';
+import { cn } from '@/types/canary/utils';
 
 const badgeVariants = cva(
   // Base classes (always applied)
@@ -485,7 +485,7 @@ Use CVA when there are **2+ variant dimensions** or **3+ values in a single dime
 ### 6.1 General Rules
 
 1. **Tailwind utility classes** are the primary styling mechanism.
-2. **`cn()` from `@/lib/utils`** for all conditional class composition. Never string-concatenate class names manually.
+2. **`cn()` from `@/types/canary/utils`** for all conditional class composition. Never string-concatenate class names manually.
 3. **CVA** for variant-driven class selection.
 4. **Accept a `className` prop** on every component for consumer overrides.
 5. **CSS files** (`.css`) only when Tailwind alone is insufficient (keyframe animations, complex pseudo-element styles). Use `arda-` prefixed class names in CSS files.

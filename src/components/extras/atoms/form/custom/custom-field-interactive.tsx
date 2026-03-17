@@ -1,4 +1,4 @@
-import type { AtomMode, AtomProps } from '@/lib/data-types/atom-types';
+import type { AtomMode, AtomProps } from '@/components/extras/atoms/shared/props';
 import { ArdaCustomFieldDisplay, type ArdaCustomFieldDisplayProps } from './custom-field-display';
 import { ArdaCustomFieldEditor, type ArdaCustomFieldEditorProps } from './custom-field-editor';
 

@@ -1,4 +1,4 @@
-import { formatBoolean } from '@/lib/data-types/formatters';
+import { formatBoolean } from '@/components/extras/atoms/shared/formatters';
 import { Check, X } from 'lucide-react';
 import { FieldLabel, type FieldLabelProps } from '../field-label';
 

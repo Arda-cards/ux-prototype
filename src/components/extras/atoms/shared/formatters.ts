@@ -142,13 +142,8 @@ export function toDateTimeInputValue(value: string | undefined | null): string {
   return value;
 }
 
-/** Returns the browser's IANA timezone (e.g. "America/New_York"). */
-export function getBrowserTimezone(): string {
-  return Intl.DateTimeFormat().resolvedOptions().timeZone;
-}
-
-/** Get the short timezone abbreviation for an IANA timezone name. */
-export function getTimezoneAbbreviation(timezone: string): string {
+/** Get the short timezone abbreviation for an IANA timezone name. Used internally by formatTime. */
+function getTimezoneAbbreviation(timezone: string): string {
   try {
     const formatter = new Intl.DateTimeFormat('en-US', {
       timeZone: timezone,

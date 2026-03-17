@@ -1,6 +1,6 @@
 import { LogOut, type LucideIcon } from 'lucide-react';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/types/canary/utils';
 import { ArdaLogo, ArdaLogoFull } from './arda-logo';
 
 export interface NavItem {

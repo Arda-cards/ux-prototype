@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, within } from 'storybook/test';
 import React, { useState } from 'react';
 
-import type { AtomMode } from '@/lib/data-types/atom-types';
+import type { AtomMode } from '@/components/extras/atoms/shared/props';
 import { ArdaCustomCellDisplay } from './custom-cell-display';
 import { ArdaCustomCellEditor, type CustomCellEditorHandle } from './custom-cell-editor';
 import { ArdaCustomCellInteractive } from './custom-cell-interactive';

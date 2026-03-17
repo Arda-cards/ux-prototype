@@ -1,11 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 
-import { cn } from '@/lib/utils';
-import {
-  toDateInputValue,
-  getBrowserTimezone,
-  getTimezoneAbbreviation,
-} from '@/lib/data-types/formatters';
+import { cn } from '@/types/canary/utils';
+import { toDateInputValue } from '@/components/extras/atoms/shared/formatters';
+import { getBrowserTimezone, getTimezoneAbbreviation } from '@/types/canary/date-time';
 
 import { FieldLabel, type FieldLabelProps } from '../field-label';
 

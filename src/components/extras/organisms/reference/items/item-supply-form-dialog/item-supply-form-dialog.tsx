@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/types/canary/utils';
 import { ArdaTypeahead, type TypeaheadOption } from '@/components/extras/atoms/typeahead/typeahead';
 import { ArdaConfirmDialog } from '@/components/extras/atoms/confirm-dialog/confirm-dialog';
 import type { Currency, TimeUnit, OrderMechanism, QuantityUnit, ItemSupply } from '@/types/extras';

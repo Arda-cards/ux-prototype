@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { cn } from '@/lib/utils';
-import type { AtomMode, AtomProps } from '@/lib/data-types/atom-types';
+import { cn } from '@/types/canary/utils';
+import type { AtomMode, AtomProps } from '@/components/extras/atoms/shared/props';
 import { ArdaTextCellDisplay } from './text-cell-display';
 
 export interface TextCellStaticConfig {

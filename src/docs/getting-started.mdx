@@ -63,7 +63,7 @@ src/
   applications/            # Full-page application mocks + canary refactor
   use-cases/               # User workflow scenarios
   docs/                    # Documentation (these pages)
-  lib/                     # Shared utilities (cn, formatters, etc.)
+  lib/                     # Internal utilities (formatters, etc.)
   styles/                  # Global CSS and Tailwind config
     vendored/              # Vendored app CSS overrides (theme-override layer)
     canary/                # Canary CSS overrides (theme-override layer)
@@ -79,7 +79,7 @@ See the **Component Guidelines** doc page for full details on the interface sepa
 1. Create a component file at `src/components/atoms/my-button/my-button.tsx`:
 
 ```tsx
-import { cn } from '@/lib/utils';
+import { cn } from '@/types/canary/utils';
 
 /** Design-time configuration. */
 export interface MyButtonStaticConfig {

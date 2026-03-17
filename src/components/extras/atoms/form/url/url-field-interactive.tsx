@@ -1,4 +1,4 @@
-import type { AtomMode, AtomProps } from '@/lib/data-types/atom-types';
+import type { AtomMode, AtomProps } from '@/components/extras/atoms/shared/props';
 import { ArdaUrlFieldDisplay, type ArdaUrlFieldDisplayProps } from './url-field-display';
 import { ArdaUrlFieldEditor, type ArdaUrlFieldEditorProps } from './url-field-editor';
 

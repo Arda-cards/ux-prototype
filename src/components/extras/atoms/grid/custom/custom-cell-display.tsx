@@ -1,4 +1,4 @@
-import type { AtomMode } from '@/lib/data-types/atom-types';
+import type { AtomMode } from '@/components/extras/atoms/shared/props';
 
 /** Design-time configuration for custom cell display. */
 export interface CustomCellDisplayStaticConfig {

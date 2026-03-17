@@ -1,4 +1,4 @@
-import type { AtomProps, AtomMode } from '@/lib/data-types/atom-types';
+import type { AtomProps, AtomMode } from '@/components/extras/atoms/shared/props';
 import type { CompanyInformation, Contact, PostalAddress, CountrySymbol } from '@/types/extras';
 import { ArdaTextFieldInteractive } from '@/components/extras/atoms/form/text';
 import { ArdaEnumFieldInteractive } from '@/components/extras/atoms/form/enum';

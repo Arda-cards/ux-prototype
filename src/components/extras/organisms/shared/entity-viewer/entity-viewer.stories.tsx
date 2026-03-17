@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 
-import type { AtomProps } from '@/lib/data-types/atom-types';
+import type { AtomProps } from '@/components/extras/atoms/shared/props';
 import type {
   DesignConfig,
   FieldDescriptor,

@@ -8,9 +8,6 @@
 /** The three rendering modes for an atom. */
 export type AtomMode = 'display' | 'edit' | 'error';
 
-/** Label position relative to the field (form atoms only). */
-export type LabelPosition = 'left' | 'top';
-
 /**
  * Base props interface that all atoms must accept.
  *
@@ -36,8 +33,8 @@ export interface AtomProps<V> {
   errors?: string[];
   /** Field label text. */
   label?: string;
-  /** Label position (form atoms only, default: 'left'). */
-  labelPosition?: LabelPosition;
+  /** Label position relative to the field (form atoms only, default: 'left'). */
+  labelPosition?: 'left' | 'top';
   /**
    * Per-field editability override.
    * When `false`, the atom renders in display mode regardless of `mode`.

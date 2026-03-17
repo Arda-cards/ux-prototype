@@ -1,4 +1,4 @@
-import type { AtomMode, AtomProps } from '@/lib/data-types/atom-types';
+import type { AtomMode, AtomProps } from '@/components/extras/atoms/shared/props';
 import type { BusinessRole, BusinessRoleType } from '@/types/extras';
 import type { FieldDescriptor } from '@/components/extras/organisms/shared/entity-viewer';
 import { ArdaCustomFieldInteractive } from '@/components/extras/atoms/form/custom';

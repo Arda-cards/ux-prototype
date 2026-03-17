@@ -22,6 +22,5 @@ export type {
   StableOrganismPlaceholderStaticConfig,
 } from './components/organisms/stable-placeholder/stable-placeholder';
 
-// Utilities
-export { cn } from './lib/utils';
-export { getBrowserTimezone, getTimezoneAbbreviation } from './lib/data-types/formatters';
+// Utilities moved to canary entry point: import { cn } from '@arda-cards/design-system/types/canary';
+// Timezone utilities moved to canary entry point: import { getBrowserTimezone, getTimezoneAbbreviation } from '@arda-cards/design-system/types/canary';
