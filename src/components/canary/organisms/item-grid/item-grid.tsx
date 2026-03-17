@@ -1,6 +1,15 @@
 'use client';
 
-import { memo, useState, useMemo, useCallback, useRef, type Ref, type ReactNode } from 'react';
+import {
+  memo,
+  useState,
+  useMemo,
+  useCallback,
+  useRef,
+  useEffect,
+  type Ref,
+  type ReactNode,
+} from 'react';
 import { Search, Loader2, Package } from 'lucide-react';
 import { AgGridReact } from 'ag-grid-react';
 import {
@@ -190,8 +199,21 @@ export function ItemGrid({
   const internalGridRef = useRef<AgGridReact<Item>>(null);
   const gridRef = externalGridRef || internalGridRef;
 
+  const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [selectedCount, setSelectedCount] = useState(0);
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  // Debounce search to prevent jank on large datasets
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchInput(value);
+    clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => setSearch(value), 150);
+  }, []);
+
+  useEffect(() => {
+    return () => clearTimeout(searchDebounceRef.current);
+  }, []);
 
   const { handleCellValueChanged, handleCellEditingStopped, getRowClass } = useItemGridEditing({
     onPublishRow,
@@ -284,8 +306,8 @@ export function ItemGrid({
           {searchIcon}
           <Input
             placeholder="Search items…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={searchInput}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-9 shadow-none"
             style={{ height: 'var(--control-height)' }}
             type="search"

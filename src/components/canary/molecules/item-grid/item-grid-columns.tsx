@@ -101,7 +101,10 @@ function NotesCellRenderer(params: ICellRendererParams<Item>) {
         border: 'none',
         cursor: 'pointer',
         padding: 0,
+        borderRadius: 4,
       },
+      className:
+        'hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
       title: hasNotes ? params.data?.notes : 'Add a note',
       'aria-label': hasNotes
         ? `View notes for ${params.data?.name}`
@@ -152,9 +155,9 @@ function OrderMethodRenderer(params: ICellRendererParams<Item>) {
         style: {
           display: 'inline-flex',
           alignItems: 'center',
-          fontSize: 12,
+          fontSize: 13,
           fontWeight: 500,
-          padding: '3px 10px',
+          padding: '2px 8px',
           borderRadius: 6,
           border: '1px solid var(--base-border)',
           color: 'var(--foreground)',
@@ -196,6 +199,8 @@ function BooleanRenderer(params: ICellRendererParams<Item>) {
       role: 'checkbox',
       'aria-checked': isChecked,
       'aria-label': `Taxable: ${isChecked ? 'Yes' : 'No'}`,
+      className:
+        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring rounded-sm',
     },
     createElement(
       'div',
@@ -221,7 +226,7 @@ function BooleanRenderer(params: ICellRendererParams<Item>) {
               height: 12,
               viewBox: '0 0 24 24',
               fill: 'none',
-              stroke: 'white',
+              stroke: 'var(--base-primary-foreground)',
               strokeWidth: 3,
               strokeLinecap: 'round',
               strokeLinejoin: 'round',

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect } from 'vitest';
 
@@ -30,7 +30,7 @@ describe('ItemGrid', () => {
 
     const input = screen.getByPlaceholderText('Search items…');
     await user.type(input, 'glove');
-    expect(screen.getByText('1 item')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('1 item')).toBeInTheDocument());
   });
 
   it('filters count by search on SKU', async () => {
@@ -39,7 +39,7 @@ describe('ItemGrid', () => {
 
     const input = screen.getByPlaceholderText('Search items…');
     await user.type(input, 'GLV-NIT');
-    expect(screen.getByText('1 item')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('1 item')).toBeInTheDocument());
   });
 
   it('shows plural for multiple items, singular for one', async () => {
@@ -50,6 +50,6 @@ describe('ItemGrid', () => {
 
     const input = screen.getByPlaceholderText('Search items…');
     await user.type(input, 'autoclave');
-    expect(screen.getByText('1 item')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('1 item')).toBeInTheDocument());
   });
 });
