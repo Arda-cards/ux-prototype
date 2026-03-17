@@ -22,11 +22,11 @@ import {
   Tag,
   Check,
   Save,
-  MoreHorizontal,
 } from 'lucide-react';
 
 import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
+import { OverflowToolbar } from '../../molecules/overflow-toolbar/overflow-toolbar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -362,16 +362,13 @@ export const Composition: Story = {
                   await new Promise((r) => setTimeout(r, 500));
                 }}
                 toolbar={
-                  <>
-                    {/* Selection-aware toolbar — shows bulk actions when items are selected */}
+                  <OverflowToolbar>
                     {selected.length > 0 ? (
                       <>
-                        <span className="text-sm text-muted-foreground">
-                          {selected.length} selected
-                        </span>
                         <Button
                           variant="ghost"
                           size="sm"
+                          data-overflow-label="Clear selection"
                           onClick={() => {
                             gridRef.current?.api?.deselectAll();
                             setSelected([]);
@@ -379,12 +376,10 @@ export const Composition: Story = {
                         >
                           Clear
                         </Button>
-
-                        {/* Tablet+ (sm): Print cards and Add to queue visible */}
                         <Button
                           variant="outline"
                           size="sm"
-                          className="hidden sm:inline-flex"
+                          data-overflow-label="Print cards"
                           onClick={() => console.log('Print cards for', selected.length, 'items')}
                         >
                           <Printer className="mr-1.5 h-4 w-4" />
@@ -393,18 +388,16 @@ export const Composition: Story = {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="hidden sm:inline-flex"
+                          data-overflow-label="Add to queue"
                           onClick={() => console.log('Add to queue', selected.length, 'items')}
                         >
                           <ShoppingCart className="mr-1.5 h-4 w-4" />
                           Add to queue
                         </Button>
-
-                        {/* Desktop (lg): Export and Delete visible inline */}
                         <Button
                           variant="outline"
                           size="sm"
-                          className="hidden lg:inline-flex"
+                          data-overflow-label="Export"
                           onClick={() => console.log('Export', selected.length, 'items')}
                         >
                           <Download className="mr-1.5 h-4 w-4" />
@@ -413,136 +406,21 @@ export const Composition: Story = {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="hidden lg:inline-flex text-destructive hover:text-destructive"
+                          className="text-destructive hover:text-destructive"
+                          data-overflow-label="Delete"
                           onClick={() => console.log('Delete', selected.length, 'items')}
                         >
                           <Trash2 className="mr-1.5 h-4 w-4" />
                           Delete
                         </Button>
-
-                        {/* Mobile (<sm): overflow with all bulk actions */}
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="px-2 sm:hidden"
-                              aria-label="More actions"
-                            >
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onClick={() =>
-                                console.log('Print cards for', selected.length, 'items')
-                              }
-                            >
-                              <Printer className="mr-2 h-4 w-4" />
-                              Print cards
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => console.log('Add to queue', selected.length, 'items')}
-                            >
-                              <ShoppingCart className="mr-2 h-4 w-4" />
-                              Add to queue
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => console.log('Export', selected.length, 'items')}
-                            >
-                              <Download className="mr-2 h-4 w-4" />
-                              Export
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-destructive focus:text-destructive"
-                              onClick={() => console.log('Delete', selected.length, 'items')}
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-
-                        {/* Tablet (sm to lg): overflow with Export and Delete */}
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="hidden px-2 sm:inline-flex lg:hidden"
-                              aria-label="More actions"
-                            >
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onClick={() => console.log('Export', selected.length, 'items')}
-                            >
-                              <Download className="mr-2 h-4 w-4" />
-                              Export
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-destructive focus:text-destructive"
-                              onClick={() => console.log('Delete', selected.length, 'items')}
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
                       </>
                     ) : (
                       <>
-                        {/* Mobile (<sm): single overflow menu with all options */}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="px-2 sm:hidden"
-                              aria-label="Grid options"
-                            >
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuItem onClick={() => console.log('Add item')}>
-                              <Plus className="mr-2 h-4 w-4" />
-                              Add item
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => console.log('Import CSV')}>
-                              <Upload className="mr-2 h-4 w-4" />
-                              Import CSV
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => console.log('Bulk add')}>
-                              <Plus className="mr-2 h-4 w-4" />
-                              Bulk add
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => console.log('Print cards')}>
-                              <Printer className="mr-2 h-4 w-4" />
-                              Print cards
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => console.log('Print labels')}>
-                              <Tag className="mr-2 h-4 w-4" />
-                              Print labels
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => console.log('Export')}>
-                              <Download className="mr-2 h-4 w-4" />
-                              Export CSV
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-
-                        {/* Tablet+ (sm): View column toggle — icon-only on tablet, with label on desktop */}
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="hidden sm:inline-flex">
-                              <SlidersHorizontal className="h-4 w-4 lg:mr-1.5" />
-                              <span className="hidden lg:inline">View</span>
+                            <Button variant="outline" size="sm" data-overflow-label="View columns">
+                              <SlidersHorizontal className="mr-1.5 h-4 w-4" />
+                              View
                               <ChevronDown className="ml-1 h-3.5 w-3.5" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -585,13 +463,11 @@ export const Composition: Story = {
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
-
-                        {/* Tablet+ (sm): Actions — icon-only on tablet, with label on desktop */}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="hidden sm:inline-flex">
-                              <CircleCheck className="h-4 w-4 lg:mr-1.5" />
-                              <span className="hidden lg:inline">Actions</span>
+                            <Button variant="outline" size="sm" data-overflow-label="Actions">
+                              <CircleCheck className="mr-1.5 h-4 w-4" />
+                              Actions
                               <ChevronDown className="ml-1 h-3.5 w-3.5" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -610,12 +486,11 @@ export const Composition: Story = {
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
-
-                        {/* Tablet+ (sm): Add item split button */}
-                        <div className="hidden sm:flex">
+                        <div className="flex">
                           <Button
                             size="sm"
                             className="rounded-r-none"
+                            data-overflow-label="Add item"
                             onClick={() => console.log('Add item')}
                           >
                             <Plus className="mr-1.5 h-4 w-4" />
@@ -645,7 +520,7 @@ export const Composition: Story = {
                         </div>
                       </>
                     )}
-                  </>
+                  </OverflowToolbar>
                 }
               />
             </main>

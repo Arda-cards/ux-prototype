@@ -185,6 +185,7 @@ export function ItemGrid({
   const gridRef = externalGridRef || internalGridRef;
 
   const [search, setSearch] = useState('');
+  const [selectedCount, setSelectedCount] = useState(0);
 
   const { handleCellValueChanged, handleCellEditingStopped, getRowClass } = useItemGridEditing({
     onPublishRow,
@@ -212,7 +213,9 @@ export function ItemGrid({
 
   const handleSelectionChanged = useCallback(
     (event: { api: { getSelectedRows: () => Item[] } }) => {
-      onSelectionChange?.(event.api.getSelectedRows());
+      const rows = event.api.getSelectedRows();
+      setSelectedCount(rows.length);
+      onSelectionChange?.(rows);
     },
     [onSelectionChange],
   );
@@ -263,8 +266,8 @@ export function ItemGrid({
 
   return (
     <div className={className}>
-      <div className="flex flex-wrap items-center gap-3 pb-4">
-        <div className="relative w-full sm:w-auto sm:max-w-72 sm:flex-none">
+      <div className="flex flex-wrap items-center gap-2 pb-4 sm:flex-nowrap sm:gap-3">
+        <div className="relative w-full sm:w-auto sm:min-w-40 sm:max-w-72 sm:flex-1 lg:flex-none">
           {searchIcon}
           <Input
             placeholder="Search items…"
@@ -276,7 +279,9 @@ export function ItemGrid({
           />
         </div>
         <span className="text-sm text-muted-foreground whitespace-nowrap">
-          {filteredItems.length} item{filteredItems.length !== 1 ? 's' : ''}
+          {selectedCount > 0
+            ? `${selectedCount} of ${filteredItems.length} selected`
+            : `${filteredItems.length} item${filteredItems.length !== 1 ? 's' : ''}`}
         </span>
         {toolbar && <div className="ml-auto flex items-center gap-2">{toolbar}</div>}
       </div>
