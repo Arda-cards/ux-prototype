@@ -206,9 +206,11 @@ export function ItemGrid({
     if (!el) return;
 
     let isDown = false;
+    let hasDragged = false;
     let startX = 0;
     let scrollLeft = 0;
     let viewport: HTMLElement | null = null;
+    const dragThreshold = 5; // px moved before counting as a drag
 
     const getViewport = () => {
       if (!viewport) viewport = el.querySelector('.ag-center-cols-viewport');
@@ -218,7 +220,6 @@ export function ItemGrid({
     const onMouseDown = (e: MouseEvent) => {
       const vp = getViewport();
       if (!vp) return;
-      // Only activate on the grid body, not headers or editors
       const target = e.target as HTMLElement;
       if (
         target.closest('.ag-header') ||
@@ -228,17 +229,22 @@ export function ItemGrid({
       )
         return;
       isDown = true;
+      hasDragged = false;
       startX = e.pageX;
       scrollLeft = vp.scrollLeft;
-      el.style.cursor = 'grabbing';
-      e.preventDefault();
     };
 
     const onMouseMove = (e: MouseEvent) => {
       if (!isDown) return;
-      const vp = getViewport();
-      if (!vp) return;
       const dx = e.pageX - startX;
+      if (!hasDragged && Math.abs(dx) > dragThreshold) {
+        hasDragged = true;
+        el.style.cursor = 'grabbing';
+        // Clear AG Grid's cell focus from the mousedown
+        (document.activeElement as HTMLElement)?.blur?.();
+      }
+      const vp = getViewport();
+      if (!vp || !hasDragged) return;
       vp.scrollLeft = scrollLeft - dx;
     };
 
@@ -246,6 +252,16 @@ export function ItemGrid({
       if (!isDown) return;
       isDown = false;
       el.style.cursor = '';
+      if (hasDragged) {
+        // Suppress the click that follows mouseup after a drag
+        const suppressClick = (e: MouseEvent) => {
+          e.stopPropagation();
+          e.preventDefault();
+        };
+        el.addEventListener('click', suppressClick, { capture: true, once: true });
+        // Safety: remove the listener if click never fires (e.g., mouse left the element)
+        setTimeout(() => el.removeEventListener('click', suppressClick, { capture: true }), 100);
+      }
     };
 
     el.addEventListener('mousedown', onMouseDown);
