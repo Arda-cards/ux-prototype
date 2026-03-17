@@ -18,6 +18,34 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [3.0.0] - 2026-03-17
+
+### Added
+
+- Canary cell atoms: text, number, boolean, date, enum (Display + Editor + factory each),
+  memo (Display + Editor + MemoButtonCell + createMemoButtonCellEditor), color (Display + Editor + factory)
+- Canary `ActionCellRenderer<T>` atom with portal dropdown menu
+- Canary `DataGrid<T>` molecule with `SortMenuHeader` (portal dropdown), `useColumnPersistence`,
+  AG Grid native row selection (`headerCheckbox: true`)
+- Canary `createEntityDataGrid<T>()` factory with multi-sort, filtering, cell editing lifecycle, getRowClass
+- Canary `createEntityDataGridShim<T>()` vendored-compatible wrapper with row actions, double-click,
+  hasActiveSearch, initialState, extended ref (refreshData, getSelectedRows, selectAll, deselectAll)
+- Canary `useDirtyTracking<T>()` composable hook
+- `PaginationData` type in `types/canary/pagination.ts`
+- Canary `formatters` utilities in `components/canary/atoms/shared/formatters.ts`
+- Canary `ag-theme-arda.css` styles with SortMenuHeader CSS classes
+- Canary-refactor stories for Items Grid and Item Detail (hybrid canary grid + vendored page chrome)
+- ESLint boundary rule: canary code cannot import from extras
+
+### Changed
+
+- `canary.ts` barrel: added all new component, type, and hook exports
+- `types/canary.ts`: added `PaginationData` export
+
+### Removed
+
+- `CanaryAtomPlaceholder`, `CanaryMoleculePlaceholder`, `CanaryOrganismPlaceholder` components and exports
+
 ## [2.1.0] - 2026-03-06
 
 ### Added
