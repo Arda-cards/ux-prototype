@@ -33,7 +33,7 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 const gridTheme = themeQuartz.withParams({
   fontFamily: 'var(--font-geist-sans)',
   fontSize: 14,
-  headerFontSize: 12,
+  headerFontSize: 13,
   headerFontWeight: 600,
   headerColumnBorder: true,
   headerColumnBorderHeight: '50%',
@@ -44,7 +44,7 @@ const gridTheme = themeQuartz.withParams({
   wrapperBorderRadius: 8,
   rowHeight: 48,
   headerHeight: 36,
-  popupShadow: '0 4px 16px rgba(0,0,0,0.12)',
+  popupShadow: '0 4px 16px color-mix(in srgb, var(--foreground) 12%, transparent)',
   checkboxBorderWidth: 2,
   checkboxBorderRadius: 4,
   inputFocusBorder: 'none',
@@ -64,7 +64,7 @@ const gridColorVars = {
   '--ag-header-cell-hover-background-color': 'var(--base-border)',
   '--ag-header-column-resize-handle-color': 'var(--base-border)',
   '--ag-row-border-color': 'var(--secondary)',
-  '--ag-odd-row-background-color': 'var(--base-background)',
+  '--ag-odd-row-background-color': 'var(--secondary)',
   '--ag-row-hover-color': 'var(--secondary)',
   '--ag-selected-row-background-color': 'var(--accent-light)',
   '--ag-checkbox-unchecked-border-color': 'var(--base-muted-foreground)',
@@ -75,8 +75,14 @@ const gridColorVars = {
 
 const staticGridOptions: GridOptions<Item> = {
   getRowId: (params) => params.data.entityId,
-  animateRows: false,
   stopEditingWhenCellsLoseFocus: true,
+
+  // Tooltips — show on truncated text only
+  tooltipShowDelay: 400,
+  tooltipShowMode: 'whenTruncated',
+
+  // Accessibility
+  ensureDomOrder: true,
 };
 
 const AgGridMemo = memo(AgGridReact<Item>);
@@ -137,6 +143,8 @@ export interface ItemGridRuntimeConfig {
   onPublishRow?: (rowId: string, changes: PendingChanges, item: Item) => Promise<void>;
   /** Called when dirty state changes. */
   onDirtyChange?: (dirty: boolean) => void;
+  /** Called when the notes icon is clicked. */
+  onNotesClick?: (item: Item) => void;
   /** Ref to expose saveAll/discardAll to parent. */
   editingRef?: Ref<ItemGridEditingHandle>;
   /** Ref to access AG Grid API (for column visibility, etc.). */
@@ -162,6 +170,7 @@ export function ItemGrid({
   className,
   onItemClick,
   onSelectionChange,
+  onNotesClick,
   onPublishRow,
   onDirtyChange,
   editingRef,
@@ -233,6 +242,8 @@ export function ItemGrid({
     return cols;
   }, [lookups, actionsColumn]);
 
+  const gridContext = useMemo(() => ({ onNotesClick }), [onNotesClick]);
+
   const defaultColDef = useMemo(
     () => (editable ? itemGridDefaultColDef : { ...itemGridDefaultColDef, editable: false }),
     [editable],
@@ -247,7 +258,7 @@ export function ItemGrid({
             placeholder="Search items…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-10"
+            className="pl-9 h-10 shadow-none"
             aria-label="Search items by name or SKU"
           />
         </div>
@@ -264,6 +275,7 @@ export function ItemGrid({
           ref={gridRef}
           theme={gridTheme}
           gridOptions={staticGridOptions}
+          context={gridContext}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
           rowData={filteredItems}

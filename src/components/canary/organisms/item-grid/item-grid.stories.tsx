@@ -40,7 +40,6 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Item } from '@/types/extras';
 
 import { ArdaSidebar } from '../sidebar/sidebar';
@@ -117,11 +116,26 @@ const mockLookups = {
   },
 };
 
-// --- Actions column for stories ---
+// --- Actions column helper ---
 
-const actionsColumn = {
-  width: 110,
-  cellRenderer: (params: { data?: (typeof itemGridFixtures)[0] }) => {
+const actionButtonStyle: React.CSSProperties = {
+  background: 'none',
+  border: 'none',
+  cursor: 'pointer',
+  padding: '4px 6px',
+  borderRadius: 6,
+  display: 'flex',
+  alignItems: 'center',
+  gap: 4,
+  fontSize: 12,
+  fontWeight: 500,
+  color: 'var(--muted-foreground)',
+  whiteSpace: 'nowrap',
+  minHeight: 28,
+};
+
+function makeActionsRenderer(onView?: (item: Item) => void) {
+  return (params: { data?: Item }) => {
     if (!params.data) return null;
     const item = params.data;
     return createElement(
@@ -130,31 +144,24 @@ const actionsColumn = {
         style: {
           display: 'flex',
           alignItems: 'center',
-          gap: 4,
+          gap: 2,
           height: '100%',
         },
       },
-      createElement(
-        'button',
-        {
-          onClick: (e: React.MouseEvent) => {
-            e.stopPropagation();
-            console.log('View:', item.name);
+      onView &&
+        createElement(
+          'button',
+          {
+            onClick: (e: React.MouseEvent) => {
+              e.stopPropagation();
+              onView(item);
+            },
+            'aria-label': `View ${item.name}`,
+            style: actionButtonStyle,
           },
-          title: 'View details',
-          'aria-label': `View ${item.name}`,
-          style: {
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: 6,
-            borderRadius: 4,
-            display: 'flex',
-            color: 'var(--foreground)',
-          },
-        },
-        createElement(Eye, { size: 16 }),
-      ),
+          createElement(Eye, { size: 14 }),
+          'View',
+        ),
       createElement(
         'button',
         {
@@ -162,19 +169,11 @@ const actionsColumn = {
             e.stopPropagation();
             console.log('Add to cart:', item.name);
           },
-          title: 'Add to order queue',
           'aria-label': `Add ${item.name} to order queue`,
-          style: {
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: 6,
-            borderRadius: 4,
-            display: 'flex',
-            color: 'var(--foreground)',
-          },
+          style: actionButtonStyle,
         },
-        createElement(ShoppingCart, { size: 16 }),
+        createElement(ShoppingCart, { size: 14 }),
+        'Order',
       ),
       createElement(
         'button',
@@ -183,22 +182,19 @@ const actionsColumn = {
             e.stopPropagation();
             console.log('Print card:', item.name);
           },
-          title: 'Print card',
           'aria-label': `Print card for ${item.name}`,
-          style: {
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: 6,
-            borderRadius: 4,
-            display: 'flex',
-            color: 'var(--foreground)',
-          },
+          style: actionButtonStyle,
         },
-        createElement(Printer, { size: 16 }),
+        createElement(Printer, { size: 14 }),
+        'Print',
       ),
     );
-  },
+  };
+}
+
+const actionsColumn = {
+  width: 200,
+  cellRenderer: makeActionsRenderer(),
 };
 
 /** Default grid — editable, selection, typeahead lookups, all features on. */
@@ -313,6 +309,7 @@ export const Composition: Story = {
   render: () => {
     const [selected, setSelected] = useState<typeof itemGridFixtures>([]);
     const [detailItem, setDetailItem] = useState<Item | null>(null);
+    const [notesItem, setNotesItem] = useState<Item | null>(null);
     const [activeTab, setActiveTab] = useState('published');
     const gridRef = useRef<AgGridReact<Item>>(null);
 
@@ -347,78 +344,8 @@ export const Composition: Story = {
     const openDetail = (item: Item) => setDetailItem(item);
 
     const compositionActions = {
-      width: 110,
-      cellRenderer: (params: { data?: Item }) => {
-        if (!params.data) return null;
-        const item = params.data;
-        return createElement(
-          'div',
-          { style: { display: 'flex', alignItems: 'center', gap: 4, height: '100%' } },
-          createElement(
-            'button',
-            {
-              onClick: (e: React.MouseEvent) => {
-                e.stopPropagation();
-                openDetail(item);
-              },
-              title: 'View details',
-              'aria-label': `View ${item.name}`,
-              style: {
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: 6,
-                borderRadius: 4,
-                display: 'flex',
-                color: 'var(--foreground)',
-              },
-            },
-            createElement(Eye, { size: 16 }),
-          ),
-          createElement(
-            'button',
-            {
-              onClick: (e: React.MouseEvent) => {
-                e.stopPropagation();
-                console.log('Add to cart:', item.name);
-              },
-              title: 'Add to order queue',
-              'aria-label': `Add ${item.name} to order queue`,
-              style: {
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: 6,
-                borderRadius: 4,
-                display: 'flex',
-                color: 'var(--foreground)',
-              },
-            },
-            createElement(ShoppingCart, { size: 16 }),
-          ),
-          createElement(
-            'button',
-            {
-              onClick: (e: React.MouseEvent) => {
-                e.stopPropagation();
-                console.log('Print card:', item.name);
-              },
-              title: 'Print card',
-              'aria-label': `Print card for ${item.name}`,
-              style: {
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: 6,
-                borderRadius: 4,
-                display: 'flex',
-                color: 'var(--foreground)',
-              },
-            },
-            createElement(Printer, { size: 16 }),
-          ),
-        );
-      },
+      width: 200,
+      cellRenderer: makeActionsRenderer(openDetail),
     };
 
     return (
@@ -426,34 +353,35 @@ export const Composition: Story = {
         defaultOpen
         content={
           <SidebarInset>
-            {/* Page header */}
-            <header className="flex h-14 items-center gap-2 border-b px-4">
-              <SidebarTrigger className="-ml-1" />
-              <h1 className="text-lg font-semibold">Items</h1>
-            </header>
-
-            {/* Tabs */}
-            <div className="border-b px-4 py-2">
-              <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList>
-                  <TabsTrigger value="published">Published Items</TabsTrigger>
-                  <TabsTrigger value="draft">Draft Items</TabsTrigger>
-                  <TabsTrigger value="uploaded">Recently Uploaded</TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
+            <nav className="flex h-11 items-stretch border-b px-2">
+              <SidebarTrigger className="self-center" />
+              {(['published', 'draft', 'uploaded'] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`relative px-4 text-sm font-medium transition-colors after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:rounded-full after:transition-opacity ${
+                    activeTab === tab
+                      ? 'text-foreground after:bg-foreground after:opacity-100'
+                      : 'text-muted-foreground after:opacity-0 hover:text-foreground'
+                  }`}
+                >
+                  {tab === 'published' ? 'Published' : tab === 'draft' ? 'Drafts' : 'Uploaded'}
+                </button>
+              ))}
+            </nav>
 
             {/* Grid */}
             <main className="p-4">
               <ItemGrid
                 items={itemGridFixtures}
-                height="calc(100vh - 11rem)"
+                height="calc(100vh - 8rem)"
                 editable
                 enableRowSelection
                 lookups={mockLookups}
                 actionsColumn={compositionActions}
                 gridRef={gridRef}
                 onSelectionChange={setSelected}
+                onNotesClick={setNotesItem}
                 onPublishRow={async (rowId, changes) => {
                   console.log(`Publishing row ${rowId}:`, changes);
                   await new Promise((r) => setTimeout(r, 500));
@@ -466,6 +394,16 @@ export const Composition: Story = {
                         <span className="text-sm text-muted-foreground">
                           {selected.length} selected
                         </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            gridRef.current?.api?.deselectAll();
+                            setSelected([]);
+                          }}
+                        >
+                          Clear
+                        </Button>
                         <Button
                           variant="outline"
                           size="sm"
@@ -703,6 +641,44 @@ export const Composition: Story = {
                           Add to queue
                         </Button>
                       </div>
+                    </div>
+                  </>
+                )}
+              </SheetContent>
+            </Sheet>
+
+            {/* Notes sheet */}
+            <Sheet open={!!notesItem} onOpenChange={(open) => !open && setNotesItem(null)}>
+              <SheetContent className="w-[400px] sm:max-w-[400px]">
+                {notesItem && (
+                  <>
+                    <SheetHeader>
+                      <SheetTitle>Notes</SheetTitle>
+                      <SheetDescription>{notesItem.name}</SheetDescription>
+                    </SheetHeader>
+                    <div className="mt-6 space-y-4">
+                      {notesItem.notes ? (
+                        <div className="rounded-lg border border-border bg-muted/50 p-4">
+                          <p className="text-sm leading-relaxed">{notesItem.notes}</p>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">No notes yet.</p>
+                      )}
+                      <textarea
+                        className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-none placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        rows={4}
+                        placeholder="Add a note…"
+                        defaultValue=""
+                      />
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          console.log('Save note for:', notesItem.name);
+                          setNotesItem(null);
+                        }}
+                      >
+                        Save note
+                      </Button>
                     </div>
                   </>
                 )}

@@ -72,20 +72,33 @@ function ImageCellRenderer(params: ICellRendererParams<Item>) {
 }
 
 function NotesCellRenderer(params: ICellRendererParams<Item>) {
-  if (!params.data?.notes) return null;
+  const hasNotes = !!params.data?.notes;
+  const onNotesClick = params.context?.onNotesClick;
 
   return createElement(
-    'div',
+    'button',
     {
       style: {
-        color: 'var(--muted-foreground)',
+        color: hasNotes ? 'var(--foreground)' : 'var(--muted-foreground)',
+        opacity: hasNotes ? 1 : 0.4,
         display: 'flex',
         alignItems: 'center',
+        justifyContent: 'center',
         height: '100%',
+        width: '100%',
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        padding: 0,
       },
-      title: params.data.notes,
-      'aria-label': 'Has notes',
-      role: 'img',
+      title: hasNotes ? params.data?.notes : 'Add a note',
+      'aria-label': hasNotes
+        ? `View notes for ${params.data?.name}`
+        : `Add note to ${params.data?.name}`,
+      onClick: (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (onNotesClick && params.data) onNotesClick(params.data);
+      },
     },
     createElement(
       'svg',
@@ -94,7 +107,8 @@ function NotesCellRenderer(params: ICellRendererParams<Item>) {
         width: 16,
         height: 16,
         viewBox: '0 0 24 24',
-        fill: 'none',
+        fill: hasNotes ? 'var(--muted-foreground)' : 'none',
+        fillOpacity: hasNotes ? 0.15 : 0,
         stroke: 'currentColor',
         strokeWidth: 2,
         strokeLinecap: 'round',
@@ -106,36 +120,97 @@ function NotesCellRenderer(params: ICellRendererParams<Item>) {
   );
 }
 
-function SelectCellRenderer(params: ICellRendererParams<Item>) {
-  const text = params.valueFormatted ?? params.value ?? '\u2014';
+function OrderMethodRenderer(params: ICellRendererParams<Item>) {
+  const value = params.data?.primarySupply?.orderMechanism;
+  if (!value)
+    return createElement('span', { style: { color: 'var(--muted-foreground)' } }, '\u2014');
+
+  const label = value.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
   return createElement(
     'div',
     {
       style: {
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',
         height: '100%',
-        width: '100%',
       },
     },
-    createElement('span', null, text),
     createElement(
-      'svg',
+      'span',
       {
-        xmlns: 'http://www.w3.org/2000/svg',
-        width: 14,
-        height: 14,
-        viewBox: '0 0 24 24',
-        fill: 'none',
-        stroke: 'var(--muted-foreground)',
-        strokeWidth: 2,
-        strokeLinecap: 'round',
-        strokeLinejoin: 'round',
-        style: { flexShrink: 0 },
-        'aria-hidden': 'true',
+        style: {
+          display: 'inline-flex',
+          alignItems: 'center',
+          fontSize: 12,
+          fontWeight: 500,
+          padding: '3px 10px',
+          borderRadius: 6,
+          border: '1px solid var(--base-border)',
+          color: 'var(--foreground)',
+          whiteSpace: 'nowrap',
+          lineHeight: 1,
+        },
       },
-      createElement('path', { d: 'm6 9 6 6 6-6' }),
+      label,
+    ),
+  );
+}
+
+function BooleanRenderer(params: ICellRendererParams<Item>) {
+  const value = params.value;
+  const isChecked = !!value;
+
+  return createElement(
+    'div',
+    {
+      style: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100%',
+        cursor: 'pointer',
+      },
+      onClick: () => {
+        if (!params.node || !params.colDef?.field) return;
+        params.node.setDataValue(params.colDef.field, !value);
+      },
+      role: 'checkbox',
+      'aria-checked': isChecked,
+      'aria-label': `Taxable: ${isChecked ? 'Yes' : 'No'}`,
+    },
+    createElement(
+      'div',
+      {
+        style: {
+          width: 18,
+          height: 18,
+          borderRadius: 4,
+          border: isChecked ? 'none' : '2px solid var(--base-border)',
+          backgroundColor: isChecked ? 'var(--base-primary)' : 'var(--base-background)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transition: 'background-color 0.15s, border-color 0.15s',
+        },
+      },
+      isChecked
+        ? createElement(
+            'svg',
+            {
+              xmlns: 'http://www.w3.org/2000/svg',
+              width: 12,
+              height: 12,
+              viewBox: '0 0 24 24',
+              fill: 'none',
+              stroke: 'white',
+              strokeWidth: 3,
+              strokeLinecap: 'round',
+              strokeLinejoin: 'round',
+              'aria-hidden': 'true',
+            },
+            createElement('path', { d: 'M20 6 9 17l-5-5' }),
+          )
+        : null,
     ),
   );
 }
@@ -214,6 +289,7 @@ export function createItemGridColumnDefs(lookups?: ItemGridLookups): ColDef<Item
       flex: 3,
       minWidth: 200,
       editable: true,
+      tooltipField: 'name',
     },
     {
       headerName: 'SKU',
@@ -221,6 +297,7 @@ export function createItemGridColumnDefs(lookups?: ItemGridLookups): ColDef<Item
       width: 160,
       editable: true,
       cellStyle: monoStyle,
+      tooltipField: 'internalSKU',
       valueFormatter: (params) => params.value || '\u2014',
     },
     {
@@ -254,6 +331,7 @@ export function createItemGridColumnDefs(lookups?: ItemGridLookups): ColDef<Item
         if (!c?.type) return null;
         return c.subType ? `${c.type} \u2013 ${c.subType}` : c.type;
       },
+      tooltipValueGetter: (params) => params.value || undefined,
       valueFormatter: (params) => params.value || '\u2014',
     },
     {
@@ -261,6 +339,7 @@ export function createItemGridColumnDefs(lookups?: ItemGridLookups): ColDef<Item
       field: 'primarySupply.supplier',
       flex: 2,
       minWidth: 180,
+      tooltipValueGetter: (params) => params.data?.primarySupply?.supplier || undefined,
       editable: true,
       ...(lookups?.supplier
         ? {
@@ -284,7 +363,7 @@ export function createItemGridColumnDefs(lookups?: ItemGridLookups): ColDef<Item
       width: 180,
       editable: true,
       singleClickEdit: true,
-      cellRenderer: SelectCellRenderer,
+      cellRenderer: OrderMethodRenderer,
       cellEditor: SelectCellEditor,
       cellEditorParams: {
         values: [
@@ -342,26 +421,9 @@ export function createItemGridColumnDefs(lookups?: ItemGridLookups): ColDef<Item
     {
       headerName: 'Taxable',
       field: 'taxable',
-      width: 100,
-      editable: true,
-      singleClickEdit: true,
-      cellRenderer: SelectCellRenderer,
-      cellEditor: SelectCellEditor,
-      cellEditorParams: {
-        values: [
-          { label: 'Yes', value: 'true' },
-          { label: 'No', value: 'false' },
-        ],
-      },
-      cellEditorPopup: true,
-      valueSetter: (params: ValueSetterParams<Item>): boolean => {
-        params.data.taxable = params.newValue === 'true';
-        return true;
-      },
-      valueFormatter: (params) => {
-        if (params.value === null || params.value === undefined) return '\u2014';
-        return params.value ? 'Yes' : 'No';
-      },
+      width: 80,
+      editable: false,
+      cellRenderer: BooleanRenderer,
     },
     {
       headerName: '',
