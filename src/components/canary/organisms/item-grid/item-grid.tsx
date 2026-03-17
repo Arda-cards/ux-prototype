@@ -62,6 +62,7 @@ const gridColorVars = {
   '--ag-header-text-color': 'var(--base-foreground)',
   '--ag-header-background-color': 'var(--secondary)',
   '--ag-header-cell-hover-background-color': 'var(--base-border)',
+  '--ag-header-cell-moving-background-color': 'var(--base-border)',
   '--ag-header-column-resize-handle-color': 'var(--base-border)',
   '--ag-row-border-color': 'var(--secondary)',
   '--ag-odd-row-background-color': 'var(--secondary)',
@@ -235,6 +236,7 @@ export function ItemGrid({
           borderBottom: 'none',
           borderRight: 'none',
           paddingRight: 12,
+          overflow: 'visible',
         },
         ...actionsColumn,
       });

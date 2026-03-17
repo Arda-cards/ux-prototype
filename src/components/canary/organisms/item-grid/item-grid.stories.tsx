@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within, userEvent } from 'storybook/test';
-import { useState, useRef, useCallback, createElement } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import type { AgGridReact } from 'ag-grid-react';
 import {
   LayoutDashboard,
@@ -118,82 +118,56 @@ const mockLookups = {
 
 // --- Actions column helper ---
 
-const actionButtonStyle: React.CSSProperties = {
-  background: 'none',
-  border: 'none',
-  cursor: 'pointer',
-  padding: '4px 6px',
-  borderRadius: 6,
-  display: 'flex',
-  alignItems: 'center',
-  gap: 4,
-  fontSize: 12,
-  fontWeight: 500,
-  color: 'var(--muted-foreground)',
-  whiteSpace: 'nowrap',
-  minHeight: 28,
-};
+function ActionButton({
+  icon: Icon,
+  label,
+  onClick,
+}: {
+  icon: typeof Eye;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      aria-label={label}
+      className="group/action relative flex cursor-pointer items-center rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+    >
+      <Icon size={16} />
+      <span className="pointer-events-none absolute -top-6 left-1/2 z-50 -translate-x-1/2 rounded-md bg-foreground px-2 py-0.5 text-xs text-background opacity-0 transition-opacity group-hover/action:opacity-100">
+        {label}
+      </span>
+    </button>
+  );
+}
 
 function makeActionsRenderer(onView?: (item: Item) => void) {
   return (params: { data?: Item }) => {
     if (!params.data) return null;
     const item = params.data;
-    return createElement(
-      'div',
-      {
-        style: {
-          display: 'flex',
-          alignItems: 'center',
-          gap: 2,
-          height: '100%',
-        },
-      },
-      onView &&
-        createElement(
-          'button',
-          {
-            onClick: (e: React.MouseEvent) => {
-              e.stopPropagation();
-              onView(item);
-            },
-            'aria-label': `View ${item.name}`,
-            style: actionButtonStyle,
-          },
-          createElement(Eye, { size: 14 }),
-          'View',
-        ),
-      createElement(
-        'button',
-        {
-          onClick: (e: React.MouseEvent) => {
-            e.stopPropagation();
-            console.log('Add to cart:', item.name);
-          },
-          'aria-label': `Add ${item.name} to order queue`,
-          style: actionButtonStyle,
-        },
-        createElement(ShoppingCart, { size: 14 }),
-        'Order',
-      ),
-      createElement(
-        'button',
-        {
-          onClick: (e: React.MouseEvent) => {
-            e.stopPropagation();
-            console.log('Print card:', item.name);
-          },
-          'aria-label': `Print card for ${item.name}`,
-          style: actionButtonStyle,
-        },
-        createElement(Printer, { size: 14 }),
-        'Print',
-      ),
+    return (
+      <div className="flex h-full items-center gap-1">
+        {onView && <ActionButton icon={Eye} label="View" onClick={() => onView(item)} />}
+        <ActionButton
+          icon={ShoppingCart}
+          label="Order"
+          onClick={() => console.log('Order:', item.name)}
+        />
+        <ActionButton
+          icon={Printer}
+          label="Print"
+          onClick={() => console.log('Print:', item.name)}
+        />
+      </div>
     );
   };
 }
 
 const actionsColumn = {
-  width: 200,
+  width: 116,
   cellRenderer: makeActionsRenderer(),
 };
 
@@ -344,7 +318,7 @@ export const Composition: Story = {
     const openDetail = (item: Item) => setDetailItem(item);
 
     const compositionActions = {
-      width: 200,
+      width: 130,
       cellRenderer: makeActionsRenderer(openDetail),
     };
 
@@ -371,7 +345,7 @@ export const Composition: Story = {
             </nav>
 
             {/* Grid */}
-            <main className="p-4">
+            <main className="p-6">
               <ItemGrid
                 items={itemGridFixtures}
                 height="calc(100vh - 8rem)"
