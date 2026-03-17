@@ -154,11 +154,7 @@ export function TypeaheadCellEditor({
   };
 
   return (
-    <div
-      className="flex w-60 flex-col bg-popover"
-      role="combobox"
-      aria-expanded={hasResults || undefined}
-    >
+    <div className="flex w-60 flex-col bg-popover" role="combobox" aria-expanded={!!hasResults}>
       {/* Search input */}
       <div className="flex items-center px-3">
         <input

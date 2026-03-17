@@ -20,8 +20,9 @@ export interface ItemGridEditingHandle {
 
 export interface UseItemGridEditingOptions {
   /** Called when a row is ready to publish (user moved to another row or stopped editing). */
+  /** item is undefined when called from saveAll (no grid API access). */
   onPublishRow?:
-    | ((rowId: string, changes: PendingChanges, item: Item) => Promise<void>)
+    | ((rowId: string, changes: PendingChanges, item?: Item) => Promise<void>)
     | undefined;
   /** Called when dirty state changes (true = has unsaved changes). */
   onDirtyChange?: ((dirty: boolean) => void) | undefined;
@@ -137,10 +138,7 @@ export function useItemGridEditing({
         for (const rowId of ids) {
           const changes = pendingChangesRef.current[rowId];
           if (!changes) continue;
-          // We need the Item data — but we don't have a grid API ref here.
-          // The consumer should use onPublishRow which receives the item.
-          // For saveAll, we publish with the changes we have.
-          await onPublishRow?.(rowId, changes, {} as Item);
+          await onPublishRow?.(rowId, changes);
           delete pendingChangesRef.current[rowId];
           dirtyRowIdsRef.current.delete(rowId);
         }

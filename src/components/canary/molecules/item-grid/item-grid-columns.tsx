@@ -6,6 +6,17 @@ import { TypeaheadCellEditor, type TypeaheadOption } from './typeahead-cell-edit
 import { SelectCellEditor } from './select-cell-editor';
 import { DragHeader } from './drag-header';
 
+// --- Shared formatters ---
+
+function formatOrderMechanism(value: string): string {
+  return value.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
+}
+
+function formatCurrencyValue(value: unknown): string {
+  if (value === null || value === undefined) return '\u2014';
+  return `$${Number(value).toFixed(2)}`;
+}
+
 // --- Cell renderers ---
 
 function getInitials(name: string): string {
@@ -125,7 +136,7 @@ function OrderMethodRenderer(params: ICellRendererParams<Item>) {
   if (!value)
     return createElement('span', { style: { color: 'var(--muted-foreground)' } }, '\u2014');
 
-  const label = value.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
+  const label = formatOrderMechanism(value);
   return createElement(
     'div',
     {
@@ -174,6 +185,14 @@ function BooleanRenderer(params: ICellRendererParams<Item>) {
         if (!params.node || !params.colDef?.field) return;
         params.node.setDataValue(params.colDef.field, !value);
       },
+      onKeyDown: (e: React.KeyboardEvent) => {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          if (!params.node || !params.colDef?.field) return;
+          params.node.setDataValue(params.colDef.field, !value);
+        }
+      },
+      tabIndex: 0,
       role: 'checkbox',
       'aria-checked': isChecked,
       'aria-label': `Taxable: ${isChecked ? 'Yes' : 'No'}`,
@@ -382,10 +401,7 @@ export function createItemGridColumnDefs(lookups?: ItemGridLookups): ColDef<Item
       cellEditorPopup: true,
       valueGetter: (params) => params.data?.primarySupply?.orderMechanism,
       valueSetter: orderMechanismValueSetter,
-      valueFormatter: (params) => {
-        if (!params.value) return '\u2014';
-        return params.value.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
-      },
+      valueFormatter: (params) => (params.value ? formatOrderMechanism(params.value) : '\u2014'),
     },
     {
       headerName: 'Unit Cost',
@@ -398,10 +414,7 @@ export function createItemGridColumnDefs(lookups?: ItemGridLookups): ColDef<Item
       cellStyle: tabularNumsStyle,
       valueGetter: (params) => params.data?.primarySupply?.unitCost?.value,
       valueSetter: moneyValueSetter('unitCost'),
-      valueFormatter: (params) => {
-        if (params.value === null || params.value === undefined) return '\u2014';
-        return `$${Number(params.value).toFixed(2)}`;
-      },
+      valueFormatter: (params) => formatCurrencyValue(params.value),
     },
     {
       headerName: 'Order Cost',
@@ -414,10 +427,7 @@ export function createItemGridColumnDefs(lookups?: ItemGridLookups): ColDef<Item
       cellStyle: tabularNumsStyle,
       valueGetter: (params) => params.data?.primarySupply?.orderCost?.value,
       valueSetter: moneyValueSetter('orderCost'),
-      valueFormatter: (params) => {
-        if (params.value === null || params.value === undefined) return '\u2014';
-        return `$${Number(params.value).toFixed(2)}`;
-      },
+      valueFormatter: (params) => formatCurrencyValue(params.value),
     },
     {
       headerName: 'Taxable',

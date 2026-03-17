@@ -143,8 +143,8 @@ export interface ItemGridRuntimeConfig {
   loading?: boolean;
   onItemClick?: (item: Item) => void;
   onSelectionChange?: (items: Item[]) => void;
-  /** Called when a row is ready to publish (user finished editing a row). */
-  onPublishRow?: (rowId: string, changes: PendingChanges, item: Item) => Promise<void>;
+  /** Called when a row is ready to publish. `item` is undefined when called from saveAll. */
+  onPublishRow?: (rowId: string, changes: PendingChanges, item?: Item) => Promise<void>;
   /** Called when dirty state changes. */
   onDirtyChange?: (dirty: boolean) => void;
   /** Called when the notes icon is clicked. */
@@ -308,7 +308,7 @@ export function ItemGrid({
           rowData={filteredItems}
           loading={loading}
           {...(rowSelection ? { rowSelection } : {})}
-          getRowClass={editable ? getRowClass : undefined}
+          {...(editable ? { getRowClass } : {})}
           onSelectionChanged={enableRowSelection ? handleSelectionChanged : undefined}
           onRowClicked={onItemClick ? handleRowClicked : undefined}
           loadingOverlayComponent={LoadingOverlay}
