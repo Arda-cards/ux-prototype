@@ -81,11 +81,7 @@ export function PanelDeletableSuppliersPage(props: PanelDeletableSuppliersPagePr
 
   return (
     <>
-      <SuppliersPage
-        key={remountKey}
-        {...props}
-        onDrawerDelete={handleDrawerDelete}
-      />
+      <SuppliersPage key={remountKey} {...props} onDrawerDelete={handleDrawerDelete} />
       <ArdaConfirmDialog
         open={confirmState.open}
         title="Delete Supplier"

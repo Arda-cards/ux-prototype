@@ -50,14 +50,17 @@ export const Default: Story = {
 
     // 2. Verify all default column headers are visible using DOM selectors
     //    (avoids accessible-name conflicts from the SortMenuHeader sort button)
-    await waitFor(() => {
-      expect(getColumnHeader(canvasElement, 'name')).toBeTruthy();
-      expect(getColumnHeader(canvasElement, 'contact')).toBeTruthy();
-      expect(getColumnHeader(canvasElement, 'phone')).toBeTruthy();
-      expect(getColumnHeader(canvasElement, 'city')).toBeTruthy();
-      expect(getColumnHeader(canvasElement, 'state')).toBeTruthy();
-      expect(getColumnHeader(canvasElement, 'roles')).toBeTruthy();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(getColumnHeader(canvasElement, 'name')).toBeTruthy();
+        expect(getColumnHeader(canvasElement, 'contact')).toBeTruthy();
+        expect(getColumnHeader(canvasElement, 'phone')).toBeTruthy();
+        expect(getColumnHeader(canvasElement, 'city')).toBeTruthy();
+        expect(getColumnHeader(canvasElement, 'state')).toBeTruthy();
+        expect(getColumnHeader(canvasElement, 'roles')).toBeTruthy();
+      },
+      { timeout: 10000 },
+    );
 
     await storyStepDelay();
 
@@ -68,14 +71,17 @@ export const Default: Story = {
     await userEvent.click(viewButton);
 
     // 4. Verify checkbox panel opens — find checkboxes by their label text
-    await waitFor(() => {
-      expect(canvas.getByLabelText('Name')).toBeInTheDocument();
-      expect(canvas.getByLabelText('Contact')).toBeInTheDocument();
-      expect(canvas.getByLabelText('Phone')).toBeInTheDocument();
-      expect(canvas.getByLabelText('City')).toBeInTheDocument();
-      expect(canvas.getByLabelText('State')).toBeInTheDocument();
-      expect(canvas.getByLabelText('Roles')).toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(canvas.getByLabelText('Name')).toBeInTheDocument();
+        expect(canvas.getByLabelText('Contact')).toBeInTheDocument();
+        expect(canvas.getByLabelText('Phone')).toBeInTheDocument();
+        expect(canvas.getByLabelText('City')).toBeInTheDocument();
+        expect(canvas.getByLabelText('State')).toBeInTheDocument();
+        expect(canvas.getByLabelText('Roles')).toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
 
     // 5. Verify "Show All" and "Hide All" buttons
     expect(canvas.getByRole('button', { name: 'Show All' })).toBeVisible();
@@ -97,9 +103,12 @@ export const Default: Story = {
     await userEvent.click(saveButton);
 
     // 9. Verify "Phone" column header is no longer visible
-    await waitFor(() => {
-      expect(getColumnHeader(canvasElement, 'phone')).toBeFalsy();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(getColumnHeader(canvasElement, 'phone')).toBeFalsy();
+      },
+      { timeout: 10000 },
+    );
 
     // 10. Verify all other columns remain visible
     expect(getColumnHeader(canvasElement, 'name')).toBeTruthy();
@@ -130,9 +139,12 @@ export const HideAll: Story = {
     await userEvent.click(viewButton);
 
     // 3. Click "Hide All"
-    await waitFor(() => {
-      expect(canvas.getByRole('button', { name: 'Hide All' })).toBeVisible();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(canvas.getByRole('button', { name: 'Hide All' })).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
     await userEvent.click(canvas.getByRole('button', { name: 'Hide All' }));
 
     await storyStepDelay();
@@ -141,13 +153,16 @@ export const HideAll: Story = {
     await userEvent.click(canvas.getByRole('button', { name: 'Save' }));
 
     // 5. Verify only Name column header remains (checkbox column has no headerName)
-    await waitFor(() => {
-      expect(getColumnHeader(canvasElement, 'name')).toBeTruthy();
-      expect(getColumnHeader(canvasElement, 'contact')).toBeFalsy();
-      expect(getColumnHeader(canvasElement, 'phone')).toBeFalsy();
-      expect(getColumnHeader(canvasElement, 'city')).toBeFalsy();
-      expect(getColumnHeader(canvasElement, 'state')).toBeFalsy();
-      expect(getColumnHeader(canvasElement, 'roles')).toBeFalsy();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(getColumnHeader(canvasElement, 'name')).toBeTruthy();
+        expect(getColumnHeader(canvasElement, 'contact')).toBeFalsy();
+        expect(getColumnHeader(canvasElement, 'phone')).toBeFalsy();
+        expect(getColumnHeader(canvasElement, 'city')).toBeFalsy();
+        expect(getColumnHeader(canvasElement, 'state')).toBeFalsy();
+        expect(getColumnHeader(canvasElement, 'roles')).toBeFalsy();
+      },
+      { timeout: 10000 },
+    );
   },
 };

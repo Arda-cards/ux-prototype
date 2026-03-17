@@ -13,10 +13,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, screen, userEvent, waitFor, within } from 'storybook/test';
 import { http, HttpResponse } from 'msw';
 import { EditableSuppliersPage } from './editable-suppliers-page';
-import {
-  businessAffiliateHandlers,
-  resetAffiliateStore,
-} from '../_shared/msw-handlers';
+import { businessAffiliateHandlers, resetAffiliateStore } from '../_shared/msw-handlers';
 import { storyStepDelay } from '../_shared/story-step-delay';
 
 // ---------------------------------------------------------------------------
@@ -89,11 +86,19 @@ export const ClearRequiredField: Story = {
     await storyStepDelay();
 
     // Step 3: Click "Edit" to enter edit mode
-    const editButton = await drawerScope.findByRole('button', { name: /edit/i }, { timeout: 10000 });
+    const editButton = await drawerScope.findByRole(
+      'button',
+      { name: /edit/i },
+      { timeout: 10000 },
+    );
     await userEvent.click(editButton);
 
     // Step 4: Verify edit mode — Save and Cancel buttons visible
-    const saveButton = await drawerScope.findByRole('button', { name: /save/i }, { timeout: 10000 });
+    const saveButton = await drawerScope.findByRole(
+      'button',
+      { name: /save/i },
+      { timeout: 10000 },
+    );
     const cancelButton = drawerScope.getByRole('button', { name: /cancel/i });
     expect(saveButton).toBeVisible();
     expect(cancelButton).toBeVisible();
@@ -106,16 +111,18 @@ export const ClearRequiredField: Story = {
     await userEvent.clear(nameInput);
 
     // Step 6: Verify Save is disabled (isSaveDisabled = !nameValue.trim())
-    await waitFor(() => {
-      const saveBtn = drawerScope.getByRole('button', { name: /save/i });
-      const isDisabled =
-        saveBtn.hasAttribute('disabled') ||
-        saveBtn.getAttribute('aria-disabled') === 'true';
-      const hasError =
-        drawerScope.queryByText(/name is required/i) !== null ||
-        drawerScope.queryByText(/required/i) !== null;
-      expect(isDisabled || hasError).toBe(true);
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        const saveBtn = drawerScope.getByRole('button', { name: /save/i });
+        const isDisabled =
+          saveBtn.hasAttribute('disabled') || saveBtn.getAttribute('aria-disabled') === 'true';
+        const hasError =
+          drawerScope.queryByText(/name is required/i) !== null ||
+          drawerScope.queryByText(/required/i) !== null;
+        expect(isDisabled || hasError).toBe(true);
+      },
+      { timeout: 10000 },
+    );
 
     await storyStepDelay();
 
@@ -123,14 +130,20 @@ export const ClearRequiredField: Story = {
     await userEvent.type(nameInput, 'Updated Supplier Name');
 
     // Step 8: Verify Save is enabled and any validation error is cleared
-    await waitFor(() => {
-      const saveBtn = drawerScope.getByRole('button', { name: /save/i });
-      expect(saveBtn).toBeEnabled();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        const saveBtn = drawerScope.getByRole('button', { name: /save/i });
+        expect(saveBtn).toBeEnabled();
+      },
+      { timeout: 10000 },
+    );
     // No field-level error should remain
-    await waitFor(() => {
-      expect(drawerScope.queryByText(/name is required/i)).not.toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(drawerScope.queryByText(/name is required/i)).not.toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
   },
 };
 
@@ -160,12 +173,18 @@ export const CancelDiscards: Story = {
     // Step 2: Verify drawer opens in view mode with original email
     const drawer = await canvas.findByRole('dialog', {}, { timeout: 10000 });
     const drawerScope = within(drawer);
-    expect(await drawerScope.findByText('msantos@apexmedical.com', {}, { timeout: 10000 })).toBeVisible();
+    expect(
+      await drawerScope.findByText('msantos@apexmedical.com', {}, { timeout: 10000 }),
+    ).toBeVisible();
 
     await storyStepDelay();
 
     // Step 3: Click "Edit"
-    const editButton = await drawerScope.findByRole('button', { name: /edit/i }, { timeout: 10000 });
+    const editButton = await drawerScope.findByRole(
+      'button',
+      { name: /edit/i },
+      { timeout: 10000 },
+    );
     await userEvent.click(editButton);
 
     // Step 4: Verify edit mode, locate email input
@@ -189,10 +208,17 @@ export const CancelDiscards: Story = {
     await userEvent.click(cancelButton);
 
     // Step 7: Verify drawer returns to view mode (Save removed, Edit reappears)
-    await waitFor(() => {
-      expect(drawerScope.queryByRole('button', { name: /save/i })).not.toBeInTheDocument();
-    }, { timeout: 10000 });
-    const editButtonAfterCancel = await drawerScope.findByRole('button', { name: /edit/i }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(drawerScope.queryByRole('button', { name: /save/i })).not.toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
+    const editButtonAfterCancel = await drawerScope.findByRole(
+      'button',
+      { name: /edit/i },
+      { timeout: 10000 },
+    );
     expect(editButtonAfterCancel).toBeVisible();
 
     // Step 8: Verify original email is restored (change discarded)
@@ -237,7 +263,11 @@ export const NetworkError: Story = {
     await storyStepDelay();
 
     // Step 2: Click "Edit"
-    const editButton = await drawerScope.findByRole('button', { name: /edit/i }, { timeout: 10000 });
+    const editButton = await drawerScope.findByRole(
+      'button',
+      { name: /edit/i },
+      { timeout: 10000 },
+    );
     expect(editButton).toBeVisible();
     await userEvent.click(editButton);
 
@@ -263,17 +293,23 @@ export const NetworkError: Story = {
       {},
       { timeout: 10000 },
     );
-    await waitFor(() => {
-      expect(toastText).toBeVisible();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(toastText).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
 
     await storyStepDelay();
 
     // Step 6: Verify drawer stays in edit mode
-    await waitFor(() => {
-      expect(drawerScope.getByRole('button', { name: /save/i })).toBeVisible();
-      expect(drawerScope.getByRole('button', { name: /cancel/i })).toBeVisible();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(drawerScope.getByRole('button', { name: /save/i })).toBeVisible();
+        expect(drawerScope.getByRole('button', { name: /cancel/i })).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
 
     // Step 7: Verify modified value is preserved in the Name input
     const nameInputAfterError = drawerScope.getByLabelText(/^name$/i) as HTMLInputElement;
