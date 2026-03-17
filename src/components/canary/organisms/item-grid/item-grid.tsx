@@ -101,7 +101,7 @@ function LoadingOverlay() {
   );
 }
 
-function EmptyOverlay({ message }: { message?: string }) {
+function EmptyOverlay({ message }: { message?: string | undefined }) {
   return (
     <div className="flex flex-col items-center gap-3 py-12 text-center">
       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
@@ -264,6 +264,11 @@ export function ItemGrid({
     [editable],
   );
 
+  const noRowsOverlay = useMemo(
+    () => (emptyContent ? () => emptyContent : () => <EmptyOverlay message={emptyMessage} />),
+    [emptyContent, emptyMessage],
+  );
+
   return (
     <div className={className}>
       <div className="flex flex-wrap items-center gap-2 pb-4 sm:flex-nowrap sm:gap-3">
@@ -302,16 +307,14 @@ export function ItemGrid({
           defaultColDef={defaultColDef}
           rowData={filteredItems}
           loading={loading}
-          rowSelection={rowSelection}
+          {...(rowSelection ? { rowSelection } : {})}
           getRowClass={editable ? getRowClass : undefined}
           onSelectionChanged={enableRowSelection ? handleSelectionChanged : undefined}
           onRowClicked={onItemClick ? handleRowClicked : undefined}
           loadingOverlayComponent={LoadingOverlay}
-          noRowsOverlayComponent={
-            emptyContent ? () => emptyContent : () => <EmptyOverlay message={emptyMessage} />
-          }
+          noRowsOverlayComponent={noRowsOverlay}
           pagination={!!pageSize}
-          paginationPageSize={pageSize}
+          {...(pageSize ? { paginationPageSize: pageSize } : {})}
           paginationPageSizeSelector={false}
           onCellValueChanged={editable ? handleCellValueChanged : undefined}
           onCellEditingStopped={editable ? handleCellEditingStopped : undefined}

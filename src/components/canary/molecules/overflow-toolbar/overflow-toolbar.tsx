@@ -4,7 +4,7 @@ import {
   useRef,
   useState,
   useEffect,
-  useCallback,
+  useMemo,
   Children,
   Fragment,
   isValidElement,
@@ -28,6 +28,22 @@ export interface OverflowToolbarProps {
   className?: string;
 }
 
+// Flatten fragments so <><A/><B/></> becomes [A, B]
+function flattenChildren(nodes: ReactNode): ReactNode[] {
+  const result: ReactNode[] = [];
+  Children.forEach(nodes, (child) => {
+    if (!child) return;
+    if (isValidElement(child) && child.type === Fragment) {
+      result.push(
+        ...flattenChildren((child as ReactElement<{ children?: ReactNode }>).props.children),
+      );
+    } else {
+      result.push(child);
+    }
+  });
+  return result;
+}
+
 /**
  * Renders children inline. Items that don't fit collapse into a "more" overflow menu.
  * Uses ResizeObserver to adapt to actual available space — no breakpoints needed.
@@ -38,74 +54,54 @@ export interface OverflowToolbarProps {
 export function OverflowToolbar({ children, gap = 8, className }: OverflowToolbarProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
-  const [visibleCount, setVisibleCount] = useState(Children.count(children));
-  // Flatten fragments so <><A/><B/></> becomes [A, B]
-  const flattenChildren = (nodes: ReactNode): ReactNode[] => {
-    const result: ReactNode[] = [];
-    Children.forEach(nodes, (child) => {
-      if (!child) return;
-      if (isValidElement(child) && child.type === Fragment) {
-        result.push(
-          ...flattenChildren((child as ReactElement<{ children?: ReactNode }>).props.children),
-        );
-      } else {
-        result.push(child);
-      }
-    });
-    return result;
-  };
-  const childArray = flattenChildren(children);
+  const [visibleCount, setVisibleCount] = useState(0);
 
-  const measure = useCallback(() => {
+  const childArray = useMemo(() => flattenChildren(children), [children]);
+  const childCount = childArray.length;
+
+  useEffect(() => {
     const container = containerRef.current;
     const measurer = measureRef.current;
     if (!container || !measurer) return;
 
-    const containerWidth = container.offsetWidth;
-    const overflowButtonWidth = 40; // MoreHorizontal button width
-    const items = Array.from(measurer.children) as HTMLElement[];
+    const overflowButtonWidth = 40;
 
-    let usedWidth = 0;
-    let count = 0;
+    const measure = () => {
+      const containerWidth = container.offsetWidth;
+      const items = Array.from(measurer.children) as HTMLElement[];
 
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      if (!item) break;
-      const itemWidth = item.offsetWidth + (i > 0 ? gap : 0);
-      const remaining = containerWidth - usedWidth;
-      const needsOverflow = i < items.length - 1; // not the last item
-      const spaceNeeded = needsOverflow ? itemWidth + overflowButtonWidth + gap : itemWidth;
+      let usedWidth = 0;
+      let count = 0;
 
-      if (remaining >= spaceNeeded) {
-        usedWidth += itemWidth;
-        count++;
-      } else {
-        break;
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (!item) break;
+        const itemWidth = item.offsetWidth + (i > 0 ? gap : 0);
+        const remaining = containerWidth - usedWidth;
+        const needsOverflow = i < items.length - 1;
+        const spaceNeeded = needsOverflow ? itemWidth + overflowButtonWidth + gap : itemWidth;
+
+        if (remaining >= spaceNeeded) {
+          usedWidth += itemWidth;
+          count++;
+        } else {
+          break;
+        }
       }
-    }
 
-    // If all items fit, show all
-    if (count === items.length) {
-      setVisibleCount(items.length);
-    } else {
-      setVisibleCount(count);
-    }
-  }, [childArray.length, gap]);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+      setVisibleCount(count === items.length ? items.length : count);
+    };
 
     const observer = new ResizeObserver(() => {
       requestAnimationFrame(measure);
     });
     observer.observe(container);
 
-    // Initial measure
+    // Initial measure after children render
     requestAnimationFrame(measure);
 
     return () => observer.disconnect();
-  }, [measure]);
+  }, [childCount, gap]);
 
   const visibleItems = childArray.slice(0, visibleCount);
   const overflowItems = childArray.slice(visibleCount);
@@ -135,7 +131,6 @@ export function OverflowToolbar({ children, gap = 8, className }: OverflowToolba
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {overflowItems.map((child, i) => {
-              // Extract label and onClick from the child element
               const el = child as React.ReactElement<{
                 'data-overflow-label'?: string;
                 'data-overflow-icon'?: ReactNode;

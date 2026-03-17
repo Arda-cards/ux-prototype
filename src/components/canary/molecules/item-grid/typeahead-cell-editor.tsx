@@ -54,6 +54,10 @@ export function TypeaheadCellEditor({
       inputRef.current?.select();
     });
     doSearch(inputValue || '');
+    return () => {
+      clearTimeout(debounceRef.current);
+      abortRef.current?.abort();
+    };
   }, []); // intentionally run only on mount
 
   // Scroll highlighted item into view
@@ -150,7 +154,11 @@ export function TypeaheadCellEditor({
   };
 
   return (
-    <div className="flex w-60 flex-col bg-popover" role="combobox" aria-expanded={hasResults}>
+    <div
+      className="flex w-60 flex-col bg-popover"
+      role="combobox"
+      aria-expanded={hasResults || undefined}
+    >
       {/* Search input */}
       <div className="flex items-center px-3">
         <input

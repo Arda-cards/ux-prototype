@@ -247,7 +247,8 @@ function orderMechanismValueSetter(params: ValueSetterParams<Item>): boolean {
 
 // --- Shared cell style using CSS var for mono font ---
 
-const monoStyle: React.CSSProperties = { fontFamily: 'var(--font-geist-mono)' };
+const monoStyle = { fontFamily: 'var(--font-geist-mono)' };
+const tabularNumsStyle = { fontVariantNumeric: 'tabular-nums' };
 
 // --- Typeahead lookup config ---
 
@@ -394,7 +395,7 @@ export function createItemGridColumnDefs(lookups?: ItemGridLookups): ColDef<Item
       editable: true,
       cellEditor: 'agNumberCellEditor',
       cellEditorParams: { min: 0, precision: 2 },
-      cellStyle: { fontVariantNumeric: 'tabular-nums' },
+      cellStyle: tabularNumsStyle,
       valueGetter: (params) => params.data?.primarySupply?.unitCost?.value,
       valueSetter: moneyValueSetter('unitCost'),
       valueFormatter: (params) => {
@@ -410,7 +411,7 @@ export function createItemGridColumnDefs(lookups?: ItemGridLookups): ColDef<Item
       editable: true,
       cellEditor: 'agNumberCellEditor',
       cellEditorParams: { min: 0, precision: 2 },
-      cellStyle: { fontVariantNumeric: 'tabular-nums' },
+      cellStyle: tabularNumsStyle,
       valueGetter: (params) => params.data?.primarySupply?.orderCost?.value,
       valueSetter: moneyValueSetter('orderCost'),
       valueFormatter: (params) => {
