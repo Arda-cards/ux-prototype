@@ -1,0 +1,91 @@
+{/* item-grid.mdx */}
+import { Meta, Canvas, ArgTypes } from '@storybook/addon-docs/blocks';
+import * as ItemGridStories from './item-grid.stories';
+
+<Meta of={ItemGridStories} />
+
+# ItemGrid
+
+Read-only items grid built on ArdaDataGrid + AG Grid Community. Inline search toolbar, curated columns, off-the-shelf selection.
+
+**Organism** &#8212; Canary
+
+---
+
+## Sub-components
+
+| Component                 | Layer           | Purpose                                                   |
+| ------------------------- | --------------- | --------------------------------------------------------- |
+| **ArdaDataGrid**          | extras molecule | AG Grid wrapper with theme, selection, column persistence |
+| **itemGridColumnDefs**    | canary molecule | Curated 8-column read-only preset                         |
+| **itemGridDefaultColDef** | canary molecule | Default column config (sortable, resizable)               |
+
+---
+
+## Default
+
+Grid with fixture data, inline search, and item count.
+
+<Canvas of={ItemGridStories.Default} />
+
+## Empty
+
+No items — count reads "0 items", AG Grid shows its default empty overlay.
+
+<Canvas of={ItemGridStories.Empty} />
+
+## Loading
+
+Loading overlay from ArdaDataGrid.
+
+<Canvas of={ItemGridStories.Loading} />
+
+## With Selection
+
+Row selection via AG Grid's built-in checkbox selection. `onSelectionChange` fires with the selected `Item[]`.
+
+<Canvas of={ItemGridStories.WithSelection} />
+
+## Search
+
+Client-side filter on `name` and `internalSKU`.
+
+<Canvas of={ItemGridStories.WithSearch} />
+
+## Composition
+
+Full page layout — ArdaSidebar with "Items" active, extended toolbar with selected count and export button, and ItemGrid with selection + click handler. This is the pattern arda-frontend-app would follow.
+
+<Canvas of={ItemGridStories.Composition} />
+
+---
+
+## Extending columns
+
+The organism ships with 8 curated columns. Consumers needing the full 40+ columns from arda-frontend can import and extend:
+
+```tsx
+import { itemGridColumnDefs } from '@arda-cards/design-system/canary';
+
+const extendedColumns = [
+  ...itemGridColumnDefs,
+  { headerName: 'GL Code', field: 'generalLedgerCode', width: 140 },
+  { headerName: 'Facility', valueGetter: (p) => p.data?.locator?.facility },
+];
+```
+
+## Adding editing
+
+The organism is read-only by default. For cell editing, use `ArdaDataGrid` directly with `enhanceEditableColumnDefs` from the extras presets — the organism doesn't need to know about editing.
+
+## Consumer responsibilities
+
+- **Pagination** &#8212; The organism is client-side only. For server-side pagination, compose `ArdaDataGrid` directly with `paginationData` props.
+- **Draft management** &#8212; App-level concern. Use `onCellValueChanged` on `ArdaDataGrid` with a custom dirty-tracking hook.
+- **Bulk actions** &#8212; Wire `onSelectionChange` to your own toolbar (see Composition story).
+
+---
+
+## Props
+
+<ArgTypes of={ItemGridStories} />

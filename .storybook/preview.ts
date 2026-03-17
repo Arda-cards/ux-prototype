@@ -5,7 +5,6 @@ import { initialize, mswLoader } from 'msw-storybook-addon';
 import { handlers } from '@frontend/mocks/handlers';
 
 import '../src/styles/globals.css';
-import '../src/styles/ag-theme-arda.css';
 
 // MSW initialization — runs once before any story mounts.
 // When Storybook is built with a non-root base path (e.g., /ux-prototype/ on

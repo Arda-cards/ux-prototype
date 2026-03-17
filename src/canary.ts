@@ -47,3 +47,20 @@ export type {
 
 export { ArdaSidebar } from './components/canary/organisms/sidebar/sidebar';
 export type { ArdaSidebarProps } from './components/canary/organisms/sidebar/sidebar';
+
+// --- Molecules — ItemGrid ---
+
+export {
+  itemGridColumnDefs,
+  itemGridDefaultColDef,
+} from './components/canary/molecules/item-grid/item-grid-columns';
+export { itemGridFixtures } from './components/canary/molecules/item-grid/item-grid-fixtures';
+
+// --- Organisms — ItemGrid ---
+
+export { ItemGrid } from './components/canary/organisms/item-grid/item-grid';
+export type {
+  ItemGridProps,
+  ItemGridStaticConfig,
+  ItemGridRuntimeConfig,
+} from './components/canary/organisms/item-grid/item-grid';
