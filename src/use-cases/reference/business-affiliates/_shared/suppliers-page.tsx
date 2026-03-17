@@ -78,7 +78,11 @@ function SuppliersEmptyState({ onAddSupplier }: { onAddSupplier: () => void }) {
       <div className="flex flex-col items-center gap-2 w-full">
         <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center p-2 relative">
           <div className="absolute inset-0 flex items-center justify-center z-0">
-            <img src="/vendored/images/Puddle1.svg" alt="" className="w-full h-full object-contain" />
+            <img
+              src="/vendored/images/Puddle1.svg"
+              alt=""
+              className="w-full h-full object-contain"
+            />
           </div>
           <Building2 className="w-[42px] h-[42px] sm:w-[52px] sm:h-[52px] text-[#0A0A0A] absolute left-[calc(50%-21px)] sm:left-[calc(50%-26px)] top-[20%] z-10" />
         </div>
@@ -266,15 +270,18 @@ export function SuppliersPage({
     }
   }, [initialAffiliateId, rowData]);
 
-  const handleRowClick = useCallback((data: BusinessAffiliateWithRoles) => {
-    if (onRowClick) {
-      // Delegate to external handler (e.g., EditableSuppliersPage manages its own drawer)
-      onRowClick(data);
-    } else {
-      setSelectedAffiliate(data);
-      setDrawerOpen(true);
-    }
-  }, [onRowClick]);
+  const handleRowClick = useCallback(
+    (data: BusinessAffiliateWithRoles) => {
+      if (onRowClick) {
+        // Delegate to external handler (e.g., EditableSuppliersPage manages its own drawer)
+        onRowClick(data);
+      } else {
+        setSelectedAffiliate(data);
+        setDrawerOpen(true);
+      }
+    },
+    [onRowClick],
+  );
 
   const handleSelectionChanged = useCallback((selectedRows: BusinessAffiliateWithRoles[]) => {
     setSelectedRowIds(new Set(selectedRows.map((r) => r.eId)));
@@ -339,7 +346,12 @@ export function SuppliersPage({
                   onToggle={handleToggleColumn}
                 />
               )}
-              <Button size="sm" className="h-9 gap-1" aria-label="Add Supplier" onClick={onAddSupplier}>
+              <Button
+                size="sm"
+                className="h-9 gap-1"
+                aria-label="Add Supplier"
+                onClick={onAddSupplier}
+              >
                 <Plus className="w-4 h-4" />
                 Add Supplier
               </Button>

@@ -117,7 +117,11 @@ export const Automated: Story = {
     await userEvent.click(drawerScope.getByText('Address'));
 
     // Step 15: Verify Address Line 1 field appears (address section expanded)
-    const addressLine1Input = await drawerScope.findByLabelText('Address Line 1', {}, { timeout: 3000 });
+    const addressLine1Input = await drawerScope.findByLabelText(
+      'Address Line 1',
+      {},
+      { timeout: 3000 },
+    );
     expect(addressLine1Input).toBeVisible();
 
     // Step 16: Fill address fields
@@ -159,9 +163,12 @@ export const Automated: Story = {
     await screen.findByText('Supplier created successfully', {}, { timeout: 5000 });
 
     // Step 23: Verify drawer closes after save
-    await waitFor(() => {
-      expect(canvas.queryByRole('dialog')).not.toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(canvas.queryByRole('dialog')).not.toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
 
     // Step 24: Verify new supplier appears in grid after remount/re-fetch
     await canvas.findByText('Fastenal Corp.', {}, { timeout: 5000 });

@@ -51,14 +51,20 @@ export const Default: Story = {
     await userEvent.click(checkboxes[1]);
 
     // 4. Verify row 1 is selected
-    await waitFor(() => {
-      expect(checkboxes[1]).toBeChecked();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(checkboxes[1]).toBeChecked();
+      },
+      { timeout: 10000 },
+    );
 
     // 5. Verify Actions button is enabled
-    await waitFor(() => {
-      expect(actionsButton).toBeEnabled();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(actionsButton).toBeEnabled();
+      },
+      { timeout: 10000 },
+    );
 
     await storyStepDelay();
 
@@ -66,10 +72,13 @@ export const Default: Story = {
     await userEvent.click(checkboxes[3]);
 
     // 7. Verify both rows 1 and 3 are selected
-    await waitFor(() => {
-      expect(checkboxes[1]).toBeChecked();
-      expect(checkboxes[3]).toBeChecked();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(checkboxes[1]).toBeChecked();
+        expect(checkboxes[3]).toBeChecked();
+      },
+      { timeout: 10000 },
+    );
 
     await storyStepDelay();
 
@@ -101,20 +110,26 @@ export const SelectAll: Story = {
     await userEvent.click(headerCheckbox);
 
     // 3. Verify all visible row checkboxes are checked (page size 10 = 10 data rows)
-    await waitFor(() => {
-      // Re-query to get fresh state — AG Grid may re-render checkboxes
-      const allCheckboxes = canvas.getAllByRole('checkbox');
-      // allCheckboxes[0] = header, allCheckboxes[1..10] = data rows
-      for (let i = 1; i < allCheckboxes.length; i++) {
-        expect(allCheckboxes[i]).toBeChecked();
-      }
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        // Re-query to get fresh state — AG Grid may re-render checkboxes
+        const allCheckboxes = canvas.getAllByRole('checkbox');
+        // allCheckboxes[0] = header, allCheckboxes[1..10] = data rows
+        for (let i = 1; i < allCheckboxes.length; i++) {
+          expect(allCheckboxes[i]).toBeChecked();
+        }
+      },
+      { timeout: 10000 },
+    );
 
     // 4. Verify header checkbox is checked (not indeterminate)
-    await waitFor(() => {
-      const allCheckboxes = canvas.getAllByRole('checkbox');
-      expect(allCheckboxes[0]).toBeChecked();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        const allCheckboxes = canvas.getAllByRole('checkbox');
+        expect(allCheckboxes[0]).toBeChecked();
+      },
+      { timeout: 10000 },
+    );
 
     await storyStepDelay();
 
@@ -123,11 +138,14 @@ export const SelectAll: Story = {
     await userEvent.click(freshCheckboxes[0]);
 
     // 6. Verify all visible row checkboxes are unchecked
-    await waitFor(() => {
-      const allCheckboxes = canvas.getAllByRole('checkbox');
-      for (let i = 1; i < allCheckboxes.length; i++) {
-        expect(allCheckboxes[i]).not.toBeChecked();
-      }
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        const allCheckboxes = canvas.getAllByRole('checkbox');
+        for (let i = 1; i < allCheckboxes.length; i++) {
+          expect(allCheckboxes[i]).not.toBeChecked();
+        }
+      },
+      { timeout: 10000 },
+    );
   },
 };

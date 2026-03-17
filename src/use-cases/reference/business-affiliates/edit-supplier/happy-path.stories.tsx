@@ -13,7 +13,11 @@ import React, { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { within, expect, waitFor, userEvent, screen } from 'storybook/test';
 import { EditableSuppliersPage } from './editable-suppliers-page';
-import { businessAffiliateHandlers, resetAffiliateStore, affiliateStore } from '../_shared/msw-handlers';
+import {
+  businessAffiliateHandlers,
+  resetAffiliateStore,
+  affiliateStore,
+} from '../_shared/msw-handlers';
 import { storyStepDelay } from '../_shared/story-step-delay';
 
 // ---------------------------------------------------------------------------
@@ -66,7 +70,8 @@ const GUIDE_ENTRIES: GuideEntry[] = [
     step: 3,
     title: 'Modify Fields',
     description: 'Change contact email and city fields.',
-    interaction: 'Clear the Email field and type "newemail@example.com". Clear City and type "New York".',
+    interaction:
+      'Clear the Email field and type "newemail@example.com". Clear City and type "New York".',
   },
   {
     step: 4,
@@ -101,18 +106,23 @@ function StepwiseGuide({ entries, currentStep }: { entries: GuideEntry[]; curren
         fontFamily: 'sans-serif',
       }}
     >
-      <p style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+      <p
+        style={{
+          fontSize: 11,
+          fontWeight: 600,
+          color: '#6b7280',
+          marginBottom: 4,
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+        }}
+      >
         Step {entry.step} of {entries.length}
       </p>
       <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', marginBottom: 6 }}>
         {entry.title}
       </p>
-      <p style={{ fontSize: 13, color: '#374151', marginBottom: 8 }}>
-        {entry.description}
-      </p>
-      <p style={{ fontSize: 12, color: '#6b7280', fontStyle: 'italic' }}>
-        {entry.interaction}
-      </p>
+      <p style={{ fontSize: 13, color: '#374151', marginBottom: 8 }}>{entry.description}</p>
+      <p style={{ fontSize: 12, color: '#6b7280', fontStyle: 'italic' }}>{entry.interaction}</p>
     </div>
   );
 }
@@ -210,11 +220,7 @@ function StepwiseEditViewer() {
 
   return (
     <>
-      <EditableSuppliersPage
-        key={key}
-        initialAffiliateId={firstAffiliateId}
-        pageSize={10}
-      />
+      <EditableSuppliersPage key={key} initialAffiliateId={firstAffiliateId} pageSize={10} />
       <StepwiseGuide entries={GUIDE_ENTRIES} currentStep={step} />
       <StepwiseNavControls
         currentStep={step}
@@ -277,7 +283,11 @@ export const Automated: Story = {
     const drawer = await canvas.findByRole('dialog', {}, { timeout: 10000 });
     expect(drawer).toBeVisible();
     const drawerScope = within(drawer);
-    const editButton = await drawerScope.findByRole('button', { name: /^edit$/i }, { timeout: 10000 });
+    const editButton = await drawerScope.findByRole(
+      'button',
+      { name: /^edit$/i },
+      { timeout: 10000 },
+    );
     expect(editButton).toBeVisible();
     const deleteButton = drawerScope.getByRole('button', { name: /^delete$/i });
     expect(deleteButton).toBeVisible();
@@ -292,9 +302,12 @@ export const Automated: Story = {
     expect(saveButton).toBeVisible();
     const cancelButton = canvas.getByRole('button', { name: /^cancel$/i });
     expect(cancelButton).toBeVisible();
-    await waitFor(() => {
-      expect(canvas.queryByRole('button', { name: /^edit$/i })).not.toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(canvas.queryByRole('button', { name: /^edit$/i })).not.toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
 
     await storyStepDelay();
 
@@ -322,18 +335,32 @@ export const Automated: Story = {
     await userEvent.click(saveButton);
 
     // Step 10: Verify success toast (Sonner renders via portal to document.body — use screen)
-    const toastText = await screen.findByText(/supplier updated successfully/i, {}, { timeout: 10000 });
-    await waitFor(() => {
-      expect(toastText).toBeVisible();
-    }, { timeout: 10000 });
+    const toastText = await screen.findByText(
+      /supplier updated successfully/i,
+      {},
+      { timeout: 10000 },
+    );
+    await waitFor(
+      () => {
+        expect(toastText).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
 
     await storyStepDelay();
 
     // Step 11: Verify drawer returns to view mode (Save button disappears, Edit button reappears)
-    await waitFor(() => {
-      expect(canvas.queryByRole('button', { name: /^save$/i })).not.toBeInTheDocument();
-    }, { timeout: 10000 });
-    const editButtonAfterSave = await canvas.findByRole('button', { name: /^edit$/i }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(canvas.queryByRole('button', { name: /^save$/i })).not.toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
+    const editButtonAfterSave = await canvas.findByRole(
+      'button',
+      { name: /^edit$/i },
+      { timeout: 10000 },
+    );
     expect(editButtonAfterSave).toBeVisible();
 
     await storyStepDelay();

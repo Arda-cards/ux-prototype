@@ -17,10 +17,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { within, expect, waitFor, userEvent, screen } from 'storybook/test';
 import { http, HttpResponse } from 'msw';
 import { CreatableSuppliersPage } from './creatable-suppliers-page';
-import {
-  businessAffiliateHandlers,
-  resetAffiliateStore,
-} from '../_shared/msw-handlers';
+import { businessAffiliateHandlers, resetAffiliateStore } from '../_shared/msw-handlers';
 import { storyStepDelay } from '../_shared/story-step-delay';
 
 // ---------------------------------------------------------------------------
@@ -28,8 +25,7 @@ import { storyStepDelay } from '../_shared/story-step-delay';
 // ---------------------------------------------------------------------------
 
 const meta: Meta<typeof CreatableSuppliersPage> = {
-  title:
-    'Use Cases/Reference/Business Affiliates/BA-0003 Create Supplier/0002 Validation Errors',
+  title: 'Use Cases/Reference/Business Affiliates/BA-0003 Create Supplier/0002 Validation Errors',
   component: CreatableSuppliersPage,
   parameters: {
     layout: 'fullscreen',
@@ -84,9 +80,12 @@ export const EmptyNameBlocked: Story = {
     await userEvent.tab();
 
     // 7. Verify field-level error "Name is required" appears
-    await waitFor(() => {
-      expect(drawerScope.getByText(/name is required/i)).toBeVisible();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(drawerScope.getByText(/name is required/i)).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
 
     // 8. Verify Save remains disabled
     expect(saveButton).toBeDisabled();
@@ -145,9 +144,12 @@ export const NetworkError: Story = {
 
     // 4. Verify Save becomes enabled once name is entered
     const saveButton = drawerScope.getByRole('button', { name: /^save$/i });
-    await waitFor(() => {
-      expect(saveButton).toBeEnabled();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(saveButton).toBeEnabled();
+      },
+      { timeout: 10000 },
+    );
     await storyStepDelay();
 
     // 5. Click Save (triggers POST → 500 response)
@@ -162,15 +164,13 @@ export const NetworkError: Story = {
       { timeout: 10000 },
     );
     await waitFor(
-      () => expect(screen.getByText(/internal server error|failed to create supplier/i)).toBeVisible(),
+      () =>
+        expect(screen.getByText(/internal server error|failed to create supplier/i)).toBeVisible(),
       { timeout: 10000 },
     );
 
     // 7. Verify the drawer remains open
-    await waitFor(
-      () => expect(canvas.getByRole('dialog')).toBeVisible(),
-      { timeout: 10000 },
-    );
+    await waitFor(() => expect(canvas.getByRole('dialog')).toBeVisible(), { timeout: 10000 });
 
     // 8. Verify form data is preserved (user can retry)
     expect(nameInput).toHaveValue('Test Supplier Inc.');
@@ -232,9 +232,12 @@ export const DuplicateNameError: Story = {
 
     // 4. Verify Save becomes enabled
     const saveButton = drawerScope.getByRole('button', { name: /^save$/i });
-    await waitFor(() => {
-      expect(saveButton).toBeEnabled();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(saveButton).toBeEnabled();
+      },
+      { timeout: 10000 },
+    );
     await storyStepDelay();
 
     // 5. Click Save (triggers POST → 409 response)
@@ -243,21 +246,14 @@ export const DuplicateNameError: Story = {
     // 6. Verify error toast with duplicate-name message (Sonner portal).
     // Sonner animates toasts in — wait for the text to be in the document, then
     // wait for visibility separately so the animation-in opacity has completed.
-    await screen.findByText(
-      /a supplier with this name already exists/i,
-      {},
-      { timeout: 10000 },
-    );
+    await screen.findByText(/a supplier with this name already exists/i, {}, { timeout: 10000 });
     await waitFor(
       () => expect(screen.getByText(/a supplier with this name already exists/i)).toBeVisible(),
       { timeout: 10000 },
     );
 
     // 7. Verify the drawer remains open
-    await waitFor(
-      () => expect(canvas.getByRole('dialog')).toBeVisible(),
-      { timeout: 10000 },
-    );
+    await waitFor(() => expect(canvas.getByRole('dialog')).toBeVisible(), { timeout: 10000 });
 
     // 8. Verify form data is preserved (user can rename and retry)
     expect(nameInput).toHaveValue('Apex Medical Distributors');

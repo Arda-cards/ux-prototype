@@ -18,8 +18,7 @@ import { businessAffiliateHandlers } from '../_shared/msw-handlers';
 import { storyStepDelay } from '../_shared/story-step-delay';
 
 const meta: Meta<typeof SuppliersPage> = {
-  title:
-    'Use Cases/Reference/Business Affiliates/BA-0002 View Details/0001 Supplier Details Panel',
+  title: 'Use Cases/Reference/Business Affiliates/BA-0002 View Details/0001 Supplier Details Panel',
   component: SuppliersPage,
   parameters: {
     layout: 'fullscreen',
@@ -63,7 +62,11 @@ export const Default: Story = {
     // renders the affiliate name in a ReadOnlyField <p>, so findByText would match
     // multiple elements and throw "Found multiple elements".
     expect(
-      await drawerScope.findByRole('heading', { name: 'Apex Medical Distributors' }, { timeout: 10000 }),
+      await drawerScope.findByRole(
+        'heading',
+        { name: 'Apex Medical Distributors' },
+        { timeout: 10000 },
+      ),
     ).toBeVisible();
     const header = drawer.querySelector('[data-slot="drawer-header"]');
     expect(header).toBeTruthy();
@@ -104,9 +107,7 @@ export const Default: Story = {
 
     // 8. Notes field (not in a collapsible, at the bottom)
     expect(drawerScope.getByText('Notes')).toBeVisible();
-    expect(
-      drawerScope.getByText(/Preferred vendor for surgical instruments/),
-    ).toBeVisible();
+    expect(drawerScope.getByText(/Preferred vendor for surgical instruments/)).toBeVisible();
     await storyStepDelay();
 
     // 9. Action buttons in footer
@@ -145,25 +146,34 @@ export const MinimalData: Story = {
     // 2. Contact section — collapsed (no data), click to expand
     expect(drawerScope.getByText('Contact')).toBeVisible();
     await userEvent.click(drawerScope.getByText('Contact'));
-    await waitFor(() => {
-      expect(drawerScope.getByText(/no contact information/i)).toBeVisible();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(drawerScope.getByText(/no contact information/i)).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
     await storyStepDelay();
 
     // 3. Address section — collapsed (no data), click to expand
     expect(drawerScope.getByText('Address')).toBeVisible();
     await userEvent.click(drawerScope.getByText('Address'));
-    await waitFor(() => {
-      expect(drawerScope.getByText(/no address information/i)).toBeVisible();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(drawerScope.getByText(/no address information/i)).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
     await storyStepDelay();
 
     // 4. Legal section — collapsed (no data), click to expand
     expect(drawerScope.getByText('Legal')).toBeVisible();
     await userEvent.click(drawerScope.getByText('Legal'));
-    await waitFor(() => {
-      expect(drawerScope.getByText(/no legal information/i)).toBeVisible();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(drawerScope.getByText(/no legal information/i)).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
     await storyStepDelay();
 
     // 5. Notes field — always visible, shows empty state
@@ -199,9 +209,12 @@ export const CloseDrawer: Story = {
     await userEvent.click(closeButton);
 
     // 3. Verify drawer is closed (not in the document)
-    await waitFor(() => {
-      expect(canvas.queryByRole('dialog')).not.toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(canvas.queryByRole('dialog')).not.toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
     await storyStepDelay();
 
     // 4. Verify the grid is still visible
@@ -238,50 +251,74 @@ export const SectionCollapse: Story = {
 
     // --- Identity section: collapse then expand ---
     await userEvent.click(drawerScope.getByText('Identity'));
-    await waitFor(() => {
-      // Radix Collapsible removes children from DOM when closed (children: isOpen && children)
-      expect(drawerScope.queryByText(/^[0-9a-f]{8}-/i)).not.toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        // Radix Collapsible removes children from DOM when closed (children: isOpen && children)
+        expect(drawerScope.queryByText(/^[0-9a-f]{8}-/i)).not.toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
 
     await userEvent.click(drawerScope.getByText('Identity'));
-    await waitFor(() => {
-      expect(drawerScope.getByText(/^[0-9a-f]{8}-/i)).toBeVisible();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(drawerScope.getByText(/^[0-9a-f]{8}-/i)).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
     await storyStepDelay();
 
     // --- Contact section: collapse then expand ---
     await userEvent.click(drawerScope.getByText('Contact'));
-    await waitFor(() => {
-      expect(drawerScope.queryByText('msantos@apexmedical.com')).not.toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(drawerScope.queryByText('msantos@apexmedical.com')).not.toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
 
     await userEvent.click(drawerScope.getByText('Contact'));
-    await waitFor(() => {
-      expect(drawerScope.getByText('msantos@apexmedical.com')).toBeVisible();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(drawerScope.getByText('msantos@apexmedical.com')).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
     await storyStepDelay();
 
     // --- Address section: collapse then expand ---
     await userEvent.click(drawerScope.getByText('Address'));
-    await waitFor(() => {
-      expect(drawerScope.queryByText('10 Summit Rd')).not.toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(drawerScope.queryByText('10 Summit Rd')).not.toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
 
     await userEvent.click(drawerScope.getByText('Address'));
-    await waitFor(() => {
-      expect(drawerScope.getByText('10 Summit Rd')).toBeVisible();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(drawerScope.getByText('10 Summit Rd')).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
     await storyStepDelay();
 
     // --- Legal section: collapse then expand ---
     await userEvent.click(drawerScope.getByText('Legal'));
-    await waitFor(() => {
-      expect(drawerScope.queryByText('11-2233445')).not.toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(drawerScope.queryByText('11-2233445')).not.toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
 
     await userEvent.click(drawerScope.getByText('Legal'));
-    await waitFor(() => {
-      expect(drawerScope.getByText('11-2233445')).toBeVisible();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(drawerScope.getByText('11-2233445')).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
   },
 };

@@ -68,8 +68,11 @@ export const Default: Story = {
     expect(drawerScope.getByText(firstAffiliate.eId)).toBeVisible();
 
     // 5. Verify the drawer is scoped within canvasElement (not a portal)
-    await waitFor(() => {
-      expect(drawer).toBeVisible();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(drawer).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
   },
 };

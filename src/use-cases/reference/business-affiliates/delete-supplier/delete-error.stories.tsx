@@ -8,10 +8,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, screen, userEvent, waitFor, within } from 'storybook/test';
 import { http, HttpResponse } from 'msw';
 import { DeletableSuppliersPage } from './deletable-suppliers-page';
-import {
-  businessAffiliateHandlers,
-  resetAffiliateStore,
-} from '../_shared/msw-handlers';
+import { businessAffiliateHandlers, resetAffiliateStore } from '../_shared/msw-handlers';
 import { storyStepDelay } from '../_shared/story-step-delay';
 
 // Build handlers with the DELETE override — replace the default DELETE handler
@@ -76,29 +73,41 @@ export const NetworkError: Story = {
 
     const dialog = await canvas.findByRole('alertdialog', {}, { timeout: 10000 });
     // Dialog uses animate-in fade-in — wait for visibility before interacting
-    await waitFor(() => {
-      expect(dialog).toBeVisible();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(dialog).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
     const confirmButton = within(dialog).getByRole('button', { name: /delete/i });
     await storyStepDelay();
     await userEvent.click(confirmButton);
 
     // 4. Verify dialog closes
-    await waitFor(() => {
-      expect(canvas.queryByRole('alertdialog')).not.toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(canvas.queryByRole('alertdialog')).not.toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
     await storyStepDelay();
 
     // 5. Verify error toast (Sonner portal — use screen)
     const errorToast = await screen.findByText(/failed to delete/i, {}, { timeout: 10000 });
-    await waitFor(() => {
-      expect(errorToast).toBeVisible();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(errorToast).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
 
     // 6. Verify the row is still present (not removed after failed delete)
     // Grid may re-render after the failed delete response — wait for the row to reappear
-    await waitFor(() => {
-      expect(canvas.getByText('Apex Medical Distributors')).toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(canvas.getByText('Apex Medical Distributors')).toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
   },
 };
