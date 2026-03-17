@@ -32,8 +32,17 @@
 # vendored files — local fixes only, changes go upstream to arda-frontend-app
 /src/vendored/
 
+# agent/AI tool skills and config
+.agent/
+.agents/
+.claude/
+.windsurf/
+skills/
+skills-lock.json
+
 # debug
 npm-debug.log*
+debug-storybook.log
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
