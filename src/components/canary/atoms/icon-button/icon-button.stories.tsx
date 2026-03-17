@@ -52,7 +52,7 @@ export const NoTooltip: Story = {
   },
 };
 
-export const Group: Story = {
+export const Group: StoryObj = {
   render: () => (
     <div className="flex items-center gap-2">
       <ArdaIconButton icon={Search} label="Search" />

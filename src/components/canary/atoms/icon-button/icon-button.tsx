@@ -64,7 +64,7 @@ export function ArdaIconButton({
       <Icon size={iconSize} className="text-foreground" />
       {badgeCount !== undefined && badgeCount > 0 && (
         <span
-          className="absolute -top-1 -right-1 flex min-w-4 h-4 items-center justify-center rounded-full bg-foreground text-background text-[10px] font-semibold leading-none px-1"
+          className="absolute -top-1 -right-1 flex min-w-4 h-4 items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] font-semibold leading-none px-1"
           role="status"
           aria-label={`${badgeCount} notification${badgeCount === 1 ? '' : 's'}`}
         >

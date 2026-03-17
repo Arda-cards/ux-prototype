@@ -83,29 +83,36 @@ export function ArdaAppHeader({
   searchValue,
   onSearchChange,
   className,
+  children,
   ...props
 }: ArdaAppHeaderProps) {
   const visibleActions = actions?.filter((a) => a.visible !== false);
 
   return (
     <header
-      className={cn('flex h-16 items-center border-b bg-background px-4 py-2', className)}
+      className={cn(
+        'flex h-14 items-center gap-1.5 bg-background px-3 sm:gap-2 sm:px-6',
+        className,
+      )}
       {...props}
     >
       {/* Leading content (sidebar trigger, breadcrumbs, etc.) */}
       {leading}
 
+      {/* Center content (tabs, title, etc.) */}
+      {children}
+
       {/* Right-aligned toolbar */}
-      <div className="flex items-center gap-4 ml-auto">
+      <div className="ml-auto flex items-center gap-1 sm:gap-2">
         {/* Search */}
         {showSearch && (
           <>
             <ArdaSearchInput
               placeholder={searchPlaceholder}
-              value={searchValue}
-              onChange={onSearchChange}
+              {...(searchValue !== undefined ? { value: searchValue } : {})}
+              {...(onSearchChange ? { onChange: onSearchChange } : {})}
             />
-            <Separator orientation="vertical" className="h-6" />
+            <Separator orientation="vertical" className="h-5" />
           </>
         )}
 
@@ -113,15 +120,9 @@ export function ArdaAppHeader({
         {buttonActions?.map((action) => {
           const Icon = action.icon;
           return (
-            <Button
-              key={action.key}
-              variant="outline"
-              size="default"
-              className="bg-secondary text-foreground font-medium"
-              onClick={action.onClick}
-            >
-              <Icon className="size-4" />
-              {action.label}
+            <Button key={action.key} variant="outline" size="sm" onClick={action.onClick}>
+              <Icon className="size-4 sm:mr-1" />
+              <span className="hidden sm:inline">{action.label}</span>
             </Button>
           );
         })}
@@ -132,8 +133,8 @@ export function ArdaAppHeader({
             key={action.key}
             icon={action.icon}
             label={action.label}
-            badgeCount={action.badgeCount}
-            onClick={action.onClick}
+            {...(action.badgeCount !== undefined ? { badgeCount: action.badgeCount } : {})}
+            {...(action.onClick ? { onClick: action.onClick } : {})}
           />
         ))}
       </div>
