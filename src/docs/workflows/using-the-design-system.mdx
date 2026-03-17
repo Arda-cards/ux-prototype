@@ -184,7 +184,7 @@ import { cn } from '@arda-cards/design-system';
 Canary components are being actively developed and tested. Their API may change between releases. Use them when you want to adopt new components early or contribute feedback:
 
 ```tsx
-import { CanaryAtomPlaceholder } from '@arda-cards/design-system/canary';
+import { TextCellDisplay, NumberCellDisplay, DataGrid } from '@arda-cards/design-system/canary';
 ```
 
 > **Warning:** Canary component APIs are not guaranteed to be stable across minor versions. Pin your dependency version if you need predictability.
@@ -473,7 +473,7 @@ Each entry point ships as ESM (`.js`), CJS (`.cjs`), and TypeScript declarations
   <tbody>
     <tr>
       <td>Components</td>
-      <td><code>CanaryAtomPlaceholder</code>, <code>CanaryMoleculePlaceholder</code>, <code>CanaryOrganismPlaceholder</code></td>
+      <td><code>TextCellDisplay</code>, <code>NumberCellDisplay</code>, <code>BooleanCellDisplay</code>, <code>DateCellDisplay</code>, <code>EnumCellDisplay</code>, <code>MemoCellDisplay</code>, <code>MemoButtonCell</code>, <code>ColorCellDisplay</code>, <code>ActionCellRenderer</code> (cell editors: <code>createTextCellEditor</code>, <code>createEnumCellEditor</code>, <code>createMemoButtonCellEditor</code>, etc.)</td>
     </tr>
     <tr>
       <td>Atoms</td>

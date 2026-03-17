@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 import { http, HttpResponse } from 'msw';
-import ItemsPage from '@frontend/app/items/page';
+import ItemsPage from '../../components/ItemsPage';
 import '@/styles/vendored/globals.css';
 
 const meta: Meta<typeof ItemsPage> = {

@@ -2,3 +2,4 @@
 // Consumers: import type { ... } from '@arda-cards/design-system/types/canary';
 
 export { cn } from './canary/utils';
+export type { PaginationData } from './canary/pagination';
