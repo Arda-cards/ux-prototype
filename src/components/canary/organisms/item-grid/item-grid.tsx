@@ -198,6 +198,66 @@ export function ItemGrid({
 }: ItemGridProps) {
   const internalGridRef = useRef<AgGridReact<Item>>(null);
   const gridRef = externalGridRef || internalGridRef;
+  const gridContainerRef = useRef<HTMLDivElement>(null);
+
+  // Mouse drag-to-scroll horizontally on the grid body
+  useEffect(() => {
+    const el = gridContainerRef.current;
+    if (!el) return;
+
+    let isDown = false;
+    let startX = 0;
+    let scrollLeft = 0;
+    let viewport: HTMLElement | null = null;
+
+    const getViewport = () => {
+      if (!viewport) viewport = el.querySelector('.ag-center-cols-viewport');
+      return viewport;
+    };
+
+    const onMouseDown = (e: MouseEvent) => {
+      const vp = getViewport();
+      if (!vp) return;
+      // Only activate on the grid body, not headers or editors
+      const target = e.target as HTMLElement;
+      if (
+        target.closest('.ag-header') ||
+        target.closest('.ag-popup') ||
+        target.closest('input') ||
+        target.closest('button')
+      )
+        return;
+      isDown = true;
+      startX = e.pageX;
+      scrollLeft = vp.scrollLeft;
+      el.style.cursor = 'grabbing';
+      e.preventDefault();
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isDown) return;
+      const vp = getViewport();
+      if (!vp) return;
+      const dx = e.pageX - startX;
+      vp.scrollLeft = scrollLeft - dx;
+    };
+
+    const onMouseUp = () => {
+      if (!isDown) return;
+      isDown = false;
+      el.style.cursor = '';
+    };
+
+    el.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+
+    return () => {
+      el.removeEventListener('mousedown', onMouseDown);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+  }, []);
 
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
@@ -319,10 +379,15 @@ export function ItemGrid({
             ? `${selectedCount} of ${filteredItems.length} selected`
             : `${filteredItems.length} item${filteredItems.length !== 1 ? 's' : ''}`}
         </span>
-        {toolbar && <div className="ml-auto flex items-center gap-2">{toolbar}</div>}
+        {toolbar && (
+          <div className="ml-auto flex min-w-0 flex-1 items-center justify-end gap-2">
+            {toolbar}
+          </div>
+        )}
       </div>
 
       <div
+        ref={gridContainerRef}
         style={{
           ...(!autoHeight && { height: typeof height === 'number' ? `${height}px` : height }),
           ...gridColorVars,

@@ -107,7 +107,11 @@ export function OverflowToolbar({ children, gap = 8, className }: OverflowToolba
   const overflowItems = childArray.slice(visibleCount);
 
   return (
-    <div ref={containerRef} className={`flex items-center ${className ?? ''}`} style={{ gap }}>
+    <div
+      ref={containerRef}
+      className={`flex w-full items-center justify-end ${className ?? ''}`}
+      style={{ gap }}
+    >
       {/* Hidden measurer — renders all children off-screen to measure widths */}
       <div
         ref={measureRef}
