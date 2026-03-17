@@ -4,17 +4,30 @@ import type { VariantProps } from 'class-variance-authority';
 
 // --- Interfaces ---
 
-/** Props for ArdaBadge. */
-export interface ArdaBadgeProps extends Omit<React.ComponentProps<'span'>, 'children'> {
+/** Static configuration for ArdaBadge. */
+export interface ArdaBadgeStaticConfig {
+  /* --- View / Layout / Controller --- */
   /** Visual variant — maps directly to shadcn Badge variants. */
   variant?: VariantProps<typeof badgeVariants>['variant'];
-  /** Numeric count — capped at 99+. When provided, renders as a live status region. */
-  count?: number;
   /** Maximum count before showing "+". Defaults to 99. */
   max?: number;
+}
+
+/** Runtime configuration for ArdaBadge. */
+export interface ArdaBadgeRuntimeConfig {
+  /* --- Model / Data Binding --- */
+  /** Numeric count — capped at 99+. When provided, renders as a live status region. */
+  count?: number;
   /** Content to render. Ignored when `count` is provided. */
   children?: React.ReactNode;
 }
+
+/** Combined props for ArdaBadge. */
+export interface ArdaBadgeProps
+  extends
+    ArdaBadgeStaticConfig,
+    ArdaBadgeRuntimeConfig,
+    Omit<React.ComponentProps<'span'>, 'children'> {}
 
 // --- Component ---
 
@@ -40,7 +53,8 @@ export function ArdaBadge({
     <Badge
       variant={variant}
       className={cn(
-        'rounded-md px-[5px] py-px text-[10px] leading-none font-semibold tabular-nums',
+        'rounded-md px-[5px] py-px text-[10px] leading-none font-semibold font-mono tabular-nums',
+        variant === 'default' && 'bg-sidebar-primary text-sidebar-primary-foreground',
         className,
       )}
       {...(isCount && { role: 'status' })}

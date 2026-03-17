@@ -1,0 +1,42 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { docsUrl } from '../../../links';
+
+<Meta title="Use Cases/Reference/Business Affiliates/BA-0004 Edit Supplier/Description" />
+
+# Business Affiliates: Edit Supplier
+
+<a href={docsUrl('/product/use-cases/reference-data/suppliers/business-affiliates/#refba0004----edit-business-affiliate')}
+   target="_blank" rel="noopener">
+  View full specification &#8594;
+</a>
+
+Edit an existing supplier from the detail drawer. The flow: click a row to open the
+drawer in read-only view mode &#8594; click Edit to switch to edit mode &#8594;
+modify fields &#8594; click Save to send the PUT request &#8594; receive a success toast
+&#8594; drawer returns to view mode showing updated values.
+
+## Stories in This Section
+
+<table>
+  <thead><tr><th>Story</th><th>Variants</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Happy Path</td>
+      <td>Interactive, Stepwise, Automated</td>
+      <td>Full view &#8594; edit &#8594; save round-trip with field modifications and success toast</td>
+    </tr>
+  </tbody>
+</table>
+
+## Stories in This Section (continued)
+
+<table>
+  <thead><tr><th>Story</th><th>Variants</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Validation Errors</td>
+      <td>ClearRequiredField, CancelDiscards, NetworkError</td>
+      <td>Error and edge-case scenarios: clear required Name field (Save disabled), cancel discards changes, network error on save (error toast, edit mode preserved)</td>
+    </tr>
+  </tbody>
+</table>

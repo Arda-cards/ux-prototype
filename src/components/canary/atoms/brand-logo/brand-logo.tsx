@@ -2,45 +2,42 @@ import { cn } from '@/lib/utils';
 
 // --- Types ---
 
-type BrandLogoVariant = 'dark' | 'light' | 'mono-dark' | 'mono-light';
+type BrandLogoVariant = 'default' | 'inverted' | 'mono' | 'mono-inverted';
 
 // --- SVG path map ---
 
 const LOGO_PATHS: Record<'full' | 'small', Record<BrandLogoVariant, string>> = {
   full: {
-    dark: '/images/brand/arda-logo-dark.svg',
-    light: '/images/brand/arda-logo-light.svg',
-    'mono-dark': '/images/brand/arda-logo-mono-dark.svg',
-    'mono-light': '/images/brand/arda-logo-mono-light.svg',
+    default: '/canary/images/arda-logo-default.svg',
+    inverted: '/canary/images/arda-logo-inverted.svg',
+    mono: '/canary/images/arda-logo-mono.svg',
+    'mono-inverted': '/canary/images/arda-logo-mono-inverted.svg',
   },
   small: {
-    dark: '/images/brand/arda-logo-small-dark.svg',
-    light: '/images/brand/arda-logo-small-light.svg',
-    'mono-dark': '/images/brand/arda-logo-small-mono-dark.svg',
-    'mono-light': '/images/brand/arda-logo-small-mono-light.svg',
+    default: '/canary/images/arda-logo-small-default.svg',
+    inverted: '/canary/images/arda-logo-small-inverted.svg',
+    mono: '/canary/images/arda-logo-small-mono.svg',
+    'mono-inverted': '/canary/images/arda-logo-small-mono-inverted.svg',
   },
 };
 
 // --- Interfaces ---
 
-export interface ArdaBrandLogoProps {
-  /** Color variant. Use "dark" on dark backgrounds, "light" on light backgrounds. */
+/** Shared props for brand logo components. */
+interface BrandBaseProps {
+  /** Color variant. "default" = orange bg + white A, "inverted" = white bg + orange A. */
   variant?: BrandLogoVariant;
   /** Additional CSS classes. */
   className?: string;
 }
 
-export interface ArdaBrandIconProps {
-  /** Color variant. Use "dark" on dark backgrounds, "light" on light backgrounds. */
-  variant?: BrandLogoVariant;
-  /** Additional CSS classes. */
-  className?: string;
-}
+export type BrandLogoProps = BrandBaseProps;
+export type BrandIconProps = BrandBaseProps;
 
 // --- Components ---
 
 /** Full Arda wordmark (55x30). Use in expanded sidebars, headers, login pages. */
-export function ArdaBrandLogo({ variant = 'dark', className }: ArdaBrandLogoProps) {
+export function BrandLogo({ variant = 'default', className }: BrandLogoProps) {
   return (
     <img
       src={LOGO_PATHS.full[variant]}
@@ -53,7 +50,7 @@ export function ArdaBrandLogo({ variant = 'dark', className }: ArdaBrandLogoProp
 }
 
 /** Compact Arda icon (30x30). Use in collapsed sidebars, favicons, mobile headers. */
-export function ArdaBrandIcon({ variant = 'dark', className }: ArdaBrandIconProps) {
+export function BrandIcon({ variant = 'default', className }: BrandIconProps) {
   return (
     <img
       src={LOGO_PATHS.small[variant]}
