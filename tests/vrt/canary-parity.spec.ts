@@ -23,6 +23,12 @@ import { disableAnimationsAndSettle } from './vrt-helpers';
 
 const PAIRS = [
   {
+    name: 'items-grid',
+    label: 'Items Grid',
+    devWitnessId: 'dev-witness-reference-items-items-grid--default',
+    canaryId: 'canary-refactor-reference-items-items-grid--default',
+  },
+  {
     name: 'item-detail',
     label: 'Item Detail',
     devWitnessId: 'dev-witness-reference-items-item-detail--default',
