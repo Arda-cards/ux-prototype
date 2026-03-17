@@ -116,7 +116,10 @@ function EmptyOverlay({ message }: { message?: string }) {
 
 export interface ItemGridStaticConfig {
   /* --- View / Layout / Controller --- */
+  /** Fixed height for the grid. Ignored when `autoHeight` is true. */
   height?: string | number;
+  /** Grid grows to fit content. Disables vertical scroll. */
+  autoHeight?: boolean;
   enableRowSelection?: boolean;
   editable?: boolean;
   /** Typeahead lookup functions for supplier, classification, etc. */
@@ -127,8 +130,8 @@ export interface ItemGridStaticConfig {
   emptyMessage?: string;
   /** Custom empty state content — overrides emptyMessage. */
   emptyContent?: ReactNode;
-  /** Pinned right-side actions column. Pass a cell renderer component. */
-  actionsColumn?: ColDef<Item>;
+  /** Pinned right-side actions column. Pass a cell renderer and actionCount (for auto-width). */
+  actionsColumn?: ColDef<Item> & { actionCount?: number };
   /** Toolbar actions rendered to the right of the search bar. */
   toolbar?: ReactNode;
   className?: string;
@@ -160,6 +163,7 @@ export function ItemGrid({
   items,
   loading = false,
   height = 600,
+  autoHeight = false,
   enableRowSelection = false,
   editable = false,
   lookups,
@@ -221,6 +225,10 @@ export function ItemGrid({
   const columnDefs = useMemo(() => {
     const cols = createItemGridColumnDefs(lookups);
     if (actionsColumn) {
+      // 28px per button + 4px gap between + 16px container padding
+      const { actionCount, width: actionsWidth, ...actionsRest } = actionsColumn;
+      const computedWidth =
+        actionsWidth ?? (actionCount ? actionCount * 28 + (actionCount - 1) * 4 + 16 : 200);
       cols.push({
         headerName: '',
         sortable: false,
@@ -230,15 +238,17 @@ export function ItemGrid({
         lockPinned: true,
         suppressHeaderMenuButton: true,
         suppressNavigable: true,
+        suppressSizeToFit: true,
+        tooltipValueGetter: () => undefined,
+        width: computedWidth,
         cellStyle: {
           borderLeft: '1px solid var(--base-border)',
           borderTop: 'none',
           borderBottom: 'none',
           borderRight: 'none',
-          paddingRight: 12,
-          overflow: 'visible',
+          padding: '0 4px',
         },
-        ...actionsColumn,
+        ...actionsRest,
       });
     }
     return cols;
@@ -253,14 +263,15 @@ export function ItemGrid({
 
   return (
     <div className={className}>
-      <div className="flex items-center gap-3 pb-4">
-        <div className="relative w-full max-w-72">
+      <div className="flex flex-wrap items-center gap-3 pb-4">
+        <div className="relative w-full sm:w-auto sm:max-w-72 sm:flex-none">
           {searchIcon}
           <Input
             placeholder="Search items…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-10 shadow-none"
+            className="pl-9 shadow-none"
+            style={{ height: 'var(--control-height)' }}
             aria-label="Search items by name or SKU"
           />
         </div>
@@ -271,12 +282,16 @@ export function ItemGrid({
       </div>
 
       <div
-        style={{ height: typeof height === 'number' ? `${height}px` : height, ...gridColorVars }}
+        style={{
+          ...(!autoHeight && { height: typeof height === 'number' ? `${height}px` : height }),
+          ...gridColorVars,
+        }}
       >
         <AgGridMemo
           ref={gridRef}
           theme={gridTheme}
           gridOptions={staticGridOptions}
+          domLayout={autoHeight ? 'autoHeight' : 'normal'}
           context={gridContext}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}

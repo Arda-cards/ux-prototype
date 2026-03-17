@@ -159,7 +159,8 @@ export function TypeaheadCellEditor({
           onChange={handleInputChange}
           onKeyDownCapture={handleKeyDown}
           placeholder={placeholder}
-          className="h-9 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+          className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+          style={{ height: 'var(--control-height)' }}
           role="searchbox"
           aria-label={placeholder}
           aria-autocomplete="list"

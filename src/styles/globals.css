@@ -67,6 +67,12 @@
   --spacing-5: 20px;
   --spacing-6: 24px;
 
+  /* ── Interactive element heights — mouse-first, grow for touch ── */
+  --control-height-xs: 24px;
+  --control-height-sm: 32px;
+  --control-height: 36px;
+  --control-height-lg: 40px;
+
   /* ── Figma Design Colors — Base Variables ── */
   --base-background: #ffffff;
   --base-background-dark: #000000;
@@ -243,6 +249,25 @@
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.637 0.222 29);
+}
+
+/* Touch devices and small screens get larger interactive targets */
+@media (pointer: coarse) {
+  :root {
+    --control-height-xs: 28px;
+    --control-height-sm: 36px;
+    --control-height: 40px;
+    --control-height-lg: 44px;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --control-height-xs: 28px;
+    --control-height-sm: 36px;
+    --control-height: 40px;
+    --control-height-lg: 44px;
+  }
 }
 
 input:-webkit-autofill {
