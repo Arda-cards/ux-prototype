@@ -10,9 +10,10 @@ import { docsUrl } from '../../../links';
   View full specification &#8594;
 </a>
 
-Register a new business affiliate as a supplier. The create flow uses a side
-drawer with collapsible sections (Identity, Contact, Address, Legal, Notes)
-following the continuous-scroll layout (SD-1).
+Register a new business affiliate with roles, contact information, address, and
+legal details so that the affiliate can be linked to item supply records and used
+in purchasing workflows. The canonical specification is maintained in the
+documentation site linked above.
 
 ## Stories in This Section
 
@@ -20,32 +21,14 @@ following the continuous-scroll layout (SD-1).
   <thead><tr><th>Story</th><th>File</th><th>Description</th></tr></thead>
   <tbody>
     <tr>
-      <td>Happy Path (Interactive / Automated)</td>
+      <td>Interactive / Stepwise / Automated</td>
       <td><code>happy-path.stories.tsx</code></td>
-      <td>Full create flow: open drawer &#8594; fill all sections &#8594; save &#8594; verify in grid</td>
+      <td>4-step wizard: Affiliate Identity &#8594; Primary Contact &#8594; Address and Legal &#8594; Review and Confirm</td>
     </tr>
     <tr>
-      <td>Validation Errors (Empty Name Blocked / Network Error / Duplicate Name Error)</td>
+      <td>Validation Errors</td>
       <td><code>validation-errors.stories.tsx</code></td>
-      <td>Error paths: Save disabled when name empty, 500 response keeps drawer open, 409 duplicate-name toast</td>
-    </tr>
-    <tr>
-      <td>[Experimental] Wizard (Interactive / Stepwise / Automated)</td>
-      <td><code>experimental-wizard.stories.tsx</code></td>
-      <td>Original 4-step wizard form (experimental, per SD-5): Affiliate Identity &#8594; Primary Contact &#8594; Address and Legal &#8594; Review and Confirm</td>
-    </tr>
-  </tbody>
-</table>
-
-## Deferred Scenarios
-
-<table>
-  <thead><tr><th>Scenario</th><th>Story ID</th><th>Status</th></tr></thead>
-  <tbody>
-    <tr>
-      <td>Stepwise scene-by-scene walkthrough</td>
-      <td>BA::0003::0001</td>
-      <td>Deferred &#8212; drawer-based stepwise requires custom scene viewer</td>
+      <td>Error paths for name validation and network failures</td>
     </tr>
   </tbody>
 </table>

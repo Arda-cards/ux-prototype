@@ -27,19 +27,12 @@ const config: StorybookConfig = {
     '../src/use-cases/**/*.mdx',
     '../src/use-cases/**/*.stories.@(ts|tsx)',
   ],
-  addons: ['@storybook/addon-docs', '@storybook/addon-links', 'msw-storybook-addon'],
+  addons: ['@storybook/addon-docs', 'msw-storybook-addon'],
   framework: {
     name: '@storybook/react-vite',
     options: {},
   },
   viteFinal: async (config) => {
-    // Allow overriding the base path for subpath deployments (e.g., GitHub Pages).
-    // Set STORYBOOK_BASE=/ux-prototype/ in the build environment to serve
-    // all assets relative to that path. Defaults to '/' for local development.
-    if (process.env.STORYBOOK_BASE) {
-      config.base = process.env.STORYBOOK_BASE;
-    }
-
     const { resolve } = await import('node:path');
 
     config.resolve = config.resolve || {};
@@ -80,41 +73,6 @@ const config: StorybookConfig = {
     // for SSR-safe lazy loading, but Vite (ESM-only) cannot handle require().
     // This transform rewrites it at build time without modifying files on disk.
     config.plugins = config.plugins || [];
-
-    // Wrap AG Grid CSS in @layer base so it participates in the cascade
-    // correctly in both dev and production builds. Without this, Rollup
-    // code-splits AG Grid CSS into a separate chunk that loses the @layer
-    // context from @import directives, causing unlayered AG Grid defaults
-    // to override the layered Arda theme overrides.
-    config.plugins.push({
-      name: 'wrap-ag-grid-css-in-layer',
-      enforce: 'pre' as const,
-      transform(code, id) {
-        if (id.includes('ag-grid-community') && id.endsWith('.css')) {
-          return { code: `@layer base {\n${code}\n}`, map: null };
-        }
-        return null;
-      },
-    });
-
-    // Workaround for @storybook/builder-vite bug: the vite-inject-mocker
-    // plugin hardcodes `src="/vite-inject-mocker-entry.js"` in the HTML
-    // without respecting Vite's `base` config. When deployed under a subpath
-    // (e.g., /ux-prototype/), this causes a 404. This plugin rewrites the
-    // path to include the base prefix.
-    if (config.base && config.base !== '/') {
-      const base = config.base;
-      config.plugins.push({
-        name: 'fix-mocker-entry-base-path',
-        enforce: 'post' as const,
-        transformIndexHtml(html) {
-          return html.replace(
-            'src="/vite-inject-mocker-entry.js"',
-            `src="${base}vite-inject-mocker-entry.js"`,
-          );
-        },
-      });
-    }
 
     config.plugins.push({
       name: 'vendored-cjs-to-esm',
