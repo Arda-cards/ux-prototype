@@ -794,6 +794,119 @@ Before running VRT, verify that both stories load and render correctly:
 
 ---
 
+## Canary Grid Library Conventions
+
+The following conventions apply specifically to grid-related canary components introduced in the list-view branch. They supplement the general guidance above.
+
+### Utility and formatter imports
+
+<table>
+  <thead>
+    <tr>
+      <th>What</th>
+      <th>Import path</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>cn()</code> class utility (clsx + tailwind-merge)</td>
+      <td><code>@/types/canary/utils</code></td>
+    </tr>
+    <tr>
+      <td>Shared number/currency/date formatters</td>
+      <td><code>@/components/canary/atoms/shared/formatters</code></td>
+    </tr>
+  </tbody>
+</table>
+
+> **Note:** Do not import `cn` from `@/lib/utils`. The canary track uses `@/types/canary/utils` as the canonical location. The ESLint `canary-cannot-import-extras` boundary prevents importing from `@/components/extras/` or `@/types/extras/`.
+
+### Grid atom file structure
+
+Grid cell components live under `src/components/canary/atoms/grid/{type}/` and follow the Display + Editor + factory pattern:
+
+```
+src/components/canary/atoms/grid/
+  text/
+    text-cell-display.tsx     ← read-only renderer
+    text-cell-editor.tsx      ← inline editor + createTextCellEditor factory
+    text.stories.tsx
+    text.test.tsx
+    index.ts                  ← re-exports Display, Editor, factory, and types
+  number/
+    number-cell-display.tsx
+    number-cell-editor.tsx
+    ...
+  enum/
+  boolean/
+  date/
+  color/
+  memo/
+  action/
+```
+
+Each type exports a `create{Type}CellEditor` factory function used by AG Grid column definitions. Use the `index.ts` barrel for all imports within the grid library.
+
+### Canary barrel exports
+
+All public canary components are exported from `src/canary.ts`. After creating a new grid component, add exports under the appropriate section comment:
+
+```tsx
+// In src/canary.ts
+export { TextCellDisplay } from './components/canary/atoms/grid/text/text-cell-display';
+export { TextCellEditor, createTextCellEditor } from './components/canary/atoms/grid/text/text-cell-editor';
+export type { TextCellDisplayProps } from './components/canary/atoms/grid/text/text-cell-display';
+```
+
+Then regenerate the package contents inventory:
+
+```bash
+node tools/update-package-contents.js
+```
+
+### ESLint boundary: canary cannot import extras
+
+The `no-restricted-imports` rule in `eslint.config.mjs` prevents canary code from importing extras. If you see:
+
+```
+Canary code must not import from extras. Port the dependency to canary first.
+```
+
+The fix is to move the shared dependency into the canary track (e.g., move a formatter from `extras/` to `canary/atoms/shared/`) before importing it from canary code.
+
+### Molecule and organism structure
+
+<table>
+  <thead>
+    <tr>
+      <th>Level</th>
+      <th>Directory</th>
+      <th>Key file</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Molecule (data grid wrapper)</td>
+      <td><code>src/components/canary/molecules/data-grid/</code></td>
+      <td><code>data-grid.tsx</code></td>
+    </tr>
+    <tr>
+      <td>Organism (entity data grid factory)</td>
+      <td><code>src/components/canary/organisms/shared/entity-data-grid/</code></td>
+      <td><code>createArdaEntityDataGrid</code> factory</td>
+    </tr>
+    <tr>
+      <td>Organism (shim for backwards compat)</td>
+      <td><code>src/components/canary/organisms/shared/entity-data-grid-shim/</code></td>
+      <td>Re-exports via shim wrapper</td>
+    </tr>
+  </tbody>
+</table>
+
+The `createArdaEntityDataGrid` factory returns `{ Component }` (not the bare component). This is the standard factory return convention for all canary organism factories &#8212; follow the same pattern when creating new organism factories.
+
+---
+
 ## Quick Reference: File Paths
 
 <table>

@@ -1,0 +1,459 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Workflows/Use Case Framework" />
+
+# Use Case Framework &#8212; Workflow Guide
+
+This guide provides the step-by-step recipe for creating and migrating use case stories using the shared framework at `src/use-cases/framework.tsx`. For the conceptual overview and full API reference, see the [Use Cases conceptual guide](?path=/docs/docs-storybook-structure-use-cases--docs).
+
+---
+
+## When to Use the Framework
+
+The Use Case Framework is designed for **multi-step wizard flows** &#8212; interactions that guide users through a sequence of steps, collect form data, and complete with a success state. It is not intended for every story type.
+
+<table>
+  <thead>
+    <tr>
+      <th>Interaction pattern</th>
+      <th>Use the framework?</th>
+      <th>Reason</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Wizard-like multi-step flow (form fill &#8594; review &#8594; submit &#8594; success)</td>
+      <td><strong>YES</strong></td>
+      <td>Core use case for the framework. Generates Interactive, Stepwise, and Automated variants automatically.</td>
+    </tr>
+    <tr>
+      <td>Grid observation, search, column toggle</td>
+      <td>NO</td>
+      <td>No step sequence or form state. Use a standard component story.</td>
+    </tr>
+    <tr>
+      <td>Single-step view (detail panel)</td>
+      <td>NO</td>
+      <td>No wizard navigation needed. Use a component story with args.</td>
+    </tr>
+    <tr>
+      <td>Confirmation dialogs (delete)</td>
+      <td>NO</td>
+      <td>Single interaction, not a multi-step flow. Use a component story.</td>
+    </tr>
+    <tr>
+      <td>Error-variant stories</td>
+      <td>NO</td>
+      <td>Errors are separate story variants, not full use case flows.</td>
+    </tr>
+  </tbody>
+</table>
+
+**Assessment methodology:** If the workflow requires the user to complete more than one discrete step before a final action (submit, save, confirm), and intermediate state must be preserved between steps, use the framework. If in doubt, check whether the workflow appears in the use cases MDX description with multiple numbered steps &#8212; those map directly to framework wizard steps.
+
+---
+
+## Creating a New Use Case Story
+
+A condensed 5-step recipe. For the full API reference with all available exports, see the [Use Cases conceptual guide](?path=/docs/docs-storybook-structure-use-cases--docs).
+
+### Step 1: Define FormData interface + INITIAL + SAMPLE constants
+
+All field values must be `string` type because they bind directly to HTML inputs. Derive field names from the Description MDX field tables.
+
+```tsx
+interface FormData {
+  name: string;
+  quantity: string;
+  unit: string;
+}
+
+const INITIAL: FormData = { name: '', quantity: '', unit: '' };
+
+const SAMPLE: FormData = {
+  name: 'Widget A',
+  quantity: '100',
+  unit: 'ea',
+};
+```
+
+### Step 2: Define guides (GuideEntry[]) &#8212; one per wizard step + success
+
+Guides describe each wizard phase for the Interactive and Stepwise story panels. The array index matches the wizard step index. Add one final entry for the success screen.
+
+```tsx
+const guides: GuideEntry[] = [
+  {
+    title: 'Step 1: Item Details',
+    description: 'Enter the item name and quantity.',
+    interaction: 'Fill in all fields, then click "Next Step".',
+  },
+  {
+    title: 'Step 2: Review',
+    description: 'Confirm the details before submitting.',
+    interaction: 'Click "Confirm" to create the item.',
+  },
+  {
+    title: 'Success',
+    description: 'The item was created successfully.',
+    interaction: 'Click "Start Over" to create another item.',
+  },
+];
+```
+
+### Step 3: Define scenes (Scene&#60;T&#62;[]) &#8212; snapshots for stepwise/automated
+
+Each scene captures the complete wizard state at one discrete moment. The Stepwise viewer and Automated play function both use this array. Break each wizard step into individual field-fill actions &#8212; typically one scene per field filled, plus a scene for advancing to the next step.
+
+```tsx
+const scenes: Scene<FormData>[] = [
+  {
+    wizardStep: 0,
+    submitted: false,
+    formData: INITIAL,
+    title: 'Scene 1 &#8212; Empty Form',
+    description: 'The form starts empty.',
+    interaction: 'The user types the item name.',
+  },
+  {
+    wizardStep: 0,
+    submitted: false,
+    formData: { ...INITIAL, name: SAMPLE.name },
+    title: 'Scene 2 &#8212; Name Entered',
+    description: 'Name is filled, quantity still empty.',
+    interaction: 'The user enters the quantity.',
+  },
+  {
+    wizardStep: 0,
+    submitted: false,
+    formData: { ...INITIAL, name: SAMPLE.name, quantity: SAMPLE.quantity, unit: SAMPLE.unit },
+    title: 'Scene 3 &#8212; Step 1 Complete',
+    description: 'All fields filled. Ready to advance.',
+    interaction: 'The user clicks "Next Step".',
+  },
+  {
+    wizardStep: 1,
+    submitted: false,
+    formData: SAMPLE,
+    title: 'Scene 4 &#8212; Review',
+    description: 'Summary of entered data.',
+    interaction: 'The user clicks "Confirm".',
+  },
+  {
+    wizardStep: 1,
+    submitted: true,
+    formData: SAMPLE,
+    title: 'Scene 5 &#8212; Success',
+    description: 'Item created successfully.',
+    interaction: 'The user can reset or navigate away.',
+  },
+];
+```
+
+### Step 4: Build Wizard component with useWizard() + UseCaseShell
+
+You only write the step content (form fields and review layout). The framework provides all chrome: heading, step indicator, Back/Next buttons, reset link, and guide panel.
+
+```tsx
+function MyWizard(props: WizardProps<FormData>) {
+  const w = useWizard(props, {
+    initial: INITIAL,
+    stepNames: ['Item Details', 'Review'],
+    canAdvance: (step, data) => {
+      if (step === 0) return !!(data.name && data.quantity && data.unit);
+      return true;
+    },
+  });
+
+  return (
+    <UseCaseShell
+      wizard={w}
+      guides={guides}
+      heading="Add Item"
+      subtitle="Complete each step to add a new item."
+      submitLabel="Confirm"
+      success={
+        <SuccessScreen
+          title="Item added"
+          subtitle={<>Item <strong>{w.formData.name}</strong> was created.</>}
+          onReset={w.handleReset}
+        />
+      }
+    >
+      {w.step === 0 && (
+        <>
+          <FormField label="Name" name="name" value={w.formData.name} onChange={w.handleChange} />
+          <FormRow>
+            <FormField label="Quantity" name="quantity" value={w.formData.quantity} onChange={w.handleChange} />
+            <FormSelect
+              label="Unit"
+              name="unit"
+              value={w.formData.unit}
+              onChange={w.handleChange}
+              options={['ea', 'box', 'kg']}
+              placeholder="Select unit"
+            />
+          </FormRow>
+        </>
+      )}
+      {w.step === 1 && (
+        <SummaryCard>
+          <SummaryRow label="Name" value={w.formData.name} />
+          <SummaryRow label="Quantity" value={w.formData.quantity} />
+          <SummaryRow label="Unit" value={w.formData.unit} />
+        </SummaryCard>
+      )}
+    </UseCaseShell>
+  );
+}
+```
+
+### Step 5: Generate stories with createUseCaseStories()
+
+The `meta` object **must** be a static object literal (see Common Pitfalls below). Call `createUseCaseStories` to produce all three story variants from a single config.
+
+```tsx
+import type { Meta } from '@storybook/react-vite';
+import { expect, userEvent } from 'storybook/test';
+import {
+  createUseCaseStories,
+  useWizard,
+  UseCaseShell,
+  FormField,
+  FormRow,
+  FormSelect,
+  SummaryCard,
+  SummaryRow,
+  SuccessScreen,
+  type GuideEntry,
+  type Scene,
+  type WizardProps,
+} from '@/use-cases/framework';
+
+// ... FormData, INITIAL, SAMPLE, guides, scenes, MyWizard defined above ...
+
+const meta = {
+  title: 'Use Cases/Inventory/Add Item/Happy Path',
+  parameters: { layout: 'centered' },
+} satisfies Meta;
+
+const { Interactive, Stepwise, Automated } = createUseCaseStories<FormData>({
+  guides,
+  scenes,
+  Wizard: MyWizard,
+  delayMs: 2000,
+  play: async ({ canvas, goToScene, delay }) => {
+    goToScene(0);
+    await delay();
+
+    await userEvent.type(canvas.getByLabelText('Name'), SAMPLE.name);
+    goToScene(1);
+    await delay();
+
+    await userEvent.type(canvas.getByLabelText('Quantity'), SAMPLE.quantity);
+    await userEvent.selectOptions(canvas.getByLabelText('Unit'), SAMPLE.unit);
+    goToScene(2);
+    await delay();
+
+    await userEvent.click(canvas.getByRole('button', { name: /next step/i }));
+    goToScene(3);
+    await delay();
+
+    await userEvent.click(canvas.getByRole('button', { name: /confirm/i }));
+    goToScene(4);
+    await delay();
+
+    await expect(canvas.getByText('Item added')).toBeVisible();
+  },
+});
+
+export default meta;
+export { Interactive, Stepwise, Automated };
+```
+
+---
+
+## Converting an Existing Story
+
+Use this migration pattern when an existing story uses custom step navigation, guide panels, or wizard chrome that the framework now provides.
+
+### Migration steps
+
+1. **Identify the interaction pattern and variants.** If the story is a multi-step form flow with custom navigation, it is a good candidate. List all custom components used: step indicators, guide panels, control bars, etc.
+
+2. **Map custom scene/step navigation to `Scene<T>[]` snapshots.** Each discrete state the story visits (empty form, one field filled, step advanced, review, success) becomes one `Scene` entry.
+
+3. **Replace custom guide panels with `GuideEntry[]`.** Extract the step description and interaction text into the `guides` array. One entry per wizard step, plus one for the success screen.
+
+4. **Replace custom chrome with `UseCaseShell`.** Remove custom step indicators, navigation buttons, and reset links. `UseCaseShell` handles all of these when given a `wizard` prop from `useWizard`.
+
+5. **Replace custom wizard state with `useWizard()`.** Remove `useState` calls managing `currentStep`, `formData`, `isSubmitted`, etc. The `useWizard` hook provides `w.step`, `w.formData`, `w.handleChange`, `w.handleReset`, and `w.submitted`.
+
+6. **Rewrite the play function using `PlayContext`.** Replace direct DOM manipulation calls with `goToScene(index)` to sync the guide panel, and `delay()` for pacing between steps. Keep `userEvent` calls for actual interactions.
+
+7. **Remove dead custom code.** Delete `StepwiseGuide`, `StepwiseNavControls`, `StepIndicator`, and any other custom chrome components that `UseCaseShell` now replaces.
+
+8. **Verify with build-storybook.** Run `npm run build:lib` to confirm no MDX or story indexing errors.
+
+---
+
+## Worked Example: Edit Supplier
+
+This worked example shows the before/after for a real migration.
+
+### Before (351 lines)
+
+The original story defined custom components inline:
+
+```tsx
+// Custom chrome — now replaced by UseCaseShell
+function StepwiseGuide({ step, guides }: { step: number; guides: CustomGuide[] }) { ... }
+function StepwiseNavControls({ onPrev, onNext, onReset, step, total }: NavProps) { ... }
+function StepIndicator({ current, total }: IndicatorProps) { ... }
+
+// Custom state — now replaced by useWizard
+const [currentStep, setCurrentStep] = useState(0);
+const [formData, setFormData] = useState(INITIAL);
+const [isSubmitted, setIsSubmitted] = useState(false);
+
+// Custom story factory — now replaced by createUseCaseStories
+export const Interactive: Story = { ... };
+export const Stepwise: Story = { ... };
+export const Automated: Story = { play: async ({ canvasElement }) => { ... } };
+```
+
+### After (~250 lines)
+
+```tsx
+// guides: GuideEntry[] — replaces CustomGuide[]
+const guides: GuideEntry[] = [
+  { title: 'Step 1: Supplier Details', description: '...', interaction: '...' },
+  { title: 'Step 2: Contact', description: '...', interaction: '...' },
+  { title: 'Step 3: Review', description: '...', interaction: '...' },
+  { title: 'Success', description: '...', interaction: '...' },
+];
+
+// scenes: Scene<FormData>[] — replaces custom scene objects
+const scenes: Scene<FormData>[] = [ /* one per discrete state */ ];
+
+// Wizard component — only step content, no chrome
+function EditSupplierWizard(props: WizardProps<FormData>) {
+  const w = useWizard(props, { initial: INITIAL, stepNames: [...], canAdvance: ... });
+  return (
+    <UseCaseShell wizard={w} guides={guides} heading="Edit Supplier" ...>
+      {/* step content only */}
+    </UseCaseShell>
+  );
+}
+
+// Static meta literal + createUseCaseStories — replaces 3 separate story objects
+const meta = { title: 'Use Cases/Suppliers/Edit Supplier/Happy Path', ... } satisfies Meta;
+const { Interactive, Stepwise, Automated } = createUseCaseStories<FormData>({ guides, scenes, Wizard: EditSupplierWizard, delayMs: 2000, play: async ({ canvas, goToScene, delay }) => { ... } });
+
+export default meta;
+export { Interactive, Stepwise, Automated };
+```
+
+### Key mapping
+
+<table>
+  <thead>
+    <tr>
+      <th>Before (custom)</th>
+      <th>After (framework)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>StepwiseGuide</code>, <code>StepIndicator</code></td>
+      <td><code>UseCaseShell</code> (via <code>guides</code> prop)</td>
+    </tr>
+    <tr>
+      <td><code>StepwiseNavControls</code></td>
+      <td><code>UseCaseShell</code> (built-in navigation)</td>
+    </tr>
+    <tr>
+      <td>Custom <code>useState</code> for step/data/submitted</td>
+      <td><code>useWizard()</code> hook</td>
+    </tr>
+    <tr>
+      <td>Custom scene objects with ad-hoc shape</td>
+      <td><code>Scene&#60;FormData&#62;[]</code> typed array</td>
+    </tr>
+    <tr>
+      <td>Three separate story exports with duplicated logic</td>
+      <td><code>createUseCaseStories()</code> factory</td>
+    </tr>
+    <tr>
+      <td><code>play</code> function with manual canvas queries only</td>
+      <td><code>play</code> with <code>goToScene</code> + <code>delay</code> from <code>PlayContext</code></td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Common Pitfalls
+
+### `meta` must be a static object literal
+
+Storybook's CSF indexer uses static analysis to discover stories. It cannot resolve values returned from function calls or computed at runtime.
+
+```tsx
+// CORRECT — static literal
+const meta = {
+  title: 'Use Cases/Feature Area/Workflow/Scenario',
+  parameters: { layout: 'centered' },
+} satisfies Meta;
+
+// WRONG — Storybook indexer cannot resolve this
+const meta = buildMeta('Use Cases/Feature Area/Workflow/Scenario');
+```
+
+### `delayMs` tuning for automated stories
+
+The default is 2000ms. Reduce it to speed up CI runs, or increase it for demos where viewers need time to read each step. The value passed to `createUseCaseStories` applies to every `delay()` call in the play function.
+
+```tsx
+// For CI / fast runs
+const { Interactive, Stepwise, Automated } = createUseCaseStories<FormData>({
+  delayMs: 500,
+  // ...
+});
+```
+
+### `goToScene` indices must match play function progression
+
+`goToScene(index)` updates the guide panel to show the scene at `scenes[index]`. The index must match the progression of your play function. If the play function advances through 5 scenes but `goToScene` calls jump from 2 to 4, the guide panel will be out of sync with the actual browser state.
+
+```tsx
+// Each goToScene call must match the corresponding play function action
+goToScene(0);  // empty form
+await delay();
+await userEvent.type(canvas.getByLabelText('Name'), SAMPLE.name);
+goToScene(1);  // name entered — scene[1] must have name filled
+await delay();
+```
+
+### Form values should be string type
+
+Even numeric fields (quantity, price) must be stored as `string` in `FormData` because HTML inputs always return strings. Convert to numbers only at the point of API call or display formatting.
+
+```tsx
+// CORRECT
+interface FormData {
+  price: string;  // stored as string, formatted on display
+}
+
+// WRONG
+interface FormData {
+  price: number;  // breaks two-way binding with <input> elements
+}
+```
+
+---
+
+## Related Pages
+
+- [Use Cases conceptual guide](?path=/docs/docs-storybook-structure-use-cases--docs) &#8212; full API reference for `createUseCaseStories`, `useWizard`, `UseCaseShell`, and all framework exports
+- [Creating Stories](?path=/docs/docs-workflows-creating-stories--docs) &#8212; general story conventions, CSS theming, and component story patterns

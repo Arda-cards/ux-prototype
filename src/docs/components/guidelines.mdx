@@ -211,7 +211,7 @@ Before writing any component code, **always check the upstream catalogs first**:
 2. If the component is fundamentally a row/column data display (sortable table, filterable grid, editable cells, row grouping):
    - Use `AgGridReact` from the existing `ag-grid-react` dependency as the rendering core.
    - Create an Arda wrapper that provides Arda-specific `ColDef` defaults, theme tokens, and the StaticConfig/RuntimeConfig interface split.
-   - See the existing `createArdaEntityDataGrid` factory in `src/components/extras/organisms/shared/entity-data-grid/` for the established pattern.
+   - For canary components, see the `createArdaEntityDataGrid` factory in `src/components/canary/organisms/shared/entity-data-grid/` for the established pattern (returns `{ Component }`, not the bare component). The extras version at `src/components/extras/organisms/shared/entity-data-grid/` is the original reference; prefer the canary version for new work.
 3. If only a sub-feature is needed (e.g., cell renderer, status bar panel):
    - Implement it as a custom AG Grid component following the [AG Grid Component docs](https://www.ag-grid.com/react-data-grid/components/).
 
