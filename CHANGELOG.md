@@ -18,6 +18,47 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.0.0] - 2026-03-18
+
+### Added
+
+- **Canary sidebar organism**: `ArdaSidebar` compound component with dark theme, collapsible
+  rail, `ArdaSidebarHeader` (team switcher dropdown), `SidebarNav`, `SidebarNavItem`,
+  `SidebarNavGroup` (auto-expands on active child), `SidebarUserMenu` with data-driven actions
+- **Canary sidebar atoms**: `ArdaBadge` (count prop, 99+ cap), `BrandLogo`/`BrandIcon`
+  (light/dark/mono variants), `IconLabel`
+- **Canary app-header organism**: `ArdaAppHeader` with data-driven icon/button actions,
+  `ArdaSearchInput`, `ArdaIconButton` (badge + tooltip), leading slot, responsive layout
+- **Canary item-details organism**: `ArdaItemDetails` with tabbed interface (details + cards),
+  card carousel (swipe/click nav), `ArdaFieldList`, `ArdaGridAction` (app-grid icon buttons),
+  `ArdaDrawer` (slide-over panel), `ArdaButton` (primary/secondary/ghost/destructive/outline)
+- **Canary item-grid organism**: `ItemGrid` with native AG Grid `themeQuartz.withParams()`,
+  11 column types, `TypeaheadCellEditor`, `SelectCellEditor`, `OverflowToolbar` (ResizeObserver),
+  `DragHeader`, `useItemGridEditing` (draft/publish lifecycle with dirty tracking),
+  pagination, custom overlays, drag-to-scroll
+- **Canary action-toolbar molecule**: `ArdaActionToolbar` with overflow menu
+- **shadcn UI layer**: `Tabs`, updated `Button`, `Sheet`, new design tokens in `globals.css`
+- Shared `cn()` utility at `src/utils.ts` (migrated from `src/lib/utils.ts`)
+- Barrel exports (`index.ts`) for all canary atoms, molecules, and organisms
+
+### Changed
+
+- `canary.ts` barrel: added sidebar, app-header, item-details, and item-grid exports
+- Renamed `DetailField` → `ReadOnlyField` (atom)
+- Renamed `detail-field` → `read-only-field` (directory)
+- Moved `grid-action` and `action-toolbar` from atoms → molecules
+- Business affiliates use-case stories: updated imports, supplier drawer, and page wrappers
+  for compatibility with canary components
+- `package.json`: bumped Storybook to `^10.2.17`, added `shadcn`, `@reduxjs/toolkit`,
+  `@storybook/addon-links`, `radix-ui`, `@radix-ui/react-tooltip`
+
+### Removed
+
+- `CanaryAtomPlaceholder`, `CanaryMoleculePlaceholder`, `CanaryOrganismPlaceholder`
+- `ItemDetailsPanel.tsx` (replaced by canary `ArdaItemDetails` organism)
+- `src/lib/utils.ts` (migrated to `src/utils.ts`)
+- Item-detail VRT snapshot (superseded by new canary organisms)
+
 ## [3.0.0] - 2026-03-17
 
 ### Added
