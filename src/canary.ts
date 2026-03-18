@@ -12,14 +12,14 @@ export { IconLabel } from './components/canary/atoms/icon-label/icon-label';
 export type { IconLabelProps } from './components/canary/atoms/icon-label/icon-label';
 
 export {
-  DetailField,
-  detailFieldVariants,
-} from './components/canary/atoms/detail-field/detail-field';
+  ReadOnlyField,
+  readOnlyFieldVariants,
+} from './components/canary/atoms/read-only-field/read-only-field';
 export type {
-  DetailFieldProps,
-  DetailFieldStaticConfig,
-  DetailFieldRuntimeConfig,
-} from './components/canary/atoms/detail-field/detail-field';
+  ReadOnlyFieldProps,
+  ReadOnlyFieldStaticConfig,
+  ReadOnlyFieldRuntimeConfig,
+} from './components/canary/atoms/read-only-field/read-only-field';
 
 // Cell atoms: text
 export {

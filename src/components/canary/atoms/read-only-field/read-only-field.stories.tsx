@@ -1,17 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
-import { DetailField } from './detail-field';
+import { ReadOnlyField } from './read-only-field';
 
 const meta = {
-  title: 'Components/Canary/Atoms/DetailField',
-  component: DetailField,
+  title: 'Components/Canary/Atoms/ReadOnlyField',
+  component: ReadOnlyField,
   parameters: {
     docs: {
       description: {
         component:
           'A read-only label/value pair for entity detail views. ' +
-          'Displays a field label above a formatted value with consistent typography. ' +
-          'Extracted from ItemDetailsPanel vendored source.',
+          'Displays a field label above a formatted value with consistent typography.',
       },
     },
   },
@@ -39,10 +38,10 @@ const meta = {
       table: { category: 'Runtime' },
     },
   },
-} satisfies Meta<typeof DetailField>;
+} satisfies Meta<typeof ReadOnlyField>;
 
 export default meta;
-type Story = StoryObj<typeof DetailField>;
+type Story = StoryObj<typeof ReadOnlyField>;
 
 /** Default rendering with a label and value. */
 export const Default: Story = {
@@ -60,7 +59,6 @@ export const EmptyValue: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByText('GL Code')).toBeVisible();
-    // The default fallback is an em dash
     await expect(canvas.getByText('\u2014')).toBeVisible();
   },
 };
@@ -79,38 +77,27 @@ export const Compact: Story = {
   args: { label: 'Unit Price', value: '$12.50', variant: 'compact' },
 };
 
-/**
- * WithChildren story — custom value rendering using children.
- * Mirrors the Link block in ItemDetailsPanel which renders a TruncatedLink.
- */
+/** Custom value rendering using children. */
 export const WithChildren: Story = {
   args: { label: 'Link' },
   render: (args) => (
-    <DetailField {...args}>
+    <ReadOnlyField {...args}>
       <a href="https://example.com" className="text-primary underline break-all">
         https://example.com/very-long-product-link-that-truncates
       </a>
-    </DetailField>
+    </ReadOnlyField>
   ),
 };
 
-/**
- * Composition story — multiple fields together, mirroring the Item Details section
- * in ItemDetailsPanel lines 1160-1205.
- */
+/** Multiple fields together. */
 export const Composition: Story = {
   render: () => (
-    <div className="flex w-[400px] flex-col gap-3 p-4 border rounded-lg">
-      <DetailField label="Link" fallback="No link available" />
-      <DetailField label="SKU" value="ITEM-001-A" />
-      <DetailField label="General Ledger Code" value="4200-100" />
-      <DetailField label="Unit price" value="$12.50" />
-      <DetailField label="Number of cards" value="3" />
+    <div className="w-[400px] space-y-3 p-4 border rounded-lg">
+      <ReadOnlyField label="Link" fallback="No link available" />
+      <ReadOnlyField label="SKU" value="ITEM-001-A" />
+      <ReadOnlyField label="General Ledger Code" value="4200-100" />
+      <ReadOnlyField label="Unit price" value="$12.50" />
+      <ReadOnlyField label="Number of cards" value="3" />
     </div>
   ),
-};
-
-/** Interactive playground: use the Controls panel to experiment with all props. */
-export const Playground: Story = {
-  args: { label: 'Field Label', value: 'Field Value', variant: 'default' },
 };

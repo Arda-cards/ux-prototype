@@ -3,13 +3,13 @@ import { cn } from '@/types/canary/utils';
 
 // --- CVA variant definition ---
 
-const detailFieldVariants = cva('flex flex-col gap-1', {
+const readOnlyFieldVariants = cva('flex flex-col gap-0.5', {
   variants: {
     variant: {
       /** Standard gap between label and value. */
       default: '',
       /** Reduced gap for compact layouts. */
-      compact: 'gap-0.5',
+      compact: 'gap-px',
     },
   },
   defaultVariants: { variant: 'default' },
@@ -17,8 +17,8 @@ const detailFieldVariants = cva('flex flex-col gap-1', {
 
 // --- Interfaces ---
 
-/** Static configuration for DetailField. */
-export interface DetailFieldStaticConfig extends VariantProps<typeof detailFieldVariants> {
+/** Design-time configuration for ReadOnlyField. */
+export interface ReadOnlyFieldStaticConfig extends VariantProps<typeof readOnlyFieldVariants> {
   /* --- View / Layout / Controller --- */
   /** The field label displayed above the value. */
   label: string;
@@ -27,28 +27,31 @@ export interface DetailFieldStaticConfig extends VariantProps<typeof detailField
   fallback?: string;
 }
 
-/** Runtime configuration for DetailField. */
-export interface DetailFieldRuntimeConfig {
+/** Runtime configuration for ReadOnlyField. */
+export interface ReadOnlyFieldRuntimeConfig {
   /* --- Model / Data Binding --- */
   /** The field value to display as plain text. */
-  value?: string;
+  value?: string | undefined;
   /** Custom value rendering. When provided, overrides value and fallback. */
-  children?: React.ReactNode;
+  children?: React.ReactNode | undefined;
 }
 
-/** Combined props for DetailField. */
-export interface DetailFieldProps
-  extends DetailFieldStaticConfig, DetailFieldRuntimeConfig, React.HTMLAttributes<HTMLDivElement> {}
+/** Combined props for ReadOnlyField. */
+export interface ReadOnlyFieldProps
+  extends
+    ReadOnlyFieldStaticConfig,
+    ReadOnlyFieldRuntimeConfig,
+    React.HTMLAttributes<HTMLDivElement> {}
 
 // --- Component ---
 
 /**
- * DetailField — a read-only label/value pair for entity detail views.
+ * ReadOnlyField — a read-only label/value pair for entity detail views.
  *
  * Built from scratch (no shadcn/ui or AG Grid analog).
  * Extracted from `vendored/arda-frontend/components/items/ItemDetailsPanel.tsx` lines 1161-1204.
  */
-export function DetailField({
+export function ReadOnlyField({
   label,
   value,
   fallback = '\u2014',
@@ -56,15 +59,17 @@ export function DetailField({
   children,
   className,
   ...props
-}: DetailFieldProps) {
+}: ReadOnlyFieldProps) {
   const displayValue = children ?? (value !== undefined && value !== '' ? value : fallback);
 
   return (
-    <div className={cn(detailFieldVariants({ variant }), className)} {...props}>
-      <span className="text-sm text-muted-foreground font-medium">{label}</span>
-      <span className="text-base text-foreground font-semibold break-words">{displayValue}</span>
+    <div className={cn(readOnlyFieldVariants({ variant }), className)} {...props}>
+      <span className="text-sm uppercase tracking-[0.06em] text-muted-foreground font-medium">
+        {label}
+      </span>
+      <span className="text-sm text-foreground break-words font-mono">{displayValue}</span>
     </div>
   );
 }
 
-export { detailFieldVariants };
+export { readOnlyFieldVariants };
