@@ -165,9 +165,7 @@ function CollapsibleSection({
           </span>
         </button>
       </CollapsibleTrigger>
-      <CollapsibleContent className="pt-2 pb-4 px-2 space-y-3">
-        {children}
-      </CollapsibleContent>
+      <CollapsibleContent className="pt-2 pb-4 px-2 space-y-3">{children}</CollapsibleContent>
     </Collapsible>
   );
 }
@@ -231,9 +229,7 @@ export function SupplierDrawer({
   const formRef = useRef<HTMLFormElement>(null);
   // Track name value for Save button disabled state.
   // In edit mode, initialize with the existing affiliate name.
-  const [nameValue, setNameValue] = useState(
-    mode === 'edit' ? (affiliate?.name ?? '') : '',
-  );
+  const [nameValue, setNameValue] = useState(mode === 'edit' ? (affiliate?.name ?? '') : '');
 
   // Reset/reinitialize form state when drawer opens or mode changes
   useEffect(() => {
@@ -303,11 +299,7 @@ export function SupplierDrawer({
   return (
     <>
       {/* Backdrop overlay */}
-      <div
-        className="fixed inset-0 bg-black/20 z-40"
-        onClick={onClose}
-        aria-hidden="true"
-      />
+      <div className="fixed inset-0 bg-black/20 z-40" onClick={onClose} aria-hidden="true" />
 
       {/* Drawer panel */}
       <div
@@ -336,16 +328,11 @@ export function SupplierDrawer({
 
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto px-4 py-2">
-          {mode === 'view' && affiliate && (
-            <ViewModeBody affiliate={affiliate} />
-          )}
+          {mode === 'view' && affiliate && <ViewModeBody affiliate={affiliate} />}
           {(mode === 'create' || mode === 'edit') && (
             <form ref={formRef} onSubmit={(e) => e.preventDefault()}>
               {mode === 'create' && (
-                <CreateModeBody
-                  nameValue={nameValue}
-                  onNameChange={setNameValue}
-                />
+                <CreateModeBody nameValue={nameValue} onNameChange={setNameValue} />
               )}
               {mode === 'edit' && affiliate && (
                 <EditModeBody
@@ -443,10 +430,7 @@ function ViewModeBody({ affiliate }: { affiliate: BusinessAffiliateWithRoles }) 
             <ReadOnlyField label="City" value={affiliate.mainAddress.city} />
             <ReadOnlyField label="State" value={affiliate.mainAddress.state} />
             <ReadOnlyField label="Postal Code" value={affiliate.mainAddress.postalCode} />
-            <ReadOnlyField
-              label="Country"
-              value={affiliate.mainAddress.country?.name}
-            />
+            <ReadOnlyField label="Country" value={affiliate.mainAddress.country?.name} />
           </>
         ) : (
           <p className="text-sm text-muted-foreground italic">No address information</p>

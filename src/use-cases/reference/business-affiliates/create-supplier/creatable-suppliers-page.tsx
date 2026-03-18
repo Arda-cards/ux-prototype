@@ -71,11 +71,7 @@ export function CreatableSuppliersPage(props: CreatableSuppliersPageProps) {
 
   return (
     <>
-      <SuppliersPage
-        key={remountKey}
-        {...props}
-        onAddSupplier={handleAddSupplier}
-      />
+      <SuppliersPage key={remountKey} {...props} onAddSupplier={handleAddSupplier} />
       <SupplierDrawer
         open={drawerOpen}
         mode="create"

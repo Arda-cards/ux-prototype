@@ -12,8 +12,7 @@ export default defineConfig({
   outputDir: './tests/test-results',
 
   /* Platform-independent snapshot names so baselines work on macOS and Linux. */
-  snapshotPathTemplate:
-    '{testDir}/{testFileDir}/__snapshots__/{arg}{ext}',
+  snapshotPathTemplate: '{testDir}/{testFileDir}/__snapshots__/{arg}{ext}',
 
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,

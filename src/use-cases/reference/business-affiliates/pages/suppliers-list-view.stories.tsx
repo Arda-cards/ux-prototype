@@ -89,7 +89,11 @@ function SuppliersEmptyState({
       <div className="flex flex-col items-center gap-2 w-full">
         <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center p-2 relative">
           <div className="absolute inset-0 flex items-center justify-center z-0">
-            <img src="/vendored/images/Puddle1.svg" alt="" className="w-full h-full object-contain" />
+            <img
+              src="/vendored/images/Puddle1.svg"
+              alt=""
+              className="w-full h-full object-contain"
+            />
           </div>
           <Building2 className="w-[42px] h-[42px] sm:w-[52px] sm:h-[52px] text-[#0A0A0A] absolute left-[calc(50%-21px)] sm:left-[calc(50%-26px)] top-[20%] z-10" />
         </div>
