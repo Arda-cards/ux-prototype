@@ -1,0 +1,35 @@
+import { Canvas, Meta, ArgTypes } from '@storybook/addon-docs/blocks';
+import * as AppHeaderStories from './app-header.stories';
+
+<Meta of={AppHeaderStories} />
+
+# ArdaAppHeader
+
+Top navigation bar with search, labeled action buttons, and icon actions.
+
+## Default
+
+<Canvas of={AppHeaderStories.Default} />
+
+## With controlled search
+
+<Canvas of={AppHeaderStories.WithSearch} />
+
+## Full composition with leading content
+
+<Canvas of={AppHeaderStories.Composition} />
+
+## Props
+
+<ArgTypes of={AppHeaderStories} />
+
+### Actions
+
+Actions use a data-driven array pattern:
+
+- **`buttonActions`** — labeled buttons with icons (e.g., "Scan"). Rendered before icon actions.
+- **`actions`** — icon-only buttons with optional badge counts (e.g., Help, Notifications). Set `visible: false` to conditionally hide.
+
+### Leading content
+
+Use the `leading` prop to render a sidebar trigger, breadcrumbs, or other content on the far left.
