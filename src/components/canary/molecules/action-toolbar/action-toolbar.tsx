@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,

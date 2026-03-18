@@ -45,7 +45,7 @@ const meta = {
       description: {
         component:
           'Arda sidebar organism — dark by default, built on shadcn/ui Sidebar primitives. ' +
-          'Compound component: compose with ArdaSidebarHeader, SidebarNav, ' +
+          'Compound component: compose with SidebarHeader, SidebarNav, ' +
           'SidebarNavItem, SidebarNavGroup, and SidebarUserMenu. ' +
           'Provides mobile Sheet drawer (< 768px), Cmd+B toggle, cookie persistence, ' +
           'and icon-only collapsed mode with tooltips.',

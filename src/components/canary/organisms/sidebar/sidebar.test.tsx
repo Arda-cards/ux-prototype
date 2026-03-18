@@ -45,7 +45,7 @@ describe('ArdaSidebar', () => {
   });
 });
 
-describe('ArdaSidebarHeader', () => {
+describe('SidebarHeader', () => {
   it('renders team name alongside logo', () => {
     render(
       <ArdaSidebar>

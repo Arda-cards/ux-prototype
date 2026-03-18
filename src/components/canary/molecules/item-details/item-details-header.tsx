@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { ToolbarAction, OverflowAction } from '../action-toolbar/action-toolbar';
 import { ArdaGridAction } from '../grid-action/grid-action';

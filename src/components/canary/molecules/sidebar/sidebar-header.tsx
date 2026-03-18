@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 import {
   SidebarHeader,
   SidebarMenu,
@@ -28,7 +28,7 @@ export interface TeamOption {
   onSelect: () => void;
 }
 
-/** Static configuration for ArdaSidebarHeader. */
+/** Static configuration for SidebarHeader. */
 export interface ArdaSidebarHeaderStaticConfig {
   /* --- View / Layout / Controller --- */
   /** Team or workspace name displayed next to the logo. */
@@ -37,14 +37,14 @@ export interface ArdaSidebarHeaderStaticConfig {
   children?: React.ReactNode;
 }
 
-/** Runtime configuration for ArdaSidebarHeader. */
+/** Runtime configuration for SidebarHeader. */
 export interface ArdaSidebarHeaderRuntimeConfig {
   /* --- Model / Data Binding --- */
   /** When provided, renders a team switcher dropdown. */
   teams?: TeamOption[];
 }
 
-/** Combined props for ArdaSidebarHeader. */
+/** Combined props for SidebarHeader. */
 export interface ArdaSidebarHeaderProps
   extends ArdaSidebarHeaderStaticConfig, ArdaSidebarHeaderRuntimeConfig {
   /** Additional CSS classes. */

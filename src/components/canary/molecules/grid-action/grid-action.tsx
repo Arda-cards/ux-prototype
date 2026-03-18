@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 import { Loader2, type LucideIcon } from 'lucide-react';
 
 // --- Interfaces ---

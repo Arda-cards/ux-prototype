@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef } from 'react';
 import { X, Building2 } from 'lucide-react';
 
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/utils';
 import type { BusinessAffiliate } from '@/types/extras';
 import { ArdaSupplierViewer } from '@/components/extras/organisms/reference/business-affiliates/arda-supplier-viewer';
 import { supplierTabs } from '@/components/extras/organisms/reference/business-affiliates/arda-supplier-viewer/configs/stepped-layout';

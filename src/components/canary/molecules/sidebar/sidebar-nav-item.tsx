@@ -2,7 +2,7 @@
 
 import { type LucideIcon } from 'lucide-react';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 import { SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
 import { ArdaBadge } from '../../atoms/badge/badge';
 

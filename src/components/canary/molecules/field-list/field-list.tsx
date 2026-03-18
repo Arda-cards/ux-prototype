@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 import { ReadOnlyField } from '../../atoms/read-only-field/read-only-field';
 
 // --- Interfaces ---

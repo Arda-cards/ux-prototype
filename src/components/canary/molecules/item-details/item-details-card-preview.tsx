@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useCallback, useMemo } from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 
 // --- Interfaces ---

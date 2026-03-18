@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/utils';
 
 export type ArdaBadgeVariant =
   | 'default'

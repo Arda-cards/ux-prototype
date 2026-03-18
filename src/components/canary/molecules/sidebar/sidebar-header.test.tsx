@@ -10,7 +10,7 @@ function renderInSidebar(ui: React.ReactElement) {
   return render(<ArdaSidebar defaultOpen>{ui}</ArdaSidebar>);
 }
 
-describe('ArdaSidebarHeader', () => {
+describe('SidebarHeader', () => {
   it('renders team name', () => {
     renderInSidebar(<ArdaSidebarHeader teamName="Arda Cards" />);
     expect(screen.getByText('Arda Cards')).toBeInTheDocument();

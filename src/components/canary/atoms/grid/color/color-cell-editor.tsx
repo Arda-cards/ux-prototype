@@ -1,6 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/utils';
 import { type ColorOption, DEFAULT_COLOR_MAP } from './color-cell-display';
 
 /** Design-time configuration for color cell editor. */

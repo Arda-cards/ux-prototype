@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 import { SidebarProvider, Sidebar, SidebarRail } from '@/components/ui/sidebar';
 
 // --- Interfaces ---
@@ -12,7 +12,7 @@ export interface ArdaSidebarStaticConfig {
   defaultOpen?: boolean;
   /** When true, applies the `dark` class so sidebar uses dark tokens. Defaults to true. */
   dark?: boolean;
-  /** Sidebar content — compose with ArdaSidebarHeader, nav items, SidebarUserMenu, etc. */
+  /** Sidebar content — compose with SidebarHeader, nav items, SidebarUserMenu, etc. */
   children: React.ReactNode;
   /** Content to render outside the sidebar but inside the provider (e.g. SidebarInset). */
   content?: React.ReactNode;

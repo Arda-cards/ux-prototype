@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/utils';
 import type { AtomMode, AtomProps } from '@/components/extras/atoms/shared/props';
 import { ArdaTimeCellDisplay } from './time-cell-display';
 import { getBrowserTimezone, getTimezoneAbbreviation } from '@/types/canary/date-time';

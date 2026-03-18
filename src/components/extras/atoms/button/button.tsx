@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/utils';
 import './button.css';
 
 export type ArdaButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive';
