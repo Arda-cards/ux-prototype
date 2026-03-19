@@ -49,6 +49,7 @@ interface ItemsState {
   // UI Flags
   maxItemsSeen: number;
   hasUnsavedChanges: boolean;
+  pageSize: number;
 }
 
 const initialState: ItemsState = {
@@ -75,6 +76,7 @@ const initialState: ItemsState = {
   error: null,
   maxItemsSeen: 0,
   hasUnsavedChanges: false,
+  pageSize: 50,
 };
 
 const itemsSlice = createSlice({
@@ -197,6 +199,9 @@ const itemsSlice = createSlice({
     setHasUnsavedChanges: (state, action: PayloadAction<boolean>) => {
       state.hasUnsavedChanges = action.payload;
     },
+    setPageSize: (state, action: PayloadAction<number>) => {
+      state.pageSize = action.payload;
+    },
   },
 });
 
@@ -224,6 +229,7 @@ export const {
   setError,
   setMaxItemsSeen,
   setHasUnsavedChanges,
+  setPageSize,
 } = itemsSlice.actions;
 
 export default itemsSlice.reducer;

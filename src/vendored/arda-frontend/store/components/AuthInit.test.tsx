@@ -1,8 +1,11 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import { Provider } from 'react-redux';
-import { createTestStore, mockAuthStateSignedOut } from '@frontend/test-utils/test-store';
+import { createTestStore, mockAuthStateSignedOut, mockAuthStateWithTokens } from '@frontend/test-utils/test-store';
 import { AuthInit } from './AuthInit';
+
+// Spy to track checkAuthThunk calls
+const mockCheckAuthPayload = jest.fn().mockResolvedValue(null);
 
 // Mock thunks
 jest.mock('../thunks/authThunks', () => {
@@ -12,7 +15,7 @@ jest.mock('../thunks/authThunks', () => {
     respondToNewPasswordChallengeThunk: createAsyncThunk('auth/respondToNewPasswordChallenge', () => {}),
     signOutThunk: createAsyncThunk('auth/signOut', () => {}),
     refreshTokensThunk: createAsyncThunk('auth/refreshTokens', () => ({})),
-    checkAuthThunk: createAsyncThunk('auth/checkAuth', () => null),
+    checkAuthThunk: createAsyncThunk('auth/checkAuth', (...args: unknown[]) => mockCheckAuthPayload(...args)),
     forgotPasswordThunk: createAsyncThunk('auth/forgotPassword', () => {}),
     confirmNewPasswordThunk: createAsyncThunk('auth/confirmNewPassword', () => {}),
     changePasswordThunk: createAsyncThunk('auth/changePassword', () => {}),
@@ -22,6 +25,7 @@ jest.mock('../thunks/authThunks', () => {
 describe('AuthInit', () => {
   beforeEach(() => {
     localStorage.clear();
+    mockCheckAuthPayload.mockClear();
   });
 
   it('renders null (no visible output)', () => {
@@ -85,6 +89,32 @@ describe('AuthInit', () => {
     expect(localStorage.getItem('idToken')).toBe('synced-it');
     expect(localStorage.getItem('refreshToken')).toBe('synced-rt');
     expect(localStorage.getItem('tokenExpiresAt')).toBe('9999999999000');
+  });
+
+  it('dispatches checkAuthThunk when tokens are already in Redux (page refresh with persist)', async () => {
+    // Production path only — MockAuthProvider owns auth state in mock mode and this
+    // dispatch is intentionally skipped there. Skip the test when running in mock mode.
+    if (process.env.NEXT_PUBLIC_MOCK_MODE === 'true') return;
+    // Simulate redux-persist restoring tokens but isTokenValid starting as false (blacklisted).
+    // AuthInit should call checkAuthThunk to restore isTokenValid without a network call.
+    // Force mock mode off: the coverage CI sets NEXT_PUBLIC_MOCK_MODE=true (for Playwright),
+    // but this unit test must verify the non-mock-mode branch of AuthInit.
+    const savedMockMode = process.env.NEXT_PUBLIC_MOCK_MODE;
+    process.env.NEXT_PUBLIC_MOCK_MODE = 'false';
+
+    try {
+      const store = createTestStore({ auth: mockAuthStateWithTokens });
+
+      render(
+        <Provider store={store}><AuthInit /></Provider>
+      );
+
+      await waitFor(() => {
+        expect(mockCheckAuthPayload).toHaveBeenCalledTimes(1);
+      });
+    } finally {
+      process.env.NEXT_PUBLIC_MOCK_MODE = savedMockMode;
+    }
   });
 
   it('clears localStorage when Redux tokens are null and no localStorage tokens', () => {

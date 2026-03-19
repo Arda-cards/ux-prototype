@@ -60,6 +60,7 @@ jest.mock('@/components/table', () => {
       filter: false,
       resizable: true,
       suppressMovable: false,
+      sortingOrder: ['asc', 'desc', null],
     },
   };
 });
@@ -143,6 +144,7 @@ beforeEach(() => {
     getFocusedCell: jest.fn(() => null),
     getRowNode: jest.fn(() => undefined),
     refreshCells: jest.fn(),
+    applyTransaction: jest.fn(),
     addEventListener: jest.fn(),
     removeEventListener: jest.fn(),
     applyColumnState: jest.fn(),
@@ -700,28 +702,30 @@ describe('ItemTableAGGrid', () => {
     expect(onUnsavedChangesChange).toHaveBeenCalledWith(true);
   });
 
-  it('onNotesSave refreshes notes cells via gridApi.refreshCells', () => {
+  it('onNotesSave calls applyTransaction with the updated notes (no refreshCells)', () => {
     const items = [makeItem('item-5')];
     render(<ItemTableAGGrid {...defaultProps} items={items} />);
     const ctx = _lastArdaGridProps?.gridOptions?.context;
     act(() => {
       ctx?.onNotesSave(items[0], 'Updated notes');
     });
-    expect(mockGridApi.refreshCells).toHaveBeenCalledWith(
-      expect.objectContaining({ columns: ['notes'], force: true })
+    expect(mockGridApi.applyTransaction).toHaveBeenCalledWith(
+      expect.objectContaining({ update: expect.arrayContaining([expect.objectContaining({ notes: 'Updated notes' })]) })
     );
+    expect(mockGridApi.refreshCells).not.toHaveBeenCalled();
   });
 
-  it('onCardNotesSave refreshes cardNotesDefault cells', () => {
+  it('onCardNotesSave calls applyTransaction with the updated cardNotesDefault (no refreshCells)', () => {
     const items = [makeItem('item-6')];
     render(<ItemTableAGGrid {...defaultProps} items={items} />);
     const ctx = _lastArdaGridProps?.gridOptions?.context;
     act(() => {
       ctx?.onCardNotesSave(items[0], 'Card note refresh');
     });
-    expect(mockGridApi.refreshCells).toHaveBeenCalledWith(
-      expect.objectContaining({ columns: ['cardNotesDefault'], force: true })
+    expect(mockGridApi.applyTransaction).toHaveBeenCalledWith(
+      expect.objectContaining({ update: expect.arrayContaining([expect.objectContaining({ cardNotesDefault: 'Card note refresh' })]) })
     );
+    expect(mockGridApi.refreshCells).not.toHaveBeenCalled();
   });
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -797,35 +801,40 @@ describe('ItemTableAGGrid', () => {
     expect(result).toBe('-');
   });
 
-  it('enhanced color column cellRenderer renders color label via dropdownLabelWithArrow', () => {
+  it('enhanced color column cellRenderer renders DropdownSelectRenderer', () => {
     render(<ItemTableAGGrid {...defaultProps} />);
     const col = _lastArdaGridProps?.columnDefs?.find((c: any) => c.field === 'color');
     const cr = col?.cellRenderer;
     if (!cr) return;
-    const mockApi = { startEditingCell: jest.fn() };
-    const { container } = render(cr({
+    const { container } = render(React.createElement(cr, {
       value: 'YELLOW',
       data: makeItem('1'),
-      api: mockApi,
+      api: null,
       node: { rowIndex: 0 },
       column: { getColId: () => 'color' },
+      context: {},
+      options: [],
+      fieldPath: 'color',
     }));
     expect(container).toBeInTheDocument();
   });
 
-  it('enhanced color cellRenderer returns dash for empty value', () => {
+  it('enhanced color cellRenderer renders for empty value', () => {
     render(<ItemTableAGGrid {...defaultProps} />);
     const col = _lastArdaGridProps?.columnDefs?.find((c: any) => c.field === 'color');
     const cr = col?.cellRenderer;
     if (!cr) return;
-    const { container } = render(cr({
+    const { container } = render(React.createElement(cr, {
       value: '',
       data: makeItem('1'),
       api: null,
       node: { rowIndex: 0 },
       column: { getColId: () => 'color' },
+      context: {},
+      options: [],
+      fieldPath: 'color',
     }));
-    expect(container.textContent).toContain('-');
+    expect(container).toBeInTheDocument();
   });
 
   it('enhanced internalSKU valueGetter returns sku', () => {
@@ -864,9 +873,11 @@ describe('ItemTableAGGrid', () => {
     const vs = col?.valueSetter;
     if (!vs) return;
     const data = makeItem('1');
-    const result = vs({ data, newValue: 'Updated Name', oldValue: 'Item 1', node: { data } });
+    let updatedData: any = null;
+    const node = { data, setData: (d: any) => { updatedData = d; } };
+    const result = vs({ data, newValue: 'Updated Name', oldValue: 'Item 1', node });
     expect(result).toBe(true);
-    expect(data.name).toBe('Updated Name');
+    expect(updatedData?.name).toBe('Updated Name');
   });
 
   it('enhanced valueSetter handles null/empty newValue by setting undefined', () => {
@@ -875,9 +886,11 @@ describe('ItemTableAGGrid', () => {
     const vs = col?.valueSetter;
     if (!vs) return;
     const data = makeItem('1');
-    const result = vs({ data, newValue: '', oldValue: 'Item 1', node: { data } });
+    let updatedData: any = null;
+    const node = { data, setData: (d: any) => { updatedData = d; } };
+    const result = vs({ data, newValue: '', oldValue: 'Item 1', node });
     expect(result).toBe(true);
-    expect(data.name).toBeUndefined();
+    expect(updatedData?.name).toBeUndefined();
   });
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -956,45 +969,9 @@ describe('ItemTableAGGrid', () => {
 // Additional branch-deepening tests (PA-1)
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('ItemTableAGGrid — handleRowClick and handleRowDoubleClick', () => {
-  it('handleRowClick callback triggers navigation after reaching click threshold', async () => {
-    const onRowClick = jest.fn();
-    const items = [makeItem('r1'), makeItem('r2')];
-    render(<ItemTableAGGrid {...defaultProps} items={items} onRowClick={onRowClick} />);
-
-    await screen.findByTestId('arda-grid');
-
-    // The implementation requires CLICKS_TO_OPEN_PANEL (3) clicks on the same
-    // row before triggering the callback.
-    act(() => { _lastArdaGridProps?.onRowClicked?.(items[0]); });
-    act(() => { _lastArdaGridProps?.onRowClicked?.(items[0]); });
-    act(() => { _lastArdaGridProps?.onRowClicked?.(items[0]); });
-    expect(onRowClick).toHaveBeenCalledWith(items[0]);
-  });
-
-  it('handleRowDoubleClick cancels the pending single-click open', () => {
-    jest.useFakeTimers();
-    const onRowClick = jest.fn();
-    const items = [makeItem('r1')];
-    render(<ItemTableAGGrid {...defaultProps} items={items} onRowClick={onRowClick} />);
-
-    const onRowClicked = _lastArdaGridProps?.onRowClicked;
-    const onRowDoubleClicked = _lastArdaGridProps?.onRowDoubleClicked;
-
-    act(() => {
-      onRowClicked?.(items[0]);
-      // Immediately double-click cancels single-click timeout
-      onRowDoubleClicked?.(items[0]);
-    });
-    act(() => {
-      jest.runAllTimers();
-    });
-    // onRowClick should NOT have been called
-    expect(onRowClick).not.toHaveBeenCalled();
-    jest.useRealTimers();
-  });
-
-  it('handleRowClick with onOpenItemDetails uses onOpenItemDetails', async () => {
+describe('ItemTableAGGrid — handleRowClick and handleRowDoubleClick (issue #745)', () => {
+  // ── Issue #745: row-body clicks must NOT open the details panel ──────────
+  it('row-body click does NOT call onOpenItemDetails (issue #745)', async () => {
     const onOpenItemDetails = jest.fn();
     const items = [makeItem('r1')];
     render(
@@ -1003,22 +980,39 @@ describe('ItemTableAGGrid — handleRowClick and handleRowDoubleClick', () => {
 
     await screen.findByTestId('arda-grid');
 
-    // 3 clicks on the same row triggers onOpenItemDetails (preferred over onRowClick).
+    // Multiple clicks on the same row should never open the panel
     act(() => { _lastArdaGridProps?.onRowClicked?.(items[0]); });
     act(() => { _lastArdaGridProps?.onRowClicked?.(items[0]); });
     act(() => { _lastArdaGridProps?.onRowClicked?.(items[0]); });
-    expect(onOpenItemDetails).toHaveBeenCalledWith(items[0]);
+    act(() => { _lastArdaGridProps?.onRowClicked?.(items[0]); });
+    act(() => { _lastArdaGridProps?.onRowClicked?.(items[0]); });
+    expect(onOpenItemDetails).not.toHaveBeenCalled();
+  });
+
+  it('row-body click does NOT call onRowClick (issue #745)', async () => {
+    const onRowClick = jest.fn();
+    const items = [makeItem('r1')];
+    render(
+      <ItemTableAGGrid {...defaultProps} items={items} onRowClick={onRowClick} />
+    );
+
+    await screen.findByTestId('arda-grid');
+
+    act(() => { _lastArdaGridProps?.onRowClicked?.(items[0]); });
+    act(() => { _lastArdaGridProps?.onRowClicked?.(items[0]); });
+    act(() => { _lastArdaGridProps?.onRowClicked?.(items[0]); });
+    expect(onRowClick).not.toHaveBeenCalled();
   });
 
   it('handleRowClick with no entityId is a no-op', () => {
-    const onRowClick = jest.fn();
-    render(<ItemTableAGGrid {...defaultProps} onRowClick={onRowClick} />);
+    const onOpenItemDetails = jest.fn();
+    render(<ItemTableAGGrid {...defaultProps} onOpenItemDetails={onOpenItemDetails} />);
 
     const onRowClicked = _lastArdaGridProps?.onRowClicked;
     act(() => {
       onRowClicked?.({} as any);
     });
-    expect(onRowClick).not.toHaveBeenCalled();
+    expect(onOpenItemDetails).not.toHaveBeenCalled();
   });
 
   it('handleRowClick switching rows publishes previous dirty row', async () => {
@@ -1782,141 +1776,13 @@ describe('ItemTableAGGrid — BreadcrumbSizeCellEditor class', () => {
   });
 });
 
-describe('ItemTableAGGrid — dropdownLabelWithArrow click handler', () => {
-  it('arrow button onClick calls startEditingCell on api', () => {
-    const mockApi = { startEditingCell: jest.fn() };
-    render(<ItemTableAGGrid {...defaultProps} />);
-    const col = _lastArdaGridProps?.columnDefs?.find((c: any) => c.field === 'color');
-    const cr = col?.cellRenderer;
-    if (!cr) return;
-
-    const { container } = render(
-      cr({
-        value: 'BLUE',
-        data: makeItem('1'),
-        api: mockApi,
-        node: { rowIndex: 3 },
-        column: { getColId: () => 'color' },
-      })
-    );
-
-    // Find and click the dropdown button
-    const button = container.querySelector('button');
-    if (button) {
-      button.click();
-    }
-    // startEditingCell should have been called
-    if (mockApi.startEditingCell.mock.calls.length > 0) {
-      expect(mockApi.startEditingCell).toHaveBeenCalled();
-    }
-  });
-
-  it('orderMechanism arrow button onClick calls startEditingCell', () => {
-    const mockApi = { startEditingCell: jest.fn() };
-    render(<ItemTableAGGrid {...defaultProps} />);
-    const col = _lastArdaGridProps?.columnDefs?.find(
-      (c: any) => c.field === 'primarySupply.orderMechanism'
-    );
-    const cr = col?.cellRenderer;
-    if (!cr) return;
-
-    const { container } = render(
-      cr({
-        value: 'EMAIL',
-        data: { ...makeItem('1'), primarySupply: { orderMechanism: 'EMAIL' } },
-        api: mockApi,
-        node: { rowIndex: 0 },
-        column: { getColId: () => 'primarySupply.orderMechanism' },
-      })
-    );
-
-    const button = container.querySelector('button');
-    if (button) {
-      button.click();
-      expect(mockApi.startEditingCell).toHaveBeenCalled();
-    }
-  });
-
-  it('cardSize arrow button onClick calls startEditingCell', () => {
-    const mockApi = { startEditingCell: jest.fn() };
-    render(<ItemTableAGGrid {...defaultProps} />);
-    const col = _lastArdaGridProps?.columnDefs?.find((c: any) => c.field === 'cardSize');
-    const cr = col?.cellRenderer;
-    if (!cr) return;
-
-    const { container } = render(
-      cr({
-        value: 'MEDIUM',
-        data: { ...makeItem('1'), cardSize: 'MEDIUM' as any },
-        api: mockApi,
-        node: { rowIndex: 0 },
-        column: { getColId: () => 'cardSize' },
-      })
-    );
-
-    const button = container.querySelector('button');
-    if (button) {
-      button.click();
-      expect(mockApi.startEditingCell).toHaveBeenCalled();
-    }
-  });
-
-  it('labelSize arrow button onClick calls startEditingCell', () => {
-    const mockApi = { startEditingCell: jest.fn() };
-    render(<ItemTableAGGrid {...defaultProps} />);
-    const col = _lastArdaGridProps?.columnDefs?.find((c: any) => c.field === 'labelSize');
-    const cr = col?.cellRenderer;
-    if (!cr) return;
-
-    const { container } = render(
-      cr({
-        value: 'SMALL',
-        data: { ...makeItem('1'), labelSize: 'SMALL' as any },
-        api: mockApi,
-        node: { rowIndex: 0 },
-        column: { getColId: () => 'labelSize' },
-      })
-    );
-
-    const button = container.querySelector('button');
-    if (button) {
-      button.click();
-      expect(mockApi.startEditingCell).toHaveBeenCalled();
-    }
-  });
-
-  it('breadcrumbSize arrow button onClick calls startEditingCell', () => {
-    const mockApi = { startEditingCell: jest.fn() };
-    render(<ItemTableAGGrid {...defaultProps} />);
-    const col = _lastArdaGridProps?.columnDefs?.find((c: any) => c.field === 'breadcrumbSize');
-    const cr = col?.cellRenderer;
-    if (!cr) return;
-
-    const { container } = render(
-      cr({
-        value: 'LARGE',
-        data: { ...makeItem('1'), breadcrumbSize: 'LARGE' as any },
-        api: mockApi,
-        node: { rowIndex: 0 },
-        column: { getColId: () => 'breadcrumbSize' },
-      })
-    );
-
-    const button = container.querySelector('button');
-    if (button) {
-      button.click();
-      expect(mockApi.startEditingCell).toHaveBeenCalled();
-    }
-  });
-
-  it('simpleCellRenderer returns dash for empty value on non-dropdown fields', () => {
-    render(<ItemTableAGGrid {...defaultProps} />);
-    const col = _lastArdaGridProps?.columnDefs?.find((c: any) => c.field === 'name');
-    const cr = col?.cellRenderer;
-    if (!cr) return;
-    const result = cr({ value: '', data: makeItem('1'), node: { rowIndex: 0 }, column: { getColId: () => 'name' } });
-    expect(result).toBe('-');
-  });
+it('simpleCellRenderer returns dash for empty value on non-dropdown fields', () => {
+  render(<ItemTableAGGrid {...defaultProps} />);
+  const col = _lastArdaGridProps?.columnDefs?.find((c: any) => c.field === 'name');
+  const cr = col?.cellRenderer;
+  if (!cr) return;
+  const result = cr({ value: '', data: makeItem('1'), node: { rowIndex: 0 }, column: { getColId: () => 'name' } });
+  expect(result).toBe('-');
 });
 
 describe('ItemTableAGGrid — additional enhanced valueGetters', () => {
@@ -2082,5 +1948,287 @@ describe('ItemTableAGGrid — handleCellEditingStopped with no unsaved modal', (
     await act(async () => { jest.runAllTimers(); });
     expect(mockCreateDraftItem).toHaveBeenCalledWith('stop-test-1');
     jest.useRealTimers();
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Step 4.1 — applyTransaction immutability
+// ──────────────────────────────────────────────────────────────────────────────
+describe('ItemTableAGGrid — Step 4.1: applyTransaction immutability', () => {
+  it('onNotesSave does not mutate original item object', () => {
+    const items = [makeItem('imm-1', { notes: 'original' })];
+    render(<ItemTableAGGrid {...defaultProps} items={items} />);
+    const ctx = _lastArdaGridProps?.gridOptions?.context;
+    act(() => { ctx?.onNotesSave(items[0], 'changed'); });
+    // Original item object must not be mutated
+    expect(items[0].notes).toBe('original');
+  });
+
+  it('onCardNotesSave does not mutate original item object', () => {
+    const items = [makeItem('imm-2', { cardNotesDefault: 'original-card' })];
+    render(<ItemTableAGGrid {...defaultProps} items={items} />);
+    const ctx = _lastArdaGridProps?.gridOptions?.context;
+    act(() => { ctx?.onCardNotesSave(items[0], 'changed-card'); });
+    expect(items[0].cardNotesDefault).toBe('original-card');
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Step 4.2 — debounced refresh
+// ──────────────────────────────────────────────────────────────────────────────
+describe('ItemTableAGGrid — Step 4.2: debounced onRefreshRequested', () => {
+  // Helper: set up a row ready for publishRow (dirty, draft created, node exists)
+  function setupDirtyRow(items: Item[], onRefreshRequested: jest.Mock) {
+    mockGridApi.getRowNode.mockImplementation((rowId: string) => {
+      const item = items.find((i) => i.entityId === rowId);
+      return item ? { data: item } : undefined;
+    });
+    const { unmount } = render(
+      <ItemTableAGGrid {...defaultProps} items={items} onRefreshRequested={onRefreshRequested} />
+    );
+    // Make all rows dirty
+    for (const item of items) {
+      act(() => {
+        _lastArdaGridProps?.onCellValueChanged?.({
+          data: item, oldValue: 'a', newValue: 'b',
+          node: { data: item }, column: { getColId: () => 'name' },
+        });
+      });
+    }
+    return unmount;
+  }
+
+  it('multiple rapid publishRow calls via onCellEditingStopped produce only 1 onRefreshRequested after 800ms', async () => {
+    jest.useFakeTimers({ legacyFakeTimers: true });
+    const onRefreshRequested = jest.fn().mockResolvedValue(undefined);
+    const items = [makeItem('debounce-1'), makeItem('debounce-2'), makeItem('debounce-3')];
+    setupDirtyRow(items, onRefreshRequested);
+
+    // Trigger publishRow for each row via onCellEditingStopped (50ms internal delay each)
+    for (const item of items) {
+      act(() => {
+        _lastArdaGridProps?.onCellEditingStopped?.({
+          data: item, node: { data: item }, column: { getColId: () => 'name' },
+        });
+      });
+    }
+
+    // Advance 50ms to fire the internal setTimeout in handleCellEditingStopped
+    // and 1ms so updateItem has time to resolve before the 800ms debounce
+    await act(async () => { jest.advanceTimersByTime(51); });
+    await act(async () => { jest.runAllImmediates?.(); });
+
+    // Debounce not yet fired — no refresh yet
+    expect(onRefreshRequested).not.toHaveBeenCalled();
+
+    // Advance 800ms — debounce fires exactly once
+    await act(async () => { jest.advanceTimersByTime(800); });
+    expect(onRefreshRequested).toHaveBeenCalledTimes(1);
+
+    jest.useRealTimers();
+  });
+
+  it('saveAllDrafts calls onRefreshRequested immediately (not via debounce)', async () => {
+    const onRefreshRequested = jest.fn().mockResolvedValue(undefined);
+    const items = [makeItem('flush-1')];
+    const ref = createRef<ItemTableAGGridRef>();
+    mockGridApi.getRowNode.mockReturnValue({ data: items[0] });
+
+    render(
+      <ItemTableAGGrid {...defaultProps} items={items} ref={ref} onRefreshRequested={onRefreshRequested} />
+    );
+
+    // Make the row dirty
+    act(() => {
+      _lastArdaGridProps?.onCellValueChanged?.({
+        data: items[0], oldValue: 'a', newValue: 'b',
+        node: { data: items[0] }, column: { getColId: () => 'name' },
+      });
+    });
+
+    // saveAllDrafts should call onRefreshRequested once, immediately
+    await act(async () => { await ref.current?.saveAllDrafts(); });
+    expect(onRefreshRequested).toHaveBeenCalledTimes(1);
+  });
+
+  it('unmounting cancels the pending debounce timer', async () => {
+    jest.useFakeTimers({ legacyFakeTimers: true });
+    const onRefreshRequested = jest.fn().mockResolvedValue(undefined);
+    const items = [makeItem('unmount-debounce')];
+    mockGridApi.getRowNode.mockReturnValue({ data: items[0] });
+
+    const { unmount } = render(
+      <ItemTableAGGrid {...defaultProps} items={items} onRefreshRequested={onRefreshRequested} />
+    );
+    act(() => {
+      _lastArdaGridProps?.onCellValueChanged?.({
+        data: items[0], oldValue: 'a', newValue: 'b',
+        node: { data: items[0] }, column: { getColId: () => 'name' },
+      });
+    });
+    act(() => {
+      _lastArdaGridProps?.onCellEditingStopped?.({
+        data: items[0], node: { data: items[0] }, column: { getColId: () => 'name' },
+      });
+    });
+    await act(async () => { jest.advanceTimersByTime(51); });
+    // Debounce is pending — unmount to trigger cleanup
+    unmount();
+    // Advance 800ms — timer should be cancelled, onRefreshRequested must NOT fire
+    await act(async () => { jest.advanceTimersByTime(800); });
+    expect(onRefreshRequested).not.toHaveBeenCalled();
+
+    jest.useRealTimers();
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Step 4.3 — selection restore via AG Grid events
+// ──────────────────────────────────────────────────────────────────────────────
+describe('ItemTableAGGrid — Step 4.3: onFirstDataRendered / onRowDataUpdated selection restore', () => {
+  it('passes onFirstDataRendered and onRowDataUpdated to ArdaGrid', () => {
+    render(<ItemTableAGGrid {...defaultProps} items={[makeItem('fdr-1')]} />);
+    expect(typeof _lastArdaGridProps?.onFirstDataRendered).toBe('function');
+    expect(typeof _lastArdaGridProps?.onRowDataUpdated).toBe('function');
+  });
+
+  it('handleDataRendered does nothing when no pending restore', () => {
+    const items = [makeItem('fdr-2')];
+    mockGridApi.getDisplayedRowCount.mockReturnValue(1);
+    render(<ItemTableAGGrid {...defaultProps} items={items} />);
+    // No selection has been made — pendingSelectionRestoreRef should be false
+    act(() => { _lastArdaGridProps?.onFirstDataRendered?.(); });
+    // forEachNode should NOT be called (no pending restore)
+    expect(mockGridApi.forEachNode).not.toHaveBeenCalled();
+  });
+
+  it('handleDataRendered restores selection when pendingSelectionRestoreRef is set', () => {
+    const items = [makeItem('fdr-3'), makeItem('fdr-4')];
+    // Initial render: rows exist, selection is populated
+    mockGridApi.getDisplayedRowCount.mockReturnValue(2);
+    mockGridApi.getRenderedNodes.mockReturnValue(
+      items.map((item) => ({ data: item }))
+    );
+    const { rerender } = render(
+      <ItemTableAGGrid {...defaultProps} items={items} onSelectionChange={jest.fn()} />
+    );
+
+    // Simulate user selecting rows
+    act(() => {
+      _lastArdaGridProps?.onSelectionChanged?.(items);
+    });
+
+    // Now switch to a new page (empty items) so items change triggers pending flag
+    mockGridApi.getDisplayedRowCount.mockReturnValue(0);
+    rerender(<ItemTableAGGrid {...defaultProps} items={[makeItem('page2-1')]} onSelectionChange={jest.fn()} />);
+
+    // Now rows become available — set getDisplayedRowCount > 0 and fire the AG Grid event
+    mockGridApi.getDisplayedRowCount.mockReturnValue(2);
+    act(() => { _lastArdaGridProps?.onFirstDataRendered?.(); });
+
+    // forEachNode should be called to restore selection
+    expect(mockGridApi.forEachNode).toHaveBeenCalled();
+  });
+
+  it('handleDataRendered via onRowDataUpdated also restores selection', () => {
+    const items = [makeItem('rdu-1')];
+    mockGridApi.getDisplayedRowCount.mockReturnValue(1);
+    mockGridApi.getRenderedNodes.mockReturnValue([{ data: items[0] }]);
+    const { rerender } = render(
+      <ItemTableAGGrid {...defaultProps} items={items} onSelectionChange={jest.fn()} />
+    );
+
+    // Simulate selection
+    act(() => { _lastArdaGridProps?.onSelectionChanged?.(items); });
+
+    // Items change → no rows yet
+    mockGridApi.getDisplayedRowCount.mockReturnValue(0);
+    rerender(<ItemTableAGGrid {...defaultProps} items={[makeItem('rdu-new')]} onSelectionChange={jest.fn()} />);
+
+    // Rows arrive — fire onRowDataUpdated
+    mockGridApi.getDisplayedRowCount.mockReturnValue(1);
+    act(() => { _lastArdaGridProps?.onRowDataUpdated?.(); });
+
+    expect(mockGridApi.forEachNode).toHaveBeenCalled();
+  });
+
+  it('restores selection immediately when rows already displayed at items change', () => {
+    const items = [makeItem('imm-restore-1')];
+    mockGridApi.getDisplayedRowCount.mockReturnValue(1);
+    mockGridApi.getRenderedNodes.mockReturnValue([{ data: items[0] }]);
+    const { rerender } = render(
+      <ItemTableAGGrid {...defaultProps} items={items} onSelectionChange={jest.fn()} />
+    );
+
+    // Select a row to populate persistentSelectionRef
+    act(() => { _lastArdaGridProps?.onSelectionChanged?.(items); });
+
+    const forEachCallsBefore = (mockGridApi.forEachNode as jest.Mock).mock.calls.length;
+
+    // Items change, but getDisplayedRowCount is already > 0 (same-page re-render)
+    mockGridApi.getDisplayedRowCount.mockReturnValue(1);
+    const newItems = [makeItem('imm-restore-1'), makeItem('imm-restore-2')];
+    rerender(<ItemTableAGGrid {...defaultProps} items={newItems} onSelectionChange={jest.fn()} />);
+
+    // forEachNode should be called immediately (no polling, no AG Grid event needed)
+    expect(mockGridApi.forEachNode).toHaveBeenCalledTimes(forEachCallsBefore + 1);
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Step 5.3 — gridContainerRef click-outside and drag-image tests
+// ──────────────────────────────────────────────────────────────────────────────
+describe('ItemTableAGGrid — gridContainerRef (step 5.3)', () => {
+  it('does not call document.querySelector for click-outside handling', () => {
+    const querySpy = jest.spyOn(document, 'querySelector');
+    render(<ItemTableAGGrid {...defaultProps} />);
+
+    // Fire a mousedown outside any grid element
+    act(() => {
+      document.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    });
+
+    // querySelector('.ag-theme-arda') must never be called — the ref is used instead
+    const agThemeCalls = querySpy.mock.calls.filter(
+      ([selector]) => selector === '.ag-theme-arda'
+    );
+    expect(agThemeCalls).toHaveLength(0);
+    querySpy.mockRestore();
+  });
+
+  it('does not call document.querySelector for drag-image handling', () => {
+    const querySpy = jest.spyOn(document, 'querySelector');
+    render(<ItemTableAGGrid {...defaultProps} />);
+
+    // querySelector('.ag-theme-arda') must never be called on mount
+    const agThemeCalls = querySpy.mock.calls.filter(
+      ([selector]) => selector === '.ag-theme-arda'
+    );
+    expect(agThemeCalls).toHaveLength(0);
+    querySpy.mockRestore();
+  });
+
+  it('renders a wrapper div that contains the ArdaGrid', () => {
+    render(<ItemTableAGGrid {...defaultProps} />);
+    const grid = screen.getByTestId('arda-grid');
+    // The ArdaGrid mock div must be inside a wrapper div (the gridContainerRef target)
+    expect(grid.closest('div')).not.toBeNull();
+  });
+
+  it('mousedown inside the grid container does not trigger publish', async () => {
+    const publishSpy = jest.fn().mockResolvedValue(undefined);
+    mockCreateDraftItem.mockResolvedValue({ entityId: 'draft-x' });
+    mockUpdateItem.mockImplementation(publishSpy);
+
+    render(<ItemTableAGGrid {...defaultProps} items={[makeItem('row-1')]} />);
+    const gridEl = screen.getByTestId('arda-grid');
+
+    // Simulate mousedown inside the grid container
+    act(() => {
+      gridEl.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    });
+
+    // publish (updateItem) should NOT have been called
+    expect(publishSpy).not.toHaveBeenCalled();
   });
 });

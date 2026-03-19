@@ -38,26 +38,28 @@ export const orderMethodOptions = [
 ];
 
 export const cardSizeOptions = [
+  //{ value: 'X-SMALL', label: 'Quarter-Index' },
   { value: 'SMALL', label: 'Half-Index' },
   { value: 'MEDIUM', label: 'Business Card Stock' },
   { value: 'LARGE', label: '3 x 5' },
+  //{ value: 'LARGE+QR', label: '3 x 5 - Large QR Code' },
   { value: 'X_LARGE', label: '4 x 6' },
 ];
 
 export const labelSizeOptions = [
+  //{ value: 'X-SMALL', label: '3x1 (Label Printer)' },
   { value: 'SMALL', label: 'Quarter-Index' },
   { value: 'MEDIUM', label: 'Half- Index' },
-  { value: 'LARGE', label: '1 x 3' },
+  { value: 'LARGE', label: '3x2 (Label Printer)' },
   { value: 'X_LARGE', label: 'Business Card Stock' },
 ];
 
 export const breadcrumbSizeOptions = [
-  { value: 'SMALL', label: '1 x 1' },
-  { value: 'MEDIUM', label: '1 x 3' },
-  { value: 'LARGE', label: 'Quarter-Index' },
+  { value: 'SMALL', label: '3 x 1 (Label Printer)' },
+  { value: 'MEDIUM', label: '3 x 2 (Label Printer)' },
+  { value: 'LARGE', label: 'Business Card Stock' },
   { value: 'X_LARGE', label: 'Half-Index' },
 ];
-
 export const currencyOptions = [
   { value: 'USD', label: 'USD ($)' },
   { value: 'CAD', label: 'CAD (C$)' },

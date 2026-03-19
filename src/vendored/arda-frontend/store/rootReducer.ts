@@ -49,7 +49,7 @@ const persistedItemsReducer = persistReducer(
   {
     key: 'items',
     storage: persistStorage,
-    whitelist: ['columnVisibility', 'drafts', 'activeTab'],
+    whitelist: ['columnVisibility', 'drafts', 'activeTab', 'pageSize'],
     blacklist: ['items', 'itemCardsMap', 'selectedItems', 'selectedItem', 'itemToEdit', 'loading', 'loadingArdaItems', 'loadingCards', 'error', 'pagination', 'search', 'debouncedSearch', 'hasUnsavedChanges', 'maxItemsSeen'],
   },
   itemsReducer

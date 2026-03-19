@@ -23,6 +23,7 @@ import {
   SlidersHorizontal,
   Loader2,
   Dock,
+  X,
 } from 'lucide-react';
 import { Skeleton } from '@frontend/components/ui/skeleton';
 import Image from 'next/image';
@@ -42,6 +43,20 @@ import type { KanbanCardResult } from '@frontend/types/kanban';
 import { toast, Toaster } from 'sonner';
 import { DeleteConfirmationModal } from '@frontend/components/common/DeleteConfirmationModal';
 import { isAuthenticationError } from '@frontend/lib/utils';
+import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch, RootState } from '@frontend/store/store';
+import {
+  setItems,
+  setSelectedItems as reduxSetSelectedItems,
+  setActiveTab as reduxSetActiveTab,
+  setPagination,
+  setColumnVisibility as reduxSetColumnVisibility,
+  setLoadingArdaItems as reduxSetLoadingArdaItems,
+  setMaxItemsSeen as reduxSetMaxItemsSeen,
+  setHasUnsavedChanges as reduxSetHasUnsavedChanges,
+  setPageSize as reduxSetPageSize,
+} from '@frontend/store/slices/itemsSlice';
+import { FIELD_TO_VIEW_KEY } from './itemTableConfig';
 import { useAuth } from '@frontend/store/hooks/useAuth';
 import { useAuthErrorHandler } from '@frontend/hooks/useAuthErrorHandler';
 import { registerBlocker } from '@frontend/lib/unsavedNavigation';
@@ -61,6 +76,64 @@ const tabs = isProduction
   ? allTabs.filter((tab) => tab.key === 'published')
   : allTabs;
 
+export const DEFAULT_PAGE_SIZE =
+  process.env.NEXT_PUBLIC_DEPLOY_ENV === 'STAGING' ? 500 : 50;
+
+export const PAGE_SIZE_OPTIONS = [10, 20, 50, 100, 500];
+
+interface ColumnStateItem {
+  colId?: string;
+  hide?: boolean;
+  [key: string]: unknown;
+}
+
+// Default column visibility — applied when Redux has no saved data for the active tab.
+// Defined at module scope so the reference is stable across renders and the
+// useSelector fallback (state.items.columnVisibility[tab] ?? DEFAULT_COLUMN_VISIBILITY)
+// does not produce a new object on every render.
+const DEFAULT_COLUMN_VISIBILITY: Record<string, boolean> = {
+  sku: true, glCode: true, image: true, name: true, classification: true,
+  supplier: true, location: true, subLocation: false, unitCost: true,
+  created: true, minQuantityAmount: true, minQuantityUnit: true,
+  orderQuantityAmount: true, orderQuantityUnit: true, orderMethod: true,
+  cardSize: true, notes: true, actions: true, subType: false, useCase: false,
+  department: false, facility: false, cardNotes: false, taxable: false,
+  supplierUrl: false, supplierSku: false, leadTime: false, orderCost: false,
+  cardSizeOption: false, labelSize: false, breadcrumbSize: false, color: false,
+};
+
+/**
+ * Updates the AG Grid internal column-state localStorage entry for a tab to
+ * reflect a new visibility map. This keeps ArdaGrid's sort/width state in sync
+ * with the Redux-driven visibility without touching the persisted Redux state.
+ */
+function updateGridStateForVisibility(
+  visibility: Record<string, boolean>,
+  tab: string,
+): void {
+  if (typeof window === 'undefined') return;
+  const gridStateKey = `items-grid-${tab}`;
+  const existingGridState = localStorage.getItem(gridStateKey);
+  if (!existingGridState) return;
+  try {
+    const gridState = JSON.parse(existingGridState);
+    if (gridState.columnState && Array.isArray(gridState.columnState)) {
+      gridState.columnState = gridState.columnState.map(
+        (col: ColumnStateItem) => {
+          const viewKey = FIELD_TO_VIEW_KEY[col.colId ?? ''];
+          if (viewKey && Object.hasOwn(visibility, viewKey)) {
+            return { ...col, hide: !visibility[viewKey] };
+          }
+          return col;
+        },
+      );
+      localStorage.setItem(gridStateKey, JSON.stringify(gridState));
+    }
+  } catch {
+    // ignore localStorage errors
+  }
+}
+
 const isDevOrStage = process.env.NEXT_PUBLIC_DEPLOY_ENV !== 'PRODUCTION';
 const devLog = (...args: unknown[]) => {
   if (isDevOrStage) console.log(...args);
@@ -75,6 +148,33 @@ export default function ItemsPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { handleAuthError } = useAuthErrorHandler();
+  const dispatch = useDispatch<AppDispatch>();
+
+  // ── Redux state ──────────────────────────────────────────────────────────
+  const activeTab = useSelector((state: RootState) => state.items.activeTab);
+  const ardaItems = useSelector((state: RootState) => state.items.items);
+  const loadingArdaItems = useSelector(
+    (state: RootState) => state.items.loadingArdaItems,
+  );
+  const selectedItems = useSelector(
+    (state: RootState) => state.items.selectedItems,
+  );
+  const maxItemsSeen = useSelector(
+    (state: RootState) => state.items.maxItemsSeen,
+  );
+  const hasUnsavedChanges = useSelector(
+    (state: RootState) => state.items.hasUnsavedChanges,
+  );
+  const pageSize = useSelector((state: RootState) => state.items.pageSize);
+  const pagination = useSelector((state: RootState) => state.items.pagination);
+
+  const columnVisibility = useSelector(
+    (state: RootState) =>
+      state.items.columnVisibility[activeTab] ?? DEFAULT_COLUMN_VISIBILITY,
+  );
+
+  // Derived pagination shape expected by the rest of this component
+  const paginationData = { ...pagination, currentPageSize: pageSize };
 
   // Check if we're on a bookmarkable item URL (/item/[itemId])
   // Extract itemId from pathname or params
@@ -84,7 +184,6 @@ export default function ItemsPage() {
   const itemIdFromPathname = pathname?.match(/^\/item\/([^/]+)$/)?.[1];
   const itemIdFromPath = itemIdFromParams || itemIdFromPathname;
 
-  const [activeTab, setActiveTab] = useState('published');
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -94,12 +193,8 @@ export default function ItemsPage() {
   const [selectedItem, setSelectedItem] = useState<items.Item | null>(null);
   const [itemToEdit, setItemToEdit] = useState<items.Item | null>(null); // New state for editing
   const [importModalOpen, setImportModalOpen] = useState(false);
-  const [ardaItems, setArdaItems] = useState<items.Item[]>([]);
-  const [loadingArdaItems, setLoadingArdaItems] = useState(false);
-  const [selectedItems, setSelectedItems] = useState<items.Item[]>([]);
   const selectedItemsMapRef = useRef<Map<string, items.Item>>(new Map());
   const maxItemsSeenRef = useRef<number>(0);
-  const [maxItemsSeen, setMaxItemsSeen] = useState<number>(0);
   const [itemCardsMap, setItemCardsMap] = useState<
     Record<string, KanbanCardResult[]>
   >({});
@@ -134,207 +229,41 @@ export default function ItemsPage() {
 
   // In-table editing: unsaved changes and modal for leave/refresh
   const itemsGridRef = useRef<ItemTableAGGridRef>(null);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const hasUnsavedChangesRef = useRef(false);
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
   const [isSavingUnsaved, setIsSavingUnsaved] = useState(false);
   const pendingNavigateRef = useRef<string | null>(null);
 
-  // Page size is fixed at 50
-  const getInitialPageSize = () => {
-    return 50;
-  };
-
-  // Pagination state for API - using index-based pagination
-  const [paginationData, setPaginationData] = useState<{
-    currentPageSize: number;
-    totalItems: number;
-    currentPage: number;
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
-    thisPage?: string;
-    nextPage?: string;
-    previousPage?: string;
-  }>({
-    currentPageSize: getInitialPageSize(),
-    totalItems: 0,
-    currentPage: 1,
-    hasNextPage: false,
-    hasPreviousPage: false,
-  });
-
-  // Default column visibility configuration
-  const defaultColumnVisibility: Record<string, boolean> = {
-    sku: true,
-    glCode: true,
-    image: true,
-    name: true,
-    classification: true,
-    supplier: true,
-    location: true,
-    subLocation: false,
-    unitCost: true,
-    created: true,
-    minQuantityAmount: true,
-    minQuantityUnit: true,
-    orderQuantityAmount: true,
-    orderQuantityUnit: true,
-    orderMethod: true,
-    cardSize: true,
-    notes: true,
-    actions: true,
-    subType: false,
-    useCase: false,
-    department: false,
-    facility: false,
-    cardNotes: false,
-    taxable: false,
-    supplierUrl: false,
-    supplierSku: false,
-    leadTime: false,
-    orderCost: false,
-    cardSizeOption: false,
-    labelSize: false,
-    breadcrumbSize: false,
-    color: false,
-  };
-
-  // Load column visibility from localStorage
-  const loadColumnVisibility = (): Record<string, boolean> => {
-    if (typeof window === 'undefined') {
-      return defaultColumnVisibility;
-    }
-
-    try {
-      const saved = localStorage.getItem('itemsColumnVisibility');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        // Merge with defaults to ensure all columns are present
-        return { ...defaultColumnVisibility, ...parsed };
-      }
-    } catch (error) {
-      console.error(
-        'Failed to load column visibility from localStorage:',
-        error,
-      );
-    }
-
-    return defaultColumnVisibility;
-  };
-
-  // Save column visibility to localStorage
-  const saveColumnVisibility = (visibility: Record<string, boolean>) => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    try {
-      localStorage.setItem('itemsColumnVisibility', JSON.stringify(visibility));
-
-      // Also update items-grid-${activeTab} with the new visibility
-      const gridStateKey = `items-grid-${activeTab}`;
-      const existingGridState = localStorage.getItem(gridStateKey);
-
-      if (existingGridState) {
-        try {
-          const gridState = JSON.parse(existingGridState);
-
-          // Mapping from viewKey to field name
-          const viewKeyToField: Record<string, string> = {
-            sku: 'internalSKU',
-            glCode: 'generalLedgerCode',
-            name: 'name',
-            image: 'imageUrl',
-            classification: 'classification.type',
-            supplier: 'primarySupply.supplier',
-            location: 'locator.location',
-            subLocation: 'locator.subLocation',
-            unitCost: 'primarySupply.unitCost',
-            created: 'createdCoordinates',
-            minQuantityAmount: 'minQuantityAmount',
-            minQuantityUnit: 'minQuantityUnit',
-            orderQuantityAmount: 'orderQuantityAmount',
-            orderQuantityUnit: 'orderQuantityUnit',
-            orderMethod: 'primarySupply.orderMechanism',
-            cardSize: 'cardCount',
-            notes: 'notes',
-            actions: 'quickActions',
-            subType: 'classification.subType',
-            useCase: 'useCase',
-            department: 'locator.department',
-            facility: 'locator.facility',
-            cardNotes: 'cardNotesDefault',
-            taxable: 'taxable',
-            supplierUrl: 'primarySupply.url',
-            supplierSku: 'primarySupply.sku',
-            leadTime: 'primarySupply.averageLeadTime',
-            orderCost: 'primarySupply.orderCost',
-            cardSizeOption: 'cardSize',
-            labelSize: 'labelSize',
-            breadcrumbSize: 'breadcrumbSize',
-            color: 'color',
-          };
-
-          // Update visibility in grid state
-          if (gridState.columnState && Array.isArray(gridState.columnState)) {
-            interface ColumnStateItem {
-              colId?: string;
-              hide?: boolean;
-              [key: string]: unknown;
-            }
-
-            gridState.columnState = gridState.columnState.map(
-              (col: ColumnStateItem) => {
-                const viewKey = Object.entries(viewKeyToField).find(
-                  ([, field]) => field === col.colId,
-                )?.[0];
-
-                if (viewKey && visibility.hasOwnProperty(viewKey)) {
-                  return {
-                    ...col,
-                    hide: !visibility[viewKey],
-                  };
-                }
-
-                return col;
-              },
-            );
-
-            // Save updated grid state
-            localStorage.setItem(gridStateKey, JSON.stringify(gridState));
-          }
-        } catch (error) {
-          console.error('Failed to update grid state:', error);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to save column visibility to localStorage:', error);
-    }
-  };
-
-  // State to control column visibility - load from localStorage on mount
-  const [columnVisibility, setColumnVisibility] = useState<
-    Record<string, boolean>
-  >(() => loadColumnVisibility());
-
   // Draft state for column view dropdown (stays open until Save/Cancel)
   const [columnViewOpen, setColumnViewOpen] = useState(false);
   const [columnVisibilityDraft, setColumnVisibilityDraft] = useState<
     Record<string, boolean>
-  >(() => loadColumnVisibility());
+  >(columnVisibility);
 
-  // Track if this is the initial mount to avoid saving on first render
-  const isInitialMount = useRef(true);
-
-  // Save to localStorage whenever columnVisibility changes (but not on initial mount)
+  // One-time migration: move old flat 'itemsColumnVisibility' → Redux per-tab
   useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
+    if (typeof window === 'undefined') return;
+    const saved = localStorage.getItem('itemsColumnVisibility');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved) as Record<string, boolean>;
+        for (const tab of ['published', 'draft', 'uploaded']) {
+          dispatch(reduxSetColumnVisibility({ tab, visibility: { ...DEFAULT_COLUMN_VISIBILITY, ...parsed } }));
+        }
+      } catch { /* ignore */ }
+      localStorage.removeItem('itemsColumnVisibility');
     }
-    saveColumnVisibility(columnVisibility);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [columnVisibility]);
+    // One-time migration: move old 'arda-items-page-size' → Redux
+    const storedSize = localStorage.getItem('arda-items-page-size');
+    if (storedSize) {
+      const parsed = parseInt(storedSize, 10);
+      if (PAGE_SIZE_OPTIONS.includes(parsed)) {
+        dispatch(reduxSetPageSize(parsed));
+      }
+      localStorage.removeItem('arda-items-page-size');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const getKanbanCardsForItem = useCallback(
     async (itemEntityId: string): Promise<KanbanCardResult[] | null> => {
@@ -505,14 +434,14 @@ export default function ItemsPage() {
   // Function to fetch real data from ARDA with index-based pagination
   const fetchArdaItems = useCallback(
     async (
-      pageSize: number = 50,
+      pageSize: number = DEFAULT_PAGE_SIZE,
       pageIndex: number = 0,
       searchQuery?: string,
       showLoading: boolean = true,
     ): Promise<items.Item[] | undefined> => {
       try {
         if (showLoading) {
-          setLoadingArdaItems(true);
+          dispatch(reduxSetLoadingArdaItems(true));
         }
         devLog(
           '[PAGINATION] Fetching items with index:',
@@ -620,7 +549,7 @@ export default function ItemsPage() {
           );
 
           // Stop loading immediately without showing empty state
-          setLoadingArdaItems(false);
+          dispatch(reduxSetLoadingArdaItems(false));
 
           // Don't show loading state during automatic navigation
           // Fetch the previous page without showing loading
@@ -639,7 +568,7 @@ export default function ItemsPage() {
           return;
         }
 
-        setArdaItems(result.items);
+        dispatch(setItems(result.items));
         setItemCardsMap((prev) => {
           const allowedIds = new Set(
             result.items
@@ -658,11 +587,11 @@ export default function ItemsPage() {
         const currentMaxItemsSeen = pageIndex * pageSize + result.items.length;
         if (currentMaxItemsSeen > maxItemsSeenRef.current) {
           maxItemsSeenRef.current = currentMaxItemsSeen;
-          setMaxItemsSeen(currentMaxItemsSeen);
+          dispatch(reduxSetMaxItemsSeen(currentMaxItemsSeen));
         } else if (pageIndex === 0 && result.items.length > 0) {
           // Reset when starting from the beginning
           maxItemsSeenRef.current = result.items.length;
-          setMaxItemsSeen(result.items.length);
+          dispatch(reduxSetMaxItemsSeen(result.items.length));
         }
 
         // Reset navigation flag if we successfully got items
@@ -697,8 +626,8 @@ export default function ItemsPage() {
         });
 
         // Update pagination data
-        setPaginationData({
-          currentPageSize: pageSize,
+        dispatch(setPagination({
+          pageSize,
           totalItems: result.items.length,
           currentPage: newCurrentPage,
           hasNextPage,
@@ -706,7 +635,7 @@ export default function ItemsPage() {
           thisPage: result.pagination.thisPage,
           nextPage: result.pagination.nextPage,
           previousPage: result.pagination.previousPage,
-        });
+        }));
 
         if (isInitialLoadRef.current) {
           isInitialLoadRef.current = false;
@@ -724,18 +653,18 @@ export default function ItemsPage() {
         }
 
         toast.error('Failed to fetch ARDA items - using fallback data');
-        setArdaItems([]);
-        setPaginationData({
-          currentPageSize: pageSize,
+        dispatch(setItems([]));
+        dispatch(setPagination({
+          pageSize,
           totalItems: 0,
           currentPage: 1,
           hasNextPage: false,
           hasPreviousPage: false,
-        });
+        }));
         return [];
       } finally {
         if (showLoading) {
-          setLoadingArdaItems(false);
+          dispatch(reduxSetLoadingArdaItems(false));
         }
       }
     },
@@ -843,6 +772,16 @@ export default function ItemsPage() {
     debouncedSearch,
   ]);
 
+  // Page size change handler — resets to page 1 and persists choice
+  const handlePageSizeChange = useCallback(
+    (newSize: number) => {
+      dispatch(reduxSetPageSize(newSize));
+      // Reset to first page with the new size
+      fetchArdaItems(newSize, 0, debouncedSearch);
+    },
+    [dispatch, fetchArdaItems, debouncedSearch],
+  );
+
   // Load items immediately on component mount
   useEffect(() => {
     // Don't fetch if auth is still loading
@@ -865,7 +804,7 @@ export default function ItemsPage() {
     // Mark as loaded before making the request to prevent duplicate calls
     hasLoadedRef.current = true;
     isInitialLoadRef.current = true;
-    fetchArdaItems(getInitialPageSize(), 0, debouncedSearch);
+    fetchArdaItems(pageSize, 0, debouncedSearch);
     // Only depend on user and authLoading for initial load, debouncedSearch is handled separately
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, authLoading]);
@@ -925,7 +864,7 @@ export default function ItemsPage() {
     }
 
     // Reset to first page when search changes
-    fetchArdaItems(getInitialPageSize(), 0, debouncedSearch);
+    fetchArdaItems(pageSize, 0, debouncedSearch);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch]);
 
@@ -1081,10 +1020,10 @@ export default function ItemsPage() {
   // Clear selection and reset max items seen when tab changes
   useEffect(() => {
     selectedItemsMapRef.current.clear();
-    setSelectedItems([]);
+    dispatch(reduxSetSelectedItems([]));
     maxItemsSeenRef.current = 0;
-    setMaxItemsSeen(0);
-  }, [activeTab]);
+    dispatch(reduxSetMaxItemsSeen(0));
+  }, [activeTab, dispatch]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -1378,7 +1317,7 @@ export default function ItemsPage() {
         selectedItemsMapRef.current.delete(entityId);
       });
       const allSelectedItems = Array.from(selectedItemsMapRef.current.values());
-      setSelectedItems(allSelectedItems);
+      dispatch(reduxSetSelectedItems(allSelectedItems));
     } catch (error) {
       console.error('Error deleting items:', error);
       if (handleAuthError(error)) {
@@ -2010,7 +1949,7 @@ export default function ItemsPage() {
                 {tabs.map((tab) => (
                   <button
                     key={tab.key}
-                    onClick={() => setActiveTab(tab.key)}
+                    onClick={() => dispatch(reduxSetActiveTab(tab.key as 'published' | 'draft' | 'uploaded'))}
                     className={`px-4 py-2 font-medium ${
                       activeTab === tab.key
                         ? 'border-b-2 border-black text-black'
@@ -2037,8 +1976,17 @@ export default function ItemsPage() {
                       }
                     }}
                     onBlur={triggerSearch}
-                    className='pl-8 h-9 sm:h-10 text-sm sm:text-base'
+                    className={`pl-8 h-9 sm:h-10 text-sm sm:text-base${search ? ' pr-8' : ''}`}
                   />
+                  {search && (
+                    <button
+                      onClick={() => { setSearch(''); triggerSearch(); }}
+                      className='absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center text-muted-foreground hover:text-foreground z-10'
+                      aria-label='Clear search'
+                    >
+                      <X className='h-4 w-4' />
+                    </button>
+                  )}
                   {isSearching && (
                     <div className='absolute bottom-0 left-0 right-0 h-[2px] overflow-hidden rounded-b-md'>
                       <Skeleton className='h-full w-full bg-muted-foreground/20' />
@@ -2217,7 +2165,7 @@ export default function ItemsPage() {
                             }))
                           }
                         >
-                          Classification
+                          Type
                         </DropdownMenuCheckboxItem>
                         <DropdownMenuCheckboxItem
                           onSelect={(e) => e.preventDefault()}
@@ -2325,7 +2273,7 @@ export default function ItemsPage() {
                             }))
                           }
                         >
-                          Order Amount
+                          Order Qty
                         </DropdownMenuCheckboxItem>
                         <DropdownMenuCheckboxItem
                           onSelect={(e) => e.preventDefault()}
@@ -2550,7 +2498,8 @@ export default function ItemsPage() {
                             size='sm'
                             className='flex-1'
                             onClick={() => {
-                              setColumnVisibility(columnVisibilityDraft);
+                              dispatch(reduxSetColumnVisibility({ tab: activeTab, visibility: columnVisibilityDraft }));
+                              updateGridStateForVisibility(columnVisibilityDraft, activeTab);
                               setColumnViewOpen(false);
                             }}
                           >
@@ -2778,10 +2727,10 @@ export default function ItemsPage() {
                   columnVisibility={columnVisibility}
                   onRefreshRequested={refreshCurrentPage}
                   onAuthError={handleAuthError}
-                  onUnsavedChangesChange={setHasUnsavedChanges}
+                  onUnsavedChangesChange={(v) => dispatch(reduxSetHasUnsavedChanges(v))}
                   isUnsavedModalOpen={showUnsavedModal}
                   onColumnVisibilityChange={(newVisibility) => {
-                    setColumnVisibility(newVisibility);
+                    dispatch(reduxSetColumnVisibility({ tab: activeTab, visibility: newVisibility }));
                   }}
                   hasActiveSearch={
                     debouncedSearch.trim().length > 0 &&
@@ -2880,7 +2829,7 @@ export default function ItemsPage() {
                     const allSelectedItems = Array.from(
                       selectedItemsMapRef.current.values(),
                     );
-                    setSelectedItems(allSelectedItems);
+                    dispatch(reduxSetSelectedItems(allSelectedItems));
                   }}
                   totalSelectedCount={selectedItems.length}
                   maxItemsSeen={maxItemsSeen}
@@ -2888,6 +2837,9 @@ export default function ItemsPage() {
                   onNextPage={handleNextPage}
                   onPreviousPage={handlePreviousPage}
                   onFirstPage={handleFirstPage}
+                  pageSize={pageSize}
+                  pageSizeOptions={PAGE_SIZE_OPTIONS}
+                  onPageSizeChange={handlePageSizeChange}
                   isLoading={loadingArdaItems}
                   itemCardsMap={itemCardsMap}
                   ensureCardsForItem={ensureCardsForItem}

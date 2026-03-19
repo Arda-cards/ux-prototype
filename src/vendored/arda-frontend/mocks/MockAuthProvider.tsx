@@ -6,6 +6,7 @@ import { AuthContext } from '@frontend/contexts/AuthContext';
 import { MOCK_USER, generateMockTokens } from './data/mockUser';
 import { useAppDispatch } from '@frontend/store/hooks';
 import { setLoading as setReduxLoading, setUser as setReduxUser, setTokens as setReduxTokens } from '@frontend/store/slices/authSlice';
+import { STORAGE_KEYS } from '@frontend/store/constants/storageKeys';
 
 interface AuthState {
   user: User | null;
@@ -120,15 +121,15 @@ export function MockAuthProvider({ children, autoLogin = true }: MockAuthProvide
     }
 
     // Restore from existing localStorage tokens (survives full page reload)
-    const existingToken = typeof window !== 'undefined' && localStorage.getItem('idToken');
+    const existingToken = typeof window !== 'undefined' && localStorage.getItem(STORAGE_KEYS.ID_TOKEN);
     if (existingToken) {
       console.log('[MOCK AUTH] Restoring session from existing localStorage tokens');
-      const email = localStorage.getItem('userEmail') || MOCK_USER.email;
+      const email = localStorage.getItem(STORAGE_KEYS.USER_EMAIL) || MOCK_USER.email;
       const user = { ...MOCK_USER, email, name: email.split('@')[0] || MOCK_USER.name };
       finalize(user, {
-        accessToken: localStorage.getItem('accessToken') || '',
+        accessToken: localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN) || '',
         idToken: existingToken,
-        refreshToken: localStorage.getItem('refreshToken') || '',
+        refreshToken: localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN) || '',
       });
       return;
     }
@@ -137,10 +138,10 @@ export function MockAuthProvider({ children, autoLogin = true }: MockAuthProvide
       // No existing tokens — generate fresh mock session
       console.log('[MOCK AUTH] Auto-login: generating fresh mock tokens');
       const tokens = generateMockTokens();
-      localStorage.setItem('accessToken', tokens.accessToken);
-      localStorage.setItem('idToken', tokens.idToken);
-      localStorage.setItem('refreshToken', tokens.refreshToken);
-      localStorage.setItem('userEmail', MOCK_USER.email);
+      localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, tokens.accessToken);
+      localStorage.setItem(STORAGE_KEYS.ID_TOKEN, tokens.idToken);
+      localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, tokens.refreshToken);
+      localStorage.setItem(STORAGE_KEYS.USER_EMAIL, MOCK_USER.email);
       finalize(MOCK_USER, tokens);
     } else {
       finalize(null);
@@ -161,10 +162,10 @@ export function MockAuthProvider({ children, autoLogin = true }: MockAuthProvide
 
     // Generate fresh tokens
     const tokens = generateMockTokens();
-    localStorage.setItem('accessToken', tokens.accessToken);
-    localStorage.setItem('idToken', tokens.idToken);
-    localStorage.setItem('refreshToken', tokens.refreshToken);
-    localStorage.setItem('userEmail', email);
+    localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, tokens.accessToken);
+    localStorage.setItem(STORAGE_KEYS.ID_TOKEN, tokens.idToken);
+    localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, tokens.refreshToken);
+    localStorage.setItem(STORAGE_KEYS.USER_EMAIL, email);
 
     // Use email as the user's name if different from mock user
     const user: User = {
@@ -194,10 +195,10 @@ export function MockAuthProvider({ children, autoLogin = true }: MockAuthProvide
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     // Clear localStorage
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('idToken');
-    localStorage.removeItem('userEmail');
+    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.ID_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.USER_EMAIL);
 
     // Set flag so the init effect skips auto-login on subsequent page loads
     // (survives page reload via sessionStorage, cleared on next init)
@@ -214,7 +215,7 @@ export function MockAuthProvider({ children, autoLogin = true }: MockAuthProvide
   const checkAuth = useCallback(async () => {
     console.log('[MOCK AUTH] Checking authentication');
 
-    const hasToken = localStorage.getItem('accessToken');
+    const hasToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
     if (hasToken && state.user === null) {
       setState((prev) => ({ ...prev, user: MOCK_USER, loading: false }));
     } else if (!hasToken && state.user !== null) {
@@ -267,9 +268,9 @@ export function MockAuthProvider({ children, autoLogin = true }: MockAuthProvide
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     const tokens = generateMockTokens();
-    localStorage.setItem('accessToken', tokens.accessToken);
-    localStorage.setItem('idToken', tokens.idToken);
-    localStorage.setItem('refreshToken', tokens.refreshToken);
+    localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, tokens.accessToken);
+    localStorage.setItem(STORAGE_KEYS.ID_TOKEN, tokens.idToken);
+    localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, tokens.refreshToken);
 
     console.log('[MOCK AUTH] New password set successfully');
     setState({ user: MOCK_USER, loading: false, error: null, isLoggingOut: false });
@@ -282,9 +283,9 @@ export function MockAuthProvider({ children, autoLogin = true }: MockAuthProvide
     const tokens = generateMockTokens();
     const now = Date.now();
 
-    localStorage.setItem('accessToken', tokens.accessToken);
-    localStorage.setItem('idToken', tokens.idToken);
-    localStorage.setItem('refreshToken', tokens.refreshToken);
+    localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, tokens.accessToken);
+    localStorage.setItem(STORAGE_KEYS.ID_TOKEN, tokens.idToken);
+    localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, tokens.refreshToken);
 
     return {
       accessToken: tokens.accessToken,

@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { isAuthenticationError } from '@frontend/lib/utils';
 import { flyToTarget } from '@frontend/lib/fly-to-target';
 import { useOrderQueueToast } from '@frontend/hooks/useOrderQueueToast';
-import { useOrderQueue } from '@frontend/contexts/OrderQueueContext';
+import { useOrderQueue } from '@frontend/store/hooks/useOrderQueue';
 import OrderQueueToast from '@frontend/components/ui/order-queue-toast';
 import { ItemDetailsPanel } from '@frontend/components/items/ItemDetailsPanel';
 import { ItemFormPanel } from '@frontend/components/items/ItemFormPanel';
@@ -26,6 +26,7 @@ import {
 import { defaultMoney, type Currency } from '@frontend/types/domain';
 import { defaultDuration } from '@frontend/types/general';
 import { CardActions } from './CardActions';
+import { canAddToOrderQueue } from '@frontend/lib/cardStateUtils';
 
 interface KanbanCardData {
   rId: string;
@@ -311,16 +312,9 @@ export function ScanModal({
     refreshCardData();
   };
 
-  // Helper function to check if Add to order queue button should be disabled
-  const isAddToOrderQueueDisabled = (
-    cardData: KanbanCardData | null
-  ): boolean => {
-    if (!cardData?.payload?.status) {
-      return false; // Default to enabled if status is missing
-    }
-
-    const disabledStatuses = ['REQUESTED', 'IN_PROCESS', 'REQUESTING'];
-    return disabledStatuses.includes(cardData.payload.status);
+  const isAddToOrderQueueDisabled = (cardData: KanbanCardData | null): boolean => {
+    if (!cardData?.payload?.status) return false;
+    return !canAddToOrderQueue(cardData.payload.status);
   };
 
   // Helper function to check if Receive card button should be disabled

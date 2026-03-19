@@ -108,16 +108,30 @@ export function ItemCardView({
       {/* Product Image */}
       <div className='w-full'>
         <div className='relative w-full max-h-[150px] sm:max-h-[180px] lg:max-h-[200px] overflow-hidden rounded-md flex items-center justify-center bg-white mt-1.5 sm:mt-2'>
-          {safeImageSrc && (
+          {item.image && !imageError ? (
             <Image
-              src={safeImageSrc}
+              src={item.image}
               alt={item.title}
               width={0}
               height={0}
               sizes='100vw'
               className='w-full h-auto max-h-[150px] sm:max-h-[180px] lg:max-h-[200px] object-contain'
               onError={() => setImageError(true)}
-              unoptimized={safeImageSrc.startsWith('http')} // Disable optimization for external images
+              unoptimized={item.image.startsWith('http')}
+            />
+          ) : item.image && imageError ? (
+            <div className='w-full min-h-[100px] flex flex-col items-center justify-center bg-[#F5F5F5] rounded-md px-4 py-3'>
+              <p className='text-sm font-medium text-[#737373]'>Image preview unavailable</p>
+            </div>
+          ) : (
+            <Image
+              src={safeImageSrc}
+              alt='No image available'
+              width={0}
+              height={0}
+              sizes='100vw'
+              className='w-full h-auto max-h-[150px] sm:max-h-[180px] lg:max-h-[200px] object-contain'
+              unoptimized
             />
           )}
           {/* Card number overlay */}

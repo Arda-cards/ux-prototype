@@ -3,7 +3,7 @@ import { AppHeader } from '@frontend/components/common/app-header';
 
 import { SidebarInset, SidebarProvider } from '@frontend/components/ui/sidebar';
 import { useAuth } from '@frontend/store/hooks/useAuth';
-import { useOrderQueue } from '@frontend/contexts/OrderQueueContext';
+import { useOrderQueue } from '@frontend/store/hooks/useOrderQueue';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { toast, Toaster } from 'sonner';

@@ -49,3 +49,14 @@ export const VIEW_KEY_TO_FIELD: Record<string, string> = {
   color: 'color',
   actions: 'quickActions',
 };
+
+/**
+ * Inverse of VIEW_KEY_TO_FIELD — maps an AG Grid field string back to its
+ * view-key. Derived automatically so the two maps never diverge.
+ *
+ * Used inside ItemTableAGGrid to sync AG Grid columnVisible events back to
+ * the columnVisibility prop (Redux state).
+ */
+export const FIELD_TO_VIEW_KEY: Record<string, string> = Object.fromEntries(
+  Object.entries(VIEW_KEY_TO_FIELD).map(([viewKey, field]) => [field, viewKey])
+);

@@ -199,17 +199,44 @@ export const kanbanQueryHandlers = [
   // TODO: frontend queries both query-details-by-item AND query per item. See https://github.com/Arda-cards/management/issues/760
   http.post('/api/arda/kanban/kanban-card/query', async ({ request }) => {
     console.log('[MSW] POST /api/arda/kanban/kanban-card/query');
-    const body = await request.json() as { filter?: unknown; index?: number; size?: number; field?: string; order?: string; itemEId?: string };
-    const { index = 0, size = 20, itemEId } = body;
+    const body = await request.json() as {
+      filter?: { eq?: string; locator?: string; and?: { eq?: string; locator?: string }[] };
+      paginate?: { index: number; size: number };
+      index?: number;
+      size?: number;
+      field?: string;
+      order?: string;
+      itemEId?: string;
+    };
+
+    const paginate = body.paginate ?? { index: body.index ?? 0, size: body.size ?? 20 };
+    const { itemEId } = body;
 
     let filtered = [...cardsStore];
+
+    // Support compound filter: filter.and array with status + item_local locators
+    if (body.filter?.and && Array.isArray(body.filter.and)) {
+      const statusCondition = body.filter.and.find((c) => c.locator === 'status');
+      const itemCondition = body.filter.and.find((c) => c.locator === 'item_local');
+
+      if (statusCondition?.eq) {
+        filtered = filtered.filter((c) => c.payload.status === statusCondition.eq);
+      }
+      if (itemCondition?.eq) {
+        filtered = filtered.filter((c) => c.payload.item.eId === itemCondition.eq);
+      }
+    } else if (body.filter?.eq && body.filter?.locator === 'status') {
+      // Support simple filter: filter.eq + filter.locator (legacy)
+      filtered = filtered.filter((c) => c.payload.status === body.filter!.eq);
+    }
+
     if (itemEId) {
       filtered = filtered.filter((c) => c.payload.item.eId === itemEId);
     }
     // Sort by asOf.effective descending
     filtered.sort((a, b) => b.asOf.effective - a.asOf.effective);
 
-    const page = buildPaginationResponse(filtered, index, size);
+    const page = buildPaginationResponse(filtered, paginate.index, paginate.size);
     const response: KanbanCardResponse = {
       thisPage: page.thisPage,
       nextPage: page.nextPage,
@@ -217,7 +244,7 @@ export const kanbanQueryHandlers = [
       results: page.results,
     };
 
-    console.log(`[MSW] Returning ${page.results.length} cards for query`);
+    console.log(`[MSW] Returning ${page.results.length} cards for query (filter: ${JSON.stringify(body.filter ?? 'none')})`);
     return HttpResponse.json({ ok: true, status: 200, data: response });
   }),
 

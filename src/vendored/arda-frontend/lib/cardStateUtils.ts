@@ -98,11 +98,16 @@ export function getCardStateTextColor(status: string): string {
 }
 
 /**
+ * Statuses that allow a card to be added to the order queue.
+ * Empty, restocked (FULFILLED), or available (AVAILABLE) cards can be queued.
+ */
+export const ALLOWED_ORDER_QUEUE_STATUSES = ['EMPTY', 'FULFILLED', 'AVAILABLE'];
+
+/**
  * Check if a card can be added to order queue
- * Allow cards to go back to order queue from any state except REQUESTING
  */
 export function canAddToOrderQueue(status: string): boolean {
-  return status !== 'REQUESTING';
+  return ALLOWED_ORDER_QUEUE_STATUSES.includes(status.toUpperCase());
 }
 
 /**
