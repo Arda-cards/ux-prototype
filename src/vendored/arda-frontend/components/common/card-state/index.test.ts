@@ -158,12 +158,12 @@ describe('canAddToOrderQueue', () => {
     expect(canAddToOrderQueue('REQUESTING')).toBe(false);
   });
 
-  it('returns true when status is REQUESTED', () => {
-    expect(canAddToOrderQueue('REQUESTED')).toBe(true);
+  it('returns false when status is REQUESTED', () => {
+    expect(canAddToOrderQueue('REQUESTED')).toBe(false);
   });
 
-  it('returns true when status is IN_PROCESS', () => {
-    expect(canAddToOrderQueue('IN_PROCESS')).toBe(true);
+  it('returns false when status is IN_PROCESS', () => {
+    expect(canAddToOrderQueue('IN_PROCESS')).toBe(false);
   });
 
   it('returns true when status is FULFILLED', () => {
@@ -174,12 +174,12 @@ describe('canAddToOrderQueue', () => {
     expect(canAddToOrderQueue('AVAILABLE')).toBe(true);
   });
 
-  it('returns true when status is UNKNOWN', () => {
-    expect(canAddToOrderQueue('UNKNOWN')).toBe(true);
+  it('returns false when status is UNKNOWN', () => {
+    expect(canAddToOrderQueue('UNKNOWN')).toBe(false);
   });
 
-  it('returns true for any unrecognized status', () => {
-    expect(canAddToOrderQueue('SOME_OTHER_STATUS')).toBe(true);
+  it('returns false for unrecognized status (not in allowed list)', () => {
+    expect(canAddToOrderQueue('SOME_OTHER_STATUS')).toBe(false);
   });
 });
 

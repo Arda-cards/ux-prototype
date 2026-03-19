@@ -209,7 +209,7 @@ export const ItemTable = ({
           className='w-36 flex items-center gap-1 cursor-pointer select-none text-[14px] font-medium leading-5 text-muted-foreground font-geist'
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
-          Classification
+          Type
           <ChevronsUpDownIcon className='w-4 h-4' />
         </div>
       ),

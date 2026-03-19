@@ -8,11 +8,14 @@ import {
   ConfirmForgotPasswordCommand,
   ChangePasswordCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
+import * as Sentry from '@sentry/nextjs';
 import { generateSecretHash, debugLog, debugError } from '@frontend/lib/utils';
 import { decodeJWTPayload, getUserDisplayName } from '@frontend/lib/jwt';
 import type { User } from '@frontend/types';
 import type { CognitoJWTPayload } from '@frontend/lib/jwt';
 import type { RootState, AppDispatch } from '../store';
+import { STORAGE_KEYS } from '../constants/storageKeys';
+import { COGNITO_ERRORS } from '../constants/authErrors';
 
 // Cognito client singleton
 let cognitoClient: CognitoIdentityProviderClient | null = null;
@@ -31,12 +34,12 @@ function getCognitoClient(): CognitoIdentityProviderClient {
 // (window.location.href) that tears down React before useEffect cleanup fires.
 function clearLocalStorageTokens(): void {
   if (typeof window === 'undefined') return;
-  localStorage.removeItem('accessToken');
-  localStorage.removeItem('idToken');
-  localStorage.removeItem('refreshToken');
-  localStorage.removeItem('tokenExpiresAt');
-  localStorage.removeItem('userEmail');
-  localStorage.removeItem('persist:auth');
+  localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+  localStorage.removeItem(STORAGE_KEYS.ID_TOKEN);
+  localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+  localStorage.removeItem(STORAGE_KEYS.TOKEN_EXPIRES_AT);
+  localStorage.removeItem(STORAGE_KEYS.USER_EMAIL);
+  localStorage.removeItem(STORAGE_KEYS.PERSIST_AUTH);
 }
 
 // Helper to get user from ID token
@@ -66,6 +69,7 @@ export const signInThunk = createAsyncThunk<
 >(
   'auth/signIn',
   async ({ email, password }, { rejectWithValue }) => {
+    Sentry.addBreadcrumb({ category: 'auth', message: 'Sign in attempt', level: 'info' });
     try {
       // In mock mode, bypass Cognito and return mock tokens directly
       const isMockMode = process.env.NEXT_PUBLIC_MOCK_MODE === 'true';
@@ -80,8 +84,12 @@ export const signInThunk = createAsyncThunk<
 
         const accessPayload = JSON.parse(atob(tokens.accessToken.split('.')[1]));
 
+        const mockUser = { ...MOCK_USER, email, name: email.split('@')[0] || MOCK_USER.name };
+        Sentry.setUser({ id: mockUser.id, email: mockUser.email, username: mockUser.name });
+        Sentry.addBreadcrumb({ category: 'auth', message: 'Sign in successful', level: 'info' });
+        Sentry.metrics.count('auth.sign_in', 1, { attributes: { result: 'success' } });
         return {
-          user: { ...MOCK_USER, email, name: email.split('@')[0] || MOCK_USER.name },
+          user: mockUser,
           jwtPayload: payload,
           tokens: {
             accessToken: tokens.accessToken,
@@ -115,7 +123,7 @@ export const signInThunk = createAsyncThunk<
         debugLog('[AUTH] New password required challenge received');
         // Store email temporarily for the challenge response
         if (typeof window !== 'undefined') {
-          localStorage.setItem('userEmail', email);
+          localStorage.setItem(STORAGE_KEYS.USER_EMAIL, email);
         }
         return rejectWithValue({
           requiresNewPassword: true,
@@ -142,6 +150,9 @@ export const signInThunk = createAsyncThunk<
           const accessPayload = JSON.parse(atob(AccessToken.split('.')[1]));
           const expiresAt = accessPayload.exp * 1000;
 
+          Sentry.setUser({ id: user.id, email: user.email, username: user.name });
+          Sentry.addBreadcrumb({ category: 'auth', message: 'Sign in successful', level: 'info' });
+          Sentry.metrics.count('auth.sign_in', 1, { attributes: { result: 'success' } });
           return {
             user,
             jwtPayload: payload,
@@ -162,17 +173,19 @@ export const signInThunk = createAsyncThunk<
       let errorMessage = 'Sign in failed';
       if (error && typeof error === 'object' && 'name' in error) {
         const cognitoError = error as { name: string; message?: string };
-        if (cognitoError.name === 'NotAuthorizedException') {
+        if (cognitoError.name === COGNITO_ERRORS.NOT_AUTHORIZED) {
           errorMessage = 'Invalid email or password';
-        } else if (cognitoError.name === 'UserNotConfirmedException') {
+        } else if (cognitoError.name === COGNITO_ERRORS.USER_NOT_CONFIRMED) {
           errorMessage = 'Please confirm your email address';
-        } else if (cognitoError.name === 'UserNotFoundException') {
+        } else if (cognitoError.name === COGNITO_ERRORS.USER_NOT_FOUND) {
           errorMessage = 'User not found';
         } else if (cognitoError.message) {
           errorMessage = cognitoError.message;
         }
       }
 
+      Sentry.addBreadcrumb({ category: 'auth', message: `Sign in failed: ${errorMessage}`, level: 'warning' });
+      Sentry.metrics.count('auth.sign_in', 1, { attributes: { result: 'failure' } });
       return rejectWithValue(errorMessage);
     }
   }
@@ -247,11 +260,11 @@ export const respondToNewPasswordChallengeThunk = createAsyncThunk<
       let errorMessage = 'Failed to set new password';
       if (error && typeof error === 'object' && 'name' in error) {
         const cognitoError = error as { name: string; message?: string };
-        if (cognitoError.name === 'NotAuthorizedException') {
+        if (cognitoError.name === COGNITO_ERRORS.NOT_AUTHORIZED) {
           errorMessage = 'Session expired. Please sign in again.';
-        } else if (cognitoError.name === 'InvalidPasswordException') {
+        } else if (cognitoError.name === COGNITO_ERRORS.INVALID_PASSWORD) {
           errorMessage = 'Password does not meet requirements';
-        } else if (cognitoError.name === 'InvalidParameterException') {
+        } else if (cognitoError.name === COGNITO_ERRORS.INVALID_PARAMETER) {
           errorMessage = 'Invalid password format';
         } else if (cognitoError.message) {
           errorMessage = cognitoError.message;
@@ -282,6 +295,8 @@ export const signOutThunk = createAsyncThunk<
         }
         await new Promise(resolve => setTimeout(resolve, 100));
         debugLog('[AUTH] Mock sign out complete');
+        Sentry.setUser(null);
+        Sentry.addBreadcrumb({ category: 'auth', message: 'User signed out', level: 'info' });
         // Clear localStorage synchronously to avoid race with hard navigation
         clearLocalStorageTokens();
         return;
@@ -307,6 +322,8 @@ export const signOutThunk = createAsyncThunk<
       // Small delay for smooth transition
       await new Promise(resolve => setTimeout(resolve, 300));
 
+      Sentry.setUser(null);
+      Sentry.addBreadcrumb({ category: 'auth', message: 'User signed out', level: 'info' });
       // Clear localStorage synchronously to avoid race with hard navigation
       clearLocalStorageTokens();
 
@@ -380,6 +397,7 @@ export const refreshTokensThunk = createAsyncThunk<
 
           debugLog('[TOKEN_REFRESH] ✓ Tokens refreshed successfully');
           debugLog('[TOKEN_REFRESH] New token expires at:', new Date(expiresAt).toISOString());
+          Sentry.metrics.count('auth.token_refresh', 1, { attributes: { result: 'success' } });
 
           return {
             accessToken: AccessToken,
@@ -396,13 +414,14 @@ export const refreshTokensThunk = createAsyncThunk<
 
       const errorName = (error as { name?: string })?.name;
       const isPermanentError =
-        errorName === 'NotAuthorizedException' ||
-        errorName === 'InvalidParameterException' ||
-        errorName === 'UserNotFoundException';
+        errorName === COGNITO_ERRORS.NOT_AUTHORIZED ||
+        errorName === COGNITO_ERRORS.INVALID_PARAMETER ||
+        errorName === COGNITO_ERRORS.USER_NOT_FOUND;
 
       if (isPermanentError) {
         debugError('[TOKEN_REFRESH] Permanent error detected:', errorName);
       }
+      Sentry.metrics.count('auth.token_refresh', 1, { attributes: { result: isPermanentError ? 'permanent_failure' : 'failure' } });
 
       return rejectWithValue({
         message: error instanceof Error ? error.message : 'Token refresh failed',
@@ -437,7 +456,9 @@ export const checkAuthThunk = createAsyncThunk<
         return null;
       }
 
-      // Check if token is expired
+      // Check if token is actually expired. Do NOT use the 5-min buffer here —
+      // proactive refresh is the tokenRefreshMiddleware's job. Using a buffer
+      // in checkAuthThunk would sign users out 5 min early on every validation poll.
       const now = Date.now() / 1000;
       if (payload.exp && payload.exp < now) {
         debugLog('[AUTH] Token expired, clearing state');
@@ -487,9 +508,9 @@ export const forgotPasswordThunk = createAsyncThunk<
       let errorMessage = 'Failed to send reset email';
       if (error && typeof error === 'object' && 'name' in error) {
         const cognitoError = error as { name: string; message?: string };
-        if (cognitoError.name === 'UserNotFoundException') {
+        if (cognitoError.name === COGNITO_ERRORS.USER_NOT_FOUND) {
           errorMessage = 'User not found';
-        } else if (cognitoError.name === 'LimitExceededException') {
+        } else if (cognitoError.name === COGNITO_ERRORS.LIMIT_EXCEEDED) {
           errorMessage = 'Too many attempts. Please try again later';
         } else if (cognitoError.message) {
           errorMessage = cognitoError.message;
@@ -531,11 +552,11 @@ export const confirmNewPasswordThunk = createAsyncThunk<
       let errorMessage = 'Failed to reset password';
       if (error && typeof error === 'object' && 'name' in error) {
         const cognitoError = error as { name: string; message?: string };
-        if (cognitoError.name === 'CodeMismatchException') {
+        if (cognitoError.name === COGNITO_ERRORS.CODE_MISMATCH) {
           errorMessage = 'Invalid confirmation code';
-        } else if (cognitoError.name === 'ExpiredCodeException') {
+        } else if (cognitoError.name === COGNITO_ERRORS.EXPIRED_CODE) {
           errorMessage = 'Confirmation code has expired';
-        } else if (cognitoError.name === 'InvalidPasswordException') {
+        } else if (cognitoError.name === COGNITO_ERRORS.INVALID_PASSWORD) {
           errorMessage = 'Password does not meet requirements';
         } else if (cognitoError.message) {
           errorMessage = cognitoError.message;
@@ -580,13 +601,13 @@ export const changePasswordThunk = createAsyncThunk<
       let errorMessage = 'Failed to change password';
       if (error && typeof error === 'object' && 'name' in error) {
         const cognitoError = error as { name: string; message?: string };
-        if (cognitoError.name === 'NotAuthorizedException') {
+        if (cognitoError.name === COGNITO_ERRORS.NOT_AUTHORIZED) {
           errorMessage = 'Current password is incorrect or access token is invalid';
-        } else if (cognitoError.name === 'InvalidPasswordException') {
+        } else if (cognitoError.name === COGNITO_ERRORS.INVALID_PASSWORD) {
           errorMessage = 'New password does not meet requirements';
-        } else if (cognitoError.name === 'LimitExceededException') {
+        } else if (cognitoError.name === COGNITO_ERRORS.LIMIT_EXCEEDED) {
           errorMessage = 'Too many attempts. Please try again later';
-        } else if (cognitoError.name === 'InvalidParameterException') {
+        } else if (cognitoError.name === COGNITO_ERRORS.INVALID_PARAMETER) {
           errorMessage = 'Invalid parameters provided';
         } else if (cognitoError.message) {
           errorMessage = cognitoError.message;

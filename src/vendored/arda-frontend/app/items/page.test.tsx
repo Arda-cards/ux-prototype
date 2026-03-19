@@ -2,11 +2,13 @@ import React from 'react';
 import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
+import { Provider } from 'react-redux';
 import ItemsPage from '@frontend/app/items/page';
 import { queryItems, getItemById } from '@frontend/lib/ardaClient';
 import { toast } from 'sonner';
 import { registerBlocker } from '@frontend/lib/unsavedNavigation';
 import { isAuthenticationError } from '@frontend/lib/utils';
+import { createTestStore, mockAuthStateWithTokens } from '@frontend/test-utils/test-store';
 
 // ── Mock child components ──────────────────────────────────────────────────
 jest.mock('@/app/items/ItemTableAGGrid', () => {
@@ -22,6 +24,9 @@ jest.mock('@/app/items/ItemTableAGGrid', () => {
         onPreviousPage?: () => void;
         onFirstPage?: () => void;
         onRefreshRequested?: () => void;
+        pageSize?: number;
+        pageSizeOptions?: number[];
+        onPageSizeChange?: (newSize: number) => void;
       },
       _ref: React.Ref<unknown>,
     ) => (
@@ -78,6 +83,19 @@ jest.mock('@/app/items/ItemTableAGGrid', () => {
         >
           Refresh
         </button>
+        {/* Expose page size props for testing */}
+        <span data-testid="page-size-value">{props.pageSize}</span>
+        {props.pageSizeOptions && (
+          <select
+            data-testid="mock-page-size-select"
+            value={props.pageSize}
+            onChange={(e) => props.onPageSizeChange?.(Number(e.target.value))}
+          >
+            {props.pageSizeOptions.map((size: number) => (
+              <option key={size} value={size}>{size}</option>
+            ))}
+          </select>
+        )}
       </div>
     ),
   );
@@ -322,6 +340,7 @@ jest.mock('lucide-react', () => ({
   SlidersHorizontal: () => <svg />,
   Loader2: () => <svg />,
   Dock: () => <svg />,
+  X: () => <svg data-testid="clear-search-icon" />,
 }));
 
 // ── Mock navigation & contexts ─────────────────────────────────────────────
@@ -340,7 +359,7 @@ jest.mock('@/contexts/JWTContext', () => ({
   useJWT: () => ({ token: 'mock-token', isTokenValid: () => true }),
 }));
 
-jest.mock('@/contexts/OrderQueueContext', () => ({
+jest.mock('@/store/hooks/useOrderQueue', () => ({
   useOrderQueue: () => ({ refreshOrderQueueData: jest.fn(), orderQueueData: [] }),
 }));
 
@@ -445,56 +464,67 @@ beforeEach(() => {
   });
 });
 
+// ── Helper: render with Redux Provider ────────────────────────────────────
+const renderPage = () => {
+  const store = createTestStore({ auth: mockAuthStateWithTokens });
+  const result = render(
+    <Provider store={store}>
+      <ItemsPage />
+    </Provider>
+  );
+  return { ...result, store };
+};
+
 // ── Tests ──────────────────────────────────────────────────────────────────
 describe('ItemsPage', () => {
   // ── Initial render ───────────────────────────────────────────────────────
   describe('initial render', () => {
     it('renders sidebar and header', () => {
-      render(<ItemsPage />);
+      renderPage();
       expect(screen.getByTestId('mock-sidebar')).toBeInTheDocument();
       expect(screen.getByTestId('mock-header')).toBeInTheDocument();
     });
 
     it('renders the page heading', () => {
-      render(<ItemsPage />);
+      renderPage();
       expect(screen.getByRole('heading', { level: 1, name: /Items/i })).toBeInTheDocument();
     });
 
     it('renders the page description', () => {
-      render(<ItemsPage />);
+      renderPage();
       expect(
         screen.getByText(/Create new items, print Kanban Cards/i),
       ).toBeInTheDocument();
     });
 
     it('renders the AG grid after data loads', async () => {
-      render(<ItemsPage />);
+      renderPage();
       expect(await screen.findByTestId('mock-ag-grid')).toBeInTheDocument();
     });
 
     it('renders the Published Items tab', async () => {
-      render(<ItemsPage />);
+      renderPage();
       expect(await screen.findByText('Published Items')).toBeInTheDocument();
     });
 
     it('renders the Draft Items tab', async () => {
-      render(<ItemsPage />);
+      renderPage();
       expect(await screen.findByText('Draft Items')).toBeInTheDocument();
     });
 
     it('renders the Recently Uploaded tab', async () => {
-      render(<ItemsPage />);
+      renderPage();
       expect(await screen.findByText('Recently Uploaded')).toBeInTheDocument();
     });
 
     it('renders the search input', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
       expect(screen.getByTestId('search-input')).toBeInTheDocument();
     });
 
     it('calls queryItems on mount', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await waitFor(() => {
         expect(queryItems).toHaveBeenCalled();
       });
@@ -525,7 +555,7 @@ describe('ItemsPage', () => {
         }),
       );
 
-      render(<ItemsPage />);
+      renderPage();
       // Loading spinner should be visible initially
       expect(screen.getByText('Loading items...')).toBeInTheDocument();
 
@@ -539,7 +569,7 @@ describe('ItemsPage', () => {
     });
 
     it('hides loading indicator after data loads', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await waitFor(() => {
         expect(screen.queryByText('Loading items...')).not.toBeInTheDocument();
       });
@@ -549,7 +579,7 @@ describe('ItemsPage', () => {
   // ── Tab switching ─────────────────────────────────────────────────────────
   describe('tab switching', () => {
     it('switches to Draft Items tab on click', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
       const draftTab = screen.getByRole('button', { name: 'Draft Items' });
       fireEvent.click(draftTab);
@@ -558,7 +588,7 @@ describe('ItemsPage', () => {
     });
 
     it('switches to Recently Uploaded tab on click', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
       const uploadedTab = screen.getByRole('button', { name: 'Recently Uploaded' });
       fireEvent.click(uploadedTab);
@@ -570,7 +600,7 @@ describe('ItemsPage', () => {
   describe('search functionality', () => {
     it('updates search input value as user types', async () => {
       const user = userEvent.setup();
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       const input = screen.getByTestId('search-input');
@@ -580,7 +610,7 @@ describe('ItemsPage', () => {
 
     it('triggers immediate search on Enter key', async () => {
       const user = userEvent.setup();
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       jest.clearAllMocks();
@@ -597,7 +627,7 @@ describe('ItemsPage', () => {
 
     it('triggers search on input blur', async () => {
       const user = userEvent.setup();
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       jest.clearAllMocks();
@@ -616,7 +646,7 @@ describe('ItemsPage', () => {
   // ── Add item button ──────────────────────────────────────────────────────
   describe('Add item button', () => {
     it('renders Add item button', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
       // Look for a button that contains the text
       const addButtons = screen.getAllByRole('button');
@@ -627,7 +657,7 @@ describe('ItemsPage', () => {
     });
 
     it('opens form panel when Add item button is clicked', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       // Find the "Add item" button (contains text)
@@ -645,7 +675,7 @@ describe('ItemsPage', () => {
   // ── Import modal ─────────────────────────────────────────────────────────
   describe('Import items modal', () => {
     it('opens import modal when "Import items…" is clicked', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       const importBtn = screen.queryByText('Import items…');
@@ -658,7 +688,7 @@ describe('ItemsPage', () => {
     });
 
     it('closes import modal when close button is clicked', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       const importBtn = screen.queryByText('Import items…');
@@ -678,7 +708,7 @@ describe('ItemsPage', () => {
   // ── Item details panel ────────────────────────────────────────────────────
   describe('ItemDetailsPanel', () => {
     it('opens details panel when an item is selected from the grid', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       fireEvent.click(screen.getByTestId('select-item-btn'));
@@ -688,7 +718,7 @@ describe('ItemsPage', () => {
     });
 
     it('closes details panel when close button is clicked', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       fireEvent.click(screen.getByTestId('select-item-btn'));
@@ -706,7 +736,7 @@ describe('ItemsPage', () => {
   // ── Form panel ────────────────────────────────────────────────────────────
   describe('ItemFormPanel', () => {
     it('opens form panel when Edit Item is clicked in details panel', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       // First open details panel
@@ -723,7 +753,7 @@ describe('ItemsPage', () => {
     });
 
     it('closes form panel when close button is clicked', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       // Open via Add item button
@@ -747,7 +777,7 @@ describe('ItemsPage', () => {
   // ── Unsaved changes ───────────────────────────────────────────────────────
   describe('unsaved changes', () => {
     it('registers a navigation blocker on mount', () => {
-      render(<ItemsPage />);
+      renderPage();
       expect(registerBlocker).toHaveBeenCalled();
     });
   });
@@ -756,7 +786,7 @@ describe('ItemsPage', () => {
   describe('API error handling', () => {
     it('handles queryItems API failure gracefully', async () => {
       (queryItems as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
-      render(<ItemsPage />);
+      renderPage();
       await waitFor(() => {
         // Should not crash - grid or loading should eventually disappear
         expect(screen.queryByText('Loading items...')).not.toBeInTheDocument();
@@ -764,7 +794,7 @@ describe('ItemsPage', () => {
     });
 
     it('calls queryItems with correct structure on mount', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await waitFor(() => {
         expect(queryItems).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -793,20 +823,20 @@ describe('ItemsPage', () => {
   // ── Column visibility ─────────────────────────────────────────────────────
   describe('column visibility', () => {
     it('renders the column view dropdown', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
       // The dropdown content with columns is visible because our mock renders all children
       expect(screen.getByText('SKU')).toBeInTheDocument();
     });
 
     it('renders Show all option in column view', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
       expect(screen.getByText('Show all')).toBeInTheDocument();
     });
 
     it('renders Hide all option in column view', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
       expect(screen.getByText('Hide all')).toBeInTheDocument();
     });
@@ -815,19 +845,19 @@ describe('ItemsPage', () => {
   // ── Actions dropdown ──────────────────────────────────────────────────────
   describe('Actions dropdown', () => {
     it('renders the Open item action', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
       expect(screen.getByText('Open item')).toBeInTheDocument();
     });
 
     it('renders Print cards action', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
       expect(screen.getByText('Print cards…')).toBeInTheDocument();
     });
 
     it('renders Duplicate item(s) action', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
       expect(screen.getByText('Duplicate item(s)')).toBeInTheDocument();
     });
@@ -836,7 +866,7 @@ describe('ItemsPage', () => {
   // ── Pagination ────────────────────────────────────────────────────────────
   describe('pagination', () => {
     it('calls queryItems with page size 50 by default', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await waitFor(() => {
         expect(queryItems).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -847,7 +877,7 @@ describe('ItemsPage', () => {
     });
 
     it('calls queryItems with filter=true when no search query', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await waitFor(() => {
         expect(queryItems).toHaveBeenCalledWith(
           expect.objectContaining({ filter: true }),
@@ -863,14 +893,14 @@ describe('ItemsPage', () => {
         'itemsColumnVisibility',
         JSON.stringify({ sku: false, glCode: false, name: true }),
       );
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
       expect(screen.getByTestId('mock-ag-grid')).toBeInTheDocument();
     });
 
     it('handles malformed JSON in column visibility localStorage gracefully', async () => {
       localStorage.setItem('itemsColumnVisibility', '{not-valid-json{{');
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
       expect(screen.getByTestId('mock-ag-grid')).toBeInTheDocument();
     });
@@ -884,17 +914,17 @@ describe('ItemsPage', () => {
       };
       localStorage.setItem('items-grid-published', JSON.stringify(gridState));
 
-      render(<ItemsPage />);
+      const { store } = renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       // Click Show all to change draft, then Save to persist
       fireEvent.click(screen.getByText('Show all'));
       fireEvent.click(screen.getByText('Save'));
 
-      const saved = localStorage.getItem('itemsColumnVisibility');
-      expect(saved).not.toBeNull();
-      const parsed = JSON.parse(saved!);
-      expect(parsed.sku).toBe(true);
+      // Column visibility is now persisted to Redux, not localStorage
+      const colVis = store.getState().items.columnVisibility['published'];
+      expect(colVis).toBeDefined();
+      expect(colVis.sku).toBe(true);
     });
 
     it('merges saved column visibility with defaults for missing keys', async () => {
@@ -903,7 +933,7 @@ describe('ItemsPage', () => {
         'itemsColumnVisibility',
         JSON.stringify({ sku: false }),
       );
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
       // Should render without error - defaults fill in missing keys
       expect(screen.getByTestId('mock-ag-grid')).toBeInTheDocument();
@@ -913,7 +943,7 @@ describe('ItemsPage', () => {
   // ── Column visibility controls ────────────────────────────────────────────
   describe('column visibility controls', () => {
     it('clicking Show all updates draft to show all columns', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       fireEvent.click(screen.getByText('Show all'));
@@ -929,7 +959,7 @@ describe('ItemsPage', () => {
     });
 
     it('clicking Hide all updates draft to hide all columns', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       fireEvent.click(screen.getByText('Hide all'));
@@ -944,21 +974,21 @@ describe('ItemsPage', () => {
       }
     });
 
-    it('clicking Save commits column visibility changes to localStorage', async () => {
-      render(<ItemsPage />);
+    it('clicking Save commits column visibility changes to Redux', async () => {
+      const { store } = renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       // Show all then Save
       fireEvent.click(screen.getByText('Show all'));
       fireEvent.click(screen.getByText('Save'));
 
-      // localStorage should be updated
-      const saved = localStorage.getItem('itemsColumnVisibility');
-      expect(saved).not.toBeNull();
+      // Column visibility is now persisted to Redux
+      const colVis = store.getState().items.columnVisibility['published'];
+      expect(colVis).toBeDefined();
     });
 
     it('clicking Cancel does not commit draft changes', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       // Hide all (changes draft) then Cancel (discards draft)
@@ -970,7 +1000,7 @@ describe('ItemsPage', () => {
     });
 
     it('toggling SKU checkbox updates draft visibility', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       const checkboxes = screen.getAllByRole('checkbox');
@@ -985,7 +1015,7 @@ describe('ItemsPage', () => {
     });
 
     it('toggling GL Code checkbox updates draft visibility', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       const checkboxes = screen.getAllByRole('checkbox');
@@ -1003,7 +1033,7 @@ describe('ItemsPage', () => {
   // ── Unsaved changes behavior ──────────────────────────────────────────────
   describe('unsaved changes behavior', () => {
     it('tracks unsaved changes when grid signals dirty state', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       // Trigger unsaved changes via mock grid callback
@@ -1014,7 +1044,7 @@ describe('ItemsPage', () => {
     });
 
     it('clears unsaved changes when set to false', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       // Set unsaved then clear it
@@ -1027,7 +1057,7 @@ describe('ItemsPage', () => {
   // ── Actions dropdown with item selection ──────────────────────────────────
   describe('Actions dropdown with selections', () => {
     it('Duplicate item(s) button is disabled when no items selected', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       const duplicateBtn = screen
@@ -1037,7 +1067,7 @@ describe('ItemsPage', () => {
     });
 
     it('opens form panel when Duplicate is clicked with exactly 1 item selected', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       // Select 1 item via mock grid
@@ -1053,7 +1083,7 @@ describe('ItemsPage', () => {
     });
 
     it('Delete action is disabled when no items selected', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       const deleteBtn = screen.getByText(/^Delete item…$|^Delete item$|Delete item…/);
@@ -1064,7 +1094,7 @@ describe('ItemsPage', () => {
   // ── Open item action ──────────────────────────────────────────────────────
   describe('Open item action', () => {
     it('opens details panel when item row is selected and Open item is clicked', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       // First select an item
@@ -1086,7 +1116,7 @@ describe('ItemsPage', () => {
   // ── Window event handlers ─────────────────────────────────────────────────
   describe('window event handlers', () => {
     it('listens for itemDeleted event and refreshes items list', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       jest.clearAllMocks();
@@ -1102,7 +1132,7 @@ describe('ItemsPage', () => {
     });
 
     it('listens for refreshItemCards event with itemEntityId', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       // Set idToken in localStorage to allow card refresh
@@ -1121,7 +1151,7 @@ describe('ItemsPage', () => {
     });
 
     it('handles refreshItemCards event without itemEntityId gracefully', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       act(() => {
@@ -1144,7 +1174,7 @@ describe('ItemsPage', () => {
         new Error('401 Unauthorized'),
       );
 
-      render(<ItemsPage />);
+      renderPage();
 
       await waitFor(() => {
         expect(screen.queryByText('Loading items...')).not.toBeInTheDocument();
@@ -1155,7 +1185,7 @@ describe('ItemsPage', () => {
   // ── Tab switching with filter params ──────────────────────────────────────
   describe('tab switching with filter params', () => {
     it('switches to Draft Items tab (client-side filter, no new fetch)', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       const callsBefore = (queryItems as jest.Mock).mock.calls.length;
@@ -1168,7 +1198,7 @@ describe('ItemsPage', () => {
     });
 
     it('switches to Recently Uploaded tab without extra fetch', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       fireEvent.click(screen.getByRole('button', { name: 'Recently Uploaded' }));
@@ -1188,7 +1218,7 @@ describe('ItemsPage', () => {
           previousPage: '',
         },
       });
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       expect(queryItems).toHaveBeenCalledWith(
@@ -1207,7 +1237,7 @@ describe('ItemsPage', () => {
           previousPage: 'page-token-1',
         },
       });
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       expect(queryItems).toHaveBeenCalled();
@@ -1237,7 +1267,7 @@ describe('ItemsPage', () => {
         });
       });
 
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       expect(queryItems).toHaveBeenCalled();
@@ -1247,7 +1277,7 @@ describe('ItemsPage', () => {
   // ── Keyboard navigation ───────────────────────────────────────────────────
   describe('keyboard navigation in details panel', () => {
     it('handles ArrowDown key when details panel is open', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid', {}, { timeout: 5000 });
 
       // Open details panel
@@ -1263,7 +1293,7 @@ describe('ItemsPage', () => {
     });
 
     it('handles ArrowUp key when details panel is open', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid', {}, { timeout: 5000 });
 
       fireEvent.click(screen.getByTestId('select-item-btn'));
@@ -1277,7 +1307,7 @@ describe('ItemsPage', () => {
     });
 
     it('ignores keyboard navigation when input is focused', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       const searchInput = screen.getByTestId('search-input');
@@ -1292,7 +1322,7 @@ describe('ItemsPage', () => {
   // ── Delete item flow ──────────────────────────────────────────────────────
   describe('delete item flow', () => {
     it('shows error toast when Delete clicked with no JWT token', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       // Select 1 item then click delete without JWT token
@@ -1318,7 +1348,7 @@ describe('ItemsPage', () => {
     });
 
     it('opens delete modal after fetching cards with JWT token', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       // Set JWT token
@@ -1362,7 +1392,7 @@ describe('ItemsPage', () => {
     });
 
     it('handles fetch failure gracefully during delete flow', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       localStorage.setItem('idToken', 'mock-jwt');
@@ -1390,7 +1420,7 @@ describe('ItemsPage', () => {
     });
 
     it('handles fetch error/exception during delete flow', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       localStorage.setItem('idToken', 'mock-jwt');
@@ -1415,7 +1445,7 @@ describe('ItemsPage', () => {
     });
 
     it('deletes item successfully after confirming in modal', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       localStorage.setItem('idToken', 'mock-jwt');
@@ -1468,7 +1498,7 @@ describe('ItemsPage', () => {
     });
 
     it('cancels delete when cancel button is clicked', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       localStorage.setItem('idToken', 'mock-jwt');
@@ -1504,7 +1534,7 @@ describe('ItemsPage', () => {
     });
 
     it('deletes item and its cards successfully', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       localStorage.setItem('idToken', 'mock-jwt');
@@ -1582,7 +1612,7 @@ describe('ItemsPage', () => {
     });
 
     it('shows error toast when confirm delete has no JWT token', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       // Set token for the initial delete flow, then remove it before confirm
@@ -1620,7 +1650,7 @@ describe('ItemsPage', () => {
   // ── Print labels flow ─────────────────────────────────────────────────────
   describe('print labels flow', () => {
     it('Print labels button is rendered in Actions menu', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       // Print labels exists in the Actions dropdown
@@ -1628,7 +1658,7 @@ describe('ItemsPage', () => {
     });
 
     it('shows error toast when Print labels clicked with no items selected', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       // Do NOT select any items
@@ -1644,7 +1674,7 @@ describe('ItemsPage', () => {
     });
 
     it('shows error toast when Print labels clicked with no record IDs and ok response', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       localStorage.setItem('idToken', 'mock-jwt');
@@ -1682,7 +1712,7 @@ describe('ItemsPage', () => {
     });
 
     it('shows error when no record IDs found for print labels', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       localStorage.setItem('idToken', 'mock-jwt');
@@ -1711,7 +1741,7 @@ describe('ItemsPage', () => {
     });
 
     it('calls print label API when record IDs are found', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       localStorage.setItem('idToken', 'mock-jwt');
@@ -1765,14 +1795,14 @@ describe('ItemsPage', () => {
   // ── Print breadcrumbs flow ────────────────────────────────────────────────
   describe('print breadcrumbs flow', () => {
     it('Print breadcrumbs button is rendered in Actions menu', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       expect(screen.getByText('Print breadcrumbs…')).toBeInTheDocument();
     });
 
     it('calls print breadcrumbs API with selected items', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       localStorage.setItem('idToken', 'mock-jwt');
@@ -1826,7 +1856,7 @@ describe('ItemsPage', () => {
   // ── Print cards flow ──────────────────────────────────────────────────────
   describe('print cards flow', () => {
     it('Print cards button is disabled when no items selected', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       // No items selected - button should be disabled
@@ -1837,7 +1867,7 @@ describe('ItemsPage', () => {
     });
 
     it('shows error toast when no cards found for selected items', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       localStorage.setItem('idToken', 'mock-jwt');
@@ -1869,7 +1899,7 @@ describe('ItemsPage', () => {
     });
 
     it('calls fetch for cards when Print cards clicked with selected items', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       localStorage.setItem('idToken', 'mock-jwt');
@@ -1920,7 +1950,7 @@ describe('ItemsPage', () => {
 
     it('opens print URL when print cards API returns success with URL', async () => {
       const windowOpenSpy = jest.spyOn(window, 'open').mockReturnValue(null);
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       localStorage.setItem('idToken', 'mock-jwt');
@@ -1973,7 +2003,7 @@ describe('ItemsPage', () => {
   // ── Additional column visibility checkbox interactions ────────────────────
   describe('additional column visibility checkboxes', () => {
     it('toggling Location checkbox updates draft visibility', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       const checkboxes = screen.getAllByRole('checkbox');
@@ -1988,7 +2018,7 @@ describe('ItemsPage', () => {
     });
 
     it('toggling Unit Cost checkbox updates draft visibility', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       const checkboxes = screen.getAllByRole('checkbox');
@@ -2003,7 +2033,7 @@ describe('ItemsPage', () => {
     });
 
     it('toggling Supplier checkbox updates draft visibility', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       const checkboxes = screen.getAllByRole('checkbox');
@@ -2018,7 +2048,7 @@ describe('ItemsPage', () => {
     });
 
     it('saves all column visibility when Save is clicked after toggles', async () => {
-      render(<ItemsPage />);
+      const { store } = renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       // Toggle a few columns then save
@@ -2032,8 +2062,9 @@ describe('ItemsPage', () => {
 
       fireEvent.click(screen.getByText('Save'));
 
-      const saved = localStorage.getItem('itemsColumnVisibility');
-      expect(saved).not.toBeNull();
+      // Column visibility is now persisted to Redux
+      const colVis = store.getState().items.columnVisibility['published'];
+      expect(colVis).toBeDefined();
     });
   });
 
@@ -2042,7 +2073,7 @@ describe('ItemsPage', () => {
     it('shows error toast when print card API returns ok=false with no URL', async () => {
       const windowOpenSpy = jest.spyOn(window, 'open').mockReturnValue(null);
 
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
       localStorage.setItem('idToken', 'mock-jwt');
 
@@ -2083,7 +2114,7 @@ describe('ItemsPage', () => {
     });
 
     it('shows error toast when print card API HTTP error', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
       localStorage.setItem('idToken', 'mock-jwt');
 
@@ -2125,7 +2156,7 @@ describe('ItemsPage', () => {
     });
 
     it('shows template error toast when API returns template mismatch message', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
       localStorage.setItem('idToken', 'mock-jwt');
 
@@ -2173,7 +2204,7 @@ describe('ItemsPage', () => {
   // ── Event listeners ──────────────────────────────────────────────────────
   describe('event listeners', () => {
     it('handles itemDeleted event by refreshing items', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       const callsBefore = (queryItems as jest.Mock).mock.calls.length;
@@ -2187,7 +2218,7 @@ describe('ItemsPage', () => {
     });
 
     it('handles refreshItemCards event without error', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       // Dispatch the refreshItemCards event
@@ -2201,7 +2232,7 @@ describe('ItemsPage', () => {
   // ── Column visibility checkbox callbacks ──────────────────────────────────
   describe('column visibility checkbox callbacks', () => {
     it('toggles all column visibility checkboxes', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       // Get all checkboxes and click each to trigger onCheckedChange callbacks
@@ -2215,7 +2246,7 @@ describe('ItemsPage', () => {
     });
 
     it('toggles Image column checkbox', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       const checkboxes = screen.getAllByRole('checkbox');
@@ -2229,7 +2260,7 @@ describe('ItemsPage', () => {
     });
 
     it('toggles Name/Item column checkbox', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       const checkboxes = screen.getAllByRole('checkbox');
@@ -2243,20 +2274,20 @@ describe('ItemsPage', () => {
       }
     });
 
-    it('toggles Classification column checkbox', async () => {
-      render(<ItemsPage />);
+    it('toggles Type column checkbox', async () => {
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       const checkboxes = screen.getAllByRole('checkbox');
       const cb = checkboxes.find((c) =>
-        c.closest('label')?.textContent?.includes('Classification'),
+        c.closest('label')?.textContent?.includes('Type'),
       );
       if (cb) fireEvent.click(cb);
       expect(screen.getByTestId('mock-ag-grid')).toBeInTheDocument();
     });
 
     it('toggles Supplier column checkbox', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       const checkboxes = screen.getAllByRole('checkbox');
@@ -2268,7 +2299,7 @@ describe('ItemsPage', () => {
     });
 
     it('toggles Location column checkbox', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       const checkboxes = screen.getAllByRole('checkbox');
@@ -2281,7 +2312,7 @@ describe('ItemsPage', () => {
     });
 
     it('toggles Sub-location column checkbox', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       const checkboxes = screen.getAllByRole('checkbox');
@@ -2293,7 +2324,7 @@ describe('ItemsPage', () => {
     });
 
     it('toggles Unit Cost column checkbox', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       const checkboxes = screen.getAllByRole('checkbox');
@@ -2306,7 +2337,7 @@ describe('ItemsPage', () => {
     });
 
     it('shows error toast for print breadcrumbs when API returns non-ok', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
       localStorage.setItem('idToken', 'mock-jwt');
 
@@ -2349,7 +2380,7 @@ describe('ItemsPage', () => {
   // ── Search behavior ───────────────────────────────────────────────────────
   describe('search behavior', () => {
     it('updates search state when typing in search input', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       const searchInput = screen.getByTestId('search-input');
@@ -2359,7 +2390,7 @@ describe('ItemsPage', () => {
     });
 
     it('clears search when input is emptied', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       const searchInput = screen.getByTestId('search-input');
@@ -2373,7 +2404,7 @@ describe('ItemsPage', () => {
   // ── Unsaved changes modal save ────────────────────────────────────────────
   describe('unsaved changes modal save', () => {
     it('triggers refreshCurrentPage when Save is clicked in UnsavedChangesModal', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       // Trigger unsaved changes
@@ -2389,7 +2420,7 @@ describe('ItemsPage', () => {
   // ── ImportItemsModal refresh ──────────────────────────────────────────────
   describe('ImportItemsModal refresh callback', () => {
     it('opens import modal via Import button', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       const importBtn = screen.getByText(/Import/i);
@@ -2406,7 +2437,7 @@ describe('ItemsPage', () => {
   // ── Pagination handlers ───────────────────────────────────────────────────
   describe('pagination handlers', () => {
     it('calls onNextPage without error (hasNextPage=false, so no-op)', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       // Click next page - default paginationData.hasNextPage=false so no fetch triggered
@@ -2416,7 +2447,7 @@ describe('ItemsPage', () => {
     });
 
     it('calls onPreviousPage without error (hasPreviousPage=false, so no-op)', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       fireEvent.click(screen.getByTestId('prev-page-btn'));
@@ -2425,7 +2456,7 @@ describe('ItemsPage', () => {
     });
 
     it('calls onFirstPage without error', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       fireEvent.click(screen.getByTestId('first-page-btn'));
@@ -2434,7 +2465,7 @@ describe('ItemsPage', () => {
     });
 
     it('calls onRefreshRequested without error', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       fireEvent.click(screen.getByTestId('refresh-btn'));
@@ -2449,7 +2480,7 @@ describe('ItemsPage', () => {
         pagination: { thisPage: 'page1', nextPage: 'page2', previousPage: '' },
       });
 
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       // Now click next page - hasNextPage should be true
@@ -2466,7 +2497,7 @@ describe('ItemsPage', () => {
         pagination: { thisPage: 'page2', nextPage: '', previousPage: 'page1' },
       });
 
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       fireEvent.click(screen.getByTestId('prev-page-btn'));
@@ -2480,7 +2511,7 @@ describe('ItemsPage', () => {
   // ── handlePreviewSelectedCards ────────────────────────────────────────────
   describe('handlePreviewSelectedCards', () => {
     it('shows error when no items selected', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       const previewBtn = screen.queryByText('Preview card(s)');
@@ -2495,7 +2526,7 @@ describe('ItemsPage', () => {
     });
 
     it('shows error when no cards found for selected item', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
       localStorage.setItem('idToken', 'mock-jwt');
 
@@ -2524,7 +2555,7 @@ describe('ItemsPage', () => {
     });
 
     it('opens preview modal when cards found', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
       localStorage.setItem('idToken', 'mock-jwt');
 
@@ -2567,7 +2598,7 @@ describe('ItemsPage', () => {
   // ── ItemFormPanel callbacks ───────────────────────────────────────────────
   describe('ItemFormPanel callbacks', () => {
     it('handleCancelEdit closes form panel and reopens details panel when item selected', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       // Open details panel by selecting item
@@ -2592,7 +2623,7 @@ describe('ItemsPage', () => {
     });
 
     it('handlePublishAndAddAnotherFromEdit refreshes items', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       // Open details panel then form panel
@@ -2612,7 +2643,7 @@ describe('ItemsPage', () => {
     });
 
     it('handlePublishAndAddAnotherFromAddItem refreshes items', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       // Click "New Item" button to open form panel - use button role to be specific
@@ -2631,7 +2662,7 @@ describe('ItemsPage', () => {
     });
 
     it('onSuccess refreshes items and re-opens details panel', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       fireEvent.click(screen.getByTestId('select-item-btn'));
@@ -2656,7 +2687,7 @@ describe('ItemsPage', () => {
   // ── ItemDetailsPanel callbacks ────────────────────────────────────────────
   describe('ItemDetailsPanel callbacks', () => {
     it('onDuplicateItem opens form panel in duplicate mode', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       fireEvent.click(screen.getByTestId('select-item-btn'));
@@ -2675,7 +2706,7 @@ describe('ItemsPage', () => {
     });
 
     it('onOpenChange clears selected item', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       fireEvent.click(screen.getByTestId('select-item-btn'));
@@ -2695,7 +2726,7 @@ describe('ItemsPage', () => {
   // ── Print labels error paths ──────────────────────────────────────────────
   describe('print labels error paths', () => {
     it('shows error toast when print labels API returns non-ok with generic message', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
       localStorage.setItem('idToken', 'mock-jwt');
 
@@ -2731,7 +2762,7 @@ describe('ItemsPage', () => {
     });
 
     it('shows template error when print labels returns template mismatch', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
       localStorage.setItem('idToken', 'mock-jwt');
 
@@ -2775,7 +2806,7 @@ describe('ItemsPage', () => {
   // ── Print breadcrumbs error paths ─────────────────────────────────────────
   describe('print breadcrumbs error paths', () => {
     it('shows error toast when print breadcrumbs API returns non-ok with generic message', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
       localStorage.setItem('idToken', 'mock-jwt');
 
@@ -2811,7 +2842,7 @@ describe('ItemsPage', () => {
     });
 
     it('shows template error when print breadcrumbs returns template mismatch', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
       localStorage.setItem('idToken', 'mock-jwt');
 
@@ -2855,7 +2886,7 @@ describe('ItemsPage', () => {
   // ── ImportItemsModal refresh callback ─────────────────────────────────────
   describe('ImportItemsModal onRefresh callback', () => {
     it('refreshes items when onRefresh is called from import modal', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
 
       // Open import modal
@@ -2884,7 +2915,7 @@ describe('ItemsPage', () => {
   // ── CardsPreviewModal onClose ─────────────────────────────────────────────
   describe('CardsPreviewModal onClose callback', () => {
     it('closes preview modal when Close Preview is clicked', async () => {
-      render(<ItemsPage />);
+      renderPage();
       await screen.findByTestId('mock-ag-grid');
       localStorage.setItem('idToken', 'mock-jwt');
 
@@ -2927,5 +2958,145 @@ describe('ItemsPage', () => {
 
       expect(screen.getByTestId('mock-ag-grid')).toBeInTheDocument();
     });
+  });
+
+  // ── Page size (Issue #744) ────────────────────────────────────────────────
+  describe('page size configuration', () => {
+    it('page size dropdown renders with default size selected', async () => {
+      renderPage();
+      await screen.findByTestId('mock-ag-grid');
+
+      // The mock grid exposes pageSize via data-testid="page-size-value"
+      const pageSizeEl = screen.getByTestId('page-size-value');
+      // Default in test env (no NEXT_PUBLIC_DEPLOY_ENV) should be 50
+      expect(pageSizeEl.textContent).toBe('50');
+
+      // The page size select dropdown should be present
+      const selectEl = screen.getByTestId('mock-page-size-select');
+      expect(selectEl).toBeInTheDocument();
+      expect((selectEl as HTMLSelectElement).value).toBe('50');
+
+      // All options should be rendered
+      const options = selectEl.querySelectorAll('option');
+      expect(options).toHaveLength(5);
+      expect(Array.from(options).map((o) => o.value)).toEqual([
+        '10',
+        '20',
+        '50',
+        '100',
+        '500',
+      ]);
+    });
+
+    it('selecting a new page size from dropdown re-fetches items and persists to Redux', async () => {
+      const { store } = renderPage();
+      await screen.findByTestId('mock-ag-grid');
+
+      // Clear mock calls from initial render
+      (queryItems as jest.Mock).mockClear();
+
+      // Change the page size to 100
+      const selectEl = screen.getByTestId('mock-page-size-select');
+      fireEvent.change(selectEl, { target: { value: '100' } });
+
+      // Verify queryItems was called with the new page size
+      await waitFor(() => {
+        expect(queryItems).toHaveBeenCalledWith(
+          expect.objectContaining({
+            paginate: expect.objectContaining({ size: 100, index: 0 }),
+          }),
+        );
+      });
+
+      // Verify pageSize is persisted to Redux
+      expect(store.getState().items.pageSize).toBe(100);
+    });
+
+    it('page resets to 1 when page size changes', async () => {
+      // Set up mock with pagination that indicates page 2
+      (queryItems as jest.Mock).mockResolvedValue({
+        items: defaultItems,
+        pagination: { thisPage: 'page2', nextPage: 'page3', previousPage: 'page1' },
+      });
+
+      renderPage();
+      await screen.findByTestId('mock-ag-grid');
+
+      // Navigate to page 2 first
+      fireEvent.click(screen.getByTestId('next-page-btn'));
+
+      await waitFor(() => {
+        expect(queryItems).toHaveBeenCalled();
+      });
+
+      // Clear mock calls
+      (queryItems as jest.Mock).mockClear();
+
+      // Change page size - should reset to page 1 (index 0)
+      const selectEl = screen.getByTestId('mock-page-size-select');
+      fireEvent.change(selectEl, { target: { value: '20' } });
+
+      await waitFor(() => {
+        expect(queryItems).toHaveBeenCalledWith(
+          expect.objectContaining({
+            paginate: expect.objectContaining({ size: 20, index: 0 }),
+          }),
+        );
+      });
+    });
+
+    it('reads page size from localStorage on mount', async () => {
+      localStorage.setItem('arda-items-page-size', '100');
+
+      renderPage();
+      await screen.findByTestId('mock-ag-grid');
+
+      const pageSizeEl = screen.getByTestId('page-size-value');
+      expect(pageSizeEl.textContent).toBe('100');
+    });
+
+    it('falls back to DEFAULT_PAGE_SIZE when localStorage has invalid value', async () => {
+      localStorage.setItem('arda-items-page-size', '999');
+
+      renderPage();
+      await screen.findByTestId('mock-ag-grid');
+
+      const pageSizeEl = screen.getByTestId('page-size-value');
+      expect(pageSizeEl.textContent).toBe('50');
+    });
+  });
+});
+
+// ── DEFAULT_PAGE_SIZE environment-based tests ─────────────────────────────
+// These tests re-import the module with different env vars to test the
+// module-level constant.
+describe('DEFAULT_PAGE_SIZE constant', () => {
+  const originalEnv = process.env;
+
+  beforeEach(() => {
+    jest.resetModules();
+    process.env = { ...originalEnv };
+  });
+
+  afterEach(() => {
+    process.env = originalEnv;
+  });
+
+  it('is 500 when NEXT_PUBLIC_DEPLOY_ENV is STAGING', async () => {
+    process.env.NEXT_PUBLIC_DEPLOY_ENV = 'STAGING';
+    const mod = await import('@frontend/app/items/page');
+    expect(mod.DEFAULT_PAGE_SIZE).toBe(500);
+  });
+
+  it('is 50 when NEXT_PUBLIC_DEPLOY_ENV is PRODUCTION', async () => {
+    process.env.NEXT_PUBLIC_DEPLOY_ENV = 'PRODUCTION';
+    const mod = await import('@frontend/app/items/page');
+    expect(mod.DEFAULT_PAGE_SIZE).toBe(50);
+  });
+
+  it('is 50 when NEXT_PUBLIC_DEPLOY_ENV is not set', async () => {
+    delete process.env.NEXT_PUBLIC_DEPLOY_ENV;
+    const mod = await import('@frontend/app/items/page');
+    expect(mod.DEFAULT_PAGE_SIZE).toBe(50);
   });
 });

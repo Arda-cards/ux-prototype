@@ -156,7 +156,7 @@ describe('ItemCard', () => {
   describe('filled state indicator', () => {
     it('uses gray divider when form is incomplete', () => {
       const { container } = render(
-        <ItemCard form={makeForm()} onFormChange={mockOnFormChange} />
+        <ItemCard form={makeForm()} onFormChange={mockOnFormChange} />,
       );
       const dividers = container.querySelectorAll('.bg-\\[\\#CBD5E1\\]');
       expect(dividers.length).toBeGreaterThan(0);
@@ -180,7 +180,7 @@ describe('ItemCard', () => {
         locator: { facility: '', department: '', location: 'Shelf-A' },
       });
       const { container } = render(
-        <ItemCard form={filledForm} onFormChange={mockOnFormChange} />
+        <ItemCard form={filledForm} onFormChange={mockOnFormChange} />,
       );
       const blueDividers = container.querySelectorAll('.bg-\\[\\#3B82F6\\]');
       expect(blueDividers.length).toBeGreaterThan(0);
@@ -193,7 +193,7 @@ describe('ItemCard', () => {
       const titleInput = screen.getByPlaceholderText('Title *');
       fireEvent.change(titleInput, { target: { value: 'New Item' } });
       expect(mockOnFormChange).toHaveBeenCalledWith(
-        expect.objectContaining({ name: 'New Item' })
+        expect.objectContaining({ name: 'New Item' }),
       );
     });
   });
@@ -205,7 +205,7 @@ describe('ItemCard', () => {
           form={makeForm({ name: '' })}
           onFormChange={mockOnFormChange}
           showAllErrors={true}
-        />
+        />,
       );
       expect(screen.getByText('Name is required')).toBeInTheDocument();
     });
@@ -216,7 +216,7 @@ describe('ItemCard', () => {
           form={makeForm({ name: 'Widget' })}
           onFormChange={mockOnFormChange}
           showAllErrors={true}
-        />
+        />,
       );
       expect(screen.queryByText('Name is required')).not.toBeInTheDocument();
     });
@@ -227,7 +227,7 @@ describe('ItemCard', () => {
           form={makeForm({ name: '' })}
           onFormChange={mockOnFormChange}
           showAllErrors={false}
-        />
+        />,
       );
       expect(screen.queryByText('Name is required')).not.toBeInTheDocument();
     });
@@ -258,7 +258,7 @@ describe('ItemCard', () => {
           primarySupply: expect.objectContaining({
             minimumQuantity: expect.objectContaining({ amount: 5 }),
           }),
-        })
+        }),
       );
     });
 
@@ -271,7 +271,7 @@ describe('ItemCard', () => {
           primarySupply: expect.objectContaining({
             orderQuantity: expect.objectContaining({ amount: 10 }),
           }),
-        })
+        }),
       );
     });
 
@@ -284,7 +284,7 @@ describe('ItemCard', () => {
           primarySupply: expect.objectContaining({
             minimumQuantity: expect.objectContaining({ amount: 0 }),
           }),
-        })
+        }),
       );
     });
 
@@ -297,7 +297,7 @@ describe('ItemCard', () => {
           primarySupply: expect.objectContaining({
             minimumQuantity: expect.objectContaining({ unit: 'EA' }),
           }),
-        })
+        }),
       );
     });
 
@@ -310,7 +310,7 @@ describe('ItemCard', () => {
           primarySupply: expect.objectContaining({
             orderQuantity: expect.objectContaining({ unit: 'BOX' }),
           }),
-        })
+        }),
       );
     });
   });
@@ -326,7 +326,7 @@ describe('ItemCard', () => {
       const urlInput = screen.getByPlaceholderText('www.url/...');
       fireEvent.change(urlInput, { target: { value: 'example.com/img.png' } });
       expect(mockOnFormChange).toHaveBeenCalledWith(
-        expect.objectContaining({ imageUrl: 'example.com/img.png' })
+        expect.objectContaining({ imageUrl: 'example.com/img.png' }),
       );
     });
 
@@ -344,7 +344,9 @@ describe('ItemCard', () => {
     });
 
     it('renders Next.js Image for abrafersrl.com.ar URLs', () => {
-      const form = makeForm({ imageUrl: 'https://img.abrafersrl.com.ar/photo.jpg' });
+      const form = makeForm({
+        imageUrl: 'https://img.abrafersrl.com.ar/photo.jpg',
+      });
       render(<ItemCard form={form} onFormChange={mockOnFormChange} />);
       expect(screen.getByTestId('next-image-Preview')).toBeInTheDocument();
     });
@@ -364,7 +366,7 @@ describe('ItemCard', () => {
       const trashButtons = screen.getAllByRole('button');
       fireEvent.click(trashButtons[trashButtons.length - 1]);
       expect(mockOnFormChange).toHaveBeenCalledWith(
-        expect.objectContaining({ imageUrl: '' })
+        expect.objectContaining({ imageUrl: '' }),
       );
     });
   });
@@ -388,9 +390,9 @@ describe('ItemCard', () => {
           });
         }),
       };
-      jest.spyOn(global, 'FileReader').mockImplementation(
-        () => fileReaderMock as unknown as FileReader
-      );
+      jest
+        .spyOn(global, 'FileReader')
+        .mockImplementation(() => fileReaderMock as unknown as FileReader);
     });
 
     afterEach(() => {
@@ -401,14 +403,16 @@ describe('ItemCard', () => {
       render(<ItemCard form={makeForm()} onFormChange={mockOnFormChange} />);
       expect(capturedOnDrop).not.toBeNull();
 
-      const droppedFile = new File(['img data'], 'photo.png', { type: 'image/png' });
+      const droppedFile = new File(['img data'], 'photo.png', {
+        type: 'image/png',
+      });
       capturedOnDrop!([droppedFile]);
 
       // Wait for async FileReader
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(mockOnFormChange).toHaveBeenCalledWith(
-        expect.objectContaining({ imageUrl: 'data:image/png;base64,abc' })
+        expect.objectContaining({ imageUrl: 'data:image/png;base64,abc' }),
       );
     });
 
@@ -417,7 +421,9 @@ describe('ItemCard', () => {
       // Make result null
       fileReaderMock.result = null;
 
-      const droppedFile = new File(['img data'], 'photo.png', { type: 'image/png' });
+      const droppedFile = new File(['img data'], 'photo.png', {
+        type: 'image/png',
+      });
       capturedOnDrop!([droppedFile]);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
@@ -443,7 +449,7 @@ describe('ItemCard', () => {
       render(<ItemCard form={form} onFormChange={mockOnFormChange} />);
       const img = screen.getByAltText('Preview');
       fireEvent.error(img);
-      expect(screen.getByText('Failed to load image')).toBeInTheDocument();
+      expect(screen.getByText('Image preview unavailable')).toBeInTheDocument();
     });
 
     it('shows imageFieldError message when imageFieldError prop is set', () => {
@@ -453,9 +459,11 @@ describe('ItemCard', () => {
           form={form}
           onFormChange={mockOnFormChange}
           imageFieldError='Incompatible image format'
-        />
+        />,
       );
-      expect(screen.getAllByText('Incompatible image format').length).toBeGreaterThan(0);
+      expect(
+        screen.getAllByText('Incompatible image format').length,
+      ).toBeGreaterThan(0);
     });
 
     it('calls onImageErrorClear when imageUrl changes via input', () => {
@@ -464,7 +472,7 @@ describe('ItemCard', () => {
           form={makeForm()}
           onFormChange={mockOnFormChange}
           onImageErrorClear={mockOnImageErrorClear}
-        />
+        />,
       );
       const urlInput = screen.getByPlaceholderText('www.url/...');
       fireEvent.change(urlInput, { target: { value: 'example.com/new.jpg' } });
@@ -478,7 +486,7 @@ describe('ItemCard', () => {
           form={form}
           onFormChange={mockOnFormChange}
           imageFieldError='Error'
-        />
+        />,
       );
       const errorBorder = container.querySelector('.border-red-300');
       expect(errorBorder).toBeInTheDocument();
@@ -491,26 +499,28 @@ describe('ItemCard', () => {
           form={form}
           onFormChange={mockOnFormChange}
           imageFieldError='Incompatible image format'
-        />
+        />,
       );
       // The trash button in the error overlay
       const buttons = screen.getAllByRole('button');
-      const trashBtn = buttons.find((b) =>
-        b.querySelector('svg') && b.className.includes('absolute')
+      const trashBtn = buttons.find(
+        (b) => b.querySelector('svg') && b.className.includes('absolute'),
       );
       expect(trashBtn).toBeDefined();
       fireEvent.click(trashBtn!);
       expect(mockOnFormChange).toHaveBeenCalledWith(
-        expect.objectContaining({ imageUrl: '' })
+        expect.objectContaining({ imageUrl: '' }),
       );
     });
 
-    it('shows "Please check the URL and try again" when imageError is true (no imageFieldError)', () => {
+    it('shows neutral message when imageError is true (no imageFieldError)', () => {
       const form = makeForm({ imageUrl: 'https://example.com/broken.jpg' });
       render(<ItemCard form={form} onFormChange={mockOnFormChange} />);
       const img = screen.getByAltText('Preview');
       fireEvent.error(img);
-      expect(screen.getByText('Please check the URL and try again')).toBeInTheDocument();
+      expect(
+        screen.getByText('The image will still be saved with this item'),
+      ).toBeInTheDocument();
     });
 
     it('shows imageFieldError text in the image URL input area when imageFieldError and no imageUrl', () => {
@@ -520,7 +530,7 @@ describe('ItemCard', () => {
           form={form}
           onFormChange={mockOnFormChange}
           imageFieldError='Custom image error'
-        />
+        />,
       );
       expect(screen.getByText('Custom image error')).toBeInTheDocument();
     });
@@ -535,13 +545,55 @@ describe('ItemCard', () => {
           form={form}
           onFormChange={mockOnFormChange}
           imageFieldError={null}
-        />
+        />,
       );
       // The imageFieldError variant of error text in upload area is shown if imageFieldError is set
       // The imageError text is only shown when internal state imageError=true
       // We can't easily set internal imageError=true with imageUrl='' without the img element
       // Just verify the upload area renders
       expect(container.querySelector('.border-dashed')).toBeInTheDocument();
+    });
+
+    // --- Base64 / data URI validation (GitHub issue #810) ---
+
+    it('does not show image preview when imageFieldError is set for a data URI', () => {
+      const form = makeForm({ imageUrl: 'data:image/png;base64,abc' });
+      render(
+        <ItemCard
+          form={form}
+          onFormChange={mockOnFormChange}
+          imageFieldError='Incompatible image format. Please use a valid image URL.'
+        />,
+      );
+      // The error overlay should be rendered, not a clean preview
+      expect(
+        screen.getByText(
+          'Incompatible image format. Please use a valid image URL.',
+        ),
+      ).toBeInTheDocument();
+    });
+
+    it('shows error state when imageFieldError indicates data URI incompatibility', () => {
+      const form = makeForm({ imageUrl: 'data:image/png;base64,abc' });
+      const { container } = render(
+        <ItemCard
+          form={form}
+          onFormChange={mockOnFormChange}
+          imageFieldError='Incompatible image format. Please use a valid image URL.'
+        />,
+      );
+      // A red-tinted error container must be present
+      const redContainer =
+        container.querySelector('.bg-red-50') ||
+        container.querySelector('[class*="red"]');
+      expect(redContainer).toBeInTheDocument();
+
+      // The error message text must be visible
+      expect(
+        screen.getByText(
+          'Incompatible image format. Please use a valid image URL.',
+        ),
+      ).toBeInTheDocument();
     });
   });
 

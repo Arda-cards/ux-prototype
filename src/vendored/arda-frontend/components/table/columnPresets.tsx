@@ -3,8 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { ColDef, IRowNode, ValueFormatterParams } from 'ag-grid-community';
-import { ShoppingCart, Printer, Eye } from 'lucide-react';
-import { LuCaptions } from 'react-icons/lu';
+import { ShoppingCart, Printer, Eye, Tag } from 'lucide-react';
 import { HiOutlineChatBubbleBottomCenterText } from 'react-icons/hi2';
 import { createPortal } from 'react-dom';
 import * as items from '@frontend/types/items';
@@ -12,8 +11,9 @@ import * as domain from '@frontend/types/domain';
 import { useItemCards } from '@frontend/app/items/ItemTableAGGrid';
 import { flyToTarget } from '@frontend/lib/fly-to-target';
 import { useOrderQueueToast } from '@frontend/hooks/useOrderQueueToast';
-import { useOrderQueue } from '@frontend/contexts/OrderQueueContext';
+import { useOrderQueue } from '@frontend/store/hooks/useOrderQueue';
 import { toast } from 'sonner';
+import { ALLOWED_ORDER_QUEUE_STATUSES } from '@frontend/lib/cardStateUtils';
 import { NoteModal } from '@frontend/components/common/NoteModal';
 import {
   cardSizeOptions,
@@ -73,6 +73,7 @@ const GridImage = ({
       src={src}
       alt={alt}
       className={className}
+      style={{ width: 32, height: 32 }}
       onError={() => setImageError(true)}
       onLoad={() => setImageError(false)}
     />
@@ -98,6 +99,11 @@ export const formatQuantity = (quantity: items.Quantity | undefined) => {
   if (!quantity) return '-';
   return `${quantity.amount} ${quantity.unit}`;
 };
+
+/** Default column width: wide enough to display the header label at 14px Geist,
+ *  including the ⋮ sort menu button (~24px) that appears on hover.
+ *  Formula: ~9px per character + 72px (32px cell padding + 16px sort indicator + 24px ⋮ button). */
+const colWidth = (text: string): number => Math.max(80, Math.ceil(text.length * 9) + 72);
 
 // Quick Actions Cell Component
 const QuickActionsCell = ({ item }: { item: items.Item }) => {
@@ -127,6 +133,24 @@ const QuickActionsCell = ({ item }: { item: items.Item }) => {
     };
   }, []);
 
+  // Track how many buttons fit in the current column width
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [visibleCount, setVisibleCount] = React.useState(4);
+  React.useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    // 8px left pad + N×36px buttons + (N-1)×4px gaps + 8px right pad
+    const obs = new ResizeObserver(([entry]) => {
+      const w = entry.contentRect.width;
+      if (w >= 172) setVisibleCount(4);
+      else if (w >= 132) setVisibleCount(3);
+      else if (w >= 92) setVisibleCount(2);
+      else setVisibleCount(1);
+    });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
   // Count cards with status "REQUESTING" (In Order Queue)
   const inOrderQueueCount = safeCards.filter(
     (card: any) => card.payload?.status === 'REQUESTING'
@@ -139,11 +163,6 @@ const QuickActionsCell = ({ item }: { item: items.Item }) => {
 
   // Note: restockedCards is no longer used - we now use candidateCard which is queried separately
   // This ensures we only add the oldest FULFILLED card, not all of them
-
-  // Get cards with printStatus "NOT_PRINTED" for Print Label
-  const notPrintedCards = safeCards.filter(
-    (card: any) => card.payload?.printStatus === 'NOT_PRINTED'
-  );
 
   const [isPrintingLabels, setIsPrintingLabels] = React.useState(false);
 
@@ -166,56 +185,47 @@ const QuickActionsCell = ({ item }: { item: items.Item }) => {
           return;
         }
 
-        // Query for the oldest FULFILLED card for this item
-        const requestBody: any = {
-          filter: {
-            eq: 'FULFILLED',
-            locator: 'status',
-          },
-          paginate: {
-            index: 0,
-            size: 50,
-          },
-        };
-
+        // Fetch all cards for this item using the dedicated endpoint,
+        // then filter client-side by allowed statuses.
         const response = await fetch(
-          `/api/arda/kanban/kanban-card/query`,
+          `/api/arda/kanban/kanban-card/query-by-item?eId=${encodeURIComponent(item.entityId)}`,
           {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${jwtToken}`,
-            },
-            body: JSON.stringify(requestBody),
+            method: 'GET',
+            headers: { Authorization: `Bearer ${jwtToken}` },
             signal,
           }
         );
 
-        if (signal?.aborted) return;
+        if (signal?.aborted || !mountedRef.current) return;
 
-        if (response.ok) {
-          const data = await response.json();
-          if (signal?.aborted || !mountedRef.current) return;
-          if (data.ok && data.data?.results) {
-            const itemCards = data.data.results.filter(
-              (card: any) =>
-                card.payload?.item?.eId === item.entityId ||
-                card.payload?.itemDetails?.eId === item.entityId
-            );
+        if (!response.ok) {
+          if (mountedRef.current) setCandidateCard(null);
+          return;
+        }
 
-            if (itemCards.length > 0) {
-              itemCards.sort((a: any, b: any) => {
-                const aEffective = a.asOf?.effective || 0;
-                const bEffective = b.asOf?.effective || 0;
-                return aEffective - bEffective;
-              });
-              if (mountedRef.current) setCandidateCard(itemCards[0]);
-            } else {
-              if (mountedRef.current) setCandidateCard(null);
-            }
-          } else {
-            if (mountedRef.current) setCandidateCard(null);
-          }
+        const data = await response.json();
+        if (signal?.aborted || !mountedRef.current) return;
+
+        // Support all known response shapes
+        const rawCards: any[] =
+          data?.data?.records ??
+          data?.data?.data?.records ??
+          (Array.isArray(data?.data) ? data.data : null) ??
+          data?.data?.results ??
+          [];
+
+        // Filter to only cards in allowed statuses
+        const allCandidates = rawCards.filter((card: any) =>
+          ALLOWED_ORDER_QUEUE_STATUSES.includes(card.payload?.status?.toUpperCase?.() ?? '')
+        );
+
+        if (allCandidates.length > 0) {
+          allCandidates.sort((a: any, b: any) => {
+            const aEffective = a.asOf?.effective || 0;
+            const bEffective = b.asOf?.effective || 0;
+            return aEffective - bEffective;
+          });
+          if (mountedRef.current) setCandidateCard(allCandidates[0]);
         } else {
           if (mountedRef.current) setCandidateCard(null);
         }
@@ -450,17 +460,11 @@ const QuickActionsCell = ({ item }: { item: items.Item }) => {
   };
 
   const handlePrintLabel = async () => {
-    if (!hasLoadedCards) {
-      toast.error('Card data is still loading—please try again in a moment.');
+    if (!item?.recordId) {
+      toast.error('Item data is not available');
       return;
     }
 
-    if (notPrintedCards.length === 0) {
-      toast.error('No unprinted cards available to print');
-      return;
-    }
-
-    // Process all not printed cards
     const jwtToken = localStorage.getItem('idToken');
     if (!jwtToken) {
       toast.error('Authentication token not found');
@@ -469,16 +473,15 @@ const QuickActionsCell = ({ item }: { item: items.Item }) => {
 
     try {
       setIsPrintingLabels(true);
-      const cardIds = notPrintedCards.map((card) => card.payload.eId);
 
-      const response = await fetch('/api/arda/kanban/kanban-card/print-card', {
+      const response = await fetch('/api/arda/item/item/print-label', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${jwtToken}`,
         },
         body: JSON.stringify({
-          ids: cardIds,
+          ids: [item.recordId],
         }),
       });
 
@@ -493,6 +496,8 @@ const QuickActionsCell = ({ item }: { item: items.Item }) => {
           if (item?.entityId) {
             await refreshCardsForItem(item.entityId);
           }
+
+          toast.success('Successfully printed label!');
         } else {
           console.error(
             'Failed to print labels - invalid response structure:',
@@ -514,13 +519,14 @@ const QuickActionsCell = ({ item }: { item: items.Item }) => {
 
   return (
     <div
+      ref={containerRef}
       style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'flex-start',
         width: '100%',
         height: '100%',
-        overflow: 'hidden',
+        overflow: 'visible',
       }}
       onClick={handleMouseEvent}
       onMouseDown={handleMouseEvent}
@@ -532,6 +538,8 @@ const QuickActionsCell = ({ item }: { item: items.Item }) => {
           position: 'relative',
           gap: '4px',
           flexShrink: 0,
+          paddingLeft: '8px',
+          paddingRight: '8px',
         }}
       >
         {/* View Item Details Button */}
@@ -566,7 +574,7 @@ const QuickActionsCell = ({ item }: { item: items.Item }) => {
         {/* Shopping Cart Button */}
         <div
           data-item-id={item.entityId}
-          style={{ position: 'relative', overflow: 'visible' }}
+          style={{ position: 'relative', overflow: 'visible', display: visibleCount >= 2 ? undefined : 'none' }}
         >
           <button
             className='shopping-cart-button'
@@ -598,7 +606,7 @@ const QuickActionsCell = ({ item }: { item: items.Item }) => {
                 ? 'Loading card data…'
                 : candidateCard
                 ? 'Add card to Cart'
-                : 'No candidate cards available to add to order queue'
+                : 'No restocked cards available for this item'
             }
             onClick={(e) => {
               e.stopPropagation();
@@ -658,7 +666,7 @@ const QuickActionsCell = ({ item }: { item: items.Item }) => {
         </div>
 
         {/* Printer Button */}
-        <div style={{ position: 'relative', overflow: 'visible' }}>
+        <div style={{ position: 'relative', overflow: 'visible', display: visibleCount >= 3 ? undefined : 'none' }}>
           <button
             style={{
               height: '36px',
@@ -747,7 +755,7 @@ const QuickActionsCell = ({ item }: { item: items.Item }) => {
         </div>
 
         {/* Print Label Button */}
-        <div style={{ position: 'relative', overflow: 'visible' }}>
+        <div style={{ position: 'relative', overflow: 'visible', display: visibleCount >= 4 ? undefined : 'none' }}>
             <button
               style={{
                 height: '36px',
@@ -761,81 +769,25 @@ const QuickActionsCell = ({ item }: { item: items.Item }) => {
                 justifyContent: 'center',
                 padding: '8px 10px',
                 zIndex: 4,
-                cursor:
-                  notPrintedCards.length > 0 && !isLoadingCards
-                    ? 'pointer'
-                    : 'not-allowed',
+                cursor: !isPrintingLabels ? 'pointer' : 'not-allowed',
                 position: 'relative',
                 overflow: 'visible',
-                opacity:
-                  notPrintedCards.length > 0 && !isLoadingCards ? 1 : 0.5,
+                opacity: !isPrintingLabels ? 1 : 0.5,
               }}
-              title={
-                !hasLoadedCards
-                  ? 'Loading card data…'
-                  : notPrintedCards.length > 0
-                  ? `Print ${notPrintedCards.length} label${
-                      notPrintedCards.length > 1 ? 's' : ''
-                    }`
-                  : 'No unprinted cards available'
-              }
+              title={isPrintingLabels ? 'Printing label…' : 'Print label'}
               onClick={(e) => {
                 e.stopPropagation();
-                if (notPrintedCards.length > 0 && !isLoadingCards) {
+                if (!isPrintingLabels) {
                   handlePrintLabel();
                 }
               }}
               onMouseDown={(e) => {
                 e.stopPropagation();
               }}
-              disabled={
-                notPrintedCards.length === 0 ||
-                isPrintingLabels ||
-                isLoadingCards
-              }
+              disabled={isPrintingLabels}
             >
-              <LuCaptions size={16} style={{ color: '#000' }} />
+              <Tag size={16} style={{ color: '#000' }} />
             </button>
-            <div
-              style={{
-                margin: 0,
-                position: 'absolute',
-                bottom: '-4px',
-                right: '-4px',
-                borderRadius: '9999px',
-                backgroundColor: '#fff',
-                border: '1px solid #babfc7',
-                boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.15)',
-                boxSizing: 'border-box',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '2px 4px',
-                minWidth: '16px',
-                zIndex: 10,
-              }}
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-              onMouseDown={(e) => {
-                e.stopPropagation();
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  lineHeight: 1,
-                  fontWeight: 600,
-                  fontSize: '10px',
-                  color: '#0a0a0a',
-                  textAlign: 'center',
-                }}
-              >
-                {hasLoadedCards ? notPrintedCards.length : '—'}
-              </div>
-            </div>
         </div>
       </div>
     </div>
@@ -1072,7 +1024,7 @@ const CardNotesCell = ({
 };
 
 // Select All Header Component
-const SelectAllHeaderComponent = React.memo((params: any) => {
+export const SelectAllHeaderComponent = React.memo((params: any) => {
   const [isChecked, setIsChecked] = React.useState(false);
   const [isIndeterminate, setIsIndeterminate] = React.useState(false);
 
@@ -1256,17 +1208,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
       justifyContent: 'center',
       padding: '0',
     },
-    headerStyle: {
-      overflow: 'visible',
-      textOverflow: 'clip',
-      whiteSpace: 'normal',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'flex-start',
-      padding: '0',
-      width: '100%',
-      cursor: 'pointer',
-    },
+    headerClass: 'arda-header-select',
     cellRenderer: (params: any) => {
       // Per-grid shift-click state passed via gridOptions.context — isolates each
       // grid instance so multiple grids on the same page don't share state.
@@ -1368,13 +1310,13 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'SKU',
     field: 'internalSKU',
-    width: 140,
+    width: colWidth('SKU'),
     valueFormatter: (params: ValueFormatterParams) => params.value ?? '',
   },
   {
     headerName: 'GL Code',
     field: 'generalLedgerCode',
-    width: 140,
+    width: colWidth('GL Code'),
     valueFormatter: (params: ValueFormatterParams) => params.value ?? '',
   },
   {
@@ -1424,32 +1366,35 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Image',
     field: 'imageUrl',
-    width: 80,
+    width: colWidth('Image'),
     cellStyle: {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
+      overflow: 'hidden',
     },
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       return (
-        <GridImage
-          src={item.imageUrl || ''}
-          alt={item.name}
-          className='w-8 h-8 object-contain rounded'
-        />
+        <div style={{ width: 32, height: 32, flexShrink: 0, overflow: 'hidden' }}>
+          <GridImage
+            src={item.imageUrl || ''}
+            alt={item.name}
+            className='w-8 h-8 object-contain rounded'
+          />
+        </div>
       );
     },
   },
   {
     headerName: 'Quick Actions',
     field: 'quickActions' as any,
-    // 4 buttons × ~38px + 3 gaps × 4px = ~164px; min = 1 button (~38px)
-    width: 164,
-    minWidth: 38,
+    // 8px pad + 4×36px buttons + 3×4px gaps + 8px pad = 172px; min = 1 button + padding = 52px
+    width: 172,
+    minWidth: 52,
     sortable: false,
     cellStyle: {
-      overflow: 'hidden',
+      overflow: 'visible',
       textOverflow: 'clip',
       whiteSpace: 'normal',
       display: 'flex',
@@ -1457,11 +1402,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
       justifyContent: 'center',
       padding: '0',
     },
-    headerStyle: {
-      overflow: 'visible',
-      textOverflow: 'clip',
-      whiteSpace: 'normal',
-    },
+    headerClass: 'arda-header-quick-actions',
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       return <QuickActionsCell item={item} />;
@@ -1470,7 +1411,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Supplier',
     field: 'primarySupply.supplier',
-    width: 150,
+    width: colWidth('Supplier'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       const supplier = item.primarySupply?.supplier;
@@ -1482,13 +1423,13 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Unit Price',
     field: 'primarySupply.unitCost',
-    width: 120,
+    width: colWidth('Unit Price'),
     valueFormatter: (params: ValueFormatterParams) => formatCurrency(params.value),
   },
   {
     headerName: 'Created',
     field: 'createdCoordinates',
-    width: 150,
+    width: colWidth('Created'),
     valueFormatter: (params: ValueFormatterParams) =>
       formatDateTime(new Date(params.value?.recordedAsOf || 0).toISOString()),
   },
@@ -1496,8 +1437,8 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
     headerName: 'Min Qty',
     field: 'minQuantity.amount' as any,
     colId: 'minQuantityAmount',
-    width: 150,
-    minWidth: 100,
+    width: colWidth('Min Qty'),
+    minWidth: colWidth('Min Qty'),
     suppressSizeToFit: true,
     valueFormatter: (params: ValueFormatterParams) => String(params.value ?? '-'),
   },
@@ -1505,8 +1446,8 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
     headerName: 'Min Unit',
     field: 'minQuantity.unit' as any,
     colId: 'minQuantityUnit',
-    width: 130,
-    minWidth: 90,
+    width: colWidth('Min Unit'),
+    minWidth: colWidth('Min Unit'),
     suppressSizeToFit: true,
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
@@ -1514,11 +1455,11 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
     },
   },
   {
-    headerName: 'Order Amount',
+    headerName: 'Order Qty',
     field: 'primarySupply.orderQuantity.amount' as any,
     colId: 'orderQuantityAmount',
-    width: 150,
-    minWidth: 100,
+    width: colWidth('Order Qty'),
+    minWidth: colWidth('Order Qty'),
     suppressSizeToFit: true,
     valueFormatter: (params: ValueFormatterParams) => String(params.value ?? '-'),
   },
@@ -1526,8 +1467,8 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
     headerName: 'Order Unit',
     field: 'primarySupply.orderQuantity.unit' as any,
     colId: 'orderQuantityUnit',
-    width: 130,
-    minWidth: 90,
+    width: colWidth('Order Unit'),
+    minWidth: colWidth('Order Unit'),
     suppressSizeToFit: true,
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
@@ -1537,7 +1478,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Order Method',
     field: 'primarySupply.orderMechanism',
-    width: 140,
+    width: colWidth('Order Method'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       const orderMechanism = item.primarySupply?.orderMechanism;
@@ -1563,23 +1504,20 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
     },
   },
   {
-    headerName: 'Classification',
+    headerName: 'Type',
     field: 'classification.type',
-    width: 150,
+    width: colWidth('Type'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       const classification = item.classification;
       if (!classification?.type) return '-';
-      const display = classification.subType
-        ? `${classification.type} - ${classification.subType}`
-        : classification.type;
-      return <span className='text-black'>{display}</span>;
+      return <span className='text-black'>{classification.type}</span>;
     },
   },
   {
     headerName: 'Location',
     field: 'locator.location',
-    width: 150,
+    width: colWidth('Location'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       const locator = item.locator;
@@ -1600,7 +1538,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Sub-location',
     field: 'locator.subLocation',
-    width: 150,
+    width: colWidth('Sub-location'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       return <span className='text-black'>{item.locator?.subLocation || '-'}</span>;
@@ -1610,7 +1548,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
     headerName: '# of Cards',
     field: 'cardCount' as any,
     colId: 'cardCount',
-    width: 100,
+    width: colWidth('# of Cards'),
     cellStyle: {
       display: 'flex',
       alignItems: 'center',
@@ -1624,7 +1562,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Notes',
     field: 'notes',
-    width: 100,
+    width: colWidth('Notes'),
     cellStyle: {
       display: 'flex',
       alignItems: 'center',
@@ -1641,7 +1579,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Sub-Type',
     field: 'classification.subType',
-    width: 150,
+    width: colWidth('Sub-Type'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       return <span className='text-black'>{item.classification?.subType || '-'}</span>;
@@ -1650,7 +1588,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Use Case',
     field: 'useCase',
-    width: 150,
+    width: colWidth('Use Case'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       return <span className='text-black'>{item.useCase || '-'}</span>;
@@ -1659,7 +1597,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Department',
     field: 'locator.department',
-    width: 150,
+    width: colWidth('Department'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       return <span className='text-black'>{item.locator?.department || '-'}</span>;
@@ -1668,7 +1606,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Facility',
     field: 'locator.facility',
-    width: 150,
+    width: colWidth('Facility'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       return <span className='text-black'>{item.locator?.facility || '-'}</span>;
@@ -1677,7 +1615,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Card Notes',
     field: 'cardNotesDefault',
-    width: 100,
+    width: colWidth('Card Notes'),
     cellStyle: {
       display: 'flex',
       alignItems: 'center',
@@ -1694,7 +1632,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Taxable',
     field: 'taxable',
-    width: 100,
+    width: colWidth('Taxable'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       return <span className='text-black'>{item.taxable ? 'Yes' : 'No'}</span>;
@@ -1724,7 +1662,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Supplier SKU',
     field: 'primarySupply.sku',
-    width: 150,
+    width: colWidth('Supplier SKU'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       return <span className='text-black'>{item.primarySupply?.sku || '-'}</span>;
@@ -1733,7 +1671,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Lead Time',
     field: 'primarySupply.averageLeadTime',
-    width: 120,
+    width: colWidth('Lead Time'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       const leadTime = item.primarySupply?.averageLeadTime;
@@ -1744,13 +1682,13 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Order Cost',
     field: 'primarySupply.orderCost',
-    width: 120,
+    width: colWidth('Order Cost'),
     valueFormatter: (params: ValueFormatterParams) => formatCurrency(params.value),
   },
   {
     headerName: 'Card Size',
     field: 'cardSize',
-    width: 150,
+    width: colWidth('Card Size'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       const value = item.cardSize;
@@ -1762,7 +1700,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Label Size',
     field: 'labelSize',
-    width: 120,
+    width: colWidth('Label Size'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       const value = item.labelSize;
@@ -1774,7 +1712,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Breadcrumb Size',
     field: 'breadcrumbSize',
-    width: 150,
+    width: colWidth('Breadcrumb Size'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       const value = item.breadcrumbSize;
@@ -1786,7 +1724,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
   {
     headerName: 'Color',
     field: 'color',
-    width: 120,
+    width: colWidth('Color'),
     cellRenderer: (params: any) => {
       const item = params.data as items.Item;
       const color = item.color;
@@ -1881,6 +1819,8 @@ export const itemsDefaultColDef: ColDef<items.Item> = {
   filter: false,
   resizable: true,
   suppressMovable: false,
+  sortingOrder: ['asc', 'desc', null],
+  cellStyle: { display: 'flex', alignItems: 'center' },
 };
 
 // Default column definition for Orders

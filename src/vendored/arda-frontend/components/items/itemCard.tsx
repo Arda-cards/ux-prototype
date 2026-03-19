@@ -208,6 +208,10 @@ export function ItemCard({
 }: ItemCardProps) {
   const [imageError, setImageError] = useState(false);
 
+  useEffect(() => {
+    setImageError(false);
+  }, [form.imageUrl]);
+
   const isFilled =
     form.name &&
     form.primarySupply.minimumQuantity?.amount &&
@@ -218,10 +222,6 @@ export function ItemCard({
     form.primarySupply.supplier &&
     form.imageUrl;
 
-  // Helper function to determine if we should use Next.js Image or regular img
-  const isUploadedFile = (url: string) => {
-    return url.startsWith('data:') || url.includes('abrafersrl.com.ar');
-  };
 
   // Reset image error when URL changes
   const handleImageUrlChange = (newUrl: string) => {
@@ -546,26 +546,20 @@ export function ItemCard({
       <div className='w-full'>
         {form.imageUrl && !imageError && !imageFieldError ? (
           <div className='relative w-full max-h-[300px] overflow-hidden rounded-md border border-[#E5E5E5] shadow-[0px_1px_2px_rgba(0,0,0,0.05)] flex items-center justify-center bg-white'>
-            {isUploadedFile(form.imageUrl) ? (
-              <Image
-                src={form.imageUrl}
-                alt='Preview'
-                width={0}
-                height={0}
-                sizes='100vw'
-                className='w-full h-auto max-h-[300px] object-contain rounded-md'
-                onError={() => setImageError(true)}
-              />
-            ) : (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={form.imageUrl}
-                alt='Preview'
-                className='w-full h-auto max-h-[300px] object-contain rounded-md'
-                onError={() => setImageError(true)}
-                onLoad={() => setImageError(false)}
-              />
-            )}
+            <Image
+              src={form.imageUrl}
+              alt='Preview'
+              width={0}
+              height={0}
+              sizes='100vw'
+              unoptimized={form.imageUrl.startsWith('http')}
+              className='w-full h-auto max-h-[300px] object-contain rounded-md'
+              onError={() => {
+                console.error('[itemCard] Image failed to load:', form.imageUrl);
+                setImageError(true);
+              }}
+              onLoad={() => setImageError(false)}
+            />
             <button
               onClick={() => handleImageUrlChange('')}
               className='absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-white border border-[#E5E5E5] rounded-md shadow-sm'
@@ -573,17 +567,24 @@ export function ItemCard({
               <Trash2Icon className='w-4 h-4 text-black' />
             </button>
           </div>
-        ) : form.imageUrl && (imageError || imageFieldError) ? (
+        ) : form.imageUrl && imageFieldError ? (
           <div className='relative w-full min-h-[120px] max-h-[300px] overflow-hidden rounded-md border-2 border-red-300 bg-red-50 flex flex-col justify-center items-center gap-2 p-4'>
             <div className='text-center'>
-              <p className='text-sm text-red-600 font-medium'>
-                {imageFieldError
-                  ? 'Incompatible image format'
-                  : 'Failed to load image'}
-              </p>
-              <p className='text-xs text-red-500 mt-1'>
-                {imageFieldError || 'Please check the URL and try again'}
-              </p>
+              <p className='text-sm text-red-600 font-medium'>Incompatible image format</p>
+              <p className='text-xs text-red-500 mt-1'>{imageFieldError}</p>
+            </div>
+            <button
+              onClick={() => handleImageUrlChange('')}
+              className='absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-white border border-[#E5E5E5] rounded-md shadow-sm'
+            >
+              <Trash2Icon className='w-4 h-4 text-black' />
+            </button>
+          </div>
+        ) : form.imageUrl && imageError ? (
+          <div className='relative w-full min-h-[120px] max-h-[300px] overflow-hidden rounded-md border border-[#E5E5E5] bg-[#F5F5F5] flex flex-col justify-center items-center gap-2 p-4'>
+            <div className='text-center'>
+              <p className='text-sm text-[#737373] font-medium'>Image preview unavailable</p>
+              <p className='text-xs text-[#A3A3A3] mt-1'>The image will still be saved with this item</p>
             </div>
             <button
               onClick={() => handleImageUrlChange('')}
@@ -611,7 +612,7 @@ export function ItemCard({
             {/* Image URL Input Area */}
             <div
               className={`flex border rounded-lg overflow-hidden ${
-                imageError || imageFieldError
+                imageFieldError
                   ? 'border-red-300'
                   : 'border-[#E5E5E5]'
               }`}

@@ -3,7 +3,7 @@ import { CardPreviewModal } from './CardPreviewModal';
 import '@testing-library/jest-dom';
 import { getKanbanCard } from '@frontend/lib/ardaClient';
 
-jest.mock('@/contexts/OrderQueueContext', () => ({
+jest.mock('@/store/hooks/useOrderQueue', () => ({
   useOrderQueue: () => ({
     refreshOrderQueueData: jest.fn(),
     orderQueueData: [],

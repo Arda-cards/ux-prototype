@@ -103,16 +103,16 @@ describe('cardStateUtils', () => {
   });
 
   describe('canAddToOrderQueue', () => {
-    it('returns false for "REQUESTING"', () => {
+    it('returns false for "REQUESTING" (already in queue)', () => {
       expect(canAddToOrderQueue('REQUESTING')).toBe(false);
     });
 
-    it('returns true for "REQUESTED"', () => {
-      expect(canAddToOrderQueue('REQUESTED')).toBe(true);
+    it('returns false for "REQUESTED" (in progress)', () => {
+      expect(canAddToOrderQueue('REQUESTED')).toBe(false);
     });
 
-    it('returns true for "IN_PROCESS"', () => {
-      expect(canAddToOrderQueue('IN_PROCESS')).toBe(true);
+    it('returns false for "IN_PROCESS" (being received)', () => {
+      expect(canAddToOrderQueue('IN_PROCESS')).toBe(false);
     });
 
     it('returns true for "FULFILLED"', () => {
@@ -123,8 +123,18 @@ describe('cardStateUtils', () => {
       expect(canAddToOrderQueue('AVAILABLE')).toBe(true);
     });
 
-    it('returns true for unknown status', () => {
-      expect(canAddToOrderQueue('SOME_OTHER_STATUS')).toBe(true);
+    it('returns false for "UNKNOWN"', () => {
+      expect(canAddToOrderQueue('UNKNOWN')).toBe(false);
+    });
+
+    it('returns false for unrecognized status (not in allowed list)', () => {
+      expect(canAddToOrderQueue('SOME_OTHER_STATUS')).toBe(false);
+    });
+
+    it('is case-insensitive', () => {
+      expect(canAddToOrderQueue('requesting')).toBe(false);
+      expect(canAddToOrderQueue('fulfilled')).toBe(true);
+      expect(canAddToOrderQueue('in_process')).toBe(false);
     });
   });
 

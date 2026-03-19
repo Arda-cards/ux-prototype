@@ -1,5 +1,11 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+} from '@testing-library/react';
 import { ItemFormPanel } from './ItemFormPanel';
 import type { Item } from '@frontend/types/items';
 
@@ -11,7 +17,9 @@ jest.mock('sonner', () => ({
 }));
 
 jest.mock('@/hooks/useAuthErrorHandler', () => ({
-  useAuthErrorHandler: () => ({ handleAuthError: jest.fn().mockReturnValue(false) }),
+  useAuthErrorHandler: () => ({
+    handleAuthError: jest.fn().mockReturnValue(false),
+  }),
 }));
 
 jest.mock('@/lib/ardaClient', () => ({
@@ -26,58 +34,84 @@ jest.mock('@/lib/validators/itemFormValidator', () => ({
 
 // Mock heavy child components
 jest.mock('./itemCard', () => ({
-  ItemCard: ({ form, onFormChange }: {
-    form: { name: string };
-    onFormChange: (f: Partial<{ name: string }>) => void;
+  ItemCard: ({
+    form,
+    onFormChange,
+    imageFieldError,
+  }: {
+    form: { name: string; imageUrl?: string };
+    onFormChange: (f: Partial<{ name: string; imageUrl: string }>) => void;
+    imageFieldError?: string | null;
   }) => (
-    <div data-testid="item-card">
+    <div data-testid='item-card'>
       <input
-        data-testid="item-card-name"
+        data-testid='item-card-name'
         value={form.name}
         onChange={(e) => onFormChange({ name: e.target.value })}
-        placeholder="Item name"
+        placeholder='Item name'
       />
+      <input
+        data-testid='item-card-image-url'
+        value={form.imageUrl ?? ''}
+        onChange={(e) => onFormChange({ imageUrl: e.target.value })}
+        placeholder='image url'
+      />
+      {imageFieldError && (
+        <span data-testid='item-card-image-error'>{imageFieldError}</span>
+      )}
     </div>
   ),
 }));
 
 jest.mock('./SupplierTypeahead', () => ({
-  SupplierTypeahead: ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
-    <input data-testid="supplier-typeahead" value={value} onChange={(e) => onChange(e.target.value)} />
+  SupplierTypeahead: ({
+    value,
+    onChange,
+  }: {
+    value: string;
+    onChange: (v: string) => void;
+  }) => (
+    <input
+      data-testid='supplier-typeahead'
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+    />
   ),
 }));
 
 jest.mock('./TypeTypeahead', () => ({
-  TypeTypeahead: () => <div data-testid="type-typeahead" />,
+  TypeTypeahead: () => <div data-testid='type-typeahead' />,
 }));
 
 jest.mock('./SubTypeTypeahead', () => ({
-  SubTypeTypeahead: () => <div data-testid="subtype-typeahead" />,
+  SubTypeTypeahead: () => <div data-testid='subtype-typeahead' />,
 }));
 
 jest.mock('./UseCaseTypeahead', () => ({
-  UseCaseTypeahead: () => <div data-testid="usecase-typeahead" />,
+  UseCaseTypeahead: () => <div data-testid='usecase-typeahead' />,
 }));
 
 jest.mock('./FacilityTypeahead', () => ({
-  FacilityTypeahead: () => <div data-testid="facility-typeahead" />,
+  FacilityTypeahead: () => <div data-testid='facility-typeahead' />,
 }));
 
 jest.mock('./DepartmentTypeahead', () => ({
-  DepartmentTypeahead: () => <div data-testid="department-typeahead" />,
+  DepartmentTypeahead: () => <div data-testid='department-typeahead' />,
 }));
 
 jest.mock('./LocationTypeahead', () => ({
-  LocationTypeahead: () => <div data-testid="location-typeahead" />,
+  LocationTypeahead: () => <div data-testid='location-typeahead' />,
 }));
 
 jest.mock('./SublocationTypeahead', () => ({
-  SublocationTypeahead: () => <div data-testid="sublocation-typeahead" />,
+  SublocationTypeahead: () => <div data-testid='sublocation-typeahead' />,
 }));
 
 jest.mock('../input-wrapper', () => ({
   __esModule: true,
-  default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  default: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
 }));
 
 // ---- Helpers ----------------------------------------------------------------
@@ -108,7 +142,12 @@ const mockItemToEdit: Item = {
   imageUrl: 'https://example-valid.com/img.png',
   classification: { type: 'Supply', subType: 'Medical' },
   useCase: 'Surgery',
-  locator: { facility: 'Main Facility', department: 'OR', location: 'Room 1', subLocation: 'Shelf A' },
+  locator: {
+    facility: 'Main Facility',
+    department: 'OR',
+    location: 'Room 1',
+    subLocation: 'Shelf A',
+  },
   internalSKU: 'SKU-123',
   generalLedgerCode: 'GL-001',
   minQuantity: { amount: 2, unit: 'box' },
@@ -156,8 +195,14 @@ beforeEach(() => {
   });
   mockLocalStorage.getItem.mockReturnValue(null);
   createItem.mockResolvedValue({ entityId: 'new-item-eid', name: 'New Item' });
-  createDraftItem.mockResolvedValue({ entityId: 'draft-eid', name: 'Draft Item' });
-  updateItem.mockResolvedValue({ entityId: 'item-eid-edit', name: 'Existing Item' });
+  createDraftItem.mockResolvedValue({
+    entityId: 'draft-eid',
+    name: 'Draft Item',
+  });
+  updateItem.mockResolvedValue({
+    entityId: 'item-eid-edit',
+    name: 'Existing Item',
+  });
 });
 
 // ---- Tests ------------------------------------------------------------------
@@ -174,7 +219,7 @@ describe('ItemFormPanel — basic rendering', () => {
         isOpen={true}
         onClose={jest.fn()}
         itemToEdit={mockItemToEdit}
-      />
+      />,
     );
     expect(screen.getByText('Edit item')).toBeInTheDocument();
   });
@@ -204,7 +249,7 @@ describe('ItemFormPanel — basic rendering', () => {
         onClose={jest.fn()}
         itemToEdit={mockItemToEdit}
         isDuplicating={true}
-      />
+      />,
     );
     expect(screen.getByText('Add new item')).toBeInTheDocument();
   });
@@ -224,7 +269,7 @@ describe('ItemFormPanel — close behaviors', () => {
 
     // Find via aria or fallback
     const closeBtn = Array.from(document.querySelectorAll('button')).find(
-      b => b.querySelector('svg') && b.closest('.sticky')
+      (b) => b.querySelector('svg') && b.closest('.sticky'),
     );
     if (closeBtn) {
       fireEvent.click(closeBtn);
@@ -234,7 +279,9 @@ describe('ItemFormPanel — close behaviors', () => {
 
   it('calls onCancel when Cancel button is clicked and onCancel is provided', () => {
     const onCancel = jest.fn();
-    render(<ItemFormPanel isOpen={true} onClose={jest.fn()} onCancel={onCancel} />);
+    render(
+      <ItemFormPanel isOpen={true} onClose={jest.fn()} onCancel={onCancel} />,
+    );
     fireEvent.click(screen.getByText('Cancel'));
     expect(onCancel).toHaveBeenCalled();
   });
@@ -249,7 +296,9 @@ describe('ItemFormPanel — close behaviors', () => {
   it('calls onClose when overlay is clicked', () => {
     const onClose = jest.fn();
     render(<ItemFormPanel isOpen={true} onClose={onClose} />);
-    const overlay = document.getElementById('item-panel-overlay') as HTMLElement;
+    const overlay = document.getElementById(
+      'item-panel-overlay',
+    ) as HTMLElement;
     fireEvent.click(overlay, { target: overlay });
     expect(onClose).toHaveBeenCalled();
   });
@@ -263,7 +312,7 @@ describe('ItemFormPanel — validation', () => {
     // The publish button should be disabled
     const publishBtns = screen.queryAllByText(/^Publish$/i);
     // Disabled state means canSubmit is false
-    publishBtns.forEach(btn => {
+    publishBtns.forEach((btn) => {
       const button = btn.closest('button');
       if (button) expect(button).toBeDisabled();
     });
@@ -279,7 +328,9 @@ describe('ItemFormPanel — validation', () => {
     for (const el of publishBtns) {
       const btn = el.closest('button');
       if (btn && !btn.disabled) {
-        await act(async () => { fireEvent.click(btn); });
+        await act(async () => {
+          fireEvent.click(btn);
+        });
         break;
       }
     }
@@ -298,11 +349,7 @@ describe('ItemFormPanel — create new item', () => {
     const onClose = jest.fn();
 
     render(
-      <ItemFormPanel
-        isOpen={true}
-        onClose={onClose}
-        onSuccess={onSuccess}
-      />
+      <ItemFormPanel isOpen={true} onClose={onClose} onSuccess={onSuccess} />,
     );
 
     // Set item name via the mocked ItemCard input
@@ -315,7 +362,9 @@ describe('ItemFormPanel — create new item', () => {
     for (const el of publishBtns) {
       const btn = el.closest('button');
       if (btn && !btn.disabled) {
-        await act(async () => { fireEvent.click(btn); });
+        await act(async () => {
+          fireEvent.click(btn);
+        });
         break;
       }
     }
@@ -346,7 +395,7 @@ describe('ItemFormPanel — create new item', () => {
         isOpen={true}
         onClose={jest.fn()}
         onPublishAndAddAnotherFromAddItem={onPublishAndAddAnotherFromAddItem}
-      />
+      />,
     );
 
     // The DropdownMenuContent renders in the DOM (Radix uses portals)
@@ -369,7 +418,9 @@ describe('ItemFormPanel — create new item', () => {
     for (const el of publishBtns) {
       const btn = el.closest('button');
       if (btn && !btn.disabled) {
-        await act(async () => { fireEvent.click(btn); });
+        await act(async () => {
+          fireEvent.click(btn);
+        });
         break;
       }
     }
@@ -379,33 +430,31 @@ describe('ItemFormPanel — create new item', () => {
     });
   });
 
-  it(
-    'sets image field error when createItem throws image format error',
-    async () => {
-      isItemFormValidForPublish.mockReturnValue(true);
-      createItem.mockRejectedValue(new Error('unknown protocol: data'));
+  it('sets image field error when createItem throws image format error', async () => {
+    isItemFormValidForPublish.mockReturnValue(true);
+    createItem.mockRejectedValue(new Error('unknown protocol: data'));
 
-      render(<ItemFormPanel isOpen={true} onClose={jest.fn()} />);
+    render(<ItemFormPanel isOpen={true} onClose={jest.fn()} />);
 
-      fireEvent.change(screen.getByTestId('item-card-name'), {
-        target: { value: 'Image Error Item' },
-      });
+    fireEvent.change(screen.getByTestId('item-card-name'), {
+      target: { value: 'Image Error Item' },
+    });
 
-      const publishBtns = screen.getAllByText(/^Publish$/i);
-      for (const el of publishBtns) {
-        const btn = el.closest('button');
-        if (btn && !btn.disabled) {
-          await act(async () => { fireEvent.click(btn); });
-          break;
-        }
+    const publishBtns = screen.getAllByText(/^Publish$/i);
+    for (const el of publishBtns) {
+      const btn = el.closest('button');
+      if (btn && !btn.disabled) {
+        await act(async () => {
+          fireEvent.click(btn);
+        });
+        break;
       }
+    }
 
-      await waitFor(() => {
-        expect(screen.queryByText('Incompatible image format')).not.toBeNull();
-      });
-    },
-    10000,
-  );
+    await waitFor(() => {
+      expect(screen.queryByText('Incompatible image format')).not.toBeNull();
+    });
+  }, 10000);
 });
 
 describe('ItemFormPanel — edit existing item', () => {
@@ -417,14 +466,16 @@ describe('ItemFormPanel — edit existing item', () => {
         isOpen={true}
         onClose={jest.fn()}
         itemToEdit={mockItemToEdit}
-      />
+      />,
     );
 
     const publishBtns = screen.getAllByText(/^(Publish|Update)$/i);
     for (const el of publishBtns) {
       const btn = el.closest('button');
       if (btn && !btn.disabled) {
-        await act(async () => { fireEvent.click(btn); });
+        await act(async () => {
+          fireEvent.click(btn);
+        });
         break;
       }
     }
@@ -436,38 +487,36 @@ describe('ItemFormPanel — edit existing item', () => {
     });
   });
 
-  it(
-    'shows error toast when updateItem throws',
-    async () => {
-      isItemFormValidForPublish.mockReturnValue(true);
-      createDraftItem.mockResolvedValue({ entityId: 'draft-eid' });
-      updateItem.mockRejectedValue(new Error('Update failed'));
+  it('shows error toast when updateItem throws', async () => {
+    isItemFormValidForPublish.mockReturnValue(true);
+    createDraftItem.mockResolvedValue({ entityId: 'draft-eid' });
+    updateItem.mockRejectedValue(new Error('Update failed'));
 
-      render(
-        <ItemFormPanel
-          isOpen={true}
-          onClose={jest.fn()}
-          itemToEdit={mockItemToEdit}
-        />
-      );
+    render(
+      <ItemFormPanel
+        isOpen={true}
+        onClose={jest.fn()}
+        itemToEdit={mockItemToEdit}
+      />,
+    );
 
-      const publishBtns = screen.getAllByText(/^(Publish|Update)$/i);
-      for (const el of publishBtns) {
-        const btn = el.closest('button');
-        if (btn && !btn.disabled) {
-          await act(async () => { fireEvent.click(btn); });
-          break;
-        }
+    const publishBtns = screen.getAllByText(/^(Publish|Update)$/i);
+    for (const el of publishBtns) {
+      const btn = el.closest('button');
+      if (btn && !btn.disabled) {
+        await act(async () => {
+          fireEvent.click(btn);
+        });
+        break;
       }
+    }
 
-      await waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith(
-          expect.stringContaining('Failed to update item')
-        );
-      });
-    },
-    10000,
-  );
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to update item'),
+      );
+    });
+  }, 10000);
 
   it('renders "Update" button text in edit mode (not isDuplicating)', () => {
     isItemFormValidForPublish.mockReturnValue(true);
@@ -476,7 +525,7 @@ describe('ItemFormPanel — edit existing item', () => {
         isOpen={true}
         onClose={jest.fn()}
         itemToEdit={mockItemToEdit}
-      />
+      />,
     );
     // In edit mode the main button says "Update"
     expect(screen.getByText('Update')).toBeInTheDocument();
@@ -491,7 +540,12 @@ describe('ItemFormPanel — localStorage draft', () => {
         imageUrl: '',
         classification: { type: '', subType: '' },
         useCase: '',
-        locator: { facility: '', department: '', location: '', subLocation: '' },
+        locator: {
+          facility: '',
+          department: '',
+          location: '',
+          subLocation: '',
+        },
         internalSKU: '',
         generalLedgerCode: '',
         minQuantity: { amount: 0, unit: '' },
@@ -529,7 +583,9 @@ describe('ItemFormPanel — localStorage draft', () => {
       },
       usingDefaultImage: false,
     };
-    (mockLocalStorage.getItem as jest.Mock).mockReturnValue(JSON.stringify(savedDraft));
+    (mockLocalStorage.getItem as jest.Mock).mockReturnValue(
+      JSON.stringify(savedDraft),
+    );
 
     render(<ItemFormPanel isOpen={true} onClose={jest.fn()} />);
 
@@ -546,7 +602,9 @@ describe('ItemFormPanel — localStorage draft', () => {
       target: { value: 'Typed Name' },
     });
 
-    act(() => { jest.advanceTimersByTime(600); });
+    act(() => {
+      jest.advanceTimersByTime(600);
+    });
 
     expect(mockLocalStorage.setItem).toHaveBeenCalled();
     jest.useRealTimers();
@@ -564,7 +622,9 @@ describe('ItemFormPanel — error display', () => {
     for (const el of publishBtns) {
       const btn = el.closest('button');
       if (btn && !btn.disabled) {
-        await act(async () => { fireEvent.click(btn); });
+        await act(async () => {
+          fireEvent.click(btn);
+        });
         break;
       }
     }
@@ -580,17 +640,22 @@ describe('ItemFormPanel — error display', () => {
 
 describe('ItemFormPanel — duplication mode', () => {
   it('uses default image when original item has invalid imageUrl in duplication', () => {
-    const itemWithInvalidImage = { ...mockItemToEdit, imageUrl: 'data:image/png;base64,invalid' };
+    const itemWithInvalidImage = {
+      ...mockItemToEdit,
+      imageUrl: 'data:image/png;base64,invalid',
+    };
     render(
       <ItemFormPanel
         isOpen={true}
         onClose={jest.fn()}
         itemToEdit={itemWithInvalidImage}
         isDuplicating={true}
-      />
+      />,
     );
     // Note banner should appear
-    expect(screen.getByText(/The original item had an invalid image URL/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/The original item had an invalid image URL/i),
+    ).toBeInTheDocument();
   });
 
   it('does NOT show duplicate notice when image is valid', () => {
@@ -600,21 +665,29 @@ describe('ItemFormPanel — duplication mode', () => {
         onClose={jest.fn()}
         itemToEdit={mockItemToEdit}
         isDuplicating={true}
-      />
+      />,
     );
-    expect(screen.queryByText(/The original item had an invalid image URL/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/The original item had an invalid image URL/i),
+    ).not.toBeInTheDocument();
   });
 });
 
 describe('ItemFormPanel — isOpen transitions', () => {
   it('clears errors when panel closes', () => {
-    const { rerender } = render(<ItemFormPanel isOpen={true} onClose={jest.fn()} />);
+    const { rerender } = render(
+      <ItemFormPanel isOpen={true} onClose={jest.fn()} />,
+    );
     rerender(<ItemFormPanel isOpen={false} onClose={jest.fn()} />);
-    expect(screen.queryByText(/unable to create new item/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/unable to create new item/i),
+    ).not.toBeInTheDocument();
   });
 
   it('resets to initial state when panel re-opens for new item', () => {
-    const { rerender } = render(<ItemFormPanel isOpen={false} onClose={jest.fn()} />);
+    const { rerender } = render(
+      <ItemFormPanel isOpen={false} onClose={jest.fn()} />,
+    );
     rerender(<ItemFormPanel isOpen={true} onClose={jest.fn()} />);
     expect(screen.getByText('Add new item')).toBeInTheDocument();
   });
@@ -686,7 +759,9 @@ describe('ItemFormPanel — form field interactions', () => {
     // Find the toggle button closest to the first "Set as default supplier" label
     const toggleContainer = defaultLabels[0].closest('div');
     expect(toggleContainer).toBeTruthy();
-    const toggleBtn = toggleContainer!.querySelector('button[role="switch"], button');
+    const toggleBtn = toggleContainer!.querySelector(
+      'button[role="switch"], button',
+    );
     expect(toggleBtn).toBeTruthy();
     fireEvent.click(toggleBtn!);
     // After toggling, the Default Supplier section should still render
@@ -729,6 +804,49 @@ describe('ItemFormPanel — form field interactions', () => {
     fireEvent.change(unitPriceInput, { target: { value: '' } });
   });
 
+  it('stores full decimal precision when entering 0.125579 into unit cost field', () => {
+    render(<ItemFormPanel isOpen={true} onClose={jest.fn()} />);
+    const unitPriceInput = screen.getByPlaceholderText('Unit price');
+    fireEvent.change(unitPriceInput, { target: { value: '0.125579' } });
+    // The input value should reflect the exact string entered, not a rounded value
+    expect((unitPriceInput as HTMLInputElement).value).toBe('0.125579');
+  });
+
+  it('sends raw unit cost value 0.125579 in API payload without rounding', async () => {
+    isItemFormValidForPublish.mockReturnValue(true);
+    render(<ItemFormPanel isOpen={true} onClose={jest.fn()} />);
+
+    // Set item name so the form is fillable
+    fireEvent.change(screen.getByTestId('item-card-name'), {
+      target: { value: 'Precision Test Item' },
+    });
+
+    // Enter a high-precision unit cost
+    const unitPriceInput = screen.getByPlaceholderText('Unit price');
+    fireEvent.change(unitPriceInput, { target: { value: '0.125579' } });
+
+    // Submit the form
+    const publishBtns = screen.getAllByText(/^Publish$/i);
+    for (const el of publishBtns) {
+      const btn = el.closest('button');
+      if (btn && !btn.disabled) {
+        await act(async () => {
+          fireEvent.click(btn);
+        });
+        break;
+      }
+    }
+
+    await waitFor(() => {
+      expect(createItem).toHaveBeenCalled();
+    });
+
+    const calledWithItem = createItem.mock.calls[0][0] as {
+      primarySupply?: { unitCost?: { value?: number } };
+    };
+    expect(calledWithItem.primarySupply?.unitCost?.value).toBe(0.125579);
+  });
+
   it('changes average lead time', () => {
     render(<ItemFormPanel isOpen={true} onClose={jest.fn()} />);
     const leadTimeInput = screen.getByPlaceholderText('0');
@@ -737,20 +855,30 @@ describe('ItemFormPanel — form field interactions', () => {
 
   it('changes ordering notes textarea', () => {
     render(<ItemFormPanel isOpen={true} onClose={jest.fn()} />);
-    const notesTextareas = screen.getAllByPlaceholderText('Type your notes here');
-    fireEvent.change(notesTextareas[0], { target: { value: 'Order via email only' } });
+    const notesTextareas = screen.getAllByPlaceholderText(
+      'Type your notes here',
+    );
+    fireEvent.change(notesTextareas[0], {
+      target: { value: 'Order via email only' },
+    });
   });
 
   it('renders card notes textarea and allows input', () => {
     render(<ItemFormPanel isOpen={true} onClose={jest.fn()} />);
-    const cardNotesTextarea = screen.getByPlaceholderText('Type card notes here');
-    fireEvent.change(cardNotesTextarea, { target: { value: 'Handle with care' } });
+    const cardNotesTextarea = screen.getByPlaceholderText(
+      'Type card notes here',
+    );
+    fireEvent.change(cardNotesTextarea, {
+      target: { value: 'Handle with care' },
+    });
     fireEvent.blur(cardNotesTextarea);
   });
 
   it('renders note textarea and allows input', () => {
     render(<ItemFormPanel isOpen={true} onClose={jest.fn()} />);
-    const noteTextareas = screen.getAllByPlaceholderText('Type your notes here');
+    const noteTextareas = screen.getAllByPlaceholderText(
+      'Type your notes here',
+    );
     const lastTextarea = noteTextareas[noteTextareas.length - 1];
     fireEvent.change(lastTextarea, { target: { value: 'General note' } });
     fireEvent.blur(lastTextarea);
@@ -791,9 +919,9 @@ describe('ItemFormPanel — table of contents interactions', () => {
       const jumpToText = screen.queryByText('Jump to:');
       if (jumpToText) {
         // TOC is visible, find and click a navigation button (e.g., Ordering Details)
-        const orderingDetailsBtn = screen.queryAllByRole('button').find(
-          b => b.textContent === 'Ordering Details'
-        );
+        const orderingDetailsBtn = screen
+          .queryAllByRole('button')
+          .find((b) => b.textContent === 'Ordering Details');
         if (orderingDetailsBtn) {
           fireEvent.click(orderingDetailsBtn);
         }
@@ -822,7 +950,9 @@ describe('ItemFormPanel — handleItemCardChange interactions', () => {
     for (const el of publishBtns) {
       const btn = el.closest('button');
       if (btn && !btn.disabled) {
-        await act(async () => { fireEvent.click(btn); });
+        await act(async () => {
+          fireEvent.click(btn);
+        });
         break;
       }
     }
@@ -865,7 +995,12 @@ describe('ItemFormPanel — edit mode with localStorage draft', () => {
         imageUrl: 'https://example-valid.com/img.png',
         classification: { type: 'Supply', subType: 'Medical' },
         useCase: 'Surgery',
-        locator: { facility: 'Main', department: 'OR', location: 'Room 1', subLocation: 'Shelf A' },
+        locator: {
+          facility: 'Main',
+          department: 'OR',
+          location: 'Room 1',
+          subLocation: 'Shelf A',
+        },
         internalSKU: 'SKU-DRAFT',
         generalLedgerCode: 'GL-DRAFT',
         minQuantity: { amount: 3, unit: 'box' },
@@ -916,12 +1051,14 @@ describe('ItemFormPanel — edit mode with localStorage draft', () => {
         isOpen={true}
         onClose={jest.fn()}
         itemToEdit={mockItemToEdit}
-      />
+      />,
     );
 
     // Edit mode always uses itemToEdit data, not the localStorage draft
     await waitFor(() => {
-      expect(screen.getByTestId('item-card-name')).toHaveValue(mockItemToEdit.name);
+      expect(screen.getByTestId('item-card-name')).toHaveValue(
+        mockItemToEdit.name,
+      );
     });
   });
 
@@ -932,18 +1069,20 @@ describe('ItemFormPanel — edit mode with localStorage draft', () => {
         isOpen={true}
         onClose={jest.fn()}
         itemToEdit={mockItemToEdit}
-      />
+      />,
     );
 
     fireEvent.change(screen.getByTestId('item-card-name'), {
       target: { value: 'Modified Item' },
     });
 
-    act(() => { jest.advanceTimersByTime(600); });
+    act(() => {
+      jest.advanceTimersByTime(600);
+    });
 
     expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
       expect.stringContaining('itemFormEditDraft_'),
-      expect.any(String)
+      expect.any(String),
     );
     jest.useRealTimers();
   });
@@ -954,7 +1093,7 @@ describe('ItemFormPanel — edit mode with localStorage draft', () => {
         isOpen={true}
         onClose={jest.fn()}
         itemToEdit={mockItemToEdit}
-      />
+      />,
     );
     fireEvent.click(screen.getByText('Cancel'));
     expect(mockLocalStorage.removeItem).toHaveBeenCalled();
@@ -965,14 +1104,16 @@ describe('ItemFormPanel — publish & add another flow', () => {
   it('calls onPublishAndAddAnotherFromAddItem after successful publish & add another', async () => {
     isItemFormValidForPublish.mockReturnValue(true);
     createItem.mockResolvedValue({ entityId: 'new-eid', name: 'New Item' });
-    const onPublishAndAddAnotherFromAddItem = jest.fn().mockResolvedValue(undefined);
+    const onPublishAndAddAnotherFromAddItem = jest
+      .fn()
+      .mockResolvedValue(undefined);
 
     render(
       <ItemFormPanel
         isOpen={true}
         onClose={jest.fn()}
         onPublishAndAddAnotherFromAddItem={onPublishAndAddAnotherFromAddItem}
-      />
+      />,
     );
 
     fireEvent.change(screen.getByTestId('item-card-name'), {
@@ -986,7 +1127,9 @@ describe('ItemFormPanel — publish & add another flow', () => {
     // through the DropdownMenuItem — look for "Publish & add another" text
     const publishAddBtn = screen.queryByText(/publish & add another/i);
     if (publishAddBtn) {
-      await act(async () => { fireEvent.click(publishAddBtn); });
+      await act(async () => {
+        fireEvent.click(publishAddBtn);
+      });
       await waitFor(() => {
         expect(createItem).toHaveBeenCalled();
       });
@@ -996,8 +1139,13 @@ describe('ItemFormPanel — publish & add another flow', () => {
   it('calls onPublishAndAddAnotherFromEdit after successful update & add another in edit mode', async () => {
     isItemFormValidForPublish.mockReturnValue(true);
     createDraftItem.mockResolvedValue({ entityId: 'draft-eid' });
-    updateItem.mockResolvedValue({ entityId: 'item-eid-edit', name: 'Updated' });
-    const onPublishAndAddAnotherFromEdit = jest.fn().mockResolvedValue(undefined);
+    updateItem.mockResolvedValue({
+      entityId: 'item-eid-edit',
+      name: 'Updated',
+    });
+    const onPublishAndAddAnotherFromEdit = jest
+      .fn()
+      .mockResolvedValue(undefined);
 
     render(
       <ItemFormPanel
@@ -1005,12 +1153,14 @@ describe('ItemFormPanel — publish & add another flow', () => {
         onClose={jest.fn()}
         itemToEdit={mockItemToEdit}
         onPublishAndAddAnotherFromEdit={onPublishAndAddAnotherFromEdit}
-      />
+      />,
     );
 
     const publishAddBtn = screen.queryByText(/publish & add another/i);
     if (publishAddBtn) {
-      await act(async () => { fireEvent.click(publishAddBtn); });
+      await act(async () => {
+        fireEvent.click(publishAddBtn);
+      });
       await waitFor(() => {
         expect(createDraftItem).toHaveBeenCalled();
       });
@@ -1026,7 +1176,9 @@ describe('ItemFormPanel — save as draft flow', () => {
     // Find "Save as draft" in the dropdown
     const saveDraftBtn = screen.queryByText(/save as draft/i);
     if (saveDraftBtn) {
-      await act(async () => { fireEvent.click(saveDraftBtn); });
+      await act(async () => {
+        fireEvent.click(saveDraftBtn);
+      });
       // After clicking "Save as draft", the main button should say "Save as Draft"
       await waitFor(() => {
         const saveAsDraftMainBtn = screen.queryByText('Save as Draft');
@@ -1049,7 +1201,9 @@ describe('ItemFormPanel — save as draft flow', () => {
     // Switch to draft mode
     const saveDraftMenuBtn = screen.queryByText(/^save as draft$/i);
     if (saveDraftMenuBtn) {
-      await act(async () => { fireEvent.click(saveDraftMenuBtn); });
+      await act(async () => {
+        fireEvent.click(saveDraftMenuBtn);
+      });
     }
 
     // Now click the main button which should now be in draft mode
@@ -1057,7 +1211,9 @@ describe('ItemFormPanel — save as draft flow', () => {
     if (mainBtn) {
       const btn = mainBtn.closest('button');
       if (btn && !btn.disabled) {
-        await act(async () => { fireEvent.click(btn); });
+        await act(async () => {
+          fireEvent.click(btn);
+        });
         await waitFor(() => {
           expect(createItem).toHaveBeenCalled();
         });
@@ -1078,10 +1234,12 @@ describe('ItemFormPanel — duplication with valid URL', () => {
         onClose={jest.fn()}
         itemToEdit={itemWithHttpUrl}
         isDuplicating={true}
-      />
+      />,
     );
     // Should not show the default image notice
-    expect(screen.queryByText(/The original item had an invalid image URL/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/The original item had an invalid image URL/i),
+    ).not.toBeInTheDocument();
   });
 
   it('handles item with localhost imageUrl in duplication mode (invalid)', () => {
@@ -1095,10 +1253,12 @@ describe('ItemFormPanel — duplication with valid URL', () => {
         onClose={jest.fn()}
         itemToEdit={itemWithLocalhostUrl}
         isDuplicating={true}
-      />
+      />,
     );
     // localhost is invalid for duplication
-    expect(screen.getByText(/The original item had an invalid image URL/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/The original item had an invalid image URL/i),
+    ).toBeInTheDocument();
   });
 
   it('handles item with placeholder imageUrl in duplication (this.is.com)', () => {
@@ -1112,9 +1272,11 @@ describe('ItemFormPanel — duplication with valid URL', () => {
         onClose={jest.fn()}
         itemToEdit={itemWithPlaceholderUrl}
         isDuplicating={true}
-      />
+      />,
     );
-    expect(screen.getByText(/The original item had an invalid image URL/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/The original item had an invalid image URL/i),
+    ).toBeInTheDocument();
   });
 
   it('handles item with example.com imageUrl in duplication', () => {
@@ -1128,9 +1290,11 @@ describe('ItemFormPanel — duplication with valid URL', () => {
         onClose={jest.fn()}
         itemToEdit={itemWithExampleUrl}
         isDuplicating={true}
-      />
+      />,
     );
-    expect(screen.getByText(/The original item had an invalid image URL/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/The original item had an invalid image URL/i),
+    ).toBeInTheDocument();
   });
 
   it('handles item with empty imageUrl in duplication', () => {
@@ -1144,9 +1308,11 @@ describe('ItemFormPanel — duplication with valid URL', () => {
         onClose={jest.fn()}
         itemToEdit={itemWithNoUrl}
         isDuplicating={true}
-      />
+      />,
     );
-    expect(screen.getByText(/The original item had an invalid image URL/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/The original item had an invalid image URL/i),
+    ).toBeInTheDocument();
   });
 });
 
@@ -1171,7 +1337,9 @@ describe('ItemFormPanel — handleAuthError in submit', () => {
     for (const el of publishBtns) {
       const btn = el.closest('button');
       if (btn && !btn.disabled) {
-        await act(async () => { fireEvent.click(btn); });
+        await act(async () => {
+          fireEvent.click(btn);
+        });
         break;
       }
     }
@@ -1209,7 +1377,10 @@ describe('ItemFormPanel — window event listeners', () => {
 describe('ItemFormPanel — defaultSupply logic', () => {
   it('creates item without defaultSupply when neither supplier is set', async () => {
     isItemFormValidForPublish.mockReturnValue(true);
-    createItem.mockResolvedValue({ entityId: 'new-eid', name: 'No Supplier Item' });
+    createItem.mockResolvedValue({
+      entityId: 'new-eid',
+      name: 'No Supplier Item',
+    });
 
     render(<ItemFormPanel isOpen={true} onClose={jest.fn()} />);
     fireEvent.change(screen.getByTestId('item-card-name'), {
@@ -1220,21 +1391,26 @@ describe('ItemFormPanel — defaultSupply logic', () => {
     for (const el of publishBtns) {
       const btn = el.closest('button');
       if (btn && !btn.disabled) {
-        await act(async () => { fireEvent.click(btn); });
+        await act(async () => {
+          fireEvent.click(btn);
+        });
         break;
       }
     }
 
     await waitFor(() => {
       expect(createItem).toHaveBeenCalledWith(
-        expect.objectContaining({ defaultSupply: undefined })
+        expect.objectContaining({ defaultSupply: undefined }),
       );
     });
   });
 
   it('sets defaultSupply to Primary when primary supplier is set', async () => {
     isItemFormValidForPublish.mockReturnValue(true);
-    createItem.mockResolvedValue({ entityId: 'new-eid', name: 'Primary Supplier Item' });
+    createItem.mockResolvedValue({
+      entityId: 'new-eid',
+      name: 'Primary Supplier Item',
+    });
 
     render(<ItemFormPanel isOpen={true} onClose={jest.fn()} />);
 
@@ -1249,7 +1425,9 @@ describe('ItemFormPanel — defaultSupply logic', () => {
     for (const el of publishBtns) {
       const btn = el.closest('button');
       if (btn && !btn.disabled) {
-        await act(async () => { fireEvent.click(btn); });
+        await act(async () => {
+          fireEvent.click(btn);
+        });
         break;
       }
     }
@@ -1258,19 +1436,21 @@ describe('ItemFormPanel — defaultSupply logic', () => {
       expect(createItem).toHaveBeenCalled();
       const callArg = createItem.mock.calls[0][0];
       // Either Primary or undefined, depending on isDefault state
-      expect(['Primary', 'Secondary', undefined]).toContain(callArg.defaultSupply);
+      expect(['Primary', 'Secondary', undefined]).toContain(
+        callArg.defaultSupply,
+      );
     });
   });
 });
 
 describe('ItemFormPanel — edit mode with image URL', () => {
-  it('renders edit mode with valid image URL', () => {
+  it('renders edit mode with valid image URL.', () => {
     render(
       <ItemFormPanel
         isOpen={true}
         onClose={jest.fn()}
         itemToEdit={mockItemToEdit}
-      />
+      />,
     );
     expect(screen.getByText('Edit item')).toBeInTheDocument();
   });
@@ -1282,7 +1462,7 @@ describe('ItemFormPanel — edit mode with image URL', () => {
         isOpen={true}
         onClose={jest.fn()}
         itemToEdit={itemNoImage as Item}
-      />
+      />,
     );
     expect(screen.getByText('Edit item')).toBeInTheDocument();
   });
@@ -1297,14 +1477,16 @@ describe('ItemFormPanel — edit mode with image URL', () => {
         isOpen={true}
         onClose={jest.fn()}
         itemToEdit={mockItemToEdit}
-      />
+      />,
     );
 
     const publishBtns = screen.getAllByText(/^(Publish|Update)$/i);
     for (const el of publishBtns) {
       const btn = el.closest('button');
       if (btn && !btn.disabled) {
-        await act(async () => { fireEvent.click(btn); });
+        await act(async () => {
+          fireEvent.click(btn);
+        });
         break;
       }
     }
@@ -1324,7 +1506,7 @@ describe('ItemFormPanel — no savedDraft for edit (fresh load)', () => {
         isOpen={true}
         onClose={jest.fn()}
         itemToEdit={mockItemToEdit}
-      />
+      />,
     );
 
     const input = screen.getByTestId('item-card-name');
@@ -1340,7 +1522,7 @@ describe('ItemFormPanel — no savedDraft for edit (fresh load)', () => {
         onClose={jest.fn()}
         itemToEdit={mockItemToEdit}
         isDuplicating={true}
-      />
+      />,
     );
 
     expect(screen.getByText('Add new item')).toBeInTheDocument();
@@ -1361,7 +1543,9 @@ describe('ItemFormPanel — onImageErrorClear callback', () => {
     for (const el of publishBtns) {
       const btn = el.closest('button');
       if (btn && !btn.disabled) {
-        await act(async () => { fireEvent.click(btn); });
+        await act(async () => {
+          fireEvent.click(btn);
+        });
         break;
       }
     }
@@ -1373,5 +1557,143 @@ describe('ItemFormPanel — onImageErrorClear callback', () => {
     // The ItemCard renders with a data-testid="item-card" wrapper
     const itemCard = screen.getByTestId('item-card');
     expect(itemCard).toBeInTheDocument();
+  });
+});
+
+// ---- Base64 / data URI image URL validation (GitHub issue #810) -----------
+
+describe('ItemFormPanel — Base64 data URI image URL validation', () => {
+  const DATA_URI = 'data:image/png;base64,abc123';
+  const VALID_URL = 'https://example-valid.com/image.jpg';
+  const BASE64_ERROR_MSG =
+    'Incompatible image format. Please use a valid image URL.';
+
+  it('shows error immediately when data URI is pasted into image URL field', async () => {
+    isItemFormValidForPublish.mockReturnValue(true);
+    render(<ItemFormPanel isOpen={true} onClose={jest.fn()} />);
+
+    await act(async () => {
+      fireEvent.change(screen.getByTestId('item-card-image-url'), {
+        target: { value: DATA_URI },
+      });
+    });
+
+    // imageFieldError is passed down to the mocked ItemCard which renders it
+    expect(screen.getByTestId('item-card-image-error')).toHaveTextContent(
+      BASE64_ERROR_MSG,
+    );
+  });
+
+  it('clears data URI error when URL is changed to a valid https URL', async () => {
+    isItemFormValidForPublish.mockReturnValue(true);
+    render(<ItemFormPanel isOpen={true} onClose={jest.fn()} />);
+
+    // First set a data URI to trigger the error
+    await act(async () => {
+      fireEvent.change(screen.getByTestId('item-card-image-url'), {
+        target: { value: DATA_URI },
+      });
+    });
+
+    expect(screen.getByTestId('item-card-image-error')).toBeInTheDocument();
+
+    // Now switch to a valid https URL
+    await act(async () => {
+      fireEvent.change(screen.getByTestId('item-card-image-url'), {
+        target: { value: VALID_URL },
+      });
+    });
+
+    // Error should be gone
+    expect(
+      screen.queryByTestId('item-card-image-error'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('blocks form submission when imageUrl is a data URI', async () => {
+    isItemFormValidForPublish.mockReturnValue(true);
+    render(<ItemFormPanel isOpen={true} onClose={jest.fn()} />);
+
+    // Give the form a valid name so name validation passes
+    fireEvent.change(screen.getByTestId('item-card-name'), {
+      target: { value: 'Test Item' },
+    });
+
+    // Set a data URI image URL
+    await act(async () => {
+      fireEvent.change(screen.getByTestId('item-card-image-url'), {
+        target: { value: DATA_URI },
+      });
+    });
+
+    // Click submit (Publish button)
+    const publishBtns = screen.getAllByText(/^Publish$/i);
+    for (const el of publishBtns) {
+      const btn = el.closest('button');
+      if (btn && !btn.disabled) {
+        await act(async () => {
+          fireEvent.click(btn);
+        });
+        break;
+      }
+    }
+
+    // API should NOT be called
+    expect(createItem).not.toHaveBeenCalled();
+
+    // The error list must contain 'Incompatible image format'
+    await waitFor(() => {
+      expect(screen.getByText('Incompatible image format')).toBeInTheDocument();
+    });
+  });
+
+  it('does not send data URI to backend on form submit', async () => {
+    isItemFormValidForPublish.mockReturnValue(true);
+    render(<ItemFormPanel isOpen={true} onClose={jest.fn()} />);
+
+    fireEvent.change(screen.getByTestId('item-card-name'), {
+      target: { value: 'Item With Data URI' },
+    });
+
+    await act(async () => {
+      fireEvent.change(screen.getByTestId('item-card-image-url'), {
+        target: { value: DATA_URI },
+      });
+    });
+
+    const publishBtns = screen.getAllByText(/^Publish$/i);
+    for (const el of publishBtns) {
+      const btn = el.closest('button');
+      if (btn && !btn.disabled) {
+        await act(async () => {
+          fireEvent.click(btn);
+        });
+        break;
+      }
+    }
+
+    // createItem must not have been called at all (validateForm blocks it)
+    expect(createItem).not.toHaveBeenCalled();
+    // Specifically it must not have been called with a data URI image URL
+    expect(createItem).not.toHaveBeenCalledWith(
+      expect.objectContaining({ imageUrl: expect.stringContaining('data:') }),
+    );
+  });
+
+  it('valid https image URL is accepted without showing a data URI error', async () => {
+    isItemFormValidForPublish.mockReturnValue(true);
+    render(<ItemFormPanel isOpen={true} onClose={jest.fn()} />);
+
+    await act(async () => {
+      fireEvent.change(screen.getByTestId('item-card-image-url'), {
+        target: { value: VALID_URL },
+      });
+    });
+
+    // No data URI error should appear
+    expect(
+      screen.queryByTestId('item-card-image-error'),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText(BASE64_ERROR_MSG)).not.toBeInTheDocument();
   });
 });

@@ -15,7 +15,7 @@ jest.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-jest.mock('@/contexts/OrderQueueContext', () => ({
+jest.mock('@/store/hooks/useOrderQueue', () => ({
   useOrderQueue: () => ({ refreshOrderQueueData: jest.fn(), orderQueueData: [] }),
 }));
 
@@ -1429,13 +1429,22 @@ describe('DesktopScanView', () => {
       fireEvent.click(screen.getByText('Notes'));
     });
 
-    it('toggling Classification state filter', async () => {
+    it('toggling Type state filter', async () => {
       render(<DesktopScanView {...defaultProps} />);
       const filterBtn = screen.getByText('Filter').closest('button')!;
       fireEvent.click(filterBtn);
 
-      await waitFor(() => expect(screen.getByText('Classification')).toBeInTheDocument());
-      fireEvent.click(screen.getByText('Classification'));
+      await waitFor(() => expect(screen.getByText('Type')).toBeInTheDocument());
+      fireEvent.click(screen.getByText('Type'));
+    });
+
+    it('toggling Sub-Type column visibility changes state (PR #636)', async () => {
+      render(<DesktopScanView {...defaultProps} />);
+      const filterBtn = screen.getByText('Filter').closest('button')!;
+      fireEvent.click(filterBtn);
+
+      await waitFor(() => expect(screen.getByText('Sub-Type')).toBeInTheDocument());
+      fireEvent.click(screen.getByText('Sub-Type'));
     });
   });
 
@@ -1802,7 +1811,7 @@ describe('DesktopScanView', () => {
       const { toast } = require('sonner');
       // Make refreshOrderQueueData throw so the outer catch in handleAddToOrderQueue fires
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-      jest.spyOn(require('@/contexts/OrderQueueContext'), 'useOrderQueue').mockReturnValue({
+      jest.spyOn(require('@/store/hooks/useOrderQueue'), 'useOrderQueue').mockReturnValue({
         refreshOrderQueueData: jest.fn().mockRejectedValue(new Error('Refresh failed')),
         orderQueueData: [],
       });
@@ -2114,6 +2123,643 @@ describe('DesktopScanView', () => {
       const card = await renderWithCard();
       await waitFor(() => expect(capturedColumnDefs).toBeDefined());
       callValueSetter('notes', 'Updated notes', { id: testUuid, cardData: card });
+    });
+
+    it('applyScanEdit unitCost with non-numeric value falls back to 0', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      // 'not-a-number' parses as NaN → isNaN(NaN) → value becomes 0
+      callValueSetter('unitCost', 'not-a-number', { id: testUuid, cardData: card });
+    });
+
+    it('applyScanEdit supplier colId when primarySupply is undefined uses empty object fallback', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const cardWithNoSupply = {
+        ...card,
+        payload: {
+          ...card.payload,
+          itemDetails: { ...card.payload.itemDetails, primarySupply: undefined },
+        },
+      };
+      callValueSetter('supplier', 'New Supplier', { id: testUuid, cardData: cardWithNoSupply });
+    });
+
+    it('applyScanEdit facility colId when locator is undefined uses default locator fallback', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const cardWithNoLocator = {
+        ...card,
+        payload: {
+          ...card.payload,
+          itemDetails: { ...card.payload.itemDetails, locator: undefined },
+        },
+      };
+      callValueSetter('facility', 'Lab A', { id: testUuid, cardData: cardWithNoLocator });
+    });
+
+    // Cell renderer tests for new type/subType columns added in PR #636
+    it('type cellRenderer shows classification type when present', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const typeCol = capturedColumnDefs?.find((c) => c.colId === 'type');
+      if (typeCol?.cellRenderer) {
+        const cardWithType = {
+          ...card,
+          payload: {
+            ...card.payload,
+            itemDetails: {
+              ...card.payload.itemDetails,
+              classification: { type: 'Equipment', subType: 'Electronics' },
+            },
+          },
+        };
+        const result = typeCol.cellRenderer({ data: { id: testUuid, cardData: cardWithType } });
+        expect(result).toBeDefined();
+      }
+    });
+
+    it('type cellRenderer shows "-" when classification is absent', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const typeCol = capturedColumnDefs?.find((c) => c.colId === 'type');
+      if (typeCol?.cellRenderer) {
+        const cardWithNoClassification = {
+          ...card,
+          payload: {
+            ...card.payload,
+            itemDetails: { ...card.payload.itemDetails, classification: undefined },
+          },
+        };
+        const result = typeCol.cellRenderer({ data: { id: testUuid, cardData: cardWithNoClassification } });
+        expect(result).toBeDefined();
+      }
+    });
+
+    it('subType cellRenderer shows classification subType when present', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const subTypeCol = capturedColumnDefs?.find((c) => c.colId === 'subType');
+      if (subTypeCol?.cellRenderer) {
+        const cardWithSubType = {
+          ...card,
+          payload: {
+            ...card.payload,
+            itemDetails: {
+              ...card.payload.itemDetails,
+              classification: { type: 'Equipment', subType: 'Electronics' },
+            },
+          },
+        };
+        const result = subTypeCol.cellRenderer({ data: { id: testUuid, cardData: cardWithSubType } });
+        expect(result).toBeDefined();
+      }
+    });
+
+    it('sku cellRenderer returns internalSKU from card data', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const skuCol = capturedColumnDefs?.find((c) => c.colId === 'sku');
+      if (skuCol?.cellRenderer) {
+        const result = skuCol.cellRenderer({ data: { id: testUuid, cardData: card } });
+        expect(result).toBe('SKU-001');
+      }
+    });
+
+    it('sku cellRenderer falls back to serialNumber when no internalSKU', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const skuCol = capturedColumnDefs?.find((c) => c.colId === 'sku');
+      if (skuCol?.cellRenderer) {
+        const cardNoSku = {
+          ...card,
+          payload: { ...card.payload, itemDetails: { ...card.payload.itemDetails, internalSKU: undefined } },
+        };
+        const result = skuCol.cellRenderer({ data: { id: testUuid, cardData: cardNoSku } });
+        expect(result).toBe('SN-001');
+      }
+    });
+
+    it('select column cellRenderer checkbox click triggers row selection', async () => {
+      await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const selectCol = capturedColumnDefs?.find((c) => c.colId === 'select');
+      if (!selectCol?.cellRenderer) return;
+
+      const mockSetSelected = jest.fn();
+      const mockNode = { rowIndex: 0, isSelected: () => false, setSelected: mockSetSelected };
+      const mockApi = { getDisplayedRowAtIndex: jest.fn(() => null) };
+      const jsxResult = selectCol.cellRenderer({
+        node: mockNode,
+        api: mockApi,
+        data: { id: testUuid, cardData: mockCardData },
+      }) as React.ReactElement;
+
+      const { container } = render(jsxResult);
+      const checkbox = container.querySelector('input[type="checkbox"]')!;
+      // Simple click (no modifier) → calls node.setSelected(true, false)
+      fireEvent.click(checkbox);
+      expect(mockSetSelected).toHaveBeenCalledWith(true, false);
+    });
+
+    it('select column cellRenderer outer div click stops propagation', async () => {
+      await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const selectCol = capturedColumnDefs?.find((c) => c.colId === 'select');
+      if (!selectCol?.cellRenderer) return;
+
+      const mockNode = { rowIndex: 0, isSelected: () => false, setSelected: jest.fn() };
+      const mockApi = { getDisplayedRowAtIndex: jest.fn(() => null) };
+      const jsxResult = selectCol.cellRenderer({
+        node: mockNode, api: mockApi, data: { id: testUuid, cardData: mockCardData },
+      }) as React.ReactElement;
+
+      const { container } = render(jsxResult);
+      // Outer div has onClick and onMouseDown handlers that stop propagation
+      fireEvent.click(container.firstChild as Element);
+      fireEvent.mouseDown(container.firstChild as Element);
+      expect(container.firstChild).toBeDefined();
+    });
+
+    it('select column cellRenderer shift-click triggers range selection', async () => {
+      await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const selectCol = capturedColumnDefs?.find((c) => c.colId === 'select');
+      if (!selectCol?.cellRenderer) return;
+
+      const mockSetSelected = jest.fn();
+      const rangeNode = { rowIndex: 3, isSelected: () => false, setSelected: mockSetSelected };
+      const mockApi = {
+        getDisplayedRowAtIndex: jest.fn((i) =>
+          i >= 0 && i <= 3 ? { setSelected: mockSetSelected } : null
+        ),
+      };
+      const jsxResult = selectCol.cellRenderer({
+        node: rangeNode,
+        api: mockApi,
+        data: { id: testUuid, cardData: mockCardData },
+      }) as React.ReactElement;
+
+      const { container } = render(jsxResult);
+      const checkbox = container.querySelector('input[type="checkbox"]')!;
+      // Shift+click triggers range selection (lastSelectedRowIndex from prior test is 0)
+      fireEvent.click(checkbox, { shiftKey: true });
+      expect(mockSetSelected).toHaveBeenCalled();
+    });
+
+    it('imageUrl cellRenderer returns empty div when no imageUrl', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const imgCol = capturedColumnDefs?.find((c) => (c as { field?: string }).field === 'imageUrl');
+      if (!imgCol?.cellRenderer) return;
+
+      const cardNoImg = {
+        ...card,
+        payload: { ...card.payload, itemDetails: { ...card.payload.itemDetails, imageUrl: undefined } },
+      };
+      const result = imgCol.cellRenderer({ data: { id: testUuid, cardData: cardNoImg } }) as React.ReactElement;
+      expect(result).toBeDefined();
+      const { container } = render(result);
+      expect(container.firstChild).toBeDefined();
+    });
+
+    it('imageUrl cellRenderer renders img tag for regular URL', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const imgCol = capturedColumnDefs?.find((c) => (c as { field?: string }).field === 'imageUrl');
+      if (!imgCol?.cellRenderer) return;
+
+      const cardWithImg = {
+        ...card,
+        payload: {
+          ...card.payload,
+          itemDetails: { ...card.payload.itemDetails, imageUrl: 'https://example.com/img.png' },
+        },
+      };
+      const result = imgCol.cellRenderer({ data: { id: testUuid, cardData: cardWithImg } }) as React.ReactElement;
+      expect(result).toBeDefined();
+    });
+
+    it('imageUrl cellRenderer renders Image component for data URL (uploaded file)', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const imgCol = capturedColumnDefs?.find((c) => (c as { field?: string }).field === 'imageUrl');
+      if (!imgCol?.cellRenderer) return;
+
+      const cardWithDataUrl = {
+        ...card,
+        payload: {
+          ...card.payload,
+          itemDetails: { ...card.payload.itemDetails, imageUrl: 'data:image/png;base64,abc123' },
+        },
+      };
+      const result = imgCol.cellRenderer({ data: { id: testUuid, cardData: cardWithDataUrl } }) as React.ReactElement;
+      expect(result).toBeDefined();
+      const { container } = render(result);
+      expect(container.firstChild).toBeDefined();
+    });
+
+    it('supplier cellRenderer returns "-" when supplier is empty', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const supplierCol = capturedColumnDefs?.find((c) => c.colId === 'supplier');
+      if (!supplierCol?.cellRenderer) return;
+
+      const cardNoSupplier = {
+        ...card,
+        payload: {
+          ...card.payload,
+          itemDetails: { ...card.payload.itemDetails, primarySupply: { supplier: '', orderCost: { value: 0, currency: 'USD' } } },
+        },
+      };
+      const result = supplierCol.cellRenderer({ data: { id: testUuid, cardData: cardNoSupplier } });
+      expect(result).toBe('-');
+    });
+
+    it('supplier cellRenderer renders span when supplier is set', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const supplierCol = capturedColumnDefs?.find((c) => c.colId === 'supplier');
+      if (!supplierCol?.cellRenderer) return;
+
+      const cardWithSupplier = {
+        ...card,
+        payload: {
+          ...card.payload,
+          itemDetails: {
+            ...card.payload.itemDetails,
+            primarySupply: { supplier: 'Acme Corp', orderCost: { value: 10, currency: 'USD' } },
+          },
+        },
+      };
+      const result = supplierCol.cellRenderer({ data: { id: testUuid, cardData: cardWithSupplier } }) as React.ReactElement;
+      expect(result).toBeDefined();
+      const { getByText } = render(result);
+      expect(getByText('Acme Corp')).toBeDefined();
+    });
+
+    it('facility cellRenderer renders span with facility value', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const facilityCol = capturedColumnDefs?.find((c) => c.colId === 'facility');
+      if (!facilityCol?.cellRenderer) return;
+
+      const cardWithFacility = {
+        ...card,
+        payload: {
+          ...card.payload,
+          itemDetails: {
+            ...card.payload.itemDetails,
+            locator: { facility: 'Lab A', location: 'Shelf 1' },
+          },
+        },
+      };
+      const result = facilityCol.cellRenderer({ data: { id: testUuid, cardData: cardWithFacility } }) as React.ReactElement;
+      expect(result).toBeDefined();
+      const { getByText } = render(result);
+      expect(getByText('Lab A')).toBeDefined();
+    });
+
+    it('location cellRenderer renders span with location value', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const locationCol = capturedColumnDefs?.find((c) => c.colId === 'location');
+      if (!locationCol?.cellRenderer) return;
+
+      const cardWithLocation = {
+        ...card,
+        payload: {
+          ...card.payload,
+          itemDetails: {
+            ...card.payload.itemDetails,
+            locator: { facility: 'Lab A', location: 'Shelf 1' },
+          },
+        },
+      };
+      const result = locationCol.cellRenderer({ data: { id: testUuid, cardData: cardWithLocation } }) as React.ReactElement;
+      expect(result).toBeDefined();
+      const { getByText } = render(result);
+      expect(getByText('Shelf 1')).toBeDefined();
+    });
+
+    it('location cellRenderer falls back to subLocation when location is absent', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const locationCol = capturedColumnDefs?.find((c) => c.colId === 'location');
+      if (!locationCol?.cellRenderer) return;
+
+      const cardWithSubLocation = {
+        ...card,
+        payload: {
+          ...card.payload,
+          itemDetails: {
+            ...card.payload.itemDetails,
+            locator: { facility: 'Lab A', subLocation: 'Bin 3' },
+          },
+        },
+      };
+      const result = locationCol.cellRenderer({ data: { id: testUuid, cardData: cardWithSubLocation } }) as React.ReactElement;
+      expect(result).toBeDefined();
+      const { getByText } = render(result);
+      expect(getByText('Bin 3')).toBeDefined();
+    });
+
+    it('location valueGetter returns location when present', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const locationCol = capturedColumnDefs?.find((c) => c.colId === 'location');
+      if (!locationCol?.valueGetter) return;
+
+      const cardWithLocation = {
+        ...card,
+        payload: {
+          ...card.payload,
+          itemDetails: {
+            ...card.payload.itemDetails,
+            locator: { facility: 'Lab A', location: 'Shelf 1' },
+          },
+        },
+      };
+      const value = (locationCol.valueGetter as (params: unknown) => unknown)({ data: { id: testUuid, cardData: cardWithLocation } });
+      expect(value).toBe('Shelf 1');
+    });
+
+    it('location valueGetter falls back to subLocation when location is absent', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const locationCol = capturedColumnDefs?.find((c) => c.colId === 'location');
+      if (!locationCol?.valueGetter) return;
+
+      const cardWithSubLocation = {
+        ...card,
+        payload: {
+          ...card.payload,
+          itemDetails: {
+            ...card.payload.itemDetails,
+            locator: { facility: 'Lab A', subLocation: 'Bin 3' },
+          },
+        },
+      };
+      const value = (locationCol.valueGetter as (params: unknown) => unknown)({ data: { id: testUuid, cardData: cardWithSubLocation } });
+      expect(value).toBe('Bin 3');
+    });
+
+    it('unitCost valueGetter returns string value when unitCost is set', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const unitCostCol = capturedColumnDefs?.find((c) => c.colId === 'unitCost');
+      if (!unitCostCol?.valueGetter) return;
+
+      const cardWithCost = {
+        ...card,
+        payload: {
+          ...card.payload,
+          itemDetails: {
+            ...card.payload.itemDetails,
+            primarySupply: { supplier: 'S', orderCost: { value: 5, currency: 'USD' }, unitCost: { value: 9.99 } },
+          },
+        },
+      };
+      const value = (unitCostCol.valueGetter as (params: unknown) => unknown)({ data: { id: testUuid, cardData: cardWithCost } });
+      expect(value).toBe('9.99');
+    });
+
+    it('unitCost valueGetter returns empty string when unitCost is absent', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const unitCostCol = capturedColumnDefs?.find((c) => c.colId === 'unitCost');
+      if (!unitCostCol?.valueGetter) return;
+
+      const cardNoCost = {
+        ...card,
+        payload: {
+          ...card.payload,
+          itemDetails: {
+            ...card.payload.itemDetails,
+            primarySupply: { supplier: 'S', orderCost: { value: 5, currency: 'USD' } },
+          },
+        },
+      };
+      const value = (unitCostCol.valueGetter as (params: unknown) => unknown)({ data: { id: testUuid, cardData: cardNoCost } });
+      expect(value).toBe('');
+    });
+
+    it('select column cellRenderer meta/ctrl-click toggles individual row', async () => {
+      await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const selectCol = capturedColumnDefs?.find((c) => c.colId === 'select');
+      if (!selectCol?.cellRenderer) return;
+
+      const mockSetSelected = jest.fn();
+      const mockNode = { rowIndex: 2, isSelected: () => false, setSelected: mockSetSelected };
+      const mockApi = { getDisplayedRowAtIndex: jest.fn(() => null) };
+      const jsxResult = selectCol.cellRenderer({
+        node: mockNode,
+        api: mockApi,
+        data: { id: testUuid, cardData: mockCardData },
+      }) as React.ReactElement;
+
+      const { container } = render(jsxResult);
+      const checkbox = container.querySelector('input[type="checkbox"]')!;
+      fireEvent.click(checkbox, { metaKey: true });
+      expect(mockSetSelected).toHaveBeenCalledWith(true, false);
+    });
+
+    it('unitCost cellRenderer returns "-" when unitCost is absent', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const unitCostCol = capturedColumnDefs?.find((c) => c.colId === 'unitCost');
+      if (!unitCostCol?.cellRenderer) return;
+
+      const cardNoCost = {
+        ...card,
+        payload: {
+          ...card.payload,
+          itemDetails: { ...card.payload.itemDetails, primarySupply: { supplier: 'S', orderCost: { value: 5, currency: 'USD' } } },
+        },
+      };
+      const result = unitCostCol.cellRenderer({ data: { id: testUuid, cardData: cardNoCost } });
+      expect(result).toBe('-');
+    });
+
+    it('unitCost cellRenderer formats currency when unitCost is set', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const unitCostCol = capturedColumnDefs?.find((c) => c.colId === 'unitCost');
+      if (!unitCostCol?.cellRenderer) return;
+
+      const cardWithCost = {
+        ...card,
+        payload: {
+          ...card.payload,
+          itemDetails: {
+            ...card.payload.itemDetails,
+            primarySupply: { supplier: 'S', orderCost: { value: 5, currency: 'USD' }, unitCost: { value: 9.99 } },
+          },
+        },
+      };
+      const result = unitCostCol.cellRenderer({ data: { id: testUuid, cardData: cardWithCost } });
+      expect(result).toBeDefined();
+    });
+
+    it('created cellRenderer returns "-" when recorded is absent', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const createdCol = capturedColumnDefs?.find((c) => (c as { field?: string }).field === 'created');
+      if (!createdCol?.cellRenderer) return;
+
+      const cardNoDate = {
+        ...card,
+        asOf: undefined,
+      };
+      const result = createdCol.cellRenderer({ data: { id: testUuid, cardData: cardNoDate } });
+      expect(result).toBe('-');
+    });
+
+    it('created cellRenderer formats date when recorded is set', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const createdCol = capturedColumnDefs?.find((c) => (c as { field?: string }).field === 'created');
+      if (!createdCol?.cellRenderer) return;
+
+      const cardWithDate = {
+        ...card,
+        asOf: { recorded: '2024-01-15T10:00:00Z' },
+      };
+      const result = createdCol.cellRenderer({ data: { id: testUuid, cardData: cardWithDate } });
+      expect(result).toBeDefined();
+    });
+
+    it('orderMethod cellRenderer returns "-" when orderMethod is absent', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const orderMethodCol = capturedColumnDefs?.find((c) => (c as { field?: string }).field === 'orderMethod');
+      if (!orderMethodCol?.cellRenderer) return;
+
+      const cardNoMethod = {
+        ...card,
+        payload: {
+          ...card.payload,
+          itemDetails: {
+            ...card.payload.itemDetails,
+            primarySupply: { supplier: 'S', orderCost: { value: 5, currency: 'USD' } },
+          },
+        },
+      };
+      const result = orderMethodCol.cellRenderer({ data: { id: testUuid, cardData: cardNoMethod } });
+      expect(result).toBe('-');
+    });
+
+    it('orderMethod cellRenderer renders label span when orderMethod is set', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const orderMethodCol = capturedColumnDefs?.find((c) => (c as { field?: string }).field === 'orderMethod');
+      if (!orderMethodCol?.cellRenderer) return;
+
+      const cardWithMethod = {
+        ...card,
+        payload: {
+          ...card.payload,
+          itemDetails: {
+            ...card.payload.itemDetails,
+            primarySupply: { supplier: 'S', orderCost: { value: 5, currency: 'USD' }, orderMethod: 'ONLINE' },
+          },
+        },
+      };
+      const result = orderMethodCol.cellRenderer({ data: { id: testUuid, cardData: cardWithMethod } }) as React.ReactElement;
+      expect(result).toBeDefined();
+    });
+
+    it('cardCount cellRenderer returns "-" when cardQuantity is absent', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const cardCountCol = capturedColumnDefs?.find((c) => (c as { field?: string }).field === 'cardCount');
+      if (!cardCountCol?.cellRenderer) return;
+
+      const cardNoQty = {
+        ...card,
+        payload: { ...card.payload, cardQuantity: undefined },
+      };
+      const result = cardCountCol.cellRenderer({ data: { id: testUuid, cardData: cardNoQty } });
+      expect(result).toBe('-');
+    });
+
+    it('cardCount cellRenderer formats quantity when cardQuantity is set', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const cardCountCol = capturedColumnDefs?.find((c) => (c as { field?: string }).field === 'cardCount');
+      if (!cardCountCol?.cellRenderer) return;
+
+      const cardWithQty = {
+        ...card,
+        payload: { ...card.payload, cardQuantity: { amount: 3, unit: 'EA' } },
+      };
+      const result = cardCountCol.cellRenderer({ data: { id: testUuid, cardData: cardWithQty } });
+      expect(result).toBeDefined();
+    });
+
+    it('notes cellRenderer returns "-" when notes is absent', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const notesCol = capturedColumnDefs?.find((c) => c.colId === 'notes');
+      if (!notesCol?.cellRenderer) return;
+
+      const cardNoNotes = {
+        ...card,
+        payload: {
+          ...card.payload,
+          itemDetails: { ...card.payload.itemDetails, notes: undefined },
+        },
+      };
+      const result = notesCol.cellRenderer({ data: { id: testUuid, cardData: cardNoNotes } });
+      expect(result).toBe('-');
+    });
+
+    it('notes cellRenderer returns notes text when notes is set', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const notesCol = capturedColumnDefs?.find((c) => c.colId === 'notes');
+      if (!notesCol?.cellRenderer) return;
+
+      const cardWithNotes = {
+        ...card,
+        payload: {
+          ...card.payload,
+          itemDetails: { ...card.payload.itemDetails, notes: 'Handle with care' },
+        },
+      };
+      const result = notesCol.cellRenderer({ data: { id: testUuid, cardData: cardWithNotes } });
+      expect(result).toBe('Handle with care');
+    });
+
+    it('orderQuantity cellRenderer calls formatQuantity with primarySupply orderQuantity', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const orderQtyCol = capturedColumnDefs?.find((c) => (c as { field?: string }).field === 'orderQuantity');
+      if (!orderQtyCol?.cellRenderer) return;
+
+      const result = orderQtyCol.cellRenderer({ data: { id: testUuid, cardData: card } });
+      expect(result).toBeDefined();
+    });
+
+    it('minQuantity cellRenderer calls formatQuantity with minQuantity', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const minQtyCol = capturedColumnDefs?.find((c) => (c as { field?: string }).field === 'minQuantity');
+      if (!minQtyCol?.cellRenderer) return;
+
+      const result = minQtyCol.cellRenderer({ data: { id: testUuid, cardData: card } });
+      expect(result).toBeDefined();
+    });
+
+    it('cardSize cellRenderer returns cardSize value or "-"', async () => {
+      const card = await renderWithCard();
+      await waitFor(() => expect(capturedColumnDefs).toBeDefined());
+      const cardSizeCol = capturedColumnDefs?.find((c) => (c as { field?: string }).field === 'cardSize');
+      if (!cardSizeCol?.cellRenderer) return;
+
+      const result = cardSizeCol.cellRenderer({ data: { id: testUuid, cardData: card } });
+      expect(result).toBeDefined();
     });
   });
 

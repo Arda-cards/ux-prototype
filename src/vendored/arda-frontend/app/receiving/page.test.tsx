@@ -107,6 +107,15 @@ jest.mock('next/dynamic', () => (_fn: () => Promise<{ default: React.FC }>) => {
   };
 });
 
+// Mock next/image
+jest.mock('next/image', () => ({
+  __esModule: true,
+  default: (props: Record<string, unknown>) => {
+    // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
+    return <img {...props} />;
+  },
+}));
+
 // Mock icon components
 jest.mock('@/components/common/OnlineOrderIcon', () => ({
   OnlineOrderIcon: () => <span>OnlineIcon</span>,
@@ -217,6 +226,7 @@ function createMockReceivingApiResponse(
       itemDetails: {
         eId: 'item-1',
         name: itemName,
+        imageUrl: overrides.imageUrl as string || '',
         primarySupply: {
           supplier: supplierName,
           orderMethod: 'ONLINE',
@@ -255,7 +265,7 @@ function mockFetchForReceiving(
         json: () => Promise.resolve({ data: { results: inProcessResults } }),
       });
     }
-    if (url.includes('/kanban-card/query')) {
+    if (url.includes('/details/fulfilled')) {
       return Promise.resolve({
         ok: true,
         json: () => Promise.resolve({ data: { results: fulfilledResults } }),
@@ -926,9 +936,9 @@ describe('ReceivingPage', () => {
     jest.useRealTimers();
     const fulfilledCard = createMockReceivingApiResponse('Supplier D', 'Direct Array Item', 'FULFILLED', { eId: 'card-da' });
 
-    // Override fetch to return data as array (query endpoint format)
+    // Override fetch to return data as array (details/fulfilled endpoint format)
     (global.fetch as jest.Mock).mockImplementation((url: string) => {
-      if (url.includes('/kanban-card/query')) {
+      if (url.includes('/details/fulfilled')) {
         return Promise.resolve({
           ok: true,
           json: () => Promise.resolve({ data: [fulfilledCard] }),
@@ -2380,11 +2390,11 @@ describe('ReceivingPage', () => {
       createMockReceivingApiResponse(`Supplier${i}`, `FulfilledMore Item${i + 1}`, 'FULFILLED', { eId: `card-fm-${i}` })
     );
 
-    let queryCallCount = 0;
+    let fulfilledCallCount = 0;
     (global.fetch as jest.Mock).mockImplementation((url: string) => {
-      if (url.includes('/kanban-card/query')) {
-        queryCallCount++;
-        if (queryCallCount <= 2) {
+      if (url.includes('/details/fulfilled')) {
+        fulfilledCallCount++;
+        if (fulfilledCallCount <= 2) {
           // First two calls (initial load: fulfilled fetch x2) return 50 items - hasMore=true
           return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: { results: cards } }) });
         }
@@ -2421,6 +2431,147 @@ describe('ReceivingPage', () => {
   });
 
   // ===== FALLBACK ERROR PATH IN handleViewCardDetails =====
+
+  // ===== ITEM IMAGE RENDERING (Issue #496) =====
+
+  it('renders item image when imageUrl is provided (http)', async () => {
+    jest.useRealTimers();
+    const card = createMockReceivingApiResponse('Acme', 'Item With Image', 'IN_PROCESS', {
+      imageUrl: 'https://picsum.photos/200/200',
+    });
+
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes('/details/in-process')) {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: { results: [card] } }) });
+      }
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: { results: [] } }) });
+    });
+
+    renderWithAll(<ReceivingPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Item With Image')).toBeInTheDocument();
+    });
+
+    // Should render an img element with the provided image URL
+    const images = screen.getAllByRole('img');
+    const itemImage = images.find((img) => img.getAttribute('alt') === 'Item With Image');
+    expect(itemImage).toBeTruthy();
+    expect(itemImage?.getAttribute('src')).toBe('https://picsum.photos/200/200');
+  });
+
+  it('renders fallback status icon when imageUrl is empty', async () => {
+    jest.useRealTimers();
+    const card = createMockReceivingApiResponse('Acme', 'No Image Item', 'IN_PROCESS', {
+      imageUrl: '',
+    });
+
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes('/details/in-process')) {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: { results: [card] } }) });
+      }
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: { results: [] } }) });
+    });
+
+    renderWithAll(<ReceivingPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('No Image Item')).toBeInTheDocument();
+    });
+
+    // Should render the WaitingToBeReceivedIcon (since status is IN_PROCESS)
+    expect(screen.getByTestId('waiting-icon')).toBeInTheDocument();
+
+    // Should NOT render an img for this item
+    const images = screen.queryAllByRole('img');
+    const itemImage = images.find((img) => img.getAttribute('alt') === 'No Image Item');
+    expect(itemImage).toBeFalsy();
+  });
+
+  it('renders fallback status icon when imageUrl is undefined', async () => {
+    jest.useRealTimers();
+    const card = createMockReceivingApiResponse('Acme', 'Undefined Image Item', 'IN_PROCESS');
+
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes('/details/in-process')) {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: { results: [card] } }) });
+      }
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: { results: [] } }) });
+    });
+
+    renderWithAll(<ReceivingPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Undefined Image Item')).toBeInTheDocument();
+    });
+
+    // Should render the WaitingToBeReceivedIcon fallback (IN_PROCESS status)
+    expect(screen.getByTestId('waiting-icon')).toBeInTheDocument();
+  });
+
+  it('renders item image for fulfilled items on Recently Received tab', async () => {
+    jest.useRealTimers();
+    const fulfilledCard = createMockReceivingApiResponse('Acme', 'Fulfilled With Image', 'FULFILLED', {
+      imageUrl: 'https://picsum.photos/seed/fulfilled/200/200',
+    });
+
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes('/details/in-process')) {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: { results: [] } }) });
+      }
+      if (url.includes('/details/fulfilled')) {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: { results: [fulfilledCard] } }) });
+      }
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: { results: [] } }) });
+    });
+
+    renderWithAll(<ReceivingPage />);
+
+    // Wait for page to load then switch to Recently Received tab
+    await waitFor(() => {
+      expect(screen.getByText('Recently Received')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('Recently Received'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Fulfilled With Image')).toBeInTheDocument();
+    });
+
+    // Should render an img with the fulfilled item's image URL
+    const images = screen.getAllByRole('img');
+    const itemImage = images.find((img) => img.getAttribute('alt') === 'Fulfilled With Image');
+    expect(itemImage).toBeTruthy();
+    expect(itemImage?.getAttribute('src')).toBe('https://picsum.photos/seed/fulfilled/200/200');
+  });
+
+  it('does not render image for non-http URLs (security)', async () => {
+    jest.useRealTimers();
+    const card = createMockReceivingApiResponse('Acme', 'Bad URL Item', 'IN_PROCESS', {
+      imageUrl: 'javascript:alert(1)',
+    });
+
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes('/details/in-process')) {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: { results: [card] } }) });
+      }
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: { results: [] } }) });
+    });
+
+    renderWithAll(<ReceivingPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Bad URL Item')).toBeInTheDocument();
+    });
+
+    // Should NOT render an img (URL is not http/https)
+    const images = screen.queryAllByRole('img');
+    const itemImage = images.find((img) => img.getAttribute('alt') === 'Bad URL Item');
+    expect(itemImage).toBeFalsy();
+
+    // Should render the fallback icon instead
+    expect(screen.getByTestId('waiting-icon')).toBeInTheDocument();
+  });
 
   it('shows error when fallback mapping also throws in handleViewCardDetails', async () => {
     jest.useRealTimers();

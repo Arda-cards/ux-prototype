@@ -1,5 +1,6 @@
 import { Middleware } from '@reduxjs/toolkit';
 import { refreshTokensThunk } from '../thunks/authThunks';
+import { TOKEN_EXPIRY_BUFFER_MS } from '../constants/storageKeys';
 
 /**
  * Token Refresh Middleware
@@ -30,14 +31,13 @@ export const tokenRefreshMiddleware: Middleware =
     // Only check if we have tokens and aren't already refreshing
     if (tokens.accessToken && tokens.expiresAt && !isRefreshing) {
       const now = Date.now();
-      const fiveMinutes = 5 * 60 * 1000; // 5 minutes buffer
 
       // Cooldown: after a transient failure, wait before retrying.
       // This prevents flooding Cognito (and the network) with 400s on every action.
       if (refreshFailedAt && now - refreshFailedAt < REFRESH_COOLDOWN_MS) return result;
 
-      // Check if token expires within 5 minutes
-      if (tokens.expiresAt - now < fiveMinutes) {
+      // Check if token expires within the standard buffer
+      if (tokens.expiresAt - now < TOKEN_EXPIRY_BUFFER_MS) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (store.dispatch as any)(refreshTokensThunk());
       }

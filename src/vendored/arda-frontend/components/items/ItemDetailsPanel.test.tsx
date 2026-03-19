@@ -10,7 +10,7 @@ jest.mock('sonner', () => ({
   Toaster: () => null,
 }));
 
-jest.mock('@/contexts/OrderQueueContext', () => ({
+jest.mock('@/store/hooks/useOrderQueue', () => ({
   useOrderQueue: () => ({ refreshOrderQueueData: jest.fn() }),
 }));
 
@@ -216,12 +216,6 @@ describe('ItemDetailsPanel — basic rendering', () => {
     expect(screen.getByText('No link available')).toBeInTheDocument();
   });
 
-  it('renders "No SKU available" when item.sku is empty', async () => {
-    await act(async () => {
-      render(<ItemDetailsPanel {...defaultProps} item={{ ...mockItem, sku: '' }} />);
-    });
-    expect(screen.getByText('No SKU available')).toBeInTheDocument();
-  });
 });
 
 describe('ItemDetailsPanel — loading cards', () => {

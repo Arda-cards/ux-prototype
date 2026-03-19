@@ -1,10 +1,13 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { toast } from 'sonner';
+import * as Sentry from '@sentry/nextjs';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { checkAuthThunk } from '../thunks/authThunks';
 import { setTokens } from '../slices/authSlice';
-import { selectTokens, selectSessionExpired } from '../selectors/authSelectors';
+import { selectTokens, selectSessionExpired, selectUser, selectUserContext } from '../selectors/authSelectors';
+import { STORAGE_KEYS } from '../constants/storageKeys';
 
 /**
  * AuthInit component
@@ -17,17 +20,21 @@ export function AuthInit() {
   const dispatch = useAppDispatch();
   const tokens = useAppSelector(selectTokens);
   const sessionExpired = useAppSelector(selectSessionExpired);
+  const user = useAppSelector(selectUser);
+  const userContext = useAppSelector(selectUserContext);
+  const prevSessionExpired = useRef(false);
+  const initialReduxHasToken = useRef(!!tokens.accessToken);
 
   useEffect(() => {
     // On mount, check if we have tokens in localStorage and sync to Redux
     // This handles the case where user refreshes page and tokens are in localStorage
     if (typeof window !== 'undefined') {
-      const accessToken = localStorage.getItem('accessToken');
-      const idToken = localStorage.getItem('idToken');
-      const refreshToken = localStorage.getItem('refreshToken');
+      const accessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+      const idToken = localStorage.getItem(STORAGE_KEYS.ID_TOKEN);
+      const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
 
-      // If we have tokens in localStorage but not in Redux, sync them
-      if (accessToken && idToken && refreshToken && !tokens.accessToken) {
+      if (accessToken && idToken && refreshToken && !initialReduxHasToken.current) {
+        // Tokens in localStorage but not in Redux (first load, no persist) — sync then validate.
         let expiresAt: number | null = null;
         try {
           const payload = JSON.parse(atob(accessToken.split('.')[1]));
@@ -36,16 +43,17 @@ export function AuthInit() {
           console.warn('[AUTH_INIT] Failed to decode token expiration');
         }
 
-        dispatch(setTokens({
-          accessToken,
-          idToken,
-          refreshToken,
-          expiresAt,
-        }));
-
+        dispatch(setTokens({ accessToken, idToken, refreshToken, expiresAt }));
+        dispatch(checkAuthThunk());
+      } else if (initialReduxHasToken.current && process.env.NEXT_PUBLIC_MOCK_MODE !== 'true') {
+        // Tokens already in Redux from redux-persist (page refresh) but isTokenValid resets
+        // to false on every boot because it is blacklisted from persist. Re-run checkAuthThunk
+        // to decode the JWT locally and restore isTokenValid — no network call needed.
+        // Skip in mock mode: MockAuthProvider owns auth state there, and E2E tests rely on
+        // isTokenValid staying false so pages show the expected empty/loading states.
         dispatch(checkAuthThunk());
       }
-      // If no tokens exist in either localStorage or Redux, the user is unauthenticated.
+      // If no tokens exist anywhere, the user is unauthenticated.
       // useAuthValidation will handle the redirect — no need to trigger a loading cycle here.
     }
   }, [dispatch]); // Only run on mount
@@ -55,35 +63,49 @@ export function AuthInit() {
     if (typeof window === 'undefined') return;
 
     if (tokens.accessToken && tokens.idToken && tokens.refreshToken) {
-      localStorage.setItem('accessToken', tokens.accessToken);
-      localStorage.setItem('idToken', tokens.idToken);
-      localStorage.setItem('refreshToken', tokens.refreshToken);
+      localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, tokens.accessToken);
+      localStorage.setItem(STORAGE_KEYS.ID_TOKEN, tokens.idToken);
+      localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, tokens.refreshToken);
 
       if (tokens.expiresAt) {
-        localStorage.setItem('tokenExpiresAt', tokens.expiresAt.toString());
+        localStorage.setItem(STORAGE_KEYS.TOKEN_EXPIRES_AT, tokens.expiresAt.toString());
       }
     } else {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('idToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('tokenExpiresAt');
-      localStorage.removeItem('userEmail');
+      localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.ID_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.TOKEN_EXPIRES_AT);
+      localStorage.removeItem(STORAGE_KEYS.USER_EMAIL);
     }
   }, [tokens]);
 
   // When the session is permanently expired (e.g. refresh token rejected by Cognito),
-  // Redux has already cleared tokens and user. Clear remaining localStorage remnants
-  // so AuthInit doesn't re-hydrate stale tokens on the next render cycle.
+  // show a toast and clear remaining localStorage remnants so AuthInit doesn't re-hydrate
+  // stale tokens on the next render cycle.
   // AuthGuard will then detect user === null and redirect to /signin.
   useEffect(() => {
+    if (sessionExpired && !prevSessionExpired.current) {
+      toast.error('Your session has expired. Please sign in again.');
+    }
+    prevSessionExpired.current = sessionExpired;
+
     if (sessionExpired && typeof window !== 'undefined') {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('idToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('tokenExpiresAt');
-      localStorage.removeItem('userEmail');
+      localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.ID_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.TOKEN_EXPIRES_AT);
+      localStorage.removeItem(STORAGE_KEYS.USER_EMAIL);
     }
   }, [sessionExpired]);
+
+  // Keep Sentry user context in sync with auth state (covers login, restore from localStorage, sign-out)
+  useEffect(() => {
+    if (user && userContext) {
+      Sentry.setUser({ email: userContext.email });
+    } else {
+      Sentry.setUser(null);
+    }
+  }, [user, userContext]);
 
   return null; // This component doesn't render anything
 }

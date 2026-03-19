@@ -15,7 +15,7 @@ import {
 import { getKanbanCard } from '@frontend/lib/ardaClient';
 import { toast, Toaster } from 'sonner';
 import { useAuthErrorHandler } from '@frontend/hooks/useAuthErrorHandler';
-import { useOrderQueue } from '@frontend/contexts/OrderQueueContext';
+import { useOrderQueue } from '@frontend/store/hooks/useOrderQueue';
 import {
   canAddToOrderQueue,
   CARD_STATE_CONFIG,
@@ -50,6 +50,7 @@ import {
   formatCurrency,
   formatDateTime,
   formatQuantity,
+  SelectAllHeaderComponent,
 } from '@frontend/components/table/columnPresets';
 import Image from 'next/image';
 
@@ -472,28 +473,29 @@ const createScannedItemsColumnDefs = (
 ): ColDef<ScannedItem>[] => {
   const allColumns: ColDef<ScannedItem>[] = [
     {
-      headerName: '',
       colId: 'select',
+      headerName: '',
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       field: 'select' as any,
-      width: 32,
-      pinned: 'left',
+      width: 50,
       sortable: false,
       filter: false,
       resizable: false,
       suppressHeaderMenuButton: true,
       wrapHeaderText: false,
-      autoHeaderHeight: true,
-      headerComponent: SelectAllHeader,
-      headerComponentParams: {},
+      autoHeaderHeight: false,
+      checkboxSelection: false,
+      headerCheckboxSelection: false,
+      suppressMovable: true,
+      headerComponent: SelectAllHeaderComponent,
       cellStyle: {
         overflow: 'visible',
         textOverflow: 'clip',
         whiteSpace: 'normal',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
-        padding: '4px',
+        justifyContent: 'flex-start',
+        padding: '0',
       },
       headerStyle: {
         overflow: 'visible',
@@ -501,10 +503,10 @@ const createScannedItemsColumnDefs = (
         whiteSpace: 'normal',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
-        padding: '8px',
-        minHeight: '48px',
-        height: '48px',
+        justifyContent: 'flex-start',
+        padding: '0',
+        width: '100%',
+        cursor: 'pointer',
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       cellRenderer: (params: any) => {
@@ -569,9 +571,11 @@ const createScannedItemsColumnDefs = (
             style={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
+              justifyContent: 'flex-start',
               width: '100%',
               height: '100%',
+              padding: 0,
+              paddingLeft: 0,
             }}
             onClick={handleMouseEvent}
             onMouseDown={handleMouseEvent}
@@ -721,18 +725,31 @@ const createScannedItemsColumnDefs = (
       },
     },
     {
-      headerName: 'Classification',
+      headerName: 'Type',
+      colId: 'type',
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      field: 'classification' as any,
-      width: 150,
+      field: 'type' as any,
+      width: 120,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       cellRenderer: (params: any) => {
         const item = params.data as ScannedItem;
         const itemDetails = item?.cardData?.payload?.itemDetails as { classification?: { type?: string; subType?: string } } | undefined;
-        const classification = itemDetails?.classification;
-        if (!classification?.type && !classification?.subType) return '-';
-        const parts = [classification.type, classification.subType].filter(Boolean);
-        return <span className='text-black'>{parts.join(' / ') || '-'}</span>;
+        const type = itemDetails?.classification?.type;
+        return <span className='text-black'>{type || '-'}</span>;
+      },
+    },
+    {
+      headerName: 'Sub-Type',
+      colId: 'subType',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      field: 'subType' as any,
+      width: 120,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      cellRenderer: (params: any) => {
+        const item = params.data as ScannedItem;
+        const itemDetails = item?.cardData?.payload?.itemDetails as { classification?: { type?: string; subType?: string } } | undefined;
+        const subType = itemDetails?.classification?.subType;
+        return <span className='text-black'>{subType || '-'}</span>;
       },
     },
     {
@@ -956,7 +973,8 @@ const createScannedItemsColumnDefs = (
     sku: 'sku',
     imageUrl: 'image',
     name: 'item',
-    classification: 'classification',
+    type: 'type',
+    subType: 'subType',
     supplier: 'supplier',
     facility: 'facility',
     location: 'location',
@@ -1010,7 +1028,8 @@ export function DesktopScanView({
     sku: true,
     image: true,
     item: true,
-    classification: true,
+    type: true,
+    subType: true,
     supplier: true,
     facility: true,
     location: true,
@@ -1204,8 +1223,8 @@ export function DesktopScanView({
       }
     };
 
-    // Focus a hidden input to capture scanner input
-    if (scanInputRef.current) {
+    // Focus a hidden input to capture scanner input (only when edit form is not open)
+    if (scanInputRef.current && !isEditFormOpen) {
       scanInputRef.current.focus();
     }
 
@@ -1217,7 +1236,7 @@ export function DesktopScanView({
         clearTimeout(scanTimeoutRef.current);
       }
     };
-  }, [isOpen, handleScannerInput]);
+  }, [isOpen, handleScannerInput, isEditFormOpen]);
 
   // Handle selection change from grid
   const handleSelectionChanged = useCallback((selectedRows: ScannedItem[]) => {
@@ -1775,15 +1794,9 @@ export function DesktopScanView({
     return selectedFilters.has(status);
   });
 
-  const handleScanItemUpdated = useCallback((updated: ScannedItem) => {
-    setScannedItems((prev) =>
-      prev.map((i) => (i.id === updated.id ? updated : i))
-    );
-  }, []);
-
   const columnDefs = createScannedItemsColumnDefs(
     columnVisibility,
-    handleScanItemUpdated
+    undefined
   );
 
   // Force grid remount when visible columns change
@@ -1826,7 +1839,7 @@ export function DesktopScanView({
               height: '1px',
             }}
             onBlur={(e) => {
-              if (!isOpen) return;
+              if (!isOpen || isEditFormOpen) return;
               setTimeout(() => {
                 const active = document.activeElement;
                 if (active?.closest?.('.ag-theme-arda') ?? active?.closest?.('.ag-grid')) {
@@ -2055,7 +2068,8 @@ export function DesktopScanView({
                         sku: true,
                         image: true,
                         item: true,
-                        classification: true,
+                        type: true,
+                        subType: true,
                         supplier: true,
                         facility: true,
                         location: true,
@@ -2079,7 +2093,8 @@ export function DesktopScanView({
                         sku: false,
                         image: false,
                         item: false,
-                        classification: false,
+                        type: false,
+                        subType: false,
                         supplier: false,
                         facility: false,
                         location: false,
@@ -2181,15 +2196,26 @@ export function DesktopScanView({
                     Item
                   </DropdownMenuCheckboxItem>
                   <DropdownMenuCheckboxItem
-                    checked={columnVisibility.classification}
+                    checked={columnVisibility.type}
                     onCheckedChange={(checked) =>
                       setColumnVisibility((prev) => ({
                         ...prev,
-                        classification: checked,
+                        type: checked,
                       }))
                     }
                   >
-                    Classification
+                    Type
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={columnVisibility.subType}
+                    onCheckedChange={(checked) =>
+                      setColumnVisibility((prev) => ({
+                        ...prev,
+                        subType: checked,
+                      }))
+                    }
+                  >
+                    Sub-Type
                   </DropdownMenuCheckboxItem>
                   <DropdownMenuCheckboxItem
                     checked={columnVisibility.supplier}
@@ -2335,7 +2361,7 @@ export function DesktopScanView({
               className='h-full min-h-[400px]'
               height='100%'
               enableColumnStatePersistence={false}
-              enableCellEditing={true}
+              enableCellEditing={false}
               gridOptions={{
                 getRowId: (params) => {
                   const item = params.data as ScannedItem;
@@ -2344,7 +2370,6 @@ export function DesktopScanView({
                 },
                 suppressNoRowsOverlay: true,
                 domLayout: 'normal',
-                singleClickEdit: true,
               }}
             />
             {scannedItems.length === 0 && (

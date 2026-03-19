@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs';
 import * as items from '@frontend/types/items';
 import * as ardaApi from '@frontend/types/arda-api';
 import * as kanban from '@frontend/types/kanban';
@@ -11,6 +12,7 @@ import { handleAuthError } from './authErrorHandler';
 import { isAuthenticationError } from './utils';
 import { store } from '@frontend/store/store';
 import { selectAccessToken, selectIdToken } from '@frontend/store/selectors/authSelectors';
+import { TOKEN_EXPIRY_BUFFER_S } from '@frontend/store/constants/storageKeys';
 
 /**
  * Maps OrderMechanism to the order method string used in the UI
@@ -95,13 +97,12 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
     throw error;
   }
 
-  // Check access token expiration with 2-minute buffer
+  // Check access token expiration with standard 5-minute buffer
   try {
     const accessPayload = JSON.parse(atob(accessToken.split('.')[1]));
     const now = Date.now() / 1000;
-    const twoMinutesBuffer = 2 * 60;
 
-    if (accessPayload.exp && accessPayload.exp < now + twoMinutesBuffer) {
+    if (accessPayload.exp && accessPayload.exp < now + TOKEN_EXPIRY_BUFFER_S) {
       console.warn(
         '[CLIENT] Access token expired or expiring soon, attempting refresh'
       );
@@ -221,6 +222,13 @@ async function handleApiResponse<T>(
       // If we can't parse the error, use the default message
     }
 
+    // Capture server errors in Sentry for visibility (skip auth errors — handled separately)
+    if (response.status >= 500) {
+      Sentry.captureException(new Error(`${operation} failed: ${response.status}`), {
+        extra: { operation, status: response.status, url: response.url },
+      });
+    }
+
     // Handle 401 only if it looks like an auth/JWT failure from our API layer
     // Upstream ARDA 401s (e.g., missing ARDA_API_KEY) should NOT clear user tokens
     if (response.status === 401) {
@@ -271,6 +279,7 @@ async function handleApiResponse<T>(
 export async function createItem(
   item: Partial<items.Item>
 ): Promise<items.Item> {
+  Sentry.addBreadcrumb({ category: 'api', message: 'Create item', level: 'info' });
   const payload = mapItemToArdaCreateRequest(item);
 
   const response = await fetch('/api/arda/items', {
@@ -283,6 +292,7 @@ export async function createItem(
     response,
     'Create item'
   );
+  Sentry.metrics.count('api.item.create', 1);
   return mapArdaItemToItem(ardaItem);
 }
 
@@ -807,6 +817,7 @@ export async function updateItem(
     throw new Error('Entity ID is required');
   }
 
+  Sentry.addBreadcrumb({ category: 'api', message: 'Update item', level: 'info', data: { entityId } });
   const payload = mapItemToArdaUpdateRequest(item);
 
   const response = await fetch(
@@ -835,6 +846,7 @@ export async function updateItem(
     response,
     'Update item'
   );
+  Sentry.metrics.count('api.item.update', 1);
   return mapArdaItemToItem(ardaItem);
 }
 
@@ -971,6 +983,7 @@ export async function getOrderQueue(): Promise<{
 export async function createKanbanCard(
   request: kanban.CreateKanbanCardRequest
 ): Promise<kanban.CreateKanbanCardResponse> {
+  Sentry.addBreadcrumb({ category: 'api', message: 'Create kanban card', level: 'info' });
   const response = await fetch('/api/arda/kanban/kanban-card', {
     method: 'POST',
     headers: await getAuthHeaders(),
@@ -981,6 +994,7 @@ export async function createKanbanCard(
     response,
     'Create kanban card'
   );
+  Sentry.metrics.count('api.kanban_card.create', 1);
   return kanbanCard;
 }
 
