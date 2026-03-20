@@ -1,0 +1,72 @@
+{/* molecules.mdx */}
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Components/Canary/Molecules/Guide" />
+
+# Canary Molecules
+
+Molecules compose multiple atoms into functional UI blocks. Each molecule handles a specific interaction pattern &#8212; a toolbar, a data grid, a navigation group &#8212; without containing business logic.
+
+**Import**: `import { DataGrid } from '@arda-cards/design-system/canary'`
+
+---
+
+## Standard Molecules
+
+<table>
+  <thead>
+    <tr>
+      <th>Molecule</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="?path=/docs/components-canary-molecules-actiontoolbar--docs">ActionToolbar</a></td>
+      <td>Horizontal bar of icon+label action buttons with an overflow menu for responsive layouts. Used in entity detail headers and selection toolbars.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-molecules-datagrid--docs">DataGrid</a></td>
+      <td>Core AG Grid wrapper with Arda theming (<code>themeQuartz</code>), column persistence, sort menu headers, row selection, pagination, and cell editing support. Base for <code>createEntityDataGrid</code>.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-molecules-fieldlist--docs">FieldList</a></td>
+      <td>Data-driven label/value list rendering a vertical stack of <code>ReadOnlyField</code> atoms. Used in detail panels and drawers.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-molecules-gridaction--docs">GridAction</a></td>
+      <td>Row-level action button group for AG Grid cells. Renders icon buttons with tooltips in a pinned column.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-molecules-overflowtoolbar--docs">OverflowToolbar</a></td>
+      <td>Responsive toolbar that measures available width and moves excess items into a dropdown overflow menu. Used in grid selection toolbars and app headers.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Sub-folders
+
+<table>
+  <thead>
+    <tr>
+      <th>Folder</th>
+      <th>Contents</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="?path=/docs/components-canary-molecules-itemdetails-itemdetailsheader--docs">ItemDetails</a></td>
+      <td><code>ItemDetailsHeader</code> (title + action toolbar) and <code>ItemDetailsCardPreview</code> (card carousel) &#8212; sub-components of the ItemDetails organism.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-molecules-itemgrid-typeaheadcelleditor--docs">ItemGrid</a></td>
+      <td><code>TypeaheadCellEditor</code>, <code>SelectCellEditor</code> (inline), <code>DragHeader</code>, column definitions, and fixtures &#8212; sub-components of the ItemGrid organism.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-molecules-sidebar-header--docs">Sidebar</a></td>
+      <td><code>SidebarHeader</code>, <code>SidebarNav</code>, <code>SidebarNavItem</code>, <code>SidebarNavGroup</code>, <code>SidebarUserMenu</code> &#8212; sub-components of the Sidebar organism.</td>
+    </tr>
+  </tbody>
+</table>
