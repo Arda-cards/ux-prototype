@@ -107,14 +107,34 @@ export const Editor: Story = {
 // ============================================================================
 
 export const Playground: Story = {
+  argTypes: {
+    mode: {
+      control: 'radio',
+      options: ['display', 'editor'],
+      description: 'Toggle between Display and Editor mode',
+    },
+  },
   args: {
     value: true,
     displayFormat: 'checkbox',
+    mode: 'display',
+  },
+  render: (args: Record<string, unknown>) => {
+    const mode = (args.mode as string) ?? 'display';
+    const value = args.value as boolean | undefined;
+    const displayFormat = args.displayFormat as 'checkbox' | 'yes-no' | undefined;
+
+    if (mode === 'editor') {
+      return (
+        <div className="border border-border bg-white p-2" style={{ width: 200, height: 32 }}>
+          <BooleanCellEditor value={value} stopEditing={() => {}} />
+        </div>
+      );
+    }
+
+    return <BooleanCellDisplay value={value} displayFormat={displayFormat} />;
   },
   play: async ({ canvasElement }) => {
-    // BooleanCellDisplay renders a Lucide SVG icon (aria-hidden) for checkbox format.
-    // Query the SVG directly since aria-hidden elements are excluded from role queries
-    // in real browser contexts (test runner uses Playwright/Chromium).
     await expect(canvasElement.querySelector('svg')).toBeInTheDocument();
   },
 };
