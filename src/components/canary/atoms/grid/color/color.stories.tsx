@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { ColorCellDisplay, DEFAULT_COLOR_MAP } from './color-cell-display';
-import { ColorCellEditor } from './color-cell-editor';
+import { ColorCellEditor, type ColorCellEditorHandle } from './color-cell-editor';
 
 const meta: Meta<typeof ColorCellDisplay> = {
   title: 'Components/Canary/Atoms/Grid/Color',
@@ -55,7 +55,8 @@ export const Display: Story = {
 
 export const Editor: Story = {
   render: () => {
-    const [value, _setValue] = useState('RED');
+    const [value, setValue] = useState('RED');
+    const editorRef = useRef<ColorCellEditorHandle>(null);
 
     return (
       <div className="flex flex-col gap-4 p-4" style={{ width: 300 }}>
@@ -63,7 +64,14 @@ export const Editor: Story = {
           Current value: <span className="font-medium">{value || '(none)'}</span>
         </div>
         <div className="border border-border bg-white" style={{ height: 32 }}>
-          <ColorCellEditor value={value} stopEditing={() => console.log('stopEditing called')} />
+          <ColorCellEditor
+            ref={editorRef}
+            value={value}
+            stopEditing={() => {
+              const newValue = editorRef.current?.getValue() ?? '';
+              setValue(newValue);
+            }}
+          />
         </div>
       </div>
     );
