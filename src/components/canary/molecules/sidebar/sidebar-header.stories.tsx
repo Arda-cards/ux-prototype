@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
 
 import { SidebarHeader, type TeamOption } from './sidebar-header';
-import { Sidebar } from '../../organisms/sidebar/sidebar';
+import { withSidebarContext } from './sidebar-story-decorator';
 
 const mockTeams: TeamOption[] = [
   { key: 'arda', name: 'Arda Cards', onSelect: fn() },
@@ -13,8 +13,9 @@ const mockTeams: TeamOption[] = [
 const meta = {
   title: 'Components/Canary/Molecules/Sidebar/Header',
   component: SidebarHeader,
+  decorators: [withSidebarContext],
   parameters: {
-    layout: 'fullscreen',
+    layout: 'centered',
     docs: {
       description: {
         component:
@@ -37,11 +38,6 @@ export const Playground: Story = {
   args: {
     teamName: 'Arda Cards',
   },
-  render: (args) => (
-    <Sidebar defaultOpen>
-      <SidebarHeader {...args} />
-    </Sidebar>
-  ),
 };
 
 /** Default header with team name. */
@@ -49,11 +45,6 @@ export const Default: Story = {
   args: {
     teamName: 'Arda Cards',
   },
-  render: (args) => (
-    <Sidebar defaultOpen>
-      <SidebarHeader {...args} />
-    </Sidebar>
-  ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByText('Arda Cards')).toBeVisible();
@@ -66,11 +57,6 @@ export const WithTeamSwitcher: Story = {
     teamName: 'Arda Cards',
     teams: mockTeams,
   },
-  render: (args) => (
-    <Sidebar defaultOpen>
-      <SidebarHeader {...args} />
-    </Sidebar>
-  ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByText('Arda Cards')).toBeVisible();
@@ -83,13 +69,11 @@ export const WithTeamSwitcher: Story = {
 /** Custom children replace the default brand content. */
 export const CustomChildren: Story = {
   render: () => (
-    <Sidebar defaultOpen>
-      <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-1">
-          <span className="text-sm font-bold">Custom Header</span>
-        </div>
-      </SidebarHeader>
-    </Sidebar>
+    <SidebarHeader>
+      <div className="flex items-center gap-2 px-2 py-1">
+        <span className="text-sm font-bold">Custom Header</span>
+      </div>
+    </SidebarHeader>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);

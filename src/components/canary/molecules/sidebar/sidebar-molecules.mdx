@@ -12,6 +12,18 @@ they are always used inside an `Sidebar` organism.
 
 ---
 
+## Context Dependency
+
+Unlike standard atoms and molecules, sidebar molecules **require a `SidebarProvider` context** from the shadcn sidebar primitive to render. Without this provider, `useSidebar()` throws an error and the components render nothing.
+
+**Why:** The sidebar primitive manages shared state (expanded/collapsed, mobile/desktop, keyboard shortcut) via React context. Sidebar molecules read this context to adapt their layout &#8212; for example, `SidebarNavItem` collapses to icon-only mode when the sidebar is collapsed.
+
+**In stories:** All sidebar molecule stories use a shared `withSidebarContext` decorator that provides a dark 256px container with `SidebarProvider`. This simulates the sidebar environment without requiring the full `Sidebar` organism (which creates a fixed-position layout that doesn&#8217;t work in Storybook story previews).
+
+**In your app:** Always render sidebar molecules inside a `Sidebar` organism &#8212; it provides the context automatically. Never render them standalone.
+
+---
+
 ## Sub-components
 
 <table>

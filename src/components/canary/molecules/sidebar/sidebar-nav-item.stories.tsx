@@ -3,14 +3,15 @@ import { expect, fn, within } from 'storybook/test';
 import { LayoutDashboard, Package, ShoppingCart, Building2, Settings } from 'lucide-react';
 
 import { SidebarNavItem } from './sidebar-nav-item';
-import { Sidebar } from '../../organisms/sidebar/sidebar';
 import { SidebarNav } from './sidebar-nav';
+import { withSidebarContext } from './sidebar-story-decorator';
 
 const meta = {
   title: 'Components/Canary/Molecules/Sidebar/NavItem',
   component: SidebarNavItem,
+  decorators: [withSidebarContext],
   parameters: {
-    layout: 'fullscreen',
+    layout: 'centered',
     docs: {
       description: {
         component:
@@ -47,11 +48,9 @@ export const Playground: Story = {
     badge: 3,
   },
   render: (args) => (
-    <Sidebar defaultOpen>
-      <SidebarNav>
-        <SidebarNavItem {...args} />
-      </SidebarNav>
-    </Sidebar>
+    <SidebarNav>
+      <SidebarNavItem {...args} />
+    </SidebarNav>
   ),
 };
 
@@ -62,11 +61,9 @@ export const Default: Story = {
     label: 'Items',
   },
   render: (args) => (
-    <Sidebar defaultOpen>
-      <SidebarNav>
-        <SidebarNavItem {...args} />
-      </SidebarNav>
-    </Sidebar>
+    <SidebarNav>
+      <SidebarNavItem {...args} />
+    </SidebarNav>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -83,11 +80,9 @@ export const Active: Story = {
     active: true,
   },
   render: (args) => (
-    <Sidebar defaultOpen>
-      <SidebarNav>
-        <SidebarNavItem {...args} />
-      </SidebarNav>
-    </Sidebar>
+    <SidebarNav>
+      <SidebarNavItem {...args} />
+    </SidebarNav>
   ),
 };
 
@@ -99,11 +94,9 @@ export const WithBadge: Story = {
     badge: 3,
   },
   render: (args) => (
-    <Sidebar defaultOpen>
-      <SidebarNav>
-        <SidebarNavItem {...args} />
-      </SidebarNav>
-    </Sidebar>
+    <SidebarNav>
+      <SidebarNavItem {...args} />
+    </SidebarNav>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -119,25 +112,21 @@ export const WithDotBadge: Story = {
     badge: true,
   },
   render: (args) => (
-    <Sidebar defaultOpen>
-      <SidebarNav>
-        <SidebarNavItem {...args} />
-      </SidebarNav>
-    </Sidebar>
+    <SidebarNav>
+      <SidebarNavItem {...args} />
+    </SidebarNav>
   ),
 };
 
 /** Multiple nav items composed together — count badges, dot badges, and active states. */
 export const Composition: Story = {
   render: () => (
-    <Sidebar defaultOpen>
-      <SidebarNav>
-        <SidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
-        <SidebarNavItem icon={Package} label="Items" badge={true} />
-        <SidebarNavItem icon={ShoppingCart} label="Order Queue" badge={5} />
-        <SidebarNavItem icon={Building2} label="Suppliers" badge={true} active />
-        <SidebarNavItem icon={Settings} label="Settings" />
-      </SidebarNav>
-    </Sidebar>
+    <SidebarNav>
+      <SidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
+      <SidebarNavItem icon={Package} label="Items" badge={true} />
+      <SidebarNavItem icon={ShoppingCart} label="Order Queue" badge={5} />
+      <SidebarNavItem icon={Building2} label="Suppliers" badge={true} active />
+      <SidebarNavItem icon={Settings} label="Settings" />
+    </SidebarNav>
   ),
 };

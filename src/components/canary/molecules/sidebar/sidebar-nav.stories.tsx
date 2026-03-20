@@ -4,13 +4,14 @@ import { LayoutDashboard, Package, ShoppingCart, Building2, Settings } from 'luc
 
 import { SidebarNav } from './sidebar-nav';
 import { SidebarNavItem } from './sidebar-nav-item';
-import { Sidebar } from '../../organisms/sidebar/sidebar';
+import { withSidebarContext } from './sidebar-story-decorator';
 
 const meta = {
   title: 'Components/Canary/Molecules/Sidebar/Nav',
   component: SidebarNav,
+  decorators: [withSidebarContext],
   parameters: {
-    layout: 'fullscreen',
+    layout: 'centered',
     docs: {
       description: {
         component:
@@ -30,30 +31,26 @@ type Story = StoryObj<typeof SidebarNav>;
  */
 export const Playground: Story = {
   render: () => (
-    <Sidebar defaultOpen>
-      <SidebarNav label="Main">
-        <SidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
-        <SidebarNavItem icon={Package} label="Items" badge={5} />
-        <SidebarNavItem icon={ShoppingCart} label="Order Queue" />
-        <SidebarNavItem icon={Building2} label="Suppliers" />
-        <SidebarNavItem icon={Settings} label="Settings" />
-      </SidebarNav>
-    </Sidebar>
+    <SidebarNav label="Main">
+      <SidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
+      <SidebarNavItem icon={Package} label="Items" badge={5} />
+      <SidebarNavItem icon={ShoppingCart} label="Order Queue" />
+      <SidebarNavItem icon={Building2} label="Suppliers" />
+      <SidebarNavItem icon={Settings} label="Settings" />
+    </SidebarNav>
   ),
 };
 
 /** Default with a set of nav items. */
 export const Default: Story = {
   render: () => (
-    <Sidebar defaultOpen>
-      <SidebarNav>
-        <SidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
-        <SidebarNavItem icon={Package} label="Items" />
-        <SidebarNavItem icon={ShoppingCart} label="Order Queue" badge={3} />
-        <SidebarNavItem icon={Building2} label="Suppliers" />
-        <SidebarNavItem icon={Settings} label="Settings" />
-      </SidebarNav>
-    </Sidebar>
+    <SidebarNav>
+      <SidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
+      <SidebarNavItem icon={Package} label="Items" />
+      <SidebarNavItem icon={ShoppingCart} label="Order Queue" badge={3} />
+      <SidebarNavItem icon={Building2} label="Suppliers" />
+      <SidebarNavItem icon={Settings} label="Settings" />
+    </SidebarNav>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -66,12 +63,10 @@ export const Default: Story = {
 /** With a group label above the nav items. */
 export const WithLabel: Story = {
   render: () => (
-    <Sidebar defaultOpen>
-      <SidebarNav label="Navigation">
-        <SidebarNavItem icon={LayoutDashboard} label="Dashboard" />
-        <SidebarNavItem icon={Settings} label="Settings" />
-      </SidebarNav>
-    </Sidebar>
+    <SidebarNav label="Navigation">
+      <SidebarNavItem icon={LayoutDashboard} label="Dashboard" />
+      <SidebarNavItem icon={Settings} label="Settings" />
+    </SidebarNav>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);

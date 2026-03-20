@@ -4,14 +4,15 @@ import { Package, ShoppingCart, Boxes } from 'lucide-react';
 
 import { SidebarNavGroup } from './sidebar-nav-group';
 import { SidebarNavItem } from './sidebar-nav-item';
-import { Sidebar } from '../../organisms/sidebar/sidebar';
 import { SidebarNav } from './sidebar-nav';
+import { withSidebarContext } from './sidebar-story-decorator';
 
 const meta = {
   title: 'Components/Canary/Molecules/Sidebar/NavGroup',
   component: SidebarNavGroup,
+  decorators: [withSidebarContext],
   parameters: {
-    layout: 'fullscreen',
+    layout: 'centered',
     docs: {
       description: {
         component:
@@ -31,28 +32,24 @@ type Story = StoryObj<typeof SidebarNavGroup>;
  */
 export const Playground: Story = {
   render: () => (
-    <Sidebar defaultOpen>
-      <SidebarNav>
-        <SidebarNavGroup label="Inventory" icon={Boxes} defaultExpanded>
-          <SidebarNavItem icon={Package} label="Items" />
-          <SidebarNavItem icon={ShoppingCart} label="Orders" badge={2} />
-        </SidebarNavGroup>
-      </SidebarNav>
-    </Sidebar>
+    <SidebarNav>
+      <SidebarNavGroup label="Inventory" icon={Boxes} defaultExpanded>
+        <SidebarNavItem icon={Package} label="Items" />
+        <SidebarNavItem icon={ShoppingCart} label="Orders" badge={2} />
+      </SidebarNavGroup>
+    </SidebarNav>
   ),
 };
 
 /** Collapsed by default — click to expand. */
 export const Default: Story = {
   render: () => (
-    <Sidebar defaultOpen>
-      <SidebarNav>
-        <SidebarNavGroup label="Inventory" icon={Boxes}>
-          <SidebarNavItem icon={Package} label="Items" />
-          <SidebarNavItem icon={ShoppingCart} label="Orders" badge={2} />
-        </SidebarNavGroup>
-      </SidebarNav>
-    </Sidebar>
+    <SidebarNav>
+      <SidebarNavGroup label="Inventory" icon={Boxes}>
+        <SidebarNavItem icon={Package} label="Items" />
+        <SidebarNavItem icon={ShoppingCart} label="Orders" badge={2} />
+      </SidebarNavGroup>
+    </SidebarNav>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -63,14 +60,12 @@ export const Default: Story = {
 /** Starts expanded. */
 export const DefaultExpanded: Story = {
   render: () => (
-    <Sidebar defaultOpen>
-      <SidebarNav>
-        <SidebarNavGroup label="Inventory" icon={Boxes} defaultExpanded>
-          <SidebarNavItem icon={Package} label="Items" />
-          <SidebarNavItem icon={ShoppingCart} label="Orders" />
-        </SidebarNavGroup>
-      </SidebarNav>
-    </Sidebar>
+    <SidebarNav>
+      <SidebarNavGroup label="Inventory" icon={Boxes} defaultExpanded>
+        <SidebarNavItem icon={Package} label="Items" />
+        <SidebarNavItem icon={ShoppingCart} label="Orders" />
+      </SidebarNavGroup>
+    </SidebarNav>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -81,13 +76,11 @@ export const DefaultExpanded: Story = {
 /** Auto-expands because child item is active. */
 export const AutoExpandActive: Story = {
   render: () => (
-    <Sidebar defaultOpen>
-      <SidebarNav>
-        <SidebarNavGroup label="Inventory" icon={Boxes}>
-          <SidebarNavItem icon={Package} label="Items" active />
-          <SidebarNavItem icon={ShoppingCart} label="Orders" />
-        </SidebarNavGroup>
-      </SidebarNav>
-    </Sidebar>
+    <SidebarNav>
+      <SidebarNavGroup label="Inventory" icon={Boxes}>
+        <SidebarNavItem icon={Package} label="Items" active />
+        <SidebarNavItem icon={ShoppingCart} label="Orders" />
+      </SidebarNavGroup>
+    </SidebarNav>
   ),
 };
