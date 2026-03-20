@@ -1,0 +1,62 @@
+{/* card.mdx */}
+# ArdaCard
+
+Surface card atom for grouping related content.
+
+**Atom** &#8212; Canary | Import: `@/components/canary/atoms/card/card`
+
+---
+
+## Purpose
+
+`ArdaCard` provides a rounded, bordered surface with consistent padding and
+shadow. It is a composition surface &#8212; render any children inside it.
+Used for detail panels, kanban card previews, and dashboard widgets.
+
+---
+
+## Sub-components
+
+<table>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>ArdaCard</code></td>
+      <td>Root container &#8212; sets background, border, radius, shadow.</td>
+    </tr>
+    <tr>
+      <td><code>ArdaCardHeader</code></td>
+      <td>Header area with standard padding.</td>
+    </tr>
+    <tr>
+      <td><code>ArdaCardTitle</code></td>
+      <td>Heading text inside the header.</td>
+    </tr>
+    <tr>
+      <td><code>ArdaCardDescription</code></td>
+      <td>Muted description text inside the header.</td>
+    </tr>
+    <tr>
+      <td><code>ArdaCardContent</code></td>
+      <td>Main body with standard horizontal padding.</td>
+    </tr>
+    <tr>
+      <td><code>ArdaCardFooter</code></td>
+      <td>Footer row for actions.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { ArdaCard, ArdaCardHeader, ArdaCardTitle, ArdaCardContent }
+  from '@/components/canary/atoms/card/card';
+```

@@ -116,12 +116,12 @@ const meta: Meta<typeof DemoShimGrid> = {
       description: 'Enable inline cell editing.',
       table: { category: 'Runtime' },
     },
-    onEntityUpdated: {
-      action: 'entityUpdated',
+    onRowPublish: {
+      action: 'rowPublish',
       table: { category: 'Events' },
     },
-    onUnsavedChangesChange: {
-      action: 'unsavedChangesChange',
+    onDirtyChange: {
+      action: 'dirtyChange',
       table: { category: 'Events' },
     },
     onRowClick: {
@@ -138,8 +138,8 @@ const meta: Meta<typeof DemoShimGrid> = {
     },
   },
   args: {
-    onEntityUpdated: fn(),
-    onUnsavedChangesChange: fn(),
+    onRowPublish: fn(),
+    onDirtyChange: fn(),
     onRowClick: fn(),
     onRowDoubleClicked: fn(),
     onSelectionChange: fn(),
@@ -279,7 +279,7 @@ export const FullFeatured: Story = {
             enableRowActions={true}
             rowActions={rowActions}
             onSelectionChange={setSelected}
-            onUnsavedChangesChange={setHasUnsaved}
+            onDirtyChange={setHasUnsaved}
             onRowDoubleClicked={(entity) => setLastClicked(entity.name)}
           />
         </div>

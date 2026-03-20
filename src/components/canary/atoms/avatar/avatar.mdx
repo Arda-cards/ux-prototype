@@ -1,0 +1,66 @@
+{/* avatar.mdx */}
+# ArdaAvatar
+
+User avatar atom with image, initials fallback, and size variants.
+
+**Atom** &#8212; Canary | Import: `@/components/canary/atoms/avatar/avatar`
+
+---
+
+## Purpose
+
+`ArdaAvatar` wraps the Radix Avatar primitive. When an image URL is provided it
+renders the image; when the image fails to load (or no URL is given) it falls
+back to initials computed from the user's name. Used in `SidebarUserMenu` and
+profile display contexts.
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>src</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Image URL. Falls back to initials when absent or on load error.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>User name &#8212; used to compute initials for the fallback.</td>
+    </tr>
+    <tr>
+      <td><code>size</code></td>
+      <td><code>'sm' | 'md' | 'lg'</code></td>
+      <td><code>'md'</code></td>
+      <td>Avatar size preset.</td>
+    </tr>
+    <tr>
+      <td><code>className</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Additional CSS classes.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { ArdaAvatar } from '@/components/canary/atoms/avatar/avatar';
+// or from canary barrel:
+import { ArdaAvatar } from '@arda-cards/design-system/canary';
+```

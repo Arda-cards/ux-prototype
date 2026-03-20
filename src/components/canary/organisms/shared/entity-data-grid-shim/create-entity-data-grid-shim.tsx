@@ -167,7 +167,15 @@ export function createEntityDataGridShim<T extends Record<string, any>>(
       useImperativeHandle(
         ref,
         () => ({
-          // Delegate base API
+          // New API
+          saveAll: async () => {
+            await baseRef.current?.saveAll();
+          },
+          discardAll: () => baseRef.current?.discardAll(),
+          getDirtyRowIds: () => baseRef.current?.getDirtyRowIds() ?? [],
+          getGridApi: () => baseRef.current?.getGridApi() ?? null,
+
+          // Legacy alias delegates
           saveAllDrafts: () => baseRef.current?.saveAllDrafts(),
           getHasUnsavedChanges: () => baseRef.current?.getHasUnsavedChanges() ?? false,
           discardAllDrafts: () => baseRef.current?.discardAllDrafts(),

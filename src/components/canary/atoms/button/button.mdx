@@ -1,0 +1,111 @@
+{/* button.mdx */}
+import { Meta, Canvas, ArgTypes } from '@storybook/addon-docs/blocks';
+import * as ButtonStories from './button.stories';
+
+<Meta of={ButtonStories} />
+
+# ArdaButton
+
+Primary action button with multiple variants, sizes, and loading state.
+
+**Atom** &#8212; Canary | Import: `@/components/canary/atoms/button/button`
+
+---
+
+## Default
+
+<Canvas of={ButtonStories.Default} />
+
+---
+
+## Purpose
+
+`ArdaButton` is the canonical button atom for all Arda UI. It extends the shadcn
+Button primitive with a `loading` prop (spinner overlay) and maps to the Arda
+design-system color tokens (primary = orange).
+
+---
+
+## Variants
+
+<table>
+  <thead>
+    <tr>
+      <th>Variant</th>
+      <th>Use</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>primary</code></td>
+      <td>Primary CTA &#8212; solid orange background. Default.</td>
+    </tr>
+    <tr>
+      <td><code>secondary</code></td>
+      <td>Secondary action &#8212; muted background.</td>
+    </tr>
+    <tr>
+      <td><code>outline</code></td>
+      <td>Tertiary &#8212; border, transparent background.</td>
+    </tr>
+    <tr>
+      <td><code>ghost</code></td>
+      <td>Ghost &#8212; no border, hover only.</td>
+    </tr>
+    <tr>
+      <td><code>destructive</code></td>
+      <td>Destructive action &#8212; red background.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>variant</code></td>
+      <td><code>'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive'</code></td>
+      <td><code>'primary'</code></td>
+      <td>Visual variant.</td>
+    </tr>
+    <tr>
+      <td><code>size</code></td>
+      <td><code>'sm' | 'md' | 'lg' | 'icon' | 'icon-sm'</code></td>
+      <td><code>'md'</code></td>
+      <td>Size preset.</td>
+    </tr>
+    <tr>
+      <td><code>loading</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Shows spinner and disables interaction.</td>
+    </tr>
+    <tr>
+      <td><code>asChild</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Render as child element via Radix Slot.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { ArdaButton } from '@/components/canary/atoms/button/button';
+// or from canary barrel:
+import { ArdaButton } from '@arda-cards/design-system/canary';
+```

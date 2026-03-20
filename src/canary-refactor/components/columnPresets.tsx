@@ -3,8 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { ColDef, IRowNode, ValueFormatterParams } from 'ag-grid-community';
-import { ShoppingCart, Printer, Eye } from 'lucide-react';
-import { LuCaptions } from 'react-icons/lu';
+import { ShoppingCart, Printer, Eye, Captions } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import * as items from '@frontend/types/items';
 import * as domain from '@frontend/types/domain';
@@ -24,7 +23,7 @@ import {
 import { TextCellDisplay } from '@/components/canary/atoms/grid/text';
 import { NumberCellDisplay } from '@/components/canary/atoms/grid/number';
 import { BooleanCellDisplay } from '@/components/canary/atoms/grid/boolean';
-import { EnumCellDisplay } from '@/components/canary/atoms/grid/enum';
+import { SelectCellDisplay } from '@/components/canary/atoms/grid/select';
 import { MemoButtonCell, createMemoButtonCellEditor } from '@/components/canary/atoms/grid/memo';
 import { ColorCellDisplay } from '@/components/canary/atoms/grid/color';
 
@@ -652,7 +651,7 @@ const QuickActionsCell = ({ item }: { item: items.Item }) => {
                 isLoadingCards
               }
             >
-              <LuCaptions size={16} style={{ color: '#000' }} />
+              <Captions size={16} style={{ color: '#000' }} />
             </button>
             <div
               style={{
@@ -732,7 +731,7 @@ const CardCountCell = ({ item }: { item: items.Item }) => {
 const NotesMemoEditor = createMemoButtonCellEditor({ title: 'Note' });
 const CardNotesMemoEditor = createMemoButtonCellEditor({ title: 'Card Note' });
 
-// Order method options map for EnumCellDisplay
+// Order method options map for SelectCellDisplay
 const ORDER_METHOD_OPTIONS: Record<string, string> = {
   EMAIL: 'Email',
   PURCHASE_ORDER: 'Purchase order',
@@ -745,7 +744,7 @@ const ORDER_METHOD_OPTIONS: Record<string, string> = {
   OTHER: 'Other',
 };
 
-// Card/Label/Breadcrumb size option maps for EnumCellDisplay
+// Card/Label/Breadcrumb size option maps for SelectCellDisplay
 const CARD_SIZE_OPTIONS: Record<string, string> = Object.fromEntries(
   cardSizeOptions.map((o: { value: string; label: string }) => [o.value, o.label])
 );
@@ -936,7 +935,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
     field: 'primarySupply.orderMechanism',
     width: 140,
     cellRenderer: (params: any) => (
-      <EnumCellDisplay
+      <SelectCellDisplay
         value={params.data?.primarySupply?.orderMechanism}
         options={ORDER_METHOD_OPTIONS}
       />
@@ -1141,7 +1140,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
     field: 'cardSize',
     width: 150,
     cellRenderer: (params: any) => (
-      <EnumCellDisplay
+      <SelectCellDisplay
         value={params.data?.cardSize}
         options={CARD_SIZE_OPTIONS}
       />
@@ -1152,7 +1151,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
     field: 'labelSize',
     width: 120,
     cellRenderer: (params: any) => (
-      <EnumCellDisplay
+      <SelectCellDisplay
         value={params.data?.labelSize}
         options={LABEL_SIZE_OPTIONS}
       />
@@ -1163,7 +1162,7 @@ export const itemsColumnDefs: ColDef<items.Item>[] = [
     field: 'breadcrumbSize',
     width: 150,
     cellRenderer: (params: any) => (
-      <EnumCellDisplay
+      <SelectCellDisplay
         value={params.data?.breadcrumbSize}
         options={BREADCRUMB_SIZE_OPTIONS}
       />

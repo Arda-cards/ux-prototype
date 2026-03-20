@@ -3,15 +3,31 @@
 
 // --- Atoms ---
 
-export {
-  ArdaDetailField,
-  detailFieldVariants,
-} from './components/canary/atoms/detail-field/detail-field';
+export { ArdaBadge } from './components/canary/atoms/badge/badge';
 export type {
-  ArdaDetailFieldProps,
-  ArdaDetailFieldStaticConfig,
-  ArdaDetailFieldRuntimeConfig,
-} from './components/canary/atoms/detail-field/detail-field';
+  ArdaBadgeProps,
+  ArdaBadgeStaticConfig,
+  ArdaBadgeRuntimeConfig,
+} from './components/canary/atoms/badge/badge';
+
+export { BrandLogo, BrandIcon } from './components/canary/atoms/brand-logo/brand-logo';
+export type {
+  BrandLogoProps,
+  BrandIconProps,
+} from './components/canary/atoms/brand-logo/brand-logo';
+
+export { IconLabel } from './components/canary/atoms/icon-label/icon-label';
+export type { IconLabelProps } from './components/canary/atoms/icon-label/icon-label';
+
+export {
+  ReadOnlyField,
+  readOnlyFieldVariants,
+} from './components/canary/atoms/read-only-field/read-only-field';
+export type {
+  ReadOnlyFieldProps,
+  ReadOnlyFieldStaticConfig,
+  ReadOnlyFieldRuntimeConfig,
+} from './components/canary/atoms/read-only-field/read-only-field';
 
 // Cell atoms: text
 export {
@@ -69,19 +85,22 @@ export type {
   DateCellEditorHandle,
 } from './components/canary/atoms/grid/date';
 
-// Cell atoms: enum
+// Cell atoms: select
 export {
-  EnumCellDisplay,
-  EnumCellEditor,
-  createEnumCellEditor,
-} from './components/canary/atoms/grid/enum';
+  SelectCellDisplay,
+  SelectCellEditor,
+  createSelectCellEditor,
+} from './components/canary/atoms/grid/select';
 export type {
-  EnumCellDisplayProps,
-  EnumCellDisplayStaticConfig,
-  EnumCellEditorProps,
-  EnumCellEditorStaticConfig,
-  EnumCellEditorHandle,
-} from './components/canary/atoms/grid/enum';
+  SelectCellDisplayProps,
+  SelectCellDisplayStaticConfig,
+  SelectCellDisplayRuntimeConfig,
+  SelectCellEditorProps,
+  SelectCellEditorStaticConfig,
+  SelectCellEditorHandle,
+  SelectOption,
+  SelectOptions,
+} from './components/canary/atoms/grid/select';
 
 // Cell atoms: memo
 export {
@@ -142,11 +161,52 @@ export type {
   PaginationData,
 } from './components/canary/molecules/data-grid';
 
+// --- Molecules — Sidebar ---
+
+export { ArdaSidebarHeader } from './components/canary/molecules/sidebar/sidebar-header';
+export type {
+  ArdaSidebarHeaderProps,
+  ArdaSidebarHeaderStaticConfig,
+  ArdaSidebarHeaderRuntimeConfig,
+  TeamOption,
+} from './components/canary/molecules/sidebar/sidebar-header';
+
+export { SidebarNav } from './components/canary/molecules/sidebar/sidebar-nav';
+export type { SidebarNavProps } from './components/canary/molecules/sidebar/sidebar-nav';
+
+export { SidebarNavItem } from './components/canary/molecules/sidebar/sidebar-nav-item';
+export type {
+  SidebarNavItemProps,
+  SidebarNavItemStaticConfig,
+  SidebarNavItemRuntimeConfig,
+} from './components/canary/molecules/sidebar/sidebar-nav-item';
+
+export { SidebarNavGroup } from './components/canary/molecules/sidebar/sidebar-nav-group';
+export type { SidebarNavGroupProps } from './components/canary/molecules/sidebar/sidebar-nav-group';
+
+export { SidebarUserMenu } from './components/canary/molecules/sidebar/sidebar-user-menu';
+export type {
+  SidebarUserMenuProps,
+  UserMenuAction,
+} from './components/canary/molecules/sidebar/sidebar-user-menu';
+
+// --- Molecules — ItemGrid ---
+
+export {
+  itemGridColumnDefs,
+  itemGridDefaultColDef,
+  createItemGridColumnDefs,
+} from './components/canary/molecules/item-grid/item-grid-columns';
+export type { ItemGridLookups } from './components/canary/molecules/item-grid/item-grid-columns';
+
+export { itemGridFixtures } from './components/canary/molecules/item-grid/item-grid-fixtures';
+
 // --- Organisms ---
 
 export {
   createEntityDataGrid,
   useDirtyTracking,
+  useRowAutoPublish,
 } from './components/canary/organisms/shared/entity-data-grid';
 export type {
   EntityDataGridConfig,
@@ -154,6 +214,11 @@ export type {
   EntityDataGridViewProps,
   EntityDataGridProps,
   EntityDataGridRef,
+  PaginationMode,
+  PendingChanges,
+  RowEditState,
+  RowAutoPublishHandle,
+  UseRowAutoPublishOptions,
   DirtyTrackingOptions,
   DirtyTrackingResult,
 } from './components/canary/organisms/shared/entity-data-grid';
@@ -164,3 +229,23 @@ export type {
   EntityDataGridShimProps,
   EntityDataGridShimRef,
 } from './components/canary/organisms/shared/entity-data-grid-shim';
+
+// --- Organisms — Sidebar ---
+
+export { ArdaSidebar } from './components/canary/organisms/sidebar/sidebar';
+export type {
+  ArdaSidebarProps,
+  ArdaSidebarStaticConfig,
+  ArdaSidebarRuntimeConfig,
+} from './components/canary/organisms/sidebar/sidebar';
+
+// --- Organisms — ItemGrid ---
+
+export { ItemGrid } from './components/canary/organisms/item-grid/item-grid';
+export type {
+  ItemGridProps,
+  ItemGridStaticConfig,
+  ItemGridRuntimeConfig,
+  ItemGridHandle,
+  ItemGridEditingHandle,
+} from './components/canary/organisms/item-grid/item-grid';

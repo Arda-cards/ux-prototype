@@ -1,0 +1,108 @@
+{/* drawer.mdx */}
+import { Meta, Canvas, ArgTypes } from '@storybook/addon-docs/blocks';
+import * as DrawerStories from './drawer.stories';
+
+<Meta of={DrawerStories} />
+
+# ArdaDrawer
+
+Slide-over drawer atom for detail panels and contextual editing.
+
+**Atom** &#8212; Canary | Import: `@/components/canary/atoms/drawer/drawer`
+
+---
+
+## Default
+
+<Canvas of={DrawerStories.Default} />
+
+---
+
+## Purpose
+
+`ArdaDrawer` slides in from the right side of the viewport. Use it for detail
+panels, edit forms, and contextual actions that need more space than a dialog.
+For simple confirmations use `ArdaDialog` instead.
+
+The `ArdaItemDetails` organism builds on top of `ArdaDrawer` &#8212; prefer using
+`ArdaItemDetails` for item-specific detail panels.
+
+---
+
+## Sub-components
+
+<table>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>ArdaDrawer</code></td>
+      <td>Root provider. Controls open state and size.</td>
+    </tr>
+    <tr>
+      <td><code>ArdaDrawerHeader</code></td>
+      <td>Sticky header area (title, tabs, close button).</td>
+    </tr>
+    <tr>
+      <td><code>ArdaDrawerTitle</code></td>
+      <td>Drawer title. Use <code>sr-only</code> class if visually hidden.</td>
+    </tr>
+    <tr>
+      <td><code>ArdaDrawerDescription</code></td>
+      <td>Accessible description. Use <code>sr-only</code> class if visually hidden.</td>
+    </tr>
+    <tr>
+      <td><code>ArdaDrawerBody</code></td>
+      <td>Scrollable content area.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Size prop
+
+<table>
+  <thead>
+    <tr>
+      <th>Value</th>
+      <th>Width</th>
+      <th>Use</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>'md'</code></td>
+      <td>400px</td>
+      <td>Compact detail views</td>
+    </tr>
+    <tr>
+      <td><code>'lg'</code></td>
+      <td>520px</td>
+      <td>Standard detail panels. Default.</td>
+    </tr>
+    <tr>
+      <td><code>'xl'</code></td>
+      <td>680px</td>
+      <td>Wide edit forms</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import {
+  ArdaDrawer,
+  ArdaDrawerHeader,
+  ArdaDrawerTitle,
+  ArdaDrawerDescription,
+  ArdaDrawerBody,
+} from '@/components/canary/atoms/drawer/drawer';
+```

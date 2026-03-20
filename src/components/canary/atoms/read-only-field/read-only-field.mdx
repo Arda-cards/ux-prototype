@@ -1,0 +1,79 @@
+{/* read-only-field.mdx */}
+import { Meta, Canvas, ArgTypes } from '@storybook/addon-docs/blocks';
+import * as ReadOnlyFieldStories from './read-only-field.stories';
+
+<Meta of={ReadOnlyFieldStories} />
+
+# ReadOnlyField
+
+Label + value display atom for detail views and read-only forms.
+
+**Atom** &#8212; Canary | Import: `@/components/canary/atoms/read-only-field/read-only-field`
+
+---
+
+## Default
+
+<Canvas of={ReadOnlyFieldStories.Default} />
+
+---
+
+## Purpose
+
+`ReadOnlyField` displays a `label` (muted, small) above a `value` (primary text).
+Used extensively in `ArdaFieldList` and supplier/item detail drawers to render
+named data fields in a consistent visual format.
+
+Replaces the deprecated `ArdaDetailField` &#8212; do not use `ArdaDetailField` in
+new code.
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>required</td>
+      <td>Field label &#8212; rendered muted above the value.</td>
+    </tr>
+    <tr>
+      <td><code>value</code></td>
+      <td><code>string | ReactNode</code></td>
+      <td>&#8212;</td>
+      <td>Field value. Renders a dash when empty.</td>
+    </tr>
+    <tr>
+      <td><code>variant</code></td>
+      <td><code>'default' | 'compact' | 'inline'</code></td>
+      <td><code>'default'</code></td>
+      <td>Layout variant &#8212; stacked, compact, or label-value inline.</td>
+    </tr>
+    <tr>
+      <td><code>className</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Additional CSS classes.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { ReadOnlyField } from '@/components/canary/atoms/read-only-field/read-only-field';
+// or from canary barrel:
+import { ReadOnlyField } from '@arda-cards/design-system/canary';
+```

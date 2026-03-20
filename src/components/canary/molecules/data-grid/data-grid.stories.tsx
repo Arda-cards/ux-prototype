@@ -10,7 +10,7 @@ import {
   createBooleanCellEditor,
 } from '@/components/canary/atoms/grid/boolean';
 import { DateCellDisplay, createDateCellEditor } from '@/components/canary/atoms/grid/date';
-import { EnumCellDisplay, createEnumCellEditor } from '@/components/canary/atoms/grid/enum';
+import { SelectCellDisplay, createSelectCellEditor } from '@/components/canary/atoms/grid/select';
 import { MemoCellDisplay, createMemoCellEditor } from '@/components/canary/atoms/grid/memo';
 import { ColorCellDisplay, createColorCellEditor } from '@/components/canary/atoms/grid/color';
 
@@ -188,12 +188,13 @@ const allTypesColumnDefs: ColDef<AllTypesRow>[] = [
     headerName: 'Status (Enum)',
     width: 140,
     cellRenderer: (params: { value?: StatusEnum }) => (
-      <EnumCellDisplay<StatusEnum>
+      <SelectCellDisplay
         {...(params.value !== undefined ? { value: params.value } : {})}
         options={statusOptions}
       />
     ),
-    cellEditor: createEnumCellEditor({ options: statusOptions }),
+    cellEditor: createSelectCellEditor({ options: statusOptions }),
+    cellEditorPopup: true,
     editable: true,
   },
   {
@@ -811,5 +812,158 @@ export const WithImages: Story = {
     ];
 
     return <DataGrid<ImageDataRow> columnDefs={imageColumnDefs} rowData={imageData} height={400} />;
+  },
+};
+
+/**
+ * ThemedGrid — demonstrates the themeQuartz visual foundation with Arda design-system tokens.
+ *
+ * This story shows the canonical Arda grid appearance:
+ * - 48px row height, 36px header height
+ * - Geist Sans 14px body text, 13px 600-weight headers
+ * - 12px cell horizontal padding
+ * - Arda orange accent (--primary) for checkboxes and selection
+ * - Column border on header resize handles, wrapper border radius 8px
+ * - Color tokens from tokens.css (background, foreground, border, secondary)
+ *
+ * Compare this story against the item-grid in the worktree Storybook to verify
+ * the token mapping is consistent.
+ */
+export const ThemedGrid: Story = {
+  render: () => {
+    interface ThemedRow extends Record<string, unknown> {
+      id: string;
+      partNumber: string;
+      description: string;
+      category: string;
+      unitCost: number;
+      quantity: number;
+      active: boolean;
+      lastUpdated: string;
+    }
+
+    const themedData: ThemedRow[] = [
+      {
+        id: '1',
+        partNumber: 'SKU-0001',
+        description: 'M6 x 12mm Hex Cap Screw (Grade 8)',
+        category: 'Fasteners',
+        unitCost: 0.18,
+        quantity: 500,
+        active: true,
+        lastUpdated: '2026-01-15',
+      },
+      {
+        id: '2',
+        partNumber: 'SKU-0002',
+        description: '1/4-20 Tee Nut (Zinc)',
+        category: 'Fasteners',
+        unitCost: 0.42,
+        quantity: 200,
+        active: true,
+        lastUpdated: '2026-02-03',
+      },
+      {
+        id: '3',
+        partNumber: 'SKU-0003',
+        description: 'HDPE Sheet 12" x 24" x 0.25"',
+        category: 'Raw Material',
+        unitCost: 14.5,
+        quantity: 12,
+        active: false,
+        lastUpdated: '2025-11-20',
+      },
+      {
+        id: '4',
+        partNumber: 'SKU-0004',
+        description: 'Nema 17 Stepper Motor 1.8°',
+        category: 'Electronics',
+        unitCost: 12.95,
+        quantity: 8,
+        active: true,
+        lastUpdated: '2026-03-01',
+      },
+      {
+        id: '5',
+        partNumber: 'SKU-0005',
+        description: 'T-Slot Aluminum Extrusion 2020 — 1m',
+        category: 'Structural',
+        unitCost: 6.75,
+        quantity: 30,
+        active: true,
+        lastUpdated: '2026-01-28',
+      },
+      {
+        id: '6',
+        partNumber: 'SKU-0006',
+        description: 'PLA Filament 1.75mm — 1kg Spool',
+        category: 'Consumables',
+        unitCost: 22.0,
+        quantity: 5,
+        active: false,
+        lastUpdated: '2025-12-10',
+      },
+    ];
+
+    const themedColumnDefs: ColDef<ThemedRow>[] = [
+      { field: 'partNumber', headerName: 'Part #', width: 110 },
+      { field: 'description', headerName: 'Description', flex: 1, minWidth: 200 },
+      { field: 'category', headerName: 'Category', width: 130 },
+      {
+        field: 'unitCost',
+        headerName: 'Unit Cost',
+        width: 110,
+        cellRenderer: (params: { value?: number }) =>
+          params.value !== null && params.value !== undefined ? `$${params.value.toFixed(2)}` : '—',
+      },
+      { field: 'quantity', headerName: 'Qty', width: 80 },
+      {
+        field: 'active',
+        headerName: 'Active',
+        width: 90,
+        cellRenderer: (params: { value?: boolean }) => (
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              fontSize: 12,
+              fontWeight: 600,
+              color: params.value ? 'var(--primary)' : 'var(--muted-foreground)',
+            }}
+          >
+            {params.value ? 'Yes' : 'No'}
+          </span>
+        ),
+      },
+      { field: 'lastUpdated', headerName: 'Updated', width: 110 },
+    ];
+
+    return (
+      <div className="space-y-4">
+        <div
+          style={{
+            padding: '12px 16px',
+            borderRadius: 8,
+            border: '1px solid var(--border)',
+            background: 'var(--secondary)',
+            fontSize: 13,
+            color: 'var(--muted-foreground)',
+          }}
+        >
+          <strong style={{ color: 'var(--foreground)', fontWeight: 600 }}>
+            themeQuartz Visual Foundation
+          </strong>{' '}
+          — 48px rows, 36px header, Geist Sans 14px/13px, 12px padding, Arda orange tokens.
+        </div>
+        <DataGrid<ThemedRow>
+          columnDefs={themedColumnDefs}
+          rowData={themedData}
+          height={400}
+          enableRowSelection
+          enableMultiRowSelection
+        />
+      </div>
+    );
   },
 };

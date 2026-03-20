@@ -1,0 +1,146 @@
+{/* item-details.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as ItemDetailsStories from './item-details.stories';
+
+<Meta of={ItemDetailsStories} />
+
+# ArdaItemDetails
+
+Item detail slide-over panel with tabbed navigation, field list, card preview, and action toolbar.
+
+**Organism** &#8212; Canary | Import: `@/components/canary/organisms/item-details/item-details`
+
+---
+
+## Default
+
+<Canvas of={ItemDetailsStories.Default} />
+
+---
+
+## Purpose
+
+`ArdaItemDetails` is a compound organism built from `ArdaDrawer`, `ArdaItemDetailsHeader`,
+`ArdaFieldList`, `ArdaItemDetailsCardPreview`, and `ArdaActionToolbar`. It manages internal
+tab state and card navigation.
+
+Open the panel by setting `open={true}` and wiring `onOpenChange` to your state. Pass
+`fields` for the details tab and `renderCard` + `cardCount` for the cards tab.
+
+---
+
+## Tabs
+
+The default configuration includes two tabs:
+
+<table>
+  <thead>
+    <tr>
+      <th>Tab key</th>
+      <th>Label</th>
+      <th>Content</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>details</code></td>
+      <td>Item details</td>
+      <td>Read-only field list from the <code>fields</code> prop.</td>
+    </tr>
+    <tr>
+      <td><code>cards</code></td>
+      <td>Cards</td>
+      <td>Card carousel rendered via <code>renderCard</code> / <code>cardCount</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+Override tabs entirely by passing a custom `tabs` array. Use `renderCardsTab` for fully
+custom cards tab content.
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>open</code></td>
+      <td><code>boolean</code></td>
+      <td>Required</td>
+      <td>Whether the drawer is open.</td>
+    </tr>
+    <tr>
+      <td><code>onOpenChange</code></td>
+      <td><code>(open: boolean) =&#62; void</code></td>
+      <td>Required</td>
+      <td>Called when the open state changes (e.g. X button click).</td>
+    </tr>
+    <tr>
+      <td><code>title</code></td>
+      <td><code>string</code></td>
+      <td>Required</td>
+      <td>Item title shown in the drawer header.</td>
+    </tr>
+    <tr>
+      <td><code>fields</code></td>
+      <td><code>FieldDef[]</code></td>
+      <td>&#8212;</td>
+      <td>Detail fields rendered in the details tab.</td>
+    </tr>
+    <tr>
+      <td><code>actions</code></td>
+      <td><code>ToolbarAction[]</code></td>
+      <td>&#8212;</td>
+      <td>Primary action buttons in the header toolbar.</td>
+    </tr>
+    <tr>
+      <td><code>overflowActions</code></td>
+      <td><code>OverflowAction[]</code></td>
+      <td>&#8212;</td>
+      <td>Always-overflow actions (e.g. Delete, Duplicate).</td>
+    </tr>
+    <tr>
+      <td><code>cardCount</code></td>
+      <td><code>number</code></td>
+      <td>&#8212;</td>
+      <td>Total number of kanban cards for the cards tab preview.</td>
+    </tr>
+    <tr>
+      <td><code>renderCard</code></td>
+      <td><code>(index: number) =&#62; ReactNode</code></td>
+      <td>&#8212;</td>
+      <td>Render prop for each card visual. Receives a 1-based index.</td>
+    </tr>
+    <tr>
+      <td><code>size</code></td>
+      <td><code>'md' | 'lg' | 'xl'</code></td>
+      <td><code>'lg'</code></td>
+      <td>Drawer width preset.</td>
+    </tr>
+    <tr>
+      <td><code>tabs</code></td>
+      <td><code>ItemDetailsTab[]</code></td>
+      <td>Details + Cards</td>
+      <td>Override default tab definitions.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { ArdaItemDetails } from '@/components/canary/organisms/item-details/item-details';
+// or from canary barrel:
+import { ArdaItemDetails } from '@arda-cards/design-system/canary';
+```

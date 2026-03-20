@@ -1,0 +1,76 @@
+{/* icon-label.mdx */}
+import { Meta, Canvas, ArgTypes } from '@storybook/addon-docs/blocks';
+import * as IconLabelStories from './icon-label.stories';
+
+<Meta of={IconLabelStories} />
+
+# IconLabel
+
+Inline icon + text pair with consistent sizing and gap.
+
+**Atom** &#8212; Canary | Import: `@/components/canary/atoms/icon-label/icon-label`
+
+---
+
+## Default
+
+<Canvas of={IconLabelStories.Default} />
+
+---
+
+## Purpose
+
+`IconLabel` renders a Lucide icon alongside a text label with consistent
+sizing and alignment. Used in nav items, status indicators, and anywhere
+an icon needs to accompany inline text.
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>icon</code></td>
+      <td><code>LucideIcon</code></td>
+      <td>required</td>
+      <td>Lucide icon component.</td>
+    </tr>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>required</td>
+      <td>Text label rendered next to the icon.</td>
+    </tr>
+    <tr>
+      <td><code>size</code></td>
+      <td><code>'sm' | 'md' | 'lg'</code></td>
+      <td><code>'md'</code></td>
+      <td>Controls icon size and text size together.</td>
+    </tr>
+    <tr>
+      <td><code>className</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Additional CSS classes on the wrapper.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { IconLabel } from '@/components/canary/atoms/icon-label/icon-label';
+// or from canary barrel:
+import { IconLabel } from '@arda-cards/design-system/canary';
+```

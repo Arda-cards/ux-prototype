@@ -1,0 +1,86 @@
+{/* icon-button.mdx */}
+import { Meta, Canvas, ArgTypes } from '@storybook/addon-docs/blocks';
+import * as IconButtonStories from './icon-button.stories';
+
+<Meta of={IconButtonStories} />
+
+# ArdaIconButton
+
+Icon-only button with accessible label, optional badge count, and tooltip.
+
+**Atom** &#8212; Canary | Import: `@/components/canary/atoms/icon-button/icon-button`
+
+---
+
+## Default
+
+<Canvas of={IconButtonStories.Default} />
+
+---
+
+## Purpose
+
+`ArdaIconButton` wraps `ArdaButton` (size `icon`) with:
+
+- A **required `label`** prop that populates `aria-label`.
+- An optional **`badgeCount`** for notification-style counts.
+- A **tooltip** that surfaces the label on hover/focus.
+
+Used in `ArdaAppHeader` for icon actions (Help, Notifications, User menu).
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>icon</code></td>
+      <td><code>LucideIcon</code></td>
+      <td>required</td>
+      <td>Lucide icon component to render.</td>
+    </tr>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>required</td>
+      <td>Accessible label &#8212; shown as tooltip, used for aria-label.</td>
+    </tr>
+    <tr>
+      <td><code>badgeCount</code></td>
+      <td><code>number</code></td>
+      <td>&#8212;</td>
+      <td>Notification badge count. Capped at 99+.</td>
+    </tr>
+    <tr>
+      <td><code>variant</code></td>
+      <td><code>'ghost' | 'outline'</code></td>
+      <td><code>'ghost'</code></td>
+      <td>Button variant (icon buttons are always ghost or outline).</td>
+    </tr>
+    <tr>
+      <td><code>onClick</code></td>
+      <td><code>() =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Click handler.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { ArdaIconButton } from '@/components/canary/atoms/icon-button/icon-button';
+// or from canary barrel:
+import { ArdaIconButton } from '@arda-cards/design-system/canary';
+```

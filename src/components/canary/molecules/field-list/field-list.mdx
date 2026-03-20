@@ -1,0 +1,99 @@
+{/* field-list.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as FieldListStories from './field-list.stories';
+
+<Meta of={FieldListStories} />
+
+# ArdaFieldList
+
+Data-driven list of read-only label/value fields with dividers.
+
+**Molecule** &#8212; Canary | Import: `@/components/canary/molecules/field-list/field-list`
+
+---
+
+## Default
+
+<Canvas of={FieldListStories.Default} />
+
+---
+
+## Purpose
+
+`ArdaFieldList` renders a vertical list of label/value pairs using `ReadOnlyField` atoms
+separated by thin dividers. Used in the `ArdaItemDetails` organism to display entity
+metadata. Pass a `fields[]` array; for custom value rendering (links, formatted numbers,
+badges) use the `children` property on each `FieldDef`.
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fields</code></td>
+      <td><code>FieldDef[]</code></td>
+      <td>Required</td>
+      <td>Fields to display. Empty array renders nothing.</td>
+    </tr>
+    <tr>
+      <td><code>className</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Additional CSS classes on the container.</td>
+    </tr>
+  </tbody>
+</table>
+
+### FieldDef
+
+<table>
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>key</code></td>
+      <td><code>string</code></td>
+      <td>Unique key for React list rendering.</td>
+    </tr>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>Field label (left column).</td>
+    </tr>
+    <tr>
+      <td><code>value</code></td>
+      <td><code>string</code></td>
+      <td>Plain-text value. Omit when using <code>children</code>.</td>
+    </tr>
+    <tr>
+      <td><code>children</code></td>
+      <td><code>ReactNode</code></td>
+      <td>Custom value render. Overrides <code>value</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { ArdaFieldList, type FieldDef } from '@/components/canary/molecules/field-list/field-list';
+// or from canary barrel:
+import { ArdaFieldList } from '@arda-cards/design-system/canary';
+```

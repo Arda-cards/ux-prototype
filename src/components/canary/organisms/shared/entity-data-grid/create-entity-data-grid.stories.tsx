@@ -1,9 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, fn, within } from 'storybook/test';
-import { useState } from 'react';
+import { expect, fn, within, userEvent } from 'storybook/test';
+import { useState, useRef } from 'react';
 
 import type { ColDef } from 'ag-grid-community';
-import { createEntityDataGrid } from './create-entity-data-grid';
+import { createEntityDataGrid, type EntityDataGridRef } from './create-entity-data-grid';
+import { storyStepDelay } from './story-step-delay';
 
 // ============================================================================
 // Demo Entity
@@ -105,6 +106,13 @@ const mockData: DemoEntity[] = [
 ];
 
 // ============================================================================
+// Story step delay (shared utility)
+// ============================================================================
+
+// Note: storyStepDelay is imported from a local shared file
+// If the file doesn't exist, we inline a simple version.
+
+// ============================================================================
 // Stories
 // ============================================================================
 
@@ -118,8 +126,8 @@ const meta: Meta<typeof DemoDataGrid> = {
         component:
           '`createEntityDataGrid<T>()` is a canary factory that produces a fully typed, ' +
           'feature-rich data grid component for any entity type. It encapsulates column ' +
-          'pipeline, dirty tracking (via `useDirtyTracking`), editing, pagination, and ' +
-          'Tier 3a sort/filter/event passthrough features.',
+          'pipeline, row-level auto-publish editing, search/filter UI, actions column, ' +
+          'client/server pagination, toolbar slot, auto-height, and drag-to-scroll.',
       },
     },
   },
@@ -159,14 +167,14 @@ const meta: Meta<typeof DemoDataGrid> = {
       description: 'Column visibility map (colId to boolean).',
       table: { category: 'Runtime' },
     },
-    onEntityUpdated: {
-      action: 'entityUpdated',
-      description: 'Called when an entity is updated via cell edit.',
+    onRowPublish: {
+      action: 'rowPublish',
+      description: 'Called when a row is ready to publish (auto-publish on row blur).',
       table: { category: 'Events' },
     },
-    onUnsavedChangesChange: {
-      action: 'unsavedChangesChange',
-      description: 'Called when unsaved changes state changes.',
+    onDirtyChange: {
+      action: 'dirtyChange',
+      description: 'Called when the dirty state changes.',
       table: { category: 'Events' },
     },
     onSelectionChange: {
@@ -191,8 +199,8 @@ const meta: Meta<typeof DemoDataGrid> = {
     },
   },
   args: {
-    onEntityUpdated: fn(),
-    onUnsavedChangesChange: fn(),
+    onRowPublish: fn(),
+    onDirtyChange: fn(),
     onSelectionChange: fn(),
     onRowClick: fn(),
     onSortChanged: fn(),
@@ -210,6 +218,10 @@ const meta: Meta<typeof DemoDataGrid> = {
 export default meta;
 type Story = StoryObj<typeof DemoDataGrid>;
 
+// ============================================================================
+// Basic stories
+// ============================================================================
+
 export const Default: Story = {
   args: {
     data: mockData,
@@ -217,10 +229,12 @@ export const Default: Story = {
     enableCellEditing: true,
     activeTab: 'demo',
   },
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
-    const cells = await canvas.findAllByText('Widget Alpha');
-    await expect(cells.length).toBeGreaterThan(0);
+    await step('Grid renders with data', async () => {
+      const cells = await canvas.findAllByText('Widget Alpha');
+      await expect(cells.length).toBeGreaterThan(0);
+    });
   },
 };
 
@@ -265,10 +279,12 @@ export const WithMultiSort: Story = {
     activeTab: 'demo',
     enableMultiSort: true,
   },
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
-    const cells = await canvas.findAllByText('Widget Alpha');
-    await expect(cells.length).toBeGreaterThan(0);
+    await step('Grid renders with data', async () => {
+      const cells = await canvas.findAllByText('Widget Alpha');
+      await expect(cells.length).toBeGreaterThan(0);
+    });
   },
 };
 
@@ -280,6 +296,457 @@ export const WithFiltering: Story = {
   },
 };
 
+// ============================================================================
+// Sub-run 5a: Row Auto-Publish stories
+// ============================================================================
+
+/** Factory with auto-publish enabled — uses inline fast-resolving publish fn. */
+const { Component: AutoPublishGrid } = createEntityDataGrid<DemoEntity>({
+  displayName: 'AutoPublishGrid',
+  persistenceKeyPrefix: 'canary-auto-publish-demo',
+  columnDefs: demoCols,
+  defaultColDef: { sortable: true, filter: false, resizable: true },
+  getEntityId: (e) => e.id,
+  enhanceEditableColumnDefs: enhanceDemoEditable,
+});
+
+/**
+ * RowAutoPublish — demonstrates the row-level edit → blur → saving → success
+ * lifecycle. Edit a cell, move to another row, and the saving visual feedback
+ * appears briefly before resolving.
+ */
+export const RowAutoPublish: Story = {
+  render: () => {
+    const [publishLog, setPublishLog] = useState<string[]>([]);
+
+    const handleRowPublish = async (
+      rowId: string,
+      changes: Record<string, unknown>,
+    ): Promise<void> => {
+      // Simulate a fast async publish.
+      await new Promise<void>((resolve) => setTimeout(resolve, 300));
+      setPublishLog((prev) => [...prev, `Row ${rowId} published: ${JSON.stringify(changes)}`]);
+    };
+
+    return (
+      <div className="flex flex-col gap-4" style={{ height: '500px' }}>
+        <div style={{ flex: 1 }}>
+          <AutoPublishGrid
+            data={mockData}
+            enableCellEditing={true}
+            activeTab="auto-publish"
+            onRowPublish={handleRowPublish}
+          />
+        </div>
+        <div className="text-xs text-muted-foreground font-mono max-h-24 overflow-auto">
+          {publishLog.length === 0
+            ? 'Edit a cell, then click a different row to trigger auto-publish.'
+            : publishLog.map((entry, i) => <div key={i}>{entry}</div>)}
+        </div>
+      </div>
+    );
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step('Grid renders with data', async () => {
+      const cells = await canvas.findAllByText('Widget Alpha');
+      await expect(cells.length).toBeGreaterThan(0);
+    });
+
+    await storyStepDelay(1000);
+
+    await step('Double-click a cell to edit it', async () => {
+      const cells = await canvas.findAllByText('Widget Alpha');
+      if (cells[0]) await userEvent.dblClick(cells[0]);
+    });
+
+    await storyStepDelay(500);
+  },
+};
+
+/** Factory with failing publish for error state demonstration. */
+const { Component: ErrorPublishGrid } = createEntityDataGrid<DemoEntity>({
+  displayName: 'ErrorPublishGrid',
+  persistenceKeyPrefix: 'canary-error-publish-demo',
+  columnDefs: demoCols,
+  defaultColDef: { sortable: true, filter: false, resizable: true },
+  getEntityId: (e) => e.id,
+  enhanceEditableColumnDefs: enhanceDemoEditable,
+});
+
+/**
+ * RowAutoPublishError — demonstrates the error visual state when `onRowPublish`
+ * rejects. The row remains in error state with a red background.
+ */
+export const RowAutoPublishError: Story = {
+  render: () => {
+    const [errorLog, setErrorLog] = useState<string[]>([]);
+
+    const handleRowPublish = async (rowId: string): Promise<void> => {
+      await new Promise<void>((_, reject) =>
+        setTimeout(() => reject(new Error('Server error')), 200),
+      );
+      setErrorLog((prev) => [...prev, `Row ${rowId} publish failed`]);
+    };
+
+    return (
+      <div className="flex flex-col gap-4" style={{ height: '500px' }}>
+        <div style={{ flex: 1 }}>
+          <ErrorPublishGrid
+            data={mockData}
+            enableCellEditing={true}
+            activeTab="error-publish"
+            onRowPublish={handleRowPublish}
+          />
+        </div>
+        <div className="text-xs text-destructive font-mono max-h-24 overflow-auto">
+          {errorLog.length === 0
+            ? 'Edit a cell, then click a different row. The row will turn red (error state).'
+            : errorLog.map((entry, i) => <div key={i}>{entry}</div>)}
+        </div>
+      </div>
+    );
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step('Grid renders', async () => {
+      const cells = await canvas.findAllByText('Widget Alpha');
+      await expect(cells.length).toBeGreaterThan(0);
+    });
+  },
+};
+
+/** Factory for save/discard ref API stories. */
+const { Component: RefApiGrid } = createEntityDataGrid<DemoEntity>({
+  displayName: 'RefApiGrid',
+  persistenceKeyPrefix: 'canary-ref-api-demo',
+  columnDefs: demoCols,
+  defaultColDef: { sortable: true, filter: false, resizable: true },
+  getEntityId: (e) => e.id,
+  enhanceEditableColumnDefs: enhanceDemoEditable,
+});
+
+/**
+ * SaveAllDrafts — demonstrates `saveAll()` via the imperative ref API.
+ * Toolbar buttons trigger save/discard programmatically.
+ */
+export const SaveAllDrafts: Story = {
+  render: () => {
+    const gridRef = useRef<EntityDataGridRef>(null);
+    const [log, setLog] = useState<string[]>([]);
+    const [isDirty, setIsDirty] = useState(false);
+
+    const handleRowPublish = async (rowId: string, changes: Record<string, unknown>) => {
+      await new Promise<void>((resolve) => setTimeout(resolve, 200));
+      setLog((prev) => [...prev, `Saved row ${rowId}: ${JSON.stringify(changes)}`]);
+    };
+
+    return (
+      <div className="flex flex-col gap-4" style={{ height: '520px' }}>
+        <div className="flex gap-2">
+          <button
+            onClick={() => void gridRef.current?.saveAll()}
+            disabled={!isDirty}
+            className="rounded border px-3 py-1 text-sm disabled:opacity-50"
+          >
+            Save All
+          </button>
+          <button
+            onClick={() => gridRef.current?.discardAll()}
+            disabled={!isDirty}
+            className="rounded border px-3 py-1 text-sm disabled:opacity-50"
+          >
+            Discard All
+          </button>
+          <span className="text-sm text-muted-foreground self-center">
+            {isDirty ? 'Unsaved changes' : 'No changes'}
+          </span>
+        </div>
+        <div style={{ flex: 1 }}>
+          <RefApiGrid
+            ref={gridRef}
+            data={mockData}
+            enableCellEditing={true}
+            activeTab="save-all"
+            onRowPublish={handleRowPublish}
+            onDirtyChange={setIsDirty}
+          />
+        </div>
+        <div className="text-xs text-muted-foreground font-mono max-h-20 overflow-auto">
+          {log.length === 0
+            ? 'Edit cells, then click Save All.'
+            : log.map((l, i) => <div key={i}>{l}</div>)}
+        </div>
+      </div>
+    );
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step('Grid and toolbar render', async () => {
+      await expect(canvas.getByText('Save All')).toBeInTheDocument();
+      await expect(canvas.getByText('Discard All')).toBeInTheDocument();
+      const cells = await canvas.findAllByText('Widget Alpha');
+      await expect(cells.length).toBeGreaterThan(0);
+    });
+
+    await step('Save All button is initially disabled (no dirty rows)', async () => {
+      const saveButton = canvas.getByText('Save All');
+      await expect(saveButton).toBeDisabled();
+    });
+  },
+};
+
+/**
+ * DiscardAllDrafts — demonstrates `discardAll()` which clears pending changes
+ * without publishing them.
+ */
+export const DiscardAllDrafts: Story = {
+  render: () => {
+    const gridRef = useRef<EntityDataGridRef>(null);
+    const [isDirty, setIsDirty] = useState(false);
+    const [discardCount, setDiscardCount] = useState(0);
+
+    return (
+      <div className="flex flex-col gap-4" style={{ height: '520px' }}>
+        <div className="flex gap-2 items-center">
+          <button
+            onClick={() => {
+              gridRef.current?.discardAll();
+              setDiscardCount((c) => c + 1);
+            }}
+            className="rounded border px-3 py-1 text-sm"
+          >
+            Discard All
+          </button>
+          <span className="text-sm text-muted-foreground">
+            {isDirty ? 'Has unsaved changes' : 'Clean'}
+            {discardCount > 0 && ` (discarded ${discardCount} times)`}
+          </span>
+        </div>
+        <div style={{ flex: 1 }}>
+          <RefApiGrid
+            ref={gridRef}
+            data={mockData}
+            enableCellEditing={true}
+            activeTab="discard-all"
+            onRowPublish={async () => {}}
+            onDirtyChange={setIsDirty}
+          />
+        </div>
+      </div>
+    );
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step('Grid and toolbar render', async () => {
+      await expect(canvas.getByText('Discard All')).toBeInTheDocument();
+      const cells = await canvas.findAllByText('Widget Alpha');
+      await expect(cells.length).toBeGreaterThan(0);
+    });
+
+    await step('Dirty indicator shows Clean initially', async () => {
+      await expect(canvas.getByText('Clean')).toBeInTheDocument();
+    });
+  },
+};
+
+// ============================================================================
+// Sub-run 5b: Actions Column story
+// ============================================================================
+
+const { Component: ActionsGrid } = createEntityDataGrid<DemoEntity>({
+  displayName: 'ActionsGrid',
+  persistenceKeyPrefix: 'canary-actions-demo',
+  columnDefs: demoCols,
+  defaultColDef: { sortable: true, filter: false, resizable: true },
+  getEntityId: (e) => e.id,
+  actionsColumn: {
+    actionCount: 2,
+    cellRenderer: (params: any) => {
+      const entity = params.data as DemoEntity;
+      return (
+        <div className="flex items-center gap-1 h-full">
+          <button
+            className="h-7 w-7 flex items-center justify-center rounded hover:bg-secondary text-xs"
+            onClick={() => alert(`Edit ${entity.name}`)}
+            title="Edit"
+          >
+            E
+          </button>
+          <button
+            className="h-7 w-7 flex items-center justify-center rounded hover:bg-destructive/10 text-xs text-destructive"
+            onClick={() => alert(`Delete ${entity.name}`)}
+            title="Delete"
+          >
+            D
+          </button>
+        </div>
+      );
+    },
+  },
+});
+
+/**
+ * WithActionsColumn — demonstrates the pinned-right actions column with
+ * auto-width calculated from `actionCount`.
+ */
+export const WithActionsColumn: Story = {
+  render: () => <ActionsGrid data={mockData} activeTab="actions" />,
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step('Grid renders with data', async () => {
+      const cells = await canvas.findAllByText('Widget Alpha');
+      await expect(cells.length).toBeGreaterThan(0);
+    });
+
+    await storyStepDelay(500);
+  },
+};
+
+// ============================================================================
+// Sub-run 5c: Search stories
+// ============================================================================
+
+const { Component: SearchGrid } = createEntityDataGrid<DemoEntity>({
+  displayName: 'SearchGrid',
+  persistenceKeyPrefix: 'canary-search-demo',
+  columnDefs: demoCols,
+  defaultColDef: { sortable: true, filter: false, resizable: true },
+  getEntityId: (e) => e.id,
+  searchConfig: {
+    fields: ['name', 'category', 'status'],
+    placeholder: 'Search entities\u2026',
+  },
+});
+
+/**
+ * WithSearch — demonstrates the search bar with 150ms debounce and
+ * filtered count display.
+ */
+export const WithSearch: Story = {
+  render: () => <SearchGrid data={mockData} activeTab="search" />,
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step('Search bar renders', async () => {
+      const searchInput = await canvas.findByRole('searchbox');
+      await expect(searchInput).toBeInTheDocument();
+    });
+
+    await step('Count label shows total items initially', async () => {
+      const countLabel = await canvas.findByText(`${mockData.length} items`);
+      await expect(countLabel).toBeInTheDocument();
+    });
+
+    await storyStepDelay(500);
+
+    await step('Type a search term', async () => {
+      const searchInput = canvas.getByRole('searchbox');
+      await userEvent.clear(searchInput);
+      await userEvent.type(searchInput, 'Hardware');
+    });
+
+    // Wait for debounce (150ms) + extra buffer
+    await new Promise<void>((resolve) => setTimeout(resolve, 300));
+
+    await step('Count label updates to show filtered result', async () => {
+      const hardwareCount = mockData.filter(
+        (e) =>
+          e.name.toLowerCase().includes('hardware') ||
+          e.category.toLowerCase().includes('hardware'),
+      ).length;
+      const countLabel = canvas.getByText(
+        new RegExp(`${hardwareCount} of ${mockData.length} items`),
+      );
+      await expect(countLabel).toBeInTheDocument();
+    });
+  },
+};
+
+const { Component: SearchSelectionGrid } = createEntityDataGrid<DemoEntity>({
+  displayName: 'SearchSelectionGrid',
+  persistenceKeyPrefix: 'canary-search-selection-demo',
+  columnDefs: demoCols,
+  defaultColDef: { sortable: true, filter: false, resizable: true },
+  getEntityId: (e) => e.id,
+  searchConfig: {
+    fields: ['name', 'category'],
+    placeholder: 'Search\u2026',
+  },
+});
+
+/**
+ * WithSearchAndSelection — demonstrates how the count label switches from
+ * "N of M items" to "N of M selected" when rows are selected.
+ */
+export const WithSearchAndSelection: Story = {
+  render: () => {
+    const [_selected, setSelected] = useState<DemoEntity[]>([]);
+    return (
+      <SearchSelectionGrid
+        data={mockData}
+        activeTab="search-selection"
+        onSelectionChange={setSelected}
+      />
+    );
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step('Search bar and grid render', async () => {
+      const searchInput = await canvas.findByRole('searchbox');
+      await expect(searchInput).toBeInTheDocument();
+    });
+  },
+};
+
+// ============================================================================
+// Sub-run 5d: Pagination Mode story
+// ============================================================================
+
+/** Lots of rows for client pagination demo. */
+const paginationData: DemoEntity[] = Array.from({ length: 50 }, (_, i) => ({
+  id: String(i + 1),
+  name: `Entity ${i + 1}`,
+  category: i % 3 === 0 ? 'Hardware' : i % 3 === 1 ? 'Electronics' : 'Software',
+  status: i % 2 === 0 ? 'Active' : 'Inactive',
+  value: parseFloat(((i + 1) * 9.99).toFixed(2)),
+}));
+
+const { Component: ClientPaginationGrid } = createEntityDataGrid<DemoEntity>({
+  displayName: 'ClientPaginationGrid',
+  persistenceKeyPrefix: 'canary-client-pagination-demo',
+  columnDefs: demoCols,
+  defaultColDef: { sortable: true, filter: false, resizable: true },
+  getEntityId: (e) => e.id,
+  paginationMode: 'client',
+  pageSize: 10,
+});
+
+/**
+ * ClientPagination — demonstrates AG Grid's built-in client-side pagination
+ * with 10 rows per page over 50 total rows.
+ */
+export const ClientPagination: Story = {
+  render: () => <ClientPaginationGrid data={paginationData} activeTab="client-pagination" />,
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step('Grid renders with client pagination', async () => {
+      const cells = await canvas.findAllByText('Entity 1');
+      await expect(cells.length).toBeGreaterThan(0);
+    });
+  },
+};
+
+/**
+ * WithPagination (server-driven) — verifies the existing server pagination still works.
+ */
 export const WithPagination: Story = {
   render: () => {
     const [page, setPage] = useState(1);
@@ -289,13 +756,19 @@ export const WithPagination: Story = {
     const startIndex = (page - 1) * pageSize;
     const currentItems = mockData.slice(startIndex, startIndex + pageSize);
 
+    const { Component: ServerPaginationGrid } = createEntityDataGrid<DemoEntity>({
+      displayName: 'ServerPaginationGrid',
+      persistenceKeyPrefix: 'canary-server-pagination-demo',
+      columnDefs: demoCols,
+      defaultColDef: { sortable: true, filter: false, resizable: true },
+      getEntityId: (e) => e.id,
+      paginationMode: 'server',
+    });
+
     return (
-      <DemoDataGrid
+      <ServerPaginationGrid
         data={currentItems}
-        activeTab="demo"
-        enableCellEditing
-        onEntityUpdated={fn()}
-        onUnsavedChangesChange={fn()}
+        activeTab="server-pagination"
         paginationData={{
           currentPage: page,
           currentPageSize: pageSize,
@@ -311,10 +784,124 @@ export const WithPagination: Story = {
   },
 };
 
+// ============================================================================
+// Sub-run 5e: Toolbar, AutoHeight, DragToScroll stories
+// ============================================================================
+
+const { Component: ToolbarGrid } = createEntityDataGrid<DemoEntity>({
+  displayName: 'ToolbarGrid',
+  persistenceKeyPrefix: 'canary-toolbar-demo',
+  columnDefs: demoCols,
+  defaultColDef: { sortable: true, filter: false, resizable: true },
+  getEntityId: (e) => e.id,
+  searchConfig: { fields: ['name', 'category'], placeholder: 'Search\u2026' },
+});
+
+/**
+ * WithToolbar — demonstrates a custom ReactNode toolbar in the same row as
+ * the search bar, right-aligned with `ml-auto`.
+ */
+export const WithToolbar: Story = {
+  render: () => (
+    <ToolbarGrid
+      data={mockData}
+      activeTab="toolbar"
+      toolbar={
+        <div className="flex gap-2">
+          <button className="rounded border px-3 py-1 text-sm">Export</button>
+          <button className="rounded border px-3 py-1 text-sm">Filter</button>
+        </div>
+      }
+    />
+  ),
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step('Search bar and toolbar render', async () => {
+      await expect(canvas.getByText('Export')).toBeInTheDocument();
+      await expect(canvas.getByText('Filter')).toBeInTheDocument();
+      const searchInput = canvas.getByRole('searchbox');
+      await expect(searchInput).toBeInTheDocument();
+    });
+  },
+};
+
+const { Component: AutoHeightGrid } = createEntityDataGrid<DemoEntity>({
+  displayName: 'AutoHeightGrid',
+  persistenceKeyPrefix: 'canary-auto-height-demo',
+  columnDefs: demoCols,
+  defaultColDef: { sortable: true, filter: false, resizable: true },
+  getEntityId: (e) => e.id,
+  autoHeight: true,
+});
+
+/**
+ * AutoHeight — demonstrates the grid growing to fit its content without a
+ * fixed height container. Uses `domLayout: 'autoHeight'` from AG Grid.
+ */
+export const AutoHeight: Story = {
+  decorators: [
+    (Story) => (
+      // Override the default height decorator — auto-height should not be constrained.
+      <div style={{ padding: '16px' }}>
+        <Story />
+      </div>
+    ),
+  ],
+  render: () => <AutoHeightGrid data={mockData.slice(0, 3)} activeTab="auto-height" />,
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step('Grid renders with limited rows', async () => {
+      const cells = await canvas.findAllByText('Widget Alpha');
+      await expect(cells.length).toBeGreaterThan(0);
+    });
+  },
+};
+
+const wideColumnDefs: ColDef<DemoEntity>[] = [
+  { field: 'name', headerName: 'Name', width: 300 },
+  { field: 'category', headerName: 'Category', width: 300 },
+  { field: 'status', headerName: 'Status', width: 300 },
+  { field: 'value', headerName: 'Value', width: 300 },
+  { field: 'notes', headerName: 'Notes', width: 300 },
+  { field: 'id', headerName: 'ID', width: 300 },
+];
+
+const { Component: DragToScrollGrid } = createEntityDataGrid<DemoEntity>({
+  displayName: 'DragToScrollGrid',
+  persistenceKeyPrefix: 'canary-drag-scroll-demo',
+  columnDefs: wideColumnDefs,
+  defaultColDef: { sortable: true, filter: false, resizable: true },
+  getEntityId: (e) => e.id,
+  enableDragToScroll: true,
+});
+
+/**
+ * DragToScroll — demonstrates horizontal drag-to-scroll on a wide grid.
+ * Click and drag on the grid body to scroll horizontally.
+ */
+export const DragToScroll: Story = {
+  render: () => <DragToScrollGrid data={mockData} activeTab="drag-scroll" />,
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step('Wide grid renders', async () => {
+      const cells = await canvas.findAllByText('Widget Alpha');
+      await expect(cells.length).toBeGreaterThan(0);
+    });
+  },
+};
+
+// ============================================================================
+// Interactive story (unchanged — uses new onRowPublish)
+// ============================================================================
+
 export const Interactive: Story = {
   render: () => {
     const [selected, setSelected] = useState<DemoEntity[]>([]);
-    const [hasUnsaved, setHasUnsaved] = useState(false);
+    const [isDirty, setIsDirty] = useState(false);
+    const [publishCount, setPublishCount] = useState(0);
 
     return (
       <div className="flex flex-col h-full gap-4">
@@ -324,9 +911,12 @@ export const Interactive: Story = {
           </div>
           <div className="text-gray-600">
             Unsaved:{' '}
-            <span className={hasUnsaved ? 'text-orange-600 font-semibold' : ''}>
-              {hasUnsaved ? 'Yes' : 'No'}
+            <span className={isDirty ? 'text-orange-600 font-semibold' : ''}>
+              {isDirty ? 'Yes' : 'No'}
             </span>
+          </div>
+          <div className="text-gray-600">
+            Published: <span className="font-semibold">{publishCount} row(s)</span>
           </div>
         </div>
         <div className="flex-1 min-h-0">
@@ -335,7 +925,11 @@ export const Interactive: Story = {
             activeTab="demo"
             enableCellEditing={true}
             onSelectionChange={setSelected}
-            onUnsavedChangesChange={setHasUnsaved}
+            onDirtyChange={setIsDirty}
+            onRowPublish={async () => {
+              await new Promise<void>((resolve) => setTimeout(resolve, 300));
+              setPublishCount((c) => c + 1);
+            }}
             onRowClick={(entity) => console.log('Clicked:', entity.name)}
           />
         </div>

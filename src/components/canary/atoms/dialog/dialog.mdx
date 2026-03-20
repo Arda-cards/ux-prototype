@@ -1,0 +1,72 @@
+{/* dialog.mdx */}
+# ArdaDialog
+
+Modal dialog atom for confirmations, forms, and alerts.
+
+**Atom** &#8212; Canary | Import: `@/components/canary/atoms/dialog/dialog`
+
+---
+
+## Purpose
+
+`ArdaDialog` wraps the Radix Dialog primitive with Arda styling (rounded corners,
+backdrop blur, design-system spacing). Used for confirmation dialogs (delete, discard),
+quick-add forms, and error alerts. For slide-over panels use `ArdaDrawer` instead.
+
+---
+
+## Sub-components
+
+<table>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>ArdaDialog</code></td>
+      <td>Root provider &#8212; controls open state.</td>
+    </tr>
+    <tr>
+      <td><code>ArdaDialogTrigger</code></td>
+      <td>Element that opens the dialog on click.</td>
+    </tr>
+    <tr>
+      <td><code>ArdaDialogContent</code></td>
+      <td>Modal panel &#8212; portalled to body.</td>
+    </tr>
+    <tr>
+      <td><code>ArdaDialogHeader</code></td>
+      <td>Header area for title and description.</td>
+    </tr>
+    <tr>
+      <td><code>ArdaDialogTitle</code></td>
+      <td>Dialog title (required for accessibility).</td>
+    </tr>
+    <tr>
+      <td><code>ArdaDialogDescription</code></td>
+      <td>Optional description text.</td>
+    </tr>
+    <tr>
+      <td><code>ArdaDialogFooter</code></td>
+      <td>Footer row for action buttons.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import {
+  ArdaDialog,
+  ArdaDialogTrigger,
+  ArdaDialogContent,
+  ArdaDialogHeader,
+  ArdaDialogTitle,
+  ArdaDialogFooter,
+} from '@/components/canary/atoms/dialog/dialog';
+```

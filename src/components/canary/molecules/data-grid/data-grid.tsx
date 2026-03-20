@@ -12,18 +12,66 @@ import { AgGridReact } from 'ag-grid-react';
 import {
   ModuleRegistry,
   AllCommunityModule,
+  themeQuartz,
   type ColDef,
   type GridApi,
   type GridReadyEvent,
   type GridOptions,
   type SelectionChangedEvent,
   type CellValueChangedEvent,
+  type CellEditingStoppedEvent,
   type RowClickedEvent,
+  type RowClassParams,
 } from 'ag-grid-community';
 import '@/styles/canary/ag-theme-arda.css';
 import type { PaginationData } from '@/types/canary/pagination';
 import { useColumnPersistence } from './use-column-persistence';
 import { SortMenuHeader } from './sort-menu-header';
+
+// --- Theme ---
+
+// Structural params — sizes, booleans, layout. Colors come from CSS vars below.
+const dataGridTheme = themeQuartz.withParams({
+  fontFamily: 'var(--font-geist-sans)',
+  fontSize: 14,
+  headerFontSize: 13,
+  headerFontWeight: 600,
+  headerColumnBorder: true,
+  headerColumnBorderHeight: '50%',
+  headerColumnResizeHandleHeight: '50%',
+  headerColumnResizeHandleWidth: 1,
+  columnBorder: false,
+  wrapperBorder: true,
+  wrapperBorderRadius: 8,
+  rowHeight: 48,
+  headerHeight: 36,
+  popupShadow: '0 4px 16px color-mix(in srgb, var(--foreground) 12%, transparent)',
+  checkboxBorderWidth: 2,
+  checkboxBorderRadius: 4,
+  inputFocusBorder: 'none',
+  cellHorizontalPadding: 12,
+  spacing: 6,
+});
+
+// Color tokens — maps AG Grid CSS vars to design-system tokens from tokens.css.
+// Set on the grid container div so they cascade into AG Grid's internals.
+const dataGridColorVars: React.CSSProperties = {
+  '--ag-background-color': 'var(--background)',
+  '--ag-foreground-color': 'var(--foreground)',
+  '--ag-border-color': 'var(--border)',
+  '--ag-accent-color': 'var(--primary)',
+  '--ag-header-text-color': 'var(--foreground)',
+  '--ag-header-background-color': 'var(--secondary)',
+  '--ag-header-cell-hover-background-color': 'var(--border)',
+  '--ag-header-cell-moving-background-color': 'var(--border)',
+  '--ag-header-column-resize-handle-color': 'var(--border)',
+  '--ag-row-border-color': 'var(--secondary)',
+  '--ag-odd-row-background-color': 'var(--secondary)',
+  '--ag-row-hover-color': 'var(--secondary)',
+  '--ag-selected-row-background-color': 'var(--primary-muted)',
+  '--ag-checkbox-unchecked-border-color': 'var(--muted-foreground)',
+  '--ag-checkbox-unchecked-background-color': 'var(--background)',
+} as React.CSSProperties;
 
 // Register AG-Grid modules
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -59,17 +107,29 @@ export interface DataGridRuntimeConfig<T> {
   selectedItems?: T[];
   onSelectionChanged?: (selectedRows: T[]) => void;
   onCellValueChanged?: (event: CellValueChangedEvent<T>) => void;
+  /** Called when a cell stops editing. Passes through to AG Grid. */
+  onCellEditingStopped?: (event: CellEditingStoppedEvent<T>) => void;
   onRowClicked?: (event: RowClickedEvent<T>) => void;
   paginationData?: PaginationData;
   onNextPage?: () => void;
   onPreviousPage?: () => void;
   onFirstPage?: () => void;
-
+  /** Function to return extra CSS class(es) for a row. Used for row visual states. */
+  getRowClass?: (params: RowClassParams<T>) => string | string[] | undefined;
+  /**
   /* --- View / Layout / Controller --- */
   loading?: boolean;
   error?: string | null;
   enableCellEditing?: boolean;
   emptyStateComponent?: React.ReactNode;
+  /** Enable AG Grid's built-in client-side pagination. */
+  pagination?: boolean;
+  /** Number of rows per page (client-side pagination). */
+  paginationPageSize?: number;
+  /** Whether to show the page-size selector (defaults to false when pagination is on). */
+  paginationPageSizeSelector?: boolean;
+  /** AG Grid layout mode. `'autoHeight'` makes the grid grow to fit content. */
+  domLayout?: 'normal' | 'autoHeight' | 'print';
 }
 
 export interface DataGridProps<T>
@@ -292,12 +352,18 @@ export const DataGrid = forwardRef(
       selectedItems: _selectedItems = [],
       onSelectionChanged,
       onCellValueChanged,
+      onCellEditingStopped,
       onRowClicked,
       paginationData,
       onNextPage,
       onPreviousPage,
       onFirstPage,
       emptyStateComponent,
+      getRowClass,
+      pagination = false,
+      paginationPageSize,
+      paginationPageSizeSelector = false,
+      domLayout,
     }: DataGridProps<T>,
     ref: React.Ref<DataGridRef<T>>,
   ) => {
@@ -393,9 +459,6 @@ export const DataGrid = forwardRef(
 
     // Grid options
     const gridOptions: GridOptions<T> = {
-      // Theme
-      theme: 'legacy',
-
       // Performance
       suppressColumnVirtualisation: false,
       suppressRowVirtualisation: false,
@@ -435,11 +498,15 @@ export const DataGrid = forwardRef(
     return (
       <div
         className={`arda-grid-container ${className}`}
-        style={{ height: typeof height === 'number' ? `${height}px` : height }}
+        style={{
+          height: typeof height === 'number' ? `${height}px` : height,
+          ...dataGridColorVars,
+        }}
       >
         <div className="ag-theme-arda h-full">
           <AgGridReact<T>
             ref={gridRef}
+            theme={dataGridTheme}
             rowData={rowData}
             columnDefs={columnDefs}
             defaultColDef={mergedDefaultColDef}
@@ -449,12 +516,17 @@ export const DataGrid = forwardRef(
             onSelectionChanged={handleSelectionChanged}
             onRowClicked={handleRowClicked}
             {...(onCellValueChanged !== undefined ? { onCellValueChanged } : {})}
+            {...(onCellEditingStopped !== undefined ? { onCellEditingStopped } : {})}
+            {...(getRowClass !== undefined ? { getRowClass } : {})}
             onColumnMoved={onColumnStateChanged}
             onColumnResized={onColumnStateChanged}
             onColumnVisible={onColumnStateChanged}
             onSortChanged={onColumnStateChanged}
             {...(loading ? { loadingOverlayComponent: LoadingOverlay } : {})}
             noRowsOverlayComponent={NoRowsOverlay}
+            {...(pagination ? { pagination, paginationPageSizeSelector } : {})}
+            {...(pagination && paginationPageSize !== undefined ? { paginationPageSize } : {})}
+            {...(domLayout !== undefined ? { domLayout } : {})}
           />
 
           {/* Pagination footer */}

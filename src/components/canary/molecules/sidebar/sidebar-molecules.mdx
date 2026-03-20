@@ -1,0 +1,253 @@
+{/* sidebar-molecules.mdx */}
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Components/Canary/Molecules/Sidebar/Overview" />
+
+# Sidebar Molecules
+
+Sub-components that compose `ArdaSidebar`. These molecules are not used standalone &#8212;
+they are always used inside an `ArdaSidebar` organism.
+
+**Layer**: Molecule &#8212; Canary
+
+---
+
+## Sub-components
+
+<table>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Import</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>ArdaSidebarHeader</code></td>
+      <td><code>@/components/canary/molecules/sidebar/sidebar-header</code></td>
+      <td>Brand logo + team name in the sidebar header. Pass <code>teams</code> for a team switcher dropdown.</td>
+    </tr>
+    <tr>
+      <td><code>SidebarNav</code></td>
+      <td><code>@/components/canary/molecules/sidebar/sidebar-nav</code></td>
+      <td>Scrollable navigation area. Wraps children in a <code>nav</code> landmark.</td>
+    </tr>
+    <tr>
+      <td><code>SidebarNavItem</code></td>
+      <td><code>@/components/canary/molecules/sidebar/sidebar-nav-item</code></td>
+      <td>Nav button with icon, label, optional badge, and active state. Badges collapse to dots in icon-only mode.</td>
+    </tr>
+    <tr>
+      <td><code>SidebarNavGroup</code></td>
+      <td><code>@/components/canary/molecules/sidebar/sidebar-nav-group</code></td>
+      <td>Collapsible section with chevron. Auto-expands when a child item has <code>active=&#123;true&#125;</code>.</td>
+    </tr>
+    <tr>
+      <td><code>SidebarUserMenu</code></td>
+      <td><code>@/components/canary/molecules/sidebar/sidebar-user-menu</code></td>
+      <td>Footer dropdown with avatar, user name, role, and configurable actions array.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## ArdaSidebarHeader Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>teamName</code></td>
+      <td><code>string</code></td>
+      <td><code>'Arda'</code></td>
+      <td>Team or workspace name displayed next to the brand logo.</td>
+    </tr>
+    <tr>
+      <td><code>teams</code></td>
+      <td><code>TeamOption[]</code></td>
+      <td>&#8212;</td>
+      <td>When provided, renders a team switcher dropdown in the header.</td>
+    </tr>
+    <tr>
+      <td><code>children</code></td>
+      <td><code>ReactNode</code></td>
+      <td>&#8212;</td>
+      <td>Custom header content. Replaces the default logo + team name.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## SidebarNav Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>children</code></td>
+      <td><code>ReactNode</code></td>
+      <td>Required</td>
+      <td><code>SidebarNavItem</code> and <code>SidebarNavGroup</code> children.</td>
+    </tr>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Optional group label (e.g. "Navigation", "Platform").</td>
+    </tr>
+    <tr>
+      <td><code>ariaLabel</code></td>
+      <td><code>string</code></td>
+      <td><code>'Main navigation'</code></td>
+      <td>Accessible label for the <code>nav</code> landmark.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## SidebarNavItem Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>icon</code></td>
+      <td><code>LucideIcon</code></td>
+      <td>Required</td>
+      <td>Icon rendered before the label.</td>
+    </tr>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>Required</td>
+      <td>Navigation item label text.</td>
+    </tr>
+    <tr>
+      <td><code>active</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Whether this item represents the current route.</td>
+    </tr>
+    <tr>
+      <td><code>badge</code></td>
+      <td><code>number | string | true</code></td>
+      <td>&#8212;</td>
+      <td>Count badge or <code>true</code> for a dot indicator. Collapses to dot in icon-only mode.</td>
+    </tr>
+    <tr>
+      <td><code>onClick</code></td>
+      <td><code>(e: MouseEvent) =&#62; void</code></td>
+      <td>&#8212;</td>
+      <td>Click handler. Wire to <code>router.push()</code> for navigation.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## SidebarNavGroup Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>Required</td>
+      <td>Group label displayed in the collapsible trigger.</td>
+    </tr>
+    <tr>
+      <td><code>icon</code></td>
+      <td><code>LucideIcon</code></td>
+      <td>&#8212;</td>
+      <td>Icon displayed before the group label.</td>
+    </tr>
+    <tr>
+      <td><code>defaultExpanded</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Whether the group starts expanded. Auto-overridden to <code>true</code> when a child is active.</td>
+    </tr>
+    <tr>
+      <td><code>children</code></td>
+      <td><code>ReactNode</code></td>
+      <td>Required</td>
+      <td><code>SidebarNavItem</code> children rendered inside the disclosure.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## SidebarUserMenu Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>user</code></td>
+      <td><code>&#123; name: string; email: string; role?: string &#125;</code></td>
+      <td>Required</td>
+      <td>User details displayed in the footer and dropdown header.</td>
+    </tr>
+    <tr>
+      <td><code>actions</code></td>
+      <td><code>UserMenuAction[]</code></td>
+      <td>&#8212;</td>
+      <td>Configurable menu actions. Include a <code>destructive: true</code> log-out action at minimum.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { ArdaSidebarHeader } from '@/components/canary/molecules/sidebar/sidebar-header';
+import { SidebarNav } from '@/components/canary/molecules/sidebar/sidebar-nav';
+import { SidebarNavItem } from '@/components/canary/molecules/sidebar/sidebar-nav-item';
+import { SidebarNavGroup } from '@/components/canary/molecules/sidebar/sidebar-nav-group';
+import { SidebarUserMenu } from '@/components/canary/molecules/sidebar/sidebar-user-menu';
+```
+
+See the `ArdaSidebar` organism documentation for a complete usage example.

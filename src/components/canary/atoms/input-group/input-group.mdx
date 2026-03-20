@@ -1,0 +1,71 @@
+{/* input-group.mdx */}
+# InputGroup
+
+Labelled input field with optional leading icon and helper/error text.
+
+**Atom** &#8212; Canary | Import: `@/components/canary/atoms/input-group/input-group`
+
+---
+
+## Purpose
+
+`InputGroup` composes a shadcn `Label`, a shadcn `Input`, and optional helper or
+error text into a single accessible form control. Use it wherever a labelled input
+is needed in forms and dialogs.
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>required</td>
+      <td>Visible label text above the input.</td>
+    </tr>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>HTML id linking label to input. Auto-generated if omitted.</td>
+    </tr>
+    <tr>
+      <td><code>helperText</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Muted helper text shown below the input.</td>
+    </tr>
+    <tr>
+      <td><code>error</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Validation error message &#8212; overrides helperText, shown in red.</td>
+    </tr>
+    <tr>
+      <td><code>leadingIcon</code></td>
+      <td><code>LucideIcon</code></td>
+      <td>&#8212;</td>
+      <td>Icon rendered inside the left edge of the input.</td>
+    </tr>
+  </tbody>
+</table>
+
+All native `input` props are also accepted (e.g., `placeholder`, `value`, `onChange`, `disabled`).
+
+---
+
+## Import
+
+```tsx
+import { InputGroup } from '@/components/canary/atoms/input-group/input-group';
+```

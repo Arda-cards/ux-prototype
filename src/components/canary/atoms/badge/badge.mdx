@@ -1,0 +1,77 @@
+{/* badge.mdx */}
+import { Meta, Canvas, ArgTypes } from '@storybook/addon-docs/blocks';
+import * as BadgeStories from './badge.stories';
+
+<Meta of={BadgeStories} />
+
+# ArdaBadge
+
+Status badge atom with count capping and dot-indicator support.
+
+**Atom** &#8212; Canary | Import: `@/components/canary/atoms/badge/badge`
+
+---
+
+## Default
+
+<Canvas of={BadgeStories.Default} />
+
+---
+
+## Purpose
+
+`ArdaBadge` wraps the shadcn `Badge` primitive with two Arda-specific features:
+
+1. **Count mode** &#8212; pass `count={n}` to render a live count badge. Capped at `max` (default 99). Renders as `99+` when exceeded.
+2. **Dot mode** &#8212; pass `count={true}` (boolean) to render a dot indicator regardless of count. Used in collapsed sidebar nav items.
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>variant</code></td>
+      <td><code>'default' | 'secondary' | 'destructive' | 'outline'</code></td>
+      <td><code>'default'</code></td>
+      <td>Visual variant from shadcn Badge.</td>
+    </tr>
+    <tr>
+      <td><code>count</code></td>
+      <td><code>number | boolean</code></td>
+      <td>&#8212;</td>
+      <td>Numeric count (capped at <code>max</code>) or <code>true</code> for dot mode.</td>
+    </tr>
+    <tr>
+      <td><code>max</code></td>
+      <td><code>number</code></td>
+      <td><code>99</code></td>
+      <td>Maximum count before showing <code>+</code>.</td>
+    </tr>
+    <tr>
+      <td><code>children</code></td>
+      <td><code>ReactNode</code></td>
+      <td>&#8212;</td>
+      <td>Content when not using count mode.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { ArdaBadge } from '@/components/canary/atoms/badge/badge';
+// or from canary barrel:
+import { ArdaBadge } from '@arda-cards/design-system/canary';
+```
