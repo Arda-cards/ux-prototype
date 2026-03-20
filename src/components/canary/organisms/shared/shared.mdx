@@ -1,0 +1,31 @@
+{/* shared.mdx */}
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Components/Canary/Organisms/Shared/Guide" />
+
+# Shared Organisms
+
+Foundation organisms used by other organisms to build entity-specific UIs. These are not rendered directly in application pages &#8212; instead, they are consumed via factory functions that produce configured components.
+
+---
+
+## Contents
+
+<table>
+  <thead>
+    <tr>
+      <th>Organism</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="?path=/docs/components-canary-organisms-shared-entity-data-grid--docs">Entity Data Grid</a></td>
+      <td>General-purpose data grid factory (<code>createEntityDataGrid</code>) with row-auto-publish editing, client/server pagination, search, toolbar, actions column, drag-to-scroll, and auto-height. The foundation for <code>ItemGrid</code> and future entity grids.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-organisms-shared-entity-data-grid-shim--docs">Entity Data Grid Shim</a></td>
+      <td><strong>Deprecated.</strong> Migration wrapper (<code>createEntityDataGridShim</code>) for vendored <code>ArdaGrid</code>-based pages. New code should use <code>createEntityDataGrid</code> directly.</td>
+    </tr>
+  </tbody>
+</table>

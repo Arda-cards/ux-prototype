@@ -1,0 +1,211 @@
+{/* entity-data-grid.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as Stories from './create-entity-data-grid.stories';
+
+<Meta of={Stories} />
+
+# Entity Data Grid
+
+General-purpose data grid factory for building typed, feature-rich entity list views. All entity grids in Arda (ItemGrid, supplier grid, etc.) are built on this foundation.
+
+**Organism** &#8212; Canary | Factory: `createEntityDataGrid<T>(config)`
+
+---
+
+## Playground
+
+<Canvas of={Stories.Playground} />
+
+---
+
+## Stories
+
+Each story demonstrates a specific capability of the entity-data-grid factory:
+
+### Core
+
+<table>
+  <thead>
+    <tr>
+      <th>Story</th>
+      <th>What it demonstrates</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="?path=/story/components-canary-organisms-shared-entity-data-grid--default">Default</a></td>
+      <td>Basic grid with typed columns and row data.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/story/components-canary-organisms-shared-entity-data-grid--empty">Empty</a></td>
+      <td>Empty state with custom empty-state component.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/story/components-canary-organisms-shared-entity-data-grid--loading">Loading</a></td>
+      <td>Loading overlay while data is being fetched.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Editing (Row Auto-Publish)
+
+<table>
+  <thead>
+    <tr>
+      <th>Story</th>
+      <th>What it demonstrates</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="?path=/story/components-canary-organisms-shared-entity-data-grid--row-auto-publish">RowAutoPublish</a></td>
+      <td>Edit cells &#8594; blur row &#8594; saving state (orange tint) &#8594; success. Pending changes accumulate per row.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/story/components-canary-organisms-shared-entity-data-grid--row-auto-publish-error">RowAutoPublishError</a></td>
+      <td>Edit &#8594; blur &#8594; save fails &#8594; error state (red tint). Row stays dirty for retry.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/story/components-canary-organisms-shared-entity-data-grid--save-all-drafts">SaveAllDrafts</a></td>
+      <td>Imperative <code>saveAll()</code> via toolbar button &#8212; publishes all dirty rows at once.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/story/components-canary-organisms-shared-entity-data-grid--discard-all-drafts">DiscardAllDrafts</a></td>
+      <td>Imperative <code>discardAll()</code> &#8212; restores original values for all dirty rows.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/story/components-canary-organisms-shared-entity-data-grid--with-editing">WithEditing</a></td>
+      <td>Basic cell editing toggle (<code>enableCellEditing</code> prop).</td>
+    </tr>
+  </tbody>
+</table>
+
+### Grid Features
+
+<table>
+  <thead>
+    <tr>
+      <th>Story</th>
+      <th>What it demonstrates</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="?path=/story/components-canary-organisms-shared-entity-data-grid--with-actions-column">WithActionsColumn</a></td>
+      <td>Pinned-right actions column with auto-width from <code>actionCount</code>.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/story/components-canary-organisms-shared-entity-data-grid--with-column-visibility">WithColumnVisibility</a></td>
+      <td>Column visibility and order toggles.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/story/components-canary-organisms-shared-entity-data-grid--with-multi-sort">WithMultiSort</a></td>
+      <td>Multi-column sorting via SortMenuHeader.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/story/components-canary-organisms-shared-entity-data-grid--with-filtering">WithFiltering</a></td>
+      <td>Column filtering.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/story/components-canary-organisms-shared-entity-data-grid--with-search">WithSearch</a></td>
+      <td>Search bar with 150ms debounce and &#8220;X of Y items&#8221; count display.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/story/components-canary-organisms-shared-entity-data-grid--with-search-and-selection">WithSearchAndSelection</a></td>
+      <td>Count label switches to &#8220;X of Y selected&#8221; when rows are selected.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/story/components-canary-organisms-shared-entity-data-grid--with-toolbar">WithToolbar</a></td>
+      <td>Custom ReactNode toolbar slot (same row as search, right-aligned).</td>
+    </tr>
+  </tbody>
+</table>
+
+### Pagination
+
+<table>
+  <thead>
+    <tr>
+      <th>Story</th>
+      <th>What it demonstrates</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="?path=/story/components-canary-organisms-shared-entity-data-grid--client-pagination">ClientPagination</a></td>
+      <td>AG Grid built-in pagination via <code>paginationMode: 'client'</code> + <code>pageSize</code>.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/story/components-canary-organisms-shared-entity-data-grid--with-pagination">WithPagination</a></td>
+      <td>Server-driven pagination via <code>PaginationData</code> + nav callbacks.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Layout
+
+<table>
+  <thead>
+    <tr>
+      <th>Story</th>
+      <th>What it demonstrates</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="?path=/story/components-canary-organisms-shared-entity-data-grid--auto-height">AutoHeight</a></td>
+      <td>Grid grows to fit content (<code>domLayout: 'autoHeight'</code>).</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/story/components-canary-organisms-shared-entity-data-grid--drag-to-scroll">DragToScroll</a></td>
+      <td>Horizontal drag-to-scroll on wide grids.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Composition
+
+<table>
+  <thead>
+    <tr>
+      <th>Story</th>
+      <th>What it demonstrates</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="?path=/story/components-canary-organisms-shared-entity-data-grid--interactive">Interactive</a></td>
+      <td>Play-function verified rendering with cell content assertions.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/story/components-canary-organisms-shared-entity-data-grid-kitchen-sink--kitchen-sink">KitchenSink</a></td>
+      <td>All capabilities combined: auto-publish + search + toolbar + actions + drag-to-scroll + client pagination.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Factory Pattern
+
+```tsx
+const { Component: ItemGrid } = createEntityDataGrid<Item>({
+  displayName: 'ItemGrid',
+  persistenceKeyPrefix: 'item-grid',
+  columnDefs: itemGridColumnDefs,
+  defaultColDef: itemGridDefaultColDef,
+  getEntityId: (item) => item.entityId,
+  searchConfig: { fields: ['name', 'internalSKU'] },
+  enableDragToScroll: true,
+});
+```
+
+The factory returns `{ Component }` &#8212; a fully configured React component that accepts runtime props (`data`, `loading`, `onRowPublish`, etc.).
+
+---
+
+## Import
+
+```tsx
+import { createEntityDataGrid } from '@arda-cards/design-system/canary';
+```
