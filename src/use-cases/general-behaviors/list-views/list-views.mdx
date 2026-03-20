@@ -1,0 +1,45 @@
+{/* list-views.mdx */}
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Use Cases/General Behaviors/List Views/Description" />
+
+# List View Behaviors (GEN::LST)
+
+Cross-cutting interaction patterns for entity list views. These behaviors are implemented by `createEntityDataGrid` and inherited by all entity grids (Items, Suppliers, etc.).
+
+---
+
+## Scenarios
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Scenario</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>GEN::LST::0002</td>
+      <td><a href="?path=/story/use-cases-general-behaviors-list-views-column-configuration--default">Column Configuration</a></td>
+      <td>Toggle column visibility, reorder, resize, and pin columns.</td>
+    </tr>
+    <tr>
+      <td>GEN::LST::0003/0004</td>
+      <td><a href="?path=/story/use-cases-general-behaviors-list-views-sort-and-filter--default">Sort and Filter</a></td>
+      <td>Single and multi-column sorting, global text filter, per-column filters.</td>
+    </tr>
+    <tr>
+      <td>GEN::LST::0006</td>
+      <td><a href="?path=/story/use-cases-general-behaviors-list-views-row-selection--default">Row Selection</a></td>
+      <td>Single, multi, shift-click range, select-all, and selection-driven toolbar actions.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Implementation
+
+All list view behaviors are built into the `createEntityDataGrid` factory organism. Entity-specific grids (ItemGrid, supplier grid) inherit these behaviors automatically via the factory config. See the [Entity Data Grid docs](?path=/docs/components-canary-organisms-shared-entity-data-grid--docs) for the component API.

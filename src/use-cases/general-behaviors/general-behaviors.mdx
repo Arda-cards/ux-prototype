@@ -1,0 +1,33 @@
+{/* general-behaviors.mdx */}
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Use Cases/General Behaviors/Description" />
+
+# General Behaviors
+
+Cross-cutting interaction patterns that apply to all entity types in the Arda platform. These use cases define the framework-level behaviors that every list view, detail panel, and form inherits.
+
+---
+
+## Behavior Areas
+
+<table>
+  <thead>
+    <tr>
+      <th>Area</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="?path=/docs/use-cases-general-behaviors-list-views-description--docs">List Views</a></td>
+      <td>Column configuration, sorting, filtering, pagination, row selection, and inline editing behaviors common to all entity grids (GEN::LST).</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Relationship to Entity Use Cases
+
+General behaviors define **what** a grid or panel can do. Entity-specific use cases (REF::ITM, REF::BA) define **which** columns, fields, and actions are available for each entity type. The entity use cases compose general behaviors with domain-specific configuration.

@@ -119,8 +119,16 @@ const preview: Preview = {
           'Canary Refactor',
           'Use Cases',
           [
+            'General Behaviors',
+            ['Description', 'List Views', ['Description', '*'], '*'],
             'Reference',
-            ['Business Affiliates', '*'],
+            [
+              'Business Affiliates',
+              ['Description', '*', 'Ignore'],
+              'Items',
+              ['Description', '*'],
+              '*',
+            ],
             'Procurement',
             ['Context', 'References', 'Orders', 'Receiving', '*'],
             'Samples',
