@@ -22,21 +22,21 @@ export interface MemoCellDisplayProps
 /** Inline truncated memo renderer with hover overlay for full text. */
 export function MemoCellDisplay({ value, maxLength = 50, hoverDelay = 500 }: MemoCellDisplayProps) {
   if (!value) {
-    return <span className="cursor-default text-sm leading-normal text-muted-foreground">—</span>;
+    return <span className="text-sm leading-normal text-muted-foreground">—</span>;
   }
 
   const needsTruncation = value.length > maxLength;
   const displayText = needsTruncation ? value.slice(0, maxLength) + '…' : value;
 
   if (!needsTruncation) {
-    return <span className="cursor-default truncate text-sm leading-normal">{displayText}</span>;
+    return <span className="truncate text-sm leading-normal">{displayText}</span>;
   }
 
   return (
     <Tooltip.Provider delayDuration={hoverDelay}>
       <Tooltip.Root>
         <Tooltip.Trigger asChild>
-          <span className="truncate text-sm leading-normal cursor-default">{displayText}</span>
+          <span className="truncate text-sm leading-normal">{displayText}</span>
         </Tooltip.Trigger>
         <Tooltip.Portal>
           <Tooltip.Content

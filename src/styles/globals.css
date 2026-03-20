@@ -134,6 +134,29 @@
   }
 }
 
+/*
+ * Display-only cursor policy.
+ *
+ * All components that emit data-slot (shadcn/Radix primitives and Arda canary
+ * components) default to cursor:default. This prevents the I-beam text cursor
+ * on read-only labels, values, and badges — which misleads users into thinking
+ * text is editable.
+ *
+ * Actual input elements opt back in to cursor:text so editable fields keep
+ * the expected I-beam behavior.
+ *
+ * See: Docs > Workflows > Using the Design System > Cursor Policy
+ */
+[data-slot] {
+  cursor: default;
+}
+
+[data-slot] input,
+[data-slot] textarea,
+[data-slot] [contenteditable='true'] {
+  cursor: text;
+}
+
 /* Page content inside a dark sidebar provider stays in light mode */
 .dark [data-slot='sidebar-inset'] {
   --background: oklch(1 0 0);

@@ -780,6 +780,7 @@ export interface ArdaComponentProps
 3. **Use `cn()` utility** for conditional class composition
 4. **Component-specific CSS files** (`.css`) for complex component styles, using `arda-` prefixed class names
 5. **Never use inline `style` objects** except for truly dynamic values (e.g., computed gradients)
+6. **Cursor behavior** is handled globally &#8212; all `[data-slot]` components use `cursor: default` to prevent misleading I-beam cursors on read-only text. Input elements opt back in to `cursor: text` automatically. See the [Cursor Policy](?path=/docs/docs-workflows-using-the-design-system--docs#cursor-policy) for details.
 
 ### 8.5 Common Tailwind Patterns
 

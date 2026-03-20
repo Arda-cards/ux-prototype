@@ -63,7 +63,7 @@ export function ReadOnlyField({
   const displayValue = children ?? (value !== undefined && value !== '' ? value : fallback);
 
   return (
-    <div className={cn(readOnlyFieldVariants({ variant }), 'cursor-default', className)} {...props}>
+    <div className={cn(readOnlyFieldVariants({ variant }), className)} {...props}>
       <span className="text-sm uppercase tracking-[0.06em] text-muted-foreground font-medium">
         {label}
       </span>

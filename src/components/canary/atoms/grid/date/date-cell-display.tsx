@@ -22,5 +22,5 @@ export interface DateCellDisplayProps
 export function DateCellDisplay({ value, timezone }: DateCellDisplayProps) {
   const tz = timezone ?? getBrowserTimezone();
   const display = formatDate(value, tz);
-  return <span className="cursor-default truncate text-sm leading-normal">{display}</span>;
+  return <span className="truncate text-sm leading-normal">{display}</span>;
 }

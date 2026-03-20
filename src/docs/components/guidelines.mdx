@@ -1190,6 +1190,8 @@ When creating or updating a component, deliver:
 8. **Don't** force empty `InitConfig` or `RuntimeConfig` interfaces when a component doesn't need them.
 9. **Don't** build from scratch when a shadcn/ui or AG Grid component can be imported and extended.
 10. **Don't** import from `extras/` in canary components or from `canary/` in stable components.
+11. **Don't** add `cursor-default` to individual display components &#8212; the global [Cursor Policy](?path=/docs/docs-workflows-using-the-design-system--docs#cursor-policy) handles it automatically via `[data-slot]`.
+12. **Don't** override `cursor: text` on read-only elements &#8212; the global rule already prevents the I-beam cursor.
 
 ---
 

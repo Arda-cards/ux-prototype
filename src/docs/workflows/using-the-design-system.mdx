@@ -430,6 +430,40 @@ This defines the core CSS variables (`--foreground`, `--muted-foreground`, `--ba
 
 ---
 
+## Cursor Policy
+
+The design system enforces a **display-only cursor policy** via a global CSS rule in `globals.css`. All components built on shadcn/Radix primitives (which emit `data-slot` attributes) use `cursor: default` instead of the browser&#8217;s default `cursor: text` (I-beam).
+
+**Why:** Read-only text in labels, badges, field values, and grid cells should not show an I-beam cursor on hover. The I-beam misleads users into thinking the text is editable. Clicking read-only text should not produce a blinking caret.
+
+**How it works:**
+
+```css
+/* All data-slot components default to arrow cursor */
+[data-slot] {
+  cursor: default;
+}
+
+/* Actual input elements opt back in to text cursor */
+[data-slot] input,
+[data-slot] textarea,
+[data-slot] [contenteditable='true'] {
+  cursor: text;
+}
+```
+
+**What this means for component authors:**
+
+- **Do not** add `cursor-default` to individual display components &#8212; the global rule handles it automatically for any element inside a `data-slot` component.
+- **Do not** override `cursor: text` on read-only elements &#8212; the global rule already prevents it.
+- Input fields (`<input>`, `<textarea>`, `[contenteditable]`) automatically get `cursor: text` back &#8212; no action needed.
+- If you need `cursor: pointer` on a clickable element (button, link, toggle), set it explicitly &#8212; it takes precedence over the global rule.
+- Text remains **selectable** for copy &#8212; `cursor: default` only changes the visual cursor, not the ability to select text.
+
+**Affected components:** Every canary atom, molecule, and organism that uses shadcn primitives or Radix UI. This includes all grid cell display renderers, `ReadOnlyField`, `IconLabel`, `Badge`, `FieldList`, sidebar nav items, and app header labels.
+
+---
+
 {/* AUTO-GENERATED:START — do not edit manually. Run: node tools/update-package-contents.js */}
 
 ## Current Content as of 2026-03-06
