@@ -91,3 +91,43 @@ export const Playground: Story = {
     await expect(canvas.getByText('Blue')).toBeInTheDocument();
   },
 };
+
+// ============================================================================
+// AllVariants
+// ============================================================================
+
+export const AllVariants: Story = {
+  parameters: { layout: 'padded' },
+  render: () => (
+    <div className="flex flex-col gap-4 max-w-sm">
+      {Object.keys(DEFAULT_COLOR_MAP).map((color) => (
+        <div key={color} className="flex items-center gap-3">
+          <span className="w-36 text-sm text-muted-foreground">
+            {DEFAULT_COLOR_MAP[color]?.name ?? color}
+          </span>
+          <div className="border border-border p-2 bg-white flex-1">
+            <ColorCellDisplay value={color} />
+          </div>
+        </div>
+      ))}
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Empty</span>
+        <div className="border border-border p-2 bg-white flex-1">
+          <ColorCellDisplay />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Unknown value</span>
+        <div className="border border-border p-2 bg-white flex-1">
+          <ColorCellDisplay value="CUSTOM" />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Editor (interactive)</span>
+        <div className="border border-border bg-white flex-1" style={{ height: 32 }}>
+          <ColorCellEditor value="RED" stopEditing={() => {}} />
+        </div>
+      </div>
+    </div>
+  ),
+};

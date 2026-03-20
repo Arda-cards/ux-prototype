@@ -145,3 +145,57 @@ export const Playground: StoryObj = {
     await expect(canvasElement.querySelector('svg')).toBeInTheDocument();
   },
 };
+
+// ============================================================================
+// AllVariants
+// ============================================================================
+
+export const AllVariants: Story = {
+  parameters: { layout: 'padded' },
+  render: () => (
+    <div className="flex flex-col gap-4 max-w-md">
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">True (checkbox)</span>
+        <div className="border border-border p-2 bg-white flex-1 flex items-center">
+          <BooleanCellDisplay value={true} displayFormat="checkbox" />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">False (checkbox)</span>
+        <div className="border border-border p-2 bg-white flex-1 flex items-center">
+          <BooleanCellDisplay value={false} displayFormat="checkbox" />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">True (yes-no)</span>
+        <div className="border border-border p-2 bg-white flex-1">
+          <BooleanCellDisplay value={true} displayFormat="yes-no" />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">False (yes-no)</span>
+        <div className="border border-border p-2 bg-white flex-1">
+          <BooleanCellDisplay value={false} displayFormat="yes-no" />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Empty</span>
+        <div className="border border-border p-2 bg-white flex-1">
+          <BooleanCellDisplay displayFormat="checkbox" />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Editor (checkbox)</span>
+        <div className="border border-border bg-white flex-1" style={{ height: 32 }}>
+          <BooleanCellEditor value={true} displayFormat="checkbox" stopEditing={() => {}} />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Editor (yes-no)</span>
+        <div className="border border-border bg-white flex-1" style={{ height: 32 }}>
+          <BooleanCellEditor value={false} displayFormat="yes-no" stopEditing={() => {}} />
+        </div>
+      </div>
+    </div>
+  ),
+};

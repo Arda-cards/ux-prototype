@@ -88,4 +88,43 @@ export const Playground: Story = {
   },
 };
 
+// ============================================================================
+// AllVariants
+// ============================================================================
+
+export const AllVariants: Story = {
+  parameters: { layout: 'padded' },
+  render: () => (
+    <div className="flex flex-col gap-4 max-w-md">
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Normal text</span>
+        <div className="border border-border p-2 bg-white flex-1">
+          <TextCellDisplay value="Widget Alpha" />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Long text (truncated)</span>
+        <div className="border border-border p-2 bg-white flex-1">
+          <TextCellDisplay
+            value="A very long text value that exceeds the maximum length and should be truncated"
+            maxLength={30}
+          />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Empty</span>
+        <div className="border border-border p-2 bg-white flex-1">
+          <TextCellDisplay />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Editor (interactive)</span>
+        <div className="border border-border bg-white flex-1" style={{ height: 32 }}>
+          <TextCellEditor value="Editable value" placeholder="Enter text…" stopEditing={() => {}} />
+        </div>
+      </div>
+    </div>
+  ),
+};
+
 void fn;

@@ -344,3 +344,44 @@ export const Playground: Story = {
     options: orderStatusOptions,
   },
 };
+
+// ============================================================================
+// AllVariants
+// ============================================================================
+
+export const AllVariants: Story = {
+  parameters: { layout: 'padded' },
+  render: () => (
+    <div className="flex flex-col gap-4 max-w-md">
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Selected value</span>
+        <div className="border border-border p-2 bg-white flex-1">
+          <SelectCellDisplay value="SHIPPED" options={orderStatusOptions} />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Empty</span>
+        <div className="border border-border p-2 bg-white flex-1">
+          <SelectCellDisplay options={orderStatusOptions} />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Unknown value</span>
+        <div className="border border-border p-2 bg-white flex-1">
+          <SelectCellDisplay value="UNKNOWN_STATUS" options={orderStatusOptions} />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Editor (interactive)</span>
+        <div className="border border-border rounded bg-popover shadow-md overflow-hidden flex-1">
+          <SelectCellEditor
+            value="PENDING"
+            options={orderStatusOptions}
+            onValueChange={() => {}}
+            stopEditing={() => {}}
+          />
+        </div>
+      </div>
+    </div>
+  ),
+};

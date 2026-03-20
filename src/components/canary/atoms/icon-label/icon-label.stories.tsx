@@ -48,7 +48,8 @@ export const Default: Story = {
 export const Truncated: Story = {
   args: {
     icon: Building2,
-    label: 'Very Long Supplier Name That Should Truncate',
+    label: 'Very Long Supplier Name That Should Truncate When Constrained',
+    className: 'max-w-[160px]',
   },
   decorators: [
     (Story) => (

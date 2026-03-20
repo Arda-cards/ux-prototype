@@ -158,3 +158,46 @@ export const MemoButtonInteraction: Story = {
     await userEvent.click(doneButton);
   },
 };
+
+// ============================================================================
+// AllVariants
+// ============================================================================
+
+export const AllVariants: Story = {
+  parameters: { layout: 'padded' },
+  render: () => (
+    <div className="flex flex-col gap-4 max-w-md">
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Short text</span>
+        <div className="border border-border p-2 bg-white flex-1">
+          <MemoCellDisplay value="A brief note about this item." />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Long text (hover)</span>
+        <div className="border border-border p-2 bg-white flex-1">
+          <MemoCellDisplay
+            value="This is a very long note that exceeds the maximum length and will be truncated with an ellipsis. Hover to see the complete text."
+            maxLength={50}
+          />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Empty</span>
+        <div className="border border-border p-2 bg-white flex-1">
+          <MemoCellDisplay />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Editor (interactive)</span>
+        <div className="border border-border bg-white flex-1">
+          <MemoCellEditor
+            value="Line 1&#10;Line 2&#10;Line 3"
+            placeholder="Add a note..."
+            stopEditing={() => {}}
+          />
+        </div>
+      </div>
+    </div>
+  ),
+};

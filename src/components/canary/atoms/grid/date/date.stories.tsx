@@ -98,4 +98,40 @@ export const Playground: Story = {
   },
 };
 
+// ============================================================================
+// AllVariants
+// ============================================================================
+
+export const AllVariants: Story = {
+  parameters: { layout: 'padded' },
+  render: () => (
+    <div className="flex flex-col gap-4 max-w-md">
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Recent date</span>
+        <div className="border border-border p-2 bg-white flex-1">
+          <DateCellDisplay value="2026-01-15" />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Old date</span>
+        <div className="border border-border p-2 bg-white flex-1">
+          <DateCellDisplay value="1990-07-04" />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Empty</span>
+        <div className="border border-border p-2 bg-white flex-1">
+          <DateCellDisplay />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Editor (interactive)</span>
+        <div className="border border-border bg-white flex-1" style={{ height: 32 }}>
+          <DateCellEditor value="2026-01-15" stopEditing={() => {}} />
+        </div>
+      </div>
+    </div>
+  ),
+};
+
 void fn;

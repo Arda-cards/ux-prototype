@@ -121,3 +121,51 @@ export const Playground: Story = {
     await expect(canvas.getByText('42')).toBeInTheDocument();
   },
 };
+
+// ============================================================================
+// AllVariants
+// ============================================================================
+
+export const AllVariants: Story = {
+  parameters: { layout: 'padded' },
+  render: () => (
+    <div className="flex flex-col gap-4 max-w-md">
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Integer</span>
+        <div className="border border-border p-2 bg-white flex-1">
+          <NumberCellDisplay value={42} precision={0} />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Decimal (2 places)</span>
+        <div className="border border-border p-2 bg-white flex-1">
+          <NumberCellDisplay value={3.14159} precision={2} />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Zero</span>
+        <div className="border border-border p-2 bg-white flex-1">
+          <NumberCellDisplay value={0} precision={0} />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Empty</span>
+        <div className="border border-border p-2 bg-white flex-1">
+          <NumberCellDisplay precision={0} />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Editor (integer)</span>
+        <div className="border border-border bg-white flex-1" style={{ height: 32 }}>
+          <NumberCellEditor value={42} precision={0} stopEditing={() => {}} />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Editor (decimal)</span>
+        <div className="border border-border bg-white flex-1" style={{ height: 32 }}>
+          <NumberCellEditor value={3.14} precision={2} min={0} max={100} stopEditing={() => {}} />
+        </div>
+      </div>
+    </div>
+  ),
+};

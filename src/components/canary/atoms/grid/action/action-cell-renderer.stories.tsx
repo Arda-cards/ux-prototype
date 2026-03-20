@@ -132,3 +132,48 @@ export const Playground: Story = {
     disabled: false,
   },
 };
+
+// ============================================================================
+// AllVariants
+// ============================================================================
+
+export const AllVariants: Story = {
+  parameters: { layout: 'padded' },
+  render: () => (
+    <div className="flex flex-col gap-4 max-w-md">
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Single action</span>
+        <div className="border border-border bg-white flex-1" style={{ height: 40 }}>
+          <ActionCellRenderer
+            rowData={demoEntity}
+            actions={[{ label: 'Delete', icon: <Trash2 className="w-4 h-4" />, onClick: fn() }]}
+          />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Multiple actions</span>
+        <div className="border border-border bg-white flex-1" style={{ height: 40 }}>
+          <ActionCellRenderer rowData={demoEntity} actions={defaultActions} />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">With icons</span>
+        <div className="border border-border bg-white flex-1" style={{ height: 40 }}>
+          <ActionCellRenderer
+            rowData={demoEntity}
+            actions={[
+              { label: 'View', icon: <Eye className="w-4 h-4" />, onClick: fn() },
+              { label: 'Edit', icon: <Pencil className="w-4 h-4" />, onClick: fn() },
+            ]}
+          />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-36 text-sm text-muted-foreground">Disabled</span>
+        <div className="border border-border bg-white flex-1" style={{ height: 40 }}>
+          <ActionCellRenderer rowData={demoEntity} actions={defaultActions} disabled />
+        </div>
+      </div>
+    </div>
+  ),
+};
