@@ -1,0 +1,125 @@
+{/* item-details-header.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as HeaderStories from './item-details-header.stories';
+
+<Meta of={HeaderStories} />
+
+# ItemDetailsHeader
+
+Tab bar and action grid for the item detail drawer. Up to `maxActions` actions are shown as `ArdaGridAction` cells; excess items collapse into a &#8220;More&#8221; dropdown.
+
+**Molecule** &#8212; Canary | Import: `@/components/canary/molecules/item-details/item-details-header`
+
+---
+
+## Playground
+
+Switch tabs interactively. Actions and overflow are pre-populated.
+
+<Canvas of={HeaderStories.Playground} />
+
+---
+
+## Default
+
+Full header with both tabs and action grid.
+
+<Canvas of={HeaderStories.Default} />
+
+## Tabs Only
+
+No actions shown &#8212; appropriate for the Cards tab.
+
+<Canvas of={HeaderStories.TabsOnly} />
+
+## Actions Only
+
+No tabs defined &#8212; action grid occupies the full width.
+
+<Canvas of={HeaderStories.ActionsOnly} />
+
+---
+
+## Purpose
+
+`ItemDetailsHeader` is a pure presentational molecule that combines two distinct zones:
+
+1. **Tab bar** &#8212; shadcn `Tabs` driven by `tabs[]`, `activeTab`, and `onTabChange`.
+2. **Action grid** &#8212; a row of `ArdaGridAction` cells limited to `maxActions` (default 6). Actions beyond the limit, plus all `overflowActions`, collapse into a `MoreHorizontal` dropdown as the last cell.
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Category</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>activeTab</code></td>
+      <td>Runtime</td>
+      <td><code>string</code></td>
+      <td>Required</td>
+      <td>Key of the currently active tab.</td>
+    </tr>
+    <tr>
+      <td><code>onTabChange</code></td>
+      <td>Runtime</td>
+      <td><code>(tab: string) =&#62; void</code></td>
+      <td>Required</td>
+      <td>Called when the user switches tabs.</td>
+    </tr>
+    <tr>
+      <td><code>tabs</code></td>
+      <td>Static</td>
+      <td><code>Array&#60;&#123; key: string; label: string; icon?: LucideIcon &#125;&#62;</code></td>
+      <td>Required</td>
+      <td>Tab definitions. Empty array hides the tab bar.</td>
+    </tr>
+    <tr>
+      <td><code>actions</code></td>
+      <td>Static</td>
+      <td><code>ToolbarAction[]</code></td>
+      <td>&#8212;</td>
+      <td>Primary actions shown in the grid cells.</td>
+    </tr>
+    <tr>
+      <td><code>overflowActions</code></td>
+      <td>Static</td>
+      <td><code>OverflowAction[]</code></td>
+      <td>&#8212;</td>
+      <td>Additional actions always in the &#8220;More&#8221; dropdown.</td>
+    </tr>
+    <tr>
+      <td><code>maxActions</code></td>
+      <td>Static</td>
+      <td><code>number</code></td>
+      <td><code>6</code></td>
+      <td>Maximum visible action cells including the &#8220;More&#8221; trigger.</td>
+    </tr>
+    <tr>
+      <td><code>className</code></td>
+      <td>Static</td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Additional CSS classes on the outer container.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { ItemDetailsHeader } from '@/components/canary/molecules/item-details/item-details-header';
+// or from canary barrel:
+import { ItemDetailsHeader } from '@arda-cards/design-system/canary';
+```

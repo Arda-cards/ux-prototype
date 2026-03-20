@@ -145,6 +145,34 @@ export const WithGroups: Story = {
   ),
 };
 
+/**
+ * Interactive Controls playground — toggle `open` and `dark` from the
+ * Controls panel. The sidebar is pre-populated with a representative nav.
+ */
+export const Playground: Story = {
+  args: {
+    open: true,
+    dark: true,
+  },
+  argTypes: {
+    open: { control: 'boolean' },
+    dark: { control: 'boolean' },
+  },
+  render: (args) => (
+    <Sidebar {...args}>
+      <SidebarHeader teamName="Arda Cards" />
+      <SidebarNav>
+        <SidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
+        <SidebarNavItem icon={Package} label="Items" badge={5} />
+        <SidebarNavItem icon={ShoppingCart} label="Order Queue" badge={3} />
+        <SidebarNavItem icon={Building2} label="Suppliers" />
+        <SidebarNavItem icon={Settings} label="Settings" />
+      </SidebarNav>
+      <SidebarUserMenu user={mockUser} actions={mockActions} />
+    </Sidebar>
+  ),
+};
+
 /** Full page layout — sidebar + content area with SidebarInset. Press Cmd+B to toggle. */
 export const Composition: Story = {
   render: () => (

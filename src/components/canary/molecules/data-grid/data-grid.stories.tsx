@@ -967,3 +967,20 @@ export const ThemedGrid: Story = {
     );
   },
 };
+
+/**
+ * Interactive Controls playground — use the Controls panel to toggle
+ * `loading`, `error`, `enableRowSelection`, `enableCellEditing`, and `height`.
+ * Column definitions and row data are fixed in this story.
+ */
+export const Playground: Story = {
+  args: {
+    columnDefs: columnDefs as unknown as AnyColDef[],
+    rowData: sampleData as Record<string, unknown>[],
+    height: 400,
+    loading: false,
+    enableRowSelection: true,
+    enableMultiRowSelection: true,
+    enableCellEditing: false,
+  },
+};

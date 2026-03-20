@@ -18,7 +18,6 @@ const meta = {
       },
     },
   },
-  tags: ['autodocs'],
 } satisfies Meta<typeof ItemDetailsCardPreview>;
 
 export default meta;
@@ -103,4 +102,24 @@ export const SingleCard: Story = {
       />
     </div>
   ),
+};
+
+/**
+ * Interactive Controls playground — `currentIndex`, `totalCards`, and `loading`
+ * can be toggled in the Controls panel.
+ */
+export const Playground: Story = {
+  render: () => {
+    const [index, setIndex] = useState(1);
+    return (
+      <div className="w-[460px]">
+        <ItemDetailsCardPreview
+          currentIndex={index}
+          totalCards={3}
+          onIndexChange={setIndex}
+          renderCard={(i) => <MockCard index={i} />}
+        />
+      </div>
+    );
+  },
 };

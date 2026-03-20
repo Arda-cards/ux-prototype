@@ -694,3 +694,19 @@ export const Composition: Story = {
     );
   },
 };
+
+/**
+ * Interactive Controls playground — use the Controls panel to toggle
+ * `loading`, `error`, and `enableRowSelection`. Items and lookups are
+ * pre-populated with fixture data.
+ */
+export const Playground: Story = {
+  render: () => (
+    <ItemGrid
+      items={itemGridFixtures}
+      lookups={mockLookups}
+      enableRowSelection
+      actionsColumn={actionsColumn}
+    />
+  ),
+};

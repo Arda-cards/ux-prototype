@@ -1,0 +1,87 @@
+{/* color.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as Stories from './color.stories';
+
+<Meta of={Stories} />
+
+# Color Cell
+
+Display and editor for color enum grid fields. Renders a colored swatch circle alongside the color name. The color map is configurable.
+
+**Grid Atom** &#8212; see [Grid Guide](?path=/docs/components-canary-atoms-grid-guide--docs)
+
+---
+
+## Playground
+
+Use the Controls panel to select a `value` from the default color map.
+
+<Canvas of={Stories.Playground} />
+
+---
+
+## Display Variants
+
+<Canvas of={Stories.Display} />
+
+## Editor
+
+<Canvas of={Stories.Editor} />
+
+---
+
+## Props &#8212; Display (`ColorCellDisplay`)
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>value</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Color enum value (e.g. <code>'RED'</code>). Falls back to raw value for unknown keys.</td>
+    </tr>
+    <tr>
+      <td><code>colorMap</code></td>
+      <td><code>Record&#60;string, &#123; label: string; color: string &#125;&#62;</code></td>
+      <td><code>DEFAULT_COLOR_MAP</code></td>
+      <td>Custom color map. Defaults to a built-in palette of common colors.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Props &#8212; Editor Factory (`createColorCellEditor`)
+
+<table>
+  <thead>
+    <tr>
+      <th>Config</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>colorMap</code></td>
+      <td><code>Record&#60;string, &#123; label: string; color: string &#125;&#62;</code></td>
+      <td><code>DEFAULT_COLOR_MAP</code></td>
+      <td>Color options available in the dropdown editor.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { ColorCellDisplay, createColorCellEditor, DEFAULT_COLOR_MAP } from '@arda-cards/design-system/canary';
+```

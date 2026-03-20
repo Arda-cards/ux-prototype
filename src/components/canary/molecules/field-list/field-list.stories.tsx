@@ -90,3 +90,25 @@ export const Empty: Story = {
     fields: [],
   },
 };
+
+/**
+ * Interactive Controls playground — `fields` is a complex array so it cannot
+ * be driven by individual controls, but the Controls panel shows the full
+ * `fields` object and allows JSON editing.
+ */
+export const Playground: Story = {
+  args: {
+    fields: [
+      { key: 'sku', label: 'SKU', value: 'WDG-4420-BLK' },
+      { key: 'supplier', label: 'Supplier', value: 'McMaster-Carr' },
+      { key: 'price', label: 'Unit Price', value: '$12.50' },
+    ],
+  },
+  decorators: [
+    (Story) => (
+      <div className="w-[420px] border rounded-lg bg-background">
+        <Story />
+      </div>
+    ),
+  ],
+};

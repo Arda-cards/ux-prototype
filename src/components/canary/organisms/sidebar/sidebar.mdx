@@ -14,17 +14,54 @@ Dark sidebar navigation built on shadcn Sidebar primitives. Compound component &
 
 ## Sub-components
 
-| Component | Layer | Purpose |
-|---|---|---|
-| **SidebarHeader** | molecule | Brand logo + team name. Pass `teams` for a team switcher dropdown. |
-| **SidebarNav** | molecule | Scrollable nav area. Wraps children in a `<nav>` landmark. |
-| **SidebarNavItem** | molecule | Nav button with icon, label, optional badge (count or dot), and active state. Count badges collapse to dots in icon-only mode. |
-| **SidebarNavGroup** | molecule | Collapsible section with chevron. Auto-expands when a child is active. |
-| **SidebarUserMenu** | molecule | Footer dropdown with avatar, name, role, and configurable actions array. |
+<table>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Layer</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>SidebarHeader</strong></td>
+      <td>molecule</td>
+      <td>Brand logo + team name. Pass <code>teams</code> for a team switcher dropdown.</td>
+    </tr>
+    <tr>
+      <td><strong>SidebarNav</strong></td>
+      <td>molecule</td>
+      <td>Scrollable nav area. Wraps children in a <code>nav</code> landmark.</td>
+    </tr>
+    <tr>
+      <td><strong>SidebarNavItem</strong></td>
+      <td>molecule</td>
+      <td>Nav button with icon, label, optional badge (count or dot), and active state. Count badges collapse to dots in icon-only mode.</td>
+    </tr>
+    <tr>
+      <td><strong>SidebarNavGroup</strong></td>
+      <td>molecule</td>
+      <td>Collapsible section with chevron. Auto-expands when a child is active.</td>
+    </tr>
+    <tr>
+      <td><strong>SidebarUserMenu</strong></td>
+      <td>molecule</td>
+      <td>Footer dropdown with avatar, name, role, and configurable actions array.</td>
+    </tr>
+  </tbody>
+</table>
 
 All sub-components follow the **StaticConfig / RuntimeConfig** prop split:
 - `StaticConfig` &#8212; static props (layout, structure, icons)
 - `RuntimeConfig` &#8212; runtime state (active, badge count, onClick, user data)
+
+---
+
+## Playground
+
+Toggle `open` and `dark` from the Controls panel.
+
+<Canvas of={SidebarStories.Playground} />
 
 ---
 

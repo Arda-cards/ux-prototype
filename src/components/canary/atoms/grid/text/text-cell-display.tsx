@@ -23,5 +23,5 @@ export function TextCellDisplay({ value, maxLength }: TextCellDisplayProps) {
   if (maxLength && display !== '—' && display.length > maxLength) {
     display = display.slice(0, maxLength) + '…';
   }
-  return <span className="truncate text-sm leading-normal">{display}</span>;
+  return <span className="cursor-default truncate text-sm leading-normal">{display}</span>;
 }

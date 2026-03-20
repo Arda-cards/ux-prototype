@@ -21,7 +21,7 @@ export interface BooleanCellDisplayProps
 /** Compact read-only boolean renderer for AG Grid cells. */
 export function BooleanCellDisplay({ value, displayFormat = 'checkbox' }: BooleanCellDisplayProps) {
   if (value === undefined || value === null) {
-    return <span className="text-sm leading-normal text-muted-foreground">—</span>;
+    return <span className="cursor-default text-sm leading-normal text-muted-foreground">—</span>;
   }
 
   if (displayFormat === 'checkbox') {
@@ -34,5 +34,5 @@ export function BooleanCellDisplay({ value, displayFormat = 'checkbox' }: Boolea
 
   // yes-no format
   const display = formatBoolean(value, 'yes-no');
-  return <span className="text-sm leading-normal">{display}</span>;
+  return <span className="cursor-default text-sm leading-normal">{display}</span>;
 }

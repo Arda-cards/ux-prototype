@@ -4,11 +4,29 @@ import * as SearchInputStories from './search-input.stories';
 
 <Meta of={SearchInputStories} />
 
-# ArdaSearchInput
+# SearchInput
 
-Search field with a leading search icon.
+Controlled search field with a leading search icon.
 
-**Atom** &#8212; Canary | Import: `@/components/canary/atoms/search-input/search-input`
+**Atom** &#8212; Canary | Import: `import { ArdaSearchInput } from '@arda-cards/design-system/canary'`
+
+---
+
+## Playground
+
+<Canvas of={SearchInputStories.Playground} />
+
+---
+
+## All Variants
+
+<Canvas of={SearchInputStories.AllVariants} />
+
+---
+
+## Purpose
+
+`ArdaSearchInput` wraps the shadcn `Input` primitive with a positioned Lucide `Search` icon pinned to the left edge. The input is controlled: pass `value` and `onChange` to wire it to local or external state. Used in entity-data-grid toolbars and any standalone search context.
 
 ---
 
@@ -16,14 +34,13 @@ Search field with a leading search icon.
 
 <Canvas of={SearchInputStories.Default} />
 
----
+## With initial value
 
-## Purpose
+<Canvas of={SearchInputStories.WithValue} />
 
-`ArdaSearchInput` wraps the shadcn `Input` primitive with a positioned `Search` icon
-from Lucide. Used in the entity-data-grid search bar and wherever a standalone search
-input is needed. The component is controlled: pass `value` and `onChange` to wire it
-to state.
+## Custom width
+
+<Canvas of={SearchInputStories.CustomWidth} />
 
 ---
 
@@ -43,13 +60,13 @@ to state.
       <td><code>placeholder</code></td>
       <td><code>string</code></td>
       <td><code>'Search'</code></td>
-      <td>Placeholder text shown when the input is empty.</td>
+      <td>Placeholder text shown when the input is empty. Also used as the input's <code>aria-label</code>.</td>
     </tr>
     <tr>
       <td><code>maxWidth</code></td>
       <td><code>string</code></td>
       <td><code>'373px'</code></td>
-      <td>Maximum width of the search container.</td>
+      <td>Maximum width of the search container as a CSS value (e.g., <code>'240px'</code>, <code>'100%'</code>).</td>
     </tr>
     <tr>
       <td><code>value</code></td>
@@ -61,17 +78,34 @@ to state.
       <td><code>onChange</code></td>
       <td><code>(value: string) =&#62; void</code></td>
       <td>&#8212;</td>
-      <td>Called when the user types. Receives the new string value.</td>
+      <td>Called on each keystroke. Receives the new string value (not the raw event).</td>
+    </tr>
+    <tr>
+      <td><code>className</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Additional CSS classes on the container <code>div</code>.</td>
     </tr>
   </tbody>
 </table>
+
+Also accepts all standard `React.HTMLAttributes<HTMLDivElement>` attributes except `onChange` (which is typed separately).
+
+---
+
+## Accessibility
+
+- The underlying `<input>` receives `type="search"` and an `aria-label` equal to the `placeholder` value. Pass a descriptive placeholder to ensure an informative label.
+- The search icon is `aria-hidden="true"` and `pointer-events-none` so it does not interfere with interaction or assistive technology.
 
 ---
 
 ## Import
 
 ```tsx
-import { ArdaSearchInput } from '@/components/canary/atoms/search-input/search-input';
-// or from canary barrel:
+// From canary barrel (recommended)
 import { ArdaSearchInput } from '@arda-cards/design-system/canary';
+
+// Direct import
+import { ArdaSearchInput } from '@/components/canary/atoms/search-input/search-input';
 ```

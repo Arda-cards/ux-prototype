@@ -6,6 +6,7 @@ const meta = {
   title: 'Components/Canary/Atoms/ReadOnlyField',
   component: ReadOnlyField,
   parameters: {
+    layout: 'centered',
     docs: {
       description: {
         component:
@@ -41,6 +42,14 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof ReadOnlyField>;
+
+export const Playground: Story = {
+  args: {
+    label: 'SKU',
+    value: 'ITEM-001-A',
+    variant: 'default',
+  },
+};
 
 /** Default rendering with a label and value. */
 export const Default: Story = {
@@ -97,6 +106,41 @@ export const Composition: Story = {
       <ReadOnlyField label="General Ledger Code" value="4200-100" />
       <ReadOnlyField label="Unit price" value="$12.50" />
       <ReadOnlyField label="Number of cards" value="3" />
+    </div>
+  ),
+};
+
+export const AllVariants: Story = {
+  parameters: { layout: 'padded' },
+  render: () => (
+    <div className="flex flex-col gap-4 max-w-xs">
+      <div className="flex items-start gap-3">
+        <span className="w-28 text-sm text-muted-foreground pt-0.5">Default</span>
+        <ReadOnlyField label="SKU" value="ITEM-001-A" />
+      </div>
+      <div className="flex items-start gap-3">
+        <span className="w-28 text-sm text-muted-foreground pt-0.5">Compact</span>
+        <ReadOnlyField label="Unit Price" value="$12.50" variant="compact" />
+      </div>
+      <div className="flex items-start gap-3">
+        <span className="w-28 text-sm text-muted-foreground pt-0.5">Empty (fallback)</span>
+        <ReadOnlyField label="GL Code" />
+      </div>
+      <div className="flex items-start gap-3">
+        <span className="w-28 text-sm text-muted-foreground pt-0.5">Custom fallback</span>
+        <ReadOnlyField label="Link" fallback="No link available" />
+      </div>
+      <div className="flex items-start gap-3">
+        <span className="w-28 text-sm text-muted-foreground pt-0.5">With children</span>
+        <ReadOnlyField label="Link">
+          <a
+            href="https://example.com"
+            className="text-primary underline break-all text-sm font-mono"
+          >
+            https://example.com
+          </a>
+        </ReadOnlyField>
+      </div>
     </div>
   ),
 };

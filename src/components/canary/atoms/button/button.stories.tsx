@@ -17,6 +17,30 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+export const Playground: Story = {
+  argTypes: {
+    variant: {
+      control: 'select',
+      options: ['primary', 'secondary', 'ghost', 'destructive', 'outline'],
+    },
+    size: {
+      control: 'select',
+      options: ['sm', 'md', 'lg', 'icon', 'icon-sm'],
+    },
+    loading: { control: 'boolean' },
+    disabled: { control: 'boolean' },
+    children: { control: 'text' },
+    asChild: { table: { disable: true } },
+  },
+  args: {
+    variant: 'primary',
+    size: 'md',
+    loading: false,
+    disabled: false,
+    children: 'Click me',
+  },
+};
+
 export const Primary: Story = {
   args: { children: 'Add item' },
 };
@@ -73,23 +97,90 @@ export const Disabled: Story = {
 };
 
 export const AllVariants: Story = {
+  parameters: { layout: 'padded' },
   render: () => (
-    <div className="flex flex-wrap items-center gap-3">
-      <Button variant="primary">Primary</Button>
-      <Button variant="secondary">Secondary</Button>
-      <Button variant="outline">Outline</Button>
-      <Button variant="ghost">Ghost</Button>
-      <Button variant="destructive">Destructive</Button>
+    <div className="flex flex-col gap-4 max-w-md">
+      <div className="flex items-center gap-3">
+        <span className="w-28 text-sm text-muted-foreground">Primary</span>
+        <Button variant="primary">Add item</Button>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-28 text-sm text-muted-foreground">Secondary</span>
+        <Button variant="secondary">Cancel</Button>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-28 text-sm text-muted-foreground">Ghost</span>
+        <Button variant="ghost">View details</Button>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-28 text-sm text-muted-foreground">Destructive</span>
+        <Button variant="destructive">Delete item</Button>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-28 text-sm text-muted-foreground">Outline</span>
+        <Button variant="outline">Export</Button>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-28 text-sm text-muted-foreground">Small</span>
+        <Button size="sm">Small</Button>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-28 text-sm text-muted-foreground">Large</span>
+        <Button size="lg">Large</Button>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-28 text-sm text-muted-foreground">With Icon</span>
+        <Button>
+          <Printer className="size-4" />
+          Print card
+        </Button>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-28 text-sm text-muted-foreground">Icon Only</span>
+        <Button size="icon" aria-label="Delete">
+          <Trash2 className="size-4" />
+        </Button>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-28 text-sm text-muted-foreground">Loading</span>
+        <Button loading>Saving…</Button>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-28 text-sm text-muted-foreground">Disabled</span>
+        <Button disabled>Unavailable</Button>
+      </div>
     </div>
   ),
 };
 
 export const AllSizes: Story = {
+  parameters: { layout: 'padded' },
   render: () => (
-    <div className="flex flex-wrap items-center gap-3">
-      <Button size="sm">Small</Button>
-      <Button size="md">Medium</Button>
-      <Button size="lg">Large</Button>
+    <div className="flex flex-col gap-4 max-w-md">
+      <div className="flex items-center gap-3">
+        <span className="w-28 text-sm text-muted-foreground">Small</span>
+        <Button size="sm">Small</Button>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-28 text-sm text-muted-foreground">Medium</span>
+        <Button size="md">Medium</Button>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-28 text-sm text-muted-foreground">Large</span>
+        <Button size="lg">Large</Button>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-28 text-sm text-muted-foreground">Icon</span>
+        <Button size="icon" aria-label="Action">
+          <Printer className="size-4" />
+        </Button>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-28 text-sm text-muted-foreground">Icon Small</span>
+        <Button size="icon-sm" aria-label="Action">
+          <Printer className="size-4" />
+        </Button>
+      </div>
     </div>
   ),
 };

@@ -1,22 +1,130 @@
 {/* avatar.mdx */}
-# ArdaAvatar
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as AvatarStories from './avatar.stories';
 
-User avatar atom with image, initials fallback, and size variants.
+<Meta of={AvatarStories} />
 
-**Atom** &#8212; Canary | Import: `@/components/canary/atoms/avatar/avatar`
+# Avatar
+
+Circular user avatar with image display, initials fallback, size variants, badge overlay, and group composition.
+
+**Atom** &#8212; Canary | Import: `import { Avatar, AvatarImage, AvatarFallback, AvatarBadge, AvatarGroup, AvatarGroupCount } from '@arda-cards/design-system/canary'`
+
+---
+
+## Playground
+
+<Canvas of={AvatarStories.Playground} />
+
+---
+
+## All Variants
+
+<Canvas of={AvatarStories.AllVariants} />
 
 ---
 
 ## Purpose
 
-`ArdaAvatar` wraps the Radix Avatar primitive. When an image URL is provided it
-renders the image; when the image fails to load (or no URL is given) it falls
-back to initials computed from the user's name. Used in `SidebarUserMenu` and
-profile display contexts.
+`Avatar` is built on Radix UI Avatar primitives. It renders an image when a valid `src` is available; when the image is absent or fails to load, `AvatarFallback` is shown instead (typically initials).
+
+Compose the sub-components explicitly to control what appears in each slot:
+
+```tsx
+<Avatar size="lg">
+  <AvatarImage src={user.avatarUrl} alt={user.name} />
+  <AvatarFallback>{initials(user.name)}</AvatarFallback>
+  <AvatarBadge />
+</Avatar>
+```
 
 ---
 
-## Props
+## Sub-components
+
+<table>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Avatar</code></td>
+      <td>Root container. Controls size and provides the group context for <code>AvatarBadge</code>.</td>
+    </tr>
+    <tr>
+      <td><code>AvatarImage</code></td>
+      <td>The avatar image. Hidden automatically when the image fails to load.</td>
+    </tr>
+    <tr>
+      <td><code>AvatarFallback</code></td>
+      <td>Shown when the image is absent or fails to load. Typically initials text.</td>
+    </tr>
+    <tr>
+      <td><code>AvatarBadge</code></td>
+      <td>Small status dot pinned to the bottom-right corner. Size scales with the parent <code>Avatar</code> size.</td>
+    </tr>
+    <tr>
+      <td><code>AvatarGroup</code></td>
+      <td>Flex container that stacks multiple avatars with negative spacing and ring separators.</td>
+    </tr>
+    <tr>
+      <td><code>AvatarGroupCount</code></td>
+      <td>Overflow count indicator used at the end of an <code>AvatarGroup</code> (e.g., <code>+3</code> or a <code>MoreHorizontal</code> icon).</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Size variants
+
+<table>
+  <thead>
+    <tr>
+      <th>Size</th>
+      <th>Dimensions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>'default'</code></td>
+      <td>32&#215;32 px (8rem)</td>
+    </tr>
+    <tr>
+      <td><code>'sm'</code></td>
+      <td>24&#215;24 px (6rem)</td>
+    </tr>
+    <tr>
+      <td><code>'lg'</code></td>
+      <td>40&#215;40 px (10rem)</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## With image
+
+<Canvas of={AvatarStories.WithImage} />
+
+## With fallback
+
+<Canvas of={AvatarStories.WithFallback} />
+
+## With badge
+
+<Canvas of={AvatarStories.WithBadge} />
+
+## Group
+
+<Canvas of={AvatarStories.AvatarGroupStory} />
+
+---
+
+## Props &#8212; Avatar
 
 <table>
   <thead>
@@ -29,38 +137,56 @@ profile display contexts.
   </thead>
   <tbody>
     <tr>
-      <td><code>src</code></td>
-      <td><code>string</code></td>
-      <td>&#8212;</td>
-      <td>Image URL. Falls back to initials when absent or on load error.</td>
-    </tr>
-    <tr>
-      <td><code>name</code></td>
-      <td><code>string</code></td>
-      <td>&#8212;</td>
-      <td>User name &#8212; used to compute initials for the fallback.</td>
-    </tr>
-    <tr>
       <td><code>size</code></td>
-      <td><code>'sm' | 'md' | 'lg'</code></td>
-      <td><code>'md'</code></td>
-      <td>Avatar size preset.</td>
+      <td><code>'default' | 'sm' | 'lg'</code></td>
+      <td><code>'default'</code></td>
+      <td>Avatar size preset. Controls both the root dimensions and the <code>AvatarBadge</code> size.</td>
     </tr>
     <tr>
       <td><code>className</code></td>
       <td><code>string</code></td>
       <td>&#8212;</td>
-      <td>Additional CSS classes.</td>
+      <td>Additional CSS classes on the root element.</td>
     </tr>
   </tbody>
 </table>
+
+`Avatar` also accepts all `React.ComponentProps` of the Radix `Avatar.Root` element.
+
+`AvatarImage` accepts all `React.ComponentProps` of Radix `Avatar.Image` (including `src` and `alt`).
+
+`AvatarFallback` accepts all `React.ComponentProps` of Radix `Avatar.Fallback`.
+
+---
+
+## Accessibility
+
+- Always provide a meaningful `alt` text on `AvatarImage` (e.g., the user's name).
+- `AvatarFallback` content (initials or icon) is visible to screen readers when the image is absent; ensure it is meaningful or add `aria-label` on the parent `Avatar` if the fallback is purely visual.
+- `AvatarBadge` is decorative by default; if the badge conveys status (e.g., online/offline), add an `aria-label` or `title` attribute.
 
 ---
 
 ## Import
 
 ```tsx
-import { ArdaAvatar } from '@/components/canary/atoms/avatar/avatar';
-// or from canary barrel:
-import { ArdaAvatar } from '@arda-cards/design-system/canary';
+// From canary barrel (recommended)
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+  AvatarBadge,
+  AvatarGroup,
+  AvatarGroupCount,
+} from '@arda-cards/design-system/canary';
+
+// Direct import
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+  AvatarBadge,
+  AvatarGroup,
+  AvatarGroupCount,
+} from '@/components/canary/atoms/avatar/avatar';
 ```

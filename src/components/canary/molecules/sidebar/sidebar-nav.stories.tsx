@@ -19,7 +19,6 @@ const meta = {
       },
     },
   },
-  tags: ['autodocs'],
 } satisfies Meta<typeof SidebarNav>;
 
 export default meta;
@@ -60,4 +59,22 @@ export const WithLabel: Story = {
     const canvas = within(canvasElement);
     await expect(canvas.getByText('Navigation')).toBeInTheDocument();
   },
+};
+
+/**
+ * Interactive Controls playground — `children` is rendered as nav items.
+ * The `label` prop (group heading) can be adjusted in the Controls panel.
+ */
+export const Playground: Story = {
+  render: () => (
+    <Sidebar defaultOpen>
+      <SidebarNav label="Main">
+        <SidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
+        <SidebarNavItem icon={Package} label="Items" badge={5} />
+        <SidebarNavItem icon={ShoppingCart} label="Order Queue" />
+        <SidebarNavItem icon={Building2} label="Suppliers" />
+        <SidebarNavItem icon={Settings} label="Settings" />
+      </SidebarNav>
+    </Sidebar>
+  ),
 };

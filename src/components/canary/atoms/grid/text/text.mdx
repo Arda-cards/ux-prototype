@@ -1,0 +1,93 @@
+{/* text.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as Stories from './text.stories';
+
+<Meta of={Stories} />
+
+# Text Cell
+
+Display and editor for string grid fields. Truncates long values at a configurable character limit and provides a plain-text inline editor.
+
+**Grid Atom** &#8212; see [Grid Guide](?path=/docs/components-canary-atoms-grid-guide--docs)
+
+---
+
+## Playground
+
+Use the Controls panel to adjust `value` and `maxLength`.
+
+<Canvas of={Stories.Playground} />
+
+---
+
+## Display Variants
+
+<Canvas of={Stories.Display} />
+
+## Editor
+
+<Canvas of={Stories.Editor} />
+
+---
+
+## Props &#8212; Display (`TextCellDisplay`)
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>value</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Text value. Renders an em-dash when undefined.</td>
+    </tr>
+    <tr>
+      <td><code>maxLength</code></td>
+      <td><code>number</code></td>
+      <td>&#8212;</td>
+      <td>Maximum characters before truncation with ellipsis. No truncation when omitted.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Props &#8212; Editor Factory (`createTextCellEditor`)
+
+<table>
+  <thead>
+    <tr>
+      <th>Config</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>placeholder</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Placeholder text shown when the editor is empty.</td>
+    </tr>
+    <tr>
+      <td><code>maxLength</code></td>
+      <td><code>number</code></td>
+      <td>&#8212;</td>
+      <td>Maximum input length enforced on the editor field.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { TextCellDisplay, createTextCellEditor } from '@arda-cards/design-system/canary';
+```

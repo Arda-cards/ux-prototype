@@ -1,17 +1,55 @@
 {/* dialog.mdx */}
-# ArdaDialog
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as DialogStories from './dialog.stories';
 
-Modal dialog atom for confirmations, forms, and alerts.
+<Meta of={DialogStories} />
 
-**Atom** &#8212; Canary | Import: `@/components/canary/atoms/dialog/dialog`
+# Dialog
+
+Modal dialog for confirmations, quick-add forms, and alerts.
+
+**Atom** &#8212; Canary | Import: `import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@arda-cards/design-system/canary'`
+
+---
+
+## Playground
+
+<Canvas of={DialogStories.Playground} />
+
+---
+
+## Variants
+
+### Default (Confirmation)
+
+<Canvas of={DialogStories.Default} />
+
+### Without Close Mark
+
+<Canvas of={DialogStories.WithoutCloseMark} />
+
+### Action and Close
+
+Demonstrates the pattern where clicking "Archive" executes an async action, shows a loading state, then auto-closes the dialog on success.
+
+<Canvas of={DialogStories.ActionAndClose} />
+
+### With Footer Close
+
+<Canvas of={DialogStories.WithFooterClose} />
 
 ---
 
 ## Purpose
 
-`ArdaDialog` wraps the Radix Dialog primitive with Arda styling (rounded corners,
-backdrop blur, design-system spacing). Used for confirmation dialogs (delete, discard),
-quick-add forms, and error alerts. For slide-over panels use `Drawer` instead.
+`Dialog` is built on Radix Dialog primitives with Arda styling (rounded corners, backdrop overlay, design-system spacing). The content panel is portalled to the document body and centered in the viewport.
+
+Use `Dialog` for:
+- Confirmation dialogs (delete, discard changes)
+- Quick-add or short edit forms
+- Error or informational alerts
+
+For slide-over panels with more space, use `Drawer` instead.
 
 ---
 
@@ -26,47 +64,174 @@ quick-add forms, and error alerts. For slide-over panels use `Drawer` instead.
   </thead>
   <tbody>
     <tr>
-      <td><code>ArdaDialog</code></td>
-      <td>Root provider &#8212; controls open state.</td>
+      <td><code>Dialog</code></td>
+      <td>Root provider. Wraps Radix <code>Dialog.Root</code> &#8212; controls open state via <code>open</code> / <code>onOpenChange</code> or uncontrolled via a <code>DialogTrigger</code>.</td>
     </tr>
     <tr>
-      <td><code>ArdaDialogTrigger</code></td>
-      <td>Element that opens the dialog on click.</td>
+      <td><code>DialogTrigger</code></td>
+      <td>Element that opens the dialog on click. Use <code>asChild</code> to apply dialog-open behavior to an existing button.</td>
     </tr>
     <tr>
-      <td><code>ArdaDialogContent</code></td>
-      <td>Modal panel &#8212; portalled to body.</td>
+      <td><code>DialogContent</code></td>
+      <td>Modal panel portalled to the body. Includes overlay backdrop and an optional close button (<code>showCloseButton</code>, defaults to <code>true</code>).</td>
     </tr>
     <tr>
-      <td><code>ArdaDialogHeader</code></td>
-      <td>Header area for title and description.</td>
+      <td><code>DialogHeader</code></td>
+      <td>Flex-column area for title and description. Left-aligned on desktop, centered on mobile.</td>
     </tr>
     <tr>
-      <td><code>ArdaDialogTitle</code></td>
-      <td>Dialog title (required for accessibility).</td>
+      <td><code>DialogTitle</code></td>
+      <td>Dialog title &#8212; required for accessibility (Radix Dialog enforces this). Rendered as semibold text.</td>
     </tr>
     <tr>
-      <td><code>ArdaDialogDescription</code></td>
-      <td>Optional description text.</td>
+      <td><code>DialogDescription</code></td>
+      <td>Optional muted description text. Use <code>className="sr-only"</code> to hide visually while keeping it accessible.</td>
     </tr>
     <tr>
-      <td><code>ArdaDialogFooter</code></td>
-      <td>Footer row for action buttons.</td>
+      <td><code>DialogFooter</code></td>
+      <td>Action row at the bottom. Stacks vertically on mobile, flows horizontally (right-aligned) on desktop. Optionally renders a built-in close button via <code>showCloseButton</code>.</td>
+    </tr>
+    <tr>
+      <td><code>DialogClose</code></td>
+      <td>Wraps a child element with dialog-close behavior via Radix <code>Dialog.Close</code>.</td>
     </tr>
   </tbody>
 </table>
 
 ---
 
+## Usage pattern
+
+```tsx
+// Controlled dialog
+function DeleteConfirmDialog({ open, onClose, onConfirm }: Props) {
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Delete item?</DialogTitle>
+          <DialogDescription>This action cannot be undone.</DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
+          <Button variant="destructive" onClick={onConfirm}>Delete</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Uncontrolled dialog (trigger-based)
+function AddItemDialog() {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button>Add item</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add new item</DialogTitle>
+        </DialogHeader>
+        {/* form content */}
+      </DialogContent>
+    </Dialog>
+  );
+}
+```
+
+---
+
+## Props &#8212; DialogContent
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>showCloseButton</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Whether to render the &#215; close button in the top-right corner of the panel.</td>
+    </tr>
+    <tr>
+      <td><code>className</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Additional CSS classes on the content panel.</td>
+    </tr>
+    <tr>
+      <td><code>children</code></td>
+      <td><code>ReactNode</code></td>
+      <td>&#8212;</td>
+      <td>Dialog content &#8212; compose with <code>DialogHeader</code>, body, and <code>DialogFooter</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Props &#8212; DialogFooter
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>showCloseButton</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>When <code>true</code>, appends an outline &#8220;Close&#8221; button wired to <code>DialogClose</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Accessibility
+
+- `DialogTitle` is required &#8212; it provides the accessible name for the `dialog` ARIA role. Radix will warn if it is absent.
+- `DialogDescription` is recommended for dialogs with non-obvious purpose.
+- Focus is trapped inside the dialog while open. On close, focus returns to the trigger element.
+- Pressing Escape dismisses the dialog.
+
+---
+
 ## Import
 
 ```tsx
+// From canary barrel (recommended)
 import {
-  ArdaDialog,
-  ArdaDialogTrigger,
-  ArdaDialogContent,
-  ArdaDialogHeader,
-  ArdaDialogTitle,
-  ArdaDialogFooter,
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from '@arda-cards/design-system/canary';
+
+// Direct import
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
 } from '@/components/canary/atoms/dialog/dialog';
 ```

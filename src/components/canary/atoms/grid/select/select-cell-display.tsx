@@ -39,5 +39,5 @@ export function SelectCellDisplay({ value, options }: SelectCellDisplayProps) {
     }
   }
 
-  return <span className="truncate text-sm leading-normal">{display}</span>;
+  return <span className="cursor-default truncate text-sm leading-normal">{display}</span>;
 }

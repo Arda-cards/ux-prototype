@@ -1,0 +1,70 @@
+{/* date.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as Stories from './date.stories';
+
+<Meta of={Stories} />
+
+# Date Cell
+
+Display and editor for ISO date string grid fields. Renders dates in locale-aware format (MM/DD/YYYY by default) and provides a native date-picker editor.
+
+**Grid Atom** &#8212; see [Grid Guide](?path=/docs/components-canary-atoms-grid-guide--docs)
+
+---
+
+## Playground
+
+Use the Controls panel to change `value` and `timezone`.
+
+<Canvas of={Stories.Playground} />
+
+---
+
+## Display Variants
+
+<Canvas of={Stories.Display} />
+
+## Editor
+
+<Canvas of={Stories.Editor} />
+
+---
+
+## Props &#8212; Display (`DateCellDisplay`)
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>value</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>ISO date string (e.g. <code>'2024-03-15'</code> or <code>'2024-03-15T00:00:00Z'</code>). Renders an em-dash when undefined.</td>
+    </tr>
+    <tr>
+      <td><code>timezone</code></td>
+      <td><code>string</code></td>
+      <td>Browser timezone</td>
+      <td>IANA timezone string used for display formatting (e.g. <code>'America/New_York'</code>).</td>
+    </tr>
+  </tbody>
+</table>
+
+## Props &#8212; Editor Factory (`createDateCellEditor`)
+
+The factory accepts no required configuration. The resulting editor renders a native `&#60;input type="date"&#62;` inside the AG Grid cell.
+
+---
+
+## Import
+
+```tsx
+import { DateCellDisplay, createDateCellEditor } from '@arda-cards/design-system/canary';
+```

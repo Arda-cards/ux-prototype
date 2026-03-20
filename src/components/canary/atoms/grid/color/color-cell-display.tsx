@@ -39,7 +39,7 @@ export interface ColorCellDisplayProps
 /** Compact read-only color renderer showing a swatch + label. */
 export function ColorCellDisplay({ value, colorMap = DEFAULT_COLOR_MAP }: ColorCellDisplayProps) {
   if (!value) {
-    return <span className="text-sm leading-normal text-muted-foreground">—</span>;
+    return <span className="cursor-default text-sm leading-normal text-muted-foreground">—</span>;
   }
 
   const colorInfo = colorMap[value] ?? { hex: '#6B7280', name: value };
@@ -50,7 +50,7 @@ export function ColorCellDisplay({ value, colorMap = DEFAULT_COLOR_MAP }: ColorC
         className="w-4 h-4 rounded border border-gray-300 flex-shrink-0"
         style={{ backgroundColor: colorInfo.hex }}
       />
-      <span className="text-sm leading-normal">{colorInfo.name}</span>
+      <span className="cursor-default text-sm leading-normal">{colorInfo.name}</span>
     </div>
   );
 }

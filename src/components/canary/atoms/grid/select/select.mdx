@@ -1,0 +1,130 @@
+{/* select.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as Stories from './select.stories';
+
+<Meta of={Stories} />
+
+# Select Cell
+
+Display and editor for enum-backed grid fields. The display looks up a human-readable label from the options map; the editor renders a keyboard-navigable ARIA listbox popup.
+
+**Grid Atom** &#8212; see [Grid Guide](?path=/docs/components-canary-atoms-grid-guide--docs)
+
+---
+
+## Playground
+
+Edit the `value` control to see the label lookup. `options` is fixed in this story (complex type).
+
+<Canvas of={Stories.Playground} />
+
+---
+
+## Default Editor
+
+Fixed-list dropdown with keyboard navigation (Arrow keys, Enter, Escape).
+
+<Canvas of={Stories.Default} />
+
+## Keyboard Navigation
+
+Step-by-step play function demonstrating Arrow Down &#215; 3 then Enter.
+
+<Canvas of={Stories.KeyboardNavigation} />
+
+## Both Formats
+
+`SelectOption[]` and `Record<string, string>` produce identical output.
+
+<Canvas of={Stories.BothFormats} />
+
+---
+
+## Props &#8212; Display (`SelectCellDisplay`)
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>value</code></td>
+      <td><code>string | null</code></td>
+      <td>&#8212;</td>
+      <td>Stored enum key. Looked up in <code>options</code>. Falls back to raw value for unknown keys; renders an em-dash for null/undefined.</td>
+    </tr>
+    <tr>
+      <td><code>options</code></td>
+      <td><code>SelectOption[] | Record&#60;string, string&#62;</code></td>
+      <td>Required</td>
+      <td>Option list. Both formats are normalized internally.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Props &#8212; Editor Factory (`createSelectCellEditor`)
+
+<table>
+  <thead>
+    <tr>
+      <th>Config</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>options</code></td>
+      <td><code>SelectOption[] | Record&#60;string, string&#62;</code></td>
+      <td>Required</td>
+      <td>Options shown in the popup listbox.</td>
+    </tr>
+  </tbody>
+</table>
+
+### SelectOption
+
+<table>
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>value</code></td>
+      <td><code>string</code></td>
+      <td>Stored enum key.</td>
+    </tr>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>Human-readable display label.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Accessibility
+
+- The popup editor renders a `role="listbox"` with `role="option"` children.
+- The active/highlighted option is tracked via `aria-selected`.
+- Keyboard bindings: Arrow Down/Up to navigate, Enter to commit, Escape to cancel.
+
+---
+
+## Import
+
+```tsx
+import { SelectCellDisplay, createSelectCellEditor } from '@arda-cards/design-system/canary';
+import type { SelectOption } from '@arda-cards/design-system/canary';
+```

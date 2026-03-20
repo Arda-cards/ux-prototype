@@ -1,0 +1,131 @@
+{/* item-details-card-preview.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as CardPreviewStories from './item-details-card-preview.stories';
+
+<Meta of={CardPreviewStories} />
+
+# ItemDetailsCardPreview
+
+Centered card carousel with lightbox-style prev/next arrows, animated slide transitions, and a children slot for action rows.
+
+**Molecule** &#8212; Canary | Import: `@/components/canary/molecules/item-details/item-details-card-preview`
+
+---
+
+## Playground
+
+<Canvas of={CardPreviewStories.Playground} />
+
+---
+
+## Default
+
+Multiple cards with arrow navigation.
+
+<Canvas of={CardPreviewStories.Default} />
+
+## With Actions
+
+Children slot used for an `ArdaGridAction` row below the carousel.
+
+<Canvas of={CardPreviewStories.WithActions} />
+
+## States
+
+<Canvas of={CardPreviewStories.Loading} />
+
+<Canvas of={CardPreviewStories.Empty} />
+
+<Canvas of={CardPreviewStories.SingleCard} />
+
+---
+
+## Purpose
+
+`ItemDetailsCardPreview` renders a centered carousel strip. All card elements are rendered in the DOM; a CSS `translateX` shift centers the active card. Peek opacity (30%) on adjacent cards hints at scrollability.
+
+Navigation: prev/next arrow buttons, click-on-card, or swipe (touch). Single-card mode hides both arrows.
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Category</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>currentIndex</code></td>
+      <td>Runtime</td>
+      <td><code>number</code></td>
+      <td>Required</td>
+      <td>1-based index of the currently active card.</td>
+    </tr>
+    <tr>
+      <td><code>totalCards</code></td>
+      <td>Runtime</td>
+      <td><code>number</code></td>
+      <td>Required</td>
+      <td>Total number of cards. <code>0</code> renders the empty state.</td>
+    </tr>
+    <tr>
+      <td><code>onIndexChange</code></td>
+      <td>Runtime</td>
+      <td><code>(index: number) =&#62; void</code></td>
+      <td>Required</td>
+      <td>Called when the user navigates to a different card.</td>
+    </tr>
+    <tr>
+      <td><code>loading</code></td>
+      <td>Runtime</td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Shows a centered spinner while cards are loading.</td>
+    </tr>
+    <tr>
+      <td><code>renderCard</code></td>
+      <td>Static</td>
+      <td><code>(index: number) =&#62; ReactNode</code></td>
+      <td>&#8212;</td>
+      <td>Render prop for each card visual. Receives the 1-based index. Omit for a placeholder.</td>
+    </tr>
+    <tr>
+      <td><code>emptyState</code></td>
+      <td>Static</td>
+      <td><code>ReactNode</code></td>
+      <td>Default message</td>
+      <td>Custom content shown when <code>totalCards</code> is 0 and not loading.</td>
+    </tr>
+    <tr>
+      <td><code>children</code></td>
+      <td>Static</td>
+      <td><code>ReactNode</code></td>
+      <td>&#8212;</td>
+      <td>Content rendered below the carousel (e.g. an action row).</td>
+    </tr>
+    <tr>
+      <td><code>className</code></td>
+      <td>Static</td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Additional CSS classes on the outer container.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { ItemDetailsCardPreview } from '@/components/canary/molecules/item-details/item-details-card-preview';
+// or from canary barrel:
+import { ItemDetailsCardPreview } from '@arda-cards/design-system/canary';
+```

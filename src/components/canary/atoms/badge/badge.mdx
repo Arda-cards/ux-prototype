@@ -1,29 +1,88 @@
 {/* badge.mdx */}
-import { Meta, Canvas, ArgTypes } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
 import * as BadgeStories from './badge.stories';
 
 <Meta of={BadgeStories} />
 
 # Badge
 
-Status badge atom with count capping and dot-indicator support.
+Small inline status badge with count-capping and variant support.
 
-**Atom** &#8212; Canary | Import: `@/components/canary/atoms/badge/badge`
+**Atom** &#8212; Canary | Import: `import { Badge } from '@arda-cards/design-system/canary'`
 
 ---
 
-## Default
+## All Variants
 
-<Canvas of={BadgeStories.Default} />
+<Canvas of={BadgeStories.AllVariants} />
 
 ---
 
 ## Purpose
 
-`Badge` wraps the shadcn `Badge` primitive with two Arda-specific features:
+`Badge` is a thin Arda wrapper around the shadcn Badge primitive. It adds:
 
-1. **Count mode** &#8212; pass `count={n}` to render a live count badge. Capped at `max` (default 99). Renders as `99+` when exceeded.
-2. **Dot mode** &#8212; pass `count={true}` (boolean) to render a dot indicator regardless of count. Used in collapsed sidebar nav items.
+1. **Count mode** &#8212; pass `count={n}` to render a numeric badge. The value is capped at `max` (default 99); values above that display as `99+`. The badge receives `role="status"` when in count mode for live-region accessibility.
+2. **Label mode** &#8212; pass text via `children` for string or label badges (e.g., `New`, `Draft`).
+
+The component uses a rounded-md shape, tight padding, and 10 px semibold monospaced text to integrate cleanly with sidebar nav items, table cells, and page headers.
+
+---
+
+## Variants
+
+<table>
+  <thead>
+    <tr>
+      <th>Variant</th>
+      <th>Use</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>default</code></td>
+      <td>Primary emphasis. Uses <code>sidebar-primary</code> color token (Arda orange in default theme).</td>
+    </tr>
+    <tr>
+      <td><code>secondary</code></td>
+      <td>Low-emphasis label on neutral backgrounds.</td>
+    </tr>
+    <tr>
+      <td><code>outline</code></td>
+      <td>Bordered badge with transparent background.</td>
+    </tr>
+    <tr>
+      <td><code>destructive</code></td>
+      <td>Error or destructive status indicator.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Default
+
+<Canvas of={BadgeStories.Default} />
+
+### Secondary
+
+<Canvas of={BadgeStories.Secondary} />
+
+### Outline
+
+<Canvas of={BadgeStories.Outline} />
+
+---
+
+## Count Mode
+
+<Canvas of={BadgeStories.Count} />
+
+### High count (capped at 99+)
+
+<Canvas of={BadgeStories.HighCount} />
+
+### Custom max threshold
+
+<Canvas of={BadgeStories.CustomMax} />
 
 ---
 
@@ -47,31 +106,48 @@ Status badge atom with count capping and dot-indicator support.
     </tr>
     <tr>
       <td><code>count</code></td>
-      <td><code>number | boolean</code></td>
+      <td><code>number</code></td>
       <td>&#8212;</td>
-      <td>Numeric count (capped at <code>max</code>) or <code>true</code> for dot mode.</td>
+      <td>Numeric count. Capped at <code>max</code>; adds <code>role="status"</code> for live updates.</td>
     </tr>
     <tr>
       <td><code>max</code></td>
       <td><code>number</code></td>
       <td><code>99</code></td>
-      <td>Maximum count before showing <code>+</code>.</td>
+      <td>Maximum count value before showing <code>99+</code> (or <code>max+</code>).</td>
     </tr>
     <tr>
       <td><code>children</code></td>
       <td><code>ReactNode</code></td>
       <td>&#8212;</td>
-      <td>Content when not using count mode.</td>
+      <td>Content rendered when <code>count</code> is not provided.</td>
+    </tr>
+    <tr>
+      <td><code>className</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Additional CSS classes merged via <code>cn()</code>.</td>
     </tr>
   </tbody>
 </table>
+
+Also accepts all standard `React.ComponentProps<'span'>` attributes.
+
+---
+
+## Accessibility
+
+- When `count` is provided the badge receives `role="status"` so screen readers announce live updates.
+- For purely decorative badges (e.g., a dot) use `aria-hidden="true"` on the badge element.
 
 ---
 
 ## Import
 
 ```tsx
-import { Badge } from '@/components/canary/atoms/badge/badge';
-// or from canary barrel:
+// From canary barrel (recommended)
 import { Badge } from '@arda-cards/design-system/canary';
+
+// Direct import
+import { Badge } from '@/components/canary/atoms/badge/badge';
 ```

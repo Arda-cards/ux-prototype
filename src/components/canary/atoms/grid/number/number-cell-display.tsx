@@ -20,5 +20,5 @@ export interface NumberCellDisplayProps
 /** Compact read-only number renderer for AG Grid cells. */
 export function NumberCellDisplay({ value, precision = 0 }: NumberCellDisplayProps) {
   const display = formatNumber(value, precision);
-  return <span className="truncate text-sm leading-normal">{display}</span>;
+  return <span className="cursor-default truncate text-sm leading-normal">{display}</span>;
 }

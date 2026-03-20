@@ -71,3 +71,21 @@ export const OverflowOnly: Story = {
     ],
   },
 };
+
+/**
+ * Interactive Controls playground — use the Controls panel to inspect props.
+ * Note: `actions` and `overflowActions` are complex arrays; adjust via the
+ * story args directly. The story pre-populates a typical toolbar configuration.
+ */
+export const Playground: Story = {
+  args: {
+    actions: [
+      { key: 'edit', label: 'Edit item', icon: SquarePen, onAction: noop },
+      { key: 'queue', label: 'Add to queue', icon: ShoppingCart, onAction: noop },
+      { key: 'print', label: 'Print card', icon: Printer, onAction: noop },
+    ],
+    overflowActions: [
+      { key: 'delete', label: 'Delete', onAction: noop, destructive: true, separatorBefore: true },
+    ],
+  },
+};

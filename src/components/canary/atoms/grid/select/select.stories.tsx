@@ -65,6 +65,11 @@ const meta: Meta<typeof SelectCellDisplay> = {
       description: 'The stored value to look up and display',
       table: { category: 'Runtime' },
     },
+    options: {
+      control: false,
+      description: 'Available options. Accepts SelectOption[] or Record<string, string>.',
+      table: { category: 'Static' },
+    },
   },
 };
 
@@ -321,5 +326,21 @@ export const BothFormats: Story = {
       // At least 2 "Pending" texts — one per display component
       await expect(pendingLabels.length).toBeGreaterThanOrEqual(2);
     });
+  },
+};
+
+// ============================================================================
+// Playground — args-only, no render override; responds to Controls panel
+// ============================================================================
+
+/**
+ * Interactive Controls playground for SelectCellDisplay.
+ * Edit `value` in the Controls panel to see the label lookup in action.
+ * `options` is fixed (complex type — cannot be driven by a control).
+ */
+export const Playground: Story = {
+  args: {
+    value: 'PENDING',
+    options: orderStatusOptions,
   },
 };

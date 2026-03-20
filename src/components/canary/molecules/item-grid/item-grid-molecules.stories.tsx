@@ -11,7 +11,6 @@ const typeaheadMeta = {
   title: 'Components/Canary/Molecules/ItemGrid/TypeaheadCellEditor',
   component: TypeaheadCellEditor,
   parameters: { layout: 'centered' },
-  tags: ['autodocs'],
 } satisfies Meta<typeof TypeaheadCellEditor>;
 
 export default typeaheadMeta;
@@ -99,4 +98,34 @@ export const Header: StoryObj<typeof DragHeader> = {
       <DragHeader displayName="Column Name" />
     </div>
   ),
+};
+
+// --- Playground ---
+
+/**
+ * Interactive Controls playground for TypeaheadCellEditor.
+ * Type in the input to trigger the async lookup. `allowCreate` and
+ * `placeholder` can be adjusted in the Controls panel.
+ */
+export const Playground: TypeaheadStory = {
+  render: () => {
+    const [value, setValue] = useState<string | null>('');
+    return (
+      <div className="w-60 rounded-md border">
+        <TypeaheadCellEditor
+          value={value}
+          onValueChange={setValue}
+          stopEditing={() => console.log('stopEditing')}
+          lookup={async (search) => {
+            await new Promise((r) => setTimeout(r, 80));
+            return mockSuppliers
+              .filter((s) => s.toLowerCase().includes(search.toLowerCase()))
+              .map((s) => ({ label: s, value: s }));
+          }}
+          allowCreate
+          placeholder="Search suppliers\u2026"
+        />
+      </div>
+    );
+  },
 };

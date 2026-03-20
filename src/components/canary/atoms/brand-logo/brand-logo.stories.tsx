@@ -15,11 +15,28 @@ const meta = {
       },
     },
   },
-  tags: ['autodocs'],
 } satisfies Meta;
 
 export default meta;
 type Story = StoryObj;
+
+export const Playground: Story = {
+  argTypes: {
+    variant: {
+      control: 'select',
+      options: ['default', 'inverted', 'mono', 'mono-inverted'],
+    },
+  },
+  render: (args: { variant?: 'default' | 'inverted' | 'mono' | 'mono-inverted' }) => (
+    <div className="p-6 bg-sidebar rounded-lg flex items-center gap-4">
+      <BrandLogo variant={args.variant} />
+      <BrandIcon variant={args.variant} />
+    </div>
+  ),
+  args: {
+    variant: 'default',
+  },
+};
 
 /** Full wordmark — default variant (orange bg, white A). */
 export const Wordmark: Story = {

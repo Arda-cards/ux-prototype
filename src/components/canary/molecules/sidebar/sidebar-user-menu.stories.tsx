@@ -32,7 +32,6 @@ const meta = {
       },
     },
   },
-  tags: ['autodocs'],
 } satisfies Meta<typeof SidebarUserMenu>;
 
 export default meta;
@@ -125,6 +124,18 @@ export const LogoutOnly: Story = {
           { key: 'logout', label: 'Log out', icon: LogOut, onClick: fn(), destructive: true },
         ]}
       />
+    </Sidebar>
+  ),
+};
+
+/**
+ * Interactive Controls playground — `user` and `actions` are complex objects.
+ * This story pre-populates a typical configuration with all standard actions.
+ */
+export const Playground: Story = {
+  render: () => (
+    <Sidebar defaultOpen>
+      <SidebarUserMenu user={mockUser} actions={defaultActions} />
     </Sidebar>
   ),
 };

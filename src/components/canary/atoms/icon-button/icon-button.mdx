@@ -1,14 +1,38 @@
 {/* icon-button.mdx */}
-import { Meta, Canvas, ArgTypes } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
 import * as IconButtonStories from './icon-button.stories';
 
 <Meta of={IconButtonStories} />
 
 # IconButton
 
-Icon-only button with accessible label, optional badge count, and tooltip.
+Icon-only button with required accessible label, optional notification badge, and auto-shown tooltip.
 
-**Atom** &#8212; Canary | Import: `@/components/canary/atoms/icon-button/icon-button`
+**Atom** &#8212; Canary | Import: `import { IconButton } from '@arda-cards/design-system/canary'`
+
+---
+
+## Playground
+
+<Canvas of={IconButtonStories.Playground} />
+
+---
+
+## All Variants
+
+<Canvas of={IconButtonStories.AllVariants} />
+
+---
+
+## Purpose
+
+`IconButton` wraps `Button` (ghost variant, `icon` size) with three Arda-specific additions:
+
+- A **required `label`** prop that populates `aria-label` and, by default, appears as a bottom-side tooltip on hover.
+- An optional **`badgeCount`** for notification-style counts. Counts above 99 display as `99+`.
+- A **`showTooltip`** flag (default `true`) to suppress the tooltip when context already makes the action clear.
+
+Used in `AppHeader` for icon actions such as Help, Notifications, and the user menu.
 
 ---
 
@@ -16,17 +40,21 @@ Icon-only button with accessible label, optional badge count, and tooltip.
 
 <Canvas of={IconButtonStories.Default} />
 
----
+## With badge
 
-## Purpose
+<Canvas of={IconButtonStories.WithBadge} />
 
-`IconButton` wraps `Button` (size `icon`) with:
+## High badge count
 
-- A **required `label`** prop that populates `aria-label`.
-- An optional **`badgeCount`** for notification-style counts.
-- A **tooltip** that surfaces the label on hover/focus.
+<Canvas of={IconButtonStories.HighBadgeCount} />
 
-Used in `AppHeader` for icon actions (Help, Notifications, User menu).
+## No tooltip
+
+<Canvas of={IconButtonStories.NoTooltip} />
+
+## Group composition
+
+<Canvas of={IconButtonStories.Group} />
 
 ---
 
@@ -52,35 +80,60 @@ Used in `AppHeader` for icon actions (Help, Notifications, User menu).
       <td><code>label</code></td>
       <td><code>string</code></td>
       <td>required</td>
-      <td>Accessible label &#8212; shown as tooltip, used for aria-label.</td>
+      <td>Accessible label &#8212; used as <code>aria-label</code> and tooltip content.</td>
+    </tr>
+    <tr>
+      <td><code>iconSize</code></td>
+      <td><code>number</code></td>
+      <td><code>20</code></td>
+      <td>Icon size in pixels passed to the Lucide icon <code>size</code> prop.</td>
+    </tr>
+    <tr>
+      <td><code>showTooltip</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Whether to show the label as a tooltip on hover.</td>
     </tr>
     <tr>
       <td><code>badgeCount</code></td>
       <td><code>number</code></td>
       <td>&#8212;</td>
-      <td>Notification badge count. Capped at 99+.</td>
-    </tr>
-    <tr>
-      <td><code>variant</code></td>
-      <td><code>'ghost' | 'outline'</code></td>
-      <td><code>'ghost'</code></td>
-      <td>Button variant (icon buttons are always ghost or outline).</td>
+      <td>Notification badge count. Counts above 99 display as <code>99+</code>. Not shown when <code>undefined</code> or <code>0</code>.</td>
     </tr>
     <tr>
       <td><code>onClick</code></td>
-      <td><code>() =&gt; void</code></td>
+      <td><code>() =&#62; void</code></td>
       <td>&#8212;</td>
       <td>Click handler.</td>
     </tr>
+    <tr>
+      <td><code>className</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Additional CSS classes on the button element.</td>
+    </tr>
   </tbody>
 </table>
+
+Also accepts all standard `React.HTMLAttributes<HTMLButtonElement>` except `onClick` (which is typed separately).
+
+---
+
+## Accessibility
+
+- `label` is required and maps directly to `aria-label`. Screen readers announce the button's purpose.
+- The notification badge carries its own `role="status"` `aria-label` (e.g., `"8 notifications"`).
+- `IconButton` always renders as a ghost button; it does not expose a `variant` prop &#8212; use `Button` directly for other variants.
+- Wrap `IconButton` (or its parent) in a `TooltipProvider` when rendering outside the default app layout.
 
 ---
 
 ## Import
 
 ```tsx
-import { IconButton } from '@/components/canary/atoms/icon-button/icon-button';
-// or from canary barrel:
+// From canary barrel (recommended)
 import { IconButton } from '@arda-cards/design-system/canary';
+
+// Direct import
+import { IconButton } from '@/components/canary/atoms/icon-button/icon-button';
 ```

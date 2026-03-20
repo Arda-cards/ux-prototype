@@ -1,0 +1,110 @@
+{/* item-grid-molecules.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as ItemGridMoleculeStories from './item-grid-molecules.stories';
+
+<Meta of={ItemGridMoleculeStories} />
+
+# Item Grid Molecules
+
+Shared cell editor and header primitives used inside `ItemGrid`. These molecules are not used
+standalone &#8212; they compose into the `ItemGrid` organism via column definitions.
+
+**Layer**: Molecule &#8212; Canary
+
+---
+
+## Playground
+
+`TypeaheadCellEditor` with async supplier lookup. Type to search; press Enter to commit.
+
+<Canvas of={ItemGridMoleculeStories.Playground} />
+
+---
+
+## TypeaheadCellEditor
+
+Async search-as-you-type cell editor for AG Grid. Debounces the `lookup` function and presents
+results in a keyboard-navigable dropdown. Supports `allowCreate` to add new values inline.
+
+<Canvas of={ItemGridMoleculeStories.Typeahead} />
+
+<Canvas of={ItemGridMoleculeStories.TypeaheadEmpty} />
+
+---
+
+## SelectCellEditor
+
+Static list dropdown &#8212; the base atom from `@/components/canary/atoms/grid/select`, shown here
+for comparison with `TypeaheadCellEditor`.
+
+<Canvas of={ItemGridMoleculeStories.Select} />
+
+---
+
+## DragHeader
+
+Column header with a drag-grip icon. Used as the `headerComponent` for draggable columns.
+
+<Canvas of={ItemGridMoleculeStories.Header} />
+
+---
+
+## TypeaheadCellEditor Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>value</code></td>
+      <td><code>string | null</code></td>
+      <td>Required</td>
+      <td>Current cell value passed in by AG Grid.</td>
+    </tr>
+    <tr>
+      <td><code>onValueChange</code></td>
+      <td><code>(value: string | null) =&#62; void</code></td>
+      <td>Required</td>
+      <td>Called as the user types or selects an option.</td>
+    </tr>
+    <tr>
+      <td><code>stopEditing</code></td>
+      <td><code>(cancel?: boolean) =&#62; void</code></td>
+      <td>Required</td>
+      <td>AG Grid callback to commit or cancel editing.</td>
+    </tr>
+    <tr>
+      <td><code>lookup</code></td>
+      <td><code>(search: string) =&#62; Promise&#60;TypeaheadOption[]&#62;</code></td>
+      <td>Required</td>
+      <td>Async function that returns matching options for the search string.</td>
+    </tr>
+    <tr>
+      <td><code>allowCreate</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>When <code>true</code>, shows a &#8220;Create &#8230;&#8221; option for new values not in the list.</td>
+    </tr>
+    <tr>
+      <td><code>placeholder</code></td>
+      <td><code>string</code></td>
+      <td><code>'Search&#8230;'</code></td>
+      <td>Input placeholder text.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { TypeaheadCellEditor } from '@/components/canary/molecules/item-grid/typeahead-cell-editor';
+import { DragHeader } from '@/components/canary/molecules/item-grid/drag-header';
+```

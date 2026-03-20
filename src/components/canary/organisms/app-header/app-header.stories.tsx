@@ -113,3 +113,23 @@ export const Composition: Story = {
     );
   },
 };
+
+/**
+ * Interactive Controls playground — use the Controls panel to toggle
+ * `showSearch`. `actions` and `buttonActions` are complex arrays pre-populated
+ * here. Search is wired to local state.
+ */
+export const Playground: Story = {
+  render: () => {
+    const [search, setSearch] = useState('');
+    return (
+      <AppHeader
+        actions={defaultActions}
+        buttonActions={defaultButtonActions}
+        searchValue={search}
+        onSearchChange={setSearch}
+        showSearch
+      />
+    );
+  },
+};

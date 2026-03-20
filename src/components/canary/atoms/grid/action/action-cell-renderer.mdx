@@ -1,0 +1,114 @@
+{/* action-cell-renderer.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as Stories from './action-cell-renderer.stories';
+
+<Meta of={Stories} />
+
+# Action Cell Renderer
+
+Vertical-ellipsis button (&#8942;) that opens a portal dropdown menu of row-level actions. Designed for use as an AG Grid cell renderer in a pinned-right column.
+
+**Grid Atom** &#8212; see [Grid Guide](?path=/docs/components-canary-atoms-grid-guide--docs)
+
+---
+
+## Playground
+
+Use the Controls panel to adjust `disabled` and inspect the action menu.
+
+<Canvas of={Stories.Playground} />
+
+---
+
+## Default
+
+<Canvas of={Stories.Default} />
+
+## Menu Open
+
+<Canvas of={Stories.MenuOpen} />
+
+## Disabled
+
+<Canvas of={Stories.Disabled} />
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>rowData</code></td>
+      <td><code>T</code></td>
+      <td>Required</td>
+      <td>The row entity this cell represents. Passed to each action&#8217;s <code>onClick</code>.</td>
+    </tr>
+    <tr>
+      <td><code>actions</code></td>
+      <td><code>RowAction&#60;T&#62;[]</code></td>
+      <td>Required</td>
+      <td>Array of action descriptors. Each has <code>label</code>, optional <code>icon</code>, and <code>onClick(rowData)</code>.</td>
+    </tr>
+    <tr>
+      <td><code>disabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>When <code>true</code>, the trigger button is disabled and the menu cannot be opened.</td>
+    </tr>
+  </tbody>
+</table>
+
+### RowAction&#60;T&#62;
+
+<table>
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>Menu item label.</td>
+    </tr>
+    <tr>
+      <td><code>icon</code></td>
+      <td><code>ReactNode</code></td>
+      <td>Optional icon rendered before the label.</td>
+    </tr>
+    <tr>
+      <td><code>onClick</code></td>
+      <td><code>(rowData: T) =&#62; void</code></td>
+      <td>Called when the user selects this action.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Design notes
+
+- The dropdown menu renders via `createPortal` to `document.body`, so it escapes AG Grid&#8217;s `overflow: hidden` cell container.
+- Menu position is computed from the trigger button&#8217;s `getBoundingClientRect`.
+- Keyboard: `Escape` closes the menu; `Enter`/`Space` open it on the trigger.
+- Clicking outside the menu closes it.
+
+---
+
+## Import
+
+```tsx
+import { ActionCellRenderer } from '@arda-cards/design-system/canary';
+```
