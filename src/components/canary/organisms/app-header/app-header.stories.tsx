@@ -120,15 +120,32 @@ export const Composition: Story = {
  * here. Search is wired to local state.
  */
 export const Playground: Story = {
-  render: () => {
+  argTypes: {
+    showSearch: {
+      control: 'boolean',
+      description: 'Show the search input',
+    },
+    searchPlaceholder: {
+      control: 'text',
+      description: 'Search input placeholder text',
+    },
+  },
+  args: {
+    showSearch: true,
+    searchPlaceholder: 'Search\u2026',
+    actions: defaultActions,
+    buttonActions: defaultButtonActions,
+  },
+  render: (args) => {
     const [search, setSearch] = useState('');
     return (
       <AppHeader
-        actions={defaultActions}
-        buttonActions={defaultButtonActions}
+        actions={args.actions}
+        buttonActions={args.buttonActions}
         searchValue={search}
         onSearchChange={setSearch}
-        showSearch
+        showSearch={args.showSearch}
+        searchPlaceholder={args.searchPlaceholder}
       />
     );
   },
