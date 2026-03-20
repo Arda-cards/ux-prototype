@@ -1,11 +1,15 @@
 'use client';
 
 import { cn } from '@/types/canary/utils';
-import { SidebarProvider, Sidebar, SidebarRail } from '@/components/canary/primitives/sidebar';
+import {
+  SidebarProvider,
+  Sidebar as SidebarPrimitive,
+  SidebarRail,
+} from '@/components/canary/primitives/sidebar';
 
 // --- Interfaces ---
 
-/** Static configuration for ArdaSidebar. */
+/** Static configuration for Sidebar. */
 export interface ArdaSidebarStaticConfig {
   /* --- View / Layout / Controller --- */
   /** Default open state (uncontrolled). */
@@ -18,7 +22,7 @@ export interface ArdaSidebarStaticConfig {
   content?: React.ReactNode;
 }
 
-/** Runtime configuration for ArdaSidebar. */
+/** Runtime configuration for Sidebar. */
 export interface ArdaSidebarRuntimeConfig {
   /* --- Model / Data Binding --- */
   /** Controlled open state. */
@@ -27,23 +31,26 @@ export interface ArdaSidebarRuntimeConfig {
   onOpenChange?: (open: boolean) => void;
 }
 
-/** Combined props for ArdaSidebar. */
-export interface ArdaSidebarProps extends ArdaSidebarStaticConfig, ArdaSidebarRuntimeConfig {
+/** Combined props for Sidebar. */
+export interface SidebarProps extends ArdaSidebarStaticConfig, ArdaSidebarRuntimeConfig {
   /** Additional CSS classes applied to the sidebar. */
   className?: string;
 }
 
+/** @deprecated Use SidebarProps */
+export type ArdaSidebarProps = SidebarProps;
+
 // --- Component ---
 
 /**
- * ArdaSidebar — Arda-branded wrapper around shadcn Sidebar.
+ * Sidebar — Arda-branded wrapper around shadcn Sidebar.
  *
  * Dark by default. Set `dark={false}` to follow app theme instead.
  *
  * Provides: mobile Sheet, Cmd+B keyboard shortcut, cookie persistence,
  * icon-only collapsed mode with tooltips — all from shadcn primitives.
  */
-export function ArdaSidebar({
+export function Sidebar({
   defaultOpen = true,
   dark = true,
   open,
@@ -51,7 +58,7 @@ export function ArdaSidebar({
   children,
   content,
   className,
-}: ArdaSidebarProps) {
+}: SidebarProps) {
   const providerProps = {
     defaultOpen,
     ...(open !== undefined && { open }),
@@ -60,11 +67,14 @@ export function ArdaSidebar({
 
   return (
     <SidebarProvider {...providerProps} className={cn(dark && 'dark')}>
-      <Sidebar collapsible="icon" className={cn('border-sidebar-border', className)}>
+      <SidebarPrimitive collapsible="icon" className={cn('border-sidebar-border', className)}>
         {children}
         <SidebarRail />
-      </Sidebar>
+      </SidebarPrimitive>
       {content}
     </SidebarProvider>
   );
 }
+
+/** @deprecated Use Sidebar */
+export const ArdaSidebar = Sidebar;

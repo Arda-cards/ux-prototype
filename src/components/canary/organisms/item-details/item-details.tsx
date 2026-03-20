@@ -2,17 +2,17 @@
 
 import { useState, useCallback } from 'react';
 import {
-  ArdaDrawer,
-  ArdaDrawerHeader,
-  ArdaDrawerTitle,
-  ArdaDrawerDescription,
-  ArdaDrawerBody,
+  Drawer,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerBody,
 } from '../../atoms/drawer/drawer';
-import { ArdaItemDetailsHeader } from '../../molecules/item-details/item-details-header';
+import { ItemDetailsHeader } from '../../molecules/item-details/item-details-header';
 import { ArdaFieldList, type FieldDef } from '../../molecules/field-list/field-list';
-import { ArdaItemDetailsCardPreview } from '../../molecules/item-details/item-details-card-preview';
+import { ItemDetailsCardPreview } from '../../molecules/item-details/item-details-card-preview';
 import type { ToolbarAction, OverflowAction } from '../../molecules/action-toolbar/action-toolbar';
-import { ArdaButton } from '../../atoms/button/button';
+import { Button } from '../../atoms/button/button';
 import { XIcon, type LucideIcon } from 'lucide-react';
 
 // --- Interfaces ---
@@ -27,7 +27,7 @@ export interface ItemDetailsTab {
   icon?: LucideIcon;
 }
 
-/** Design-time configuration for ArdaItemDetails. */
+/** Design-time configuration for ItemDetails. */
 export interface ArdaItemDetailsStaticConfig {
   /* --- View / Layout / Controller --- */
   /** Drawer width preset. Defaults to `"lg"`. */
@@ -38,7 +38,7 @@ export interface ArdaItemDetailsStaticConfig {
   className?: string;
 }
 
-/** Runtime configuration for ArdaItemDetails. */
+/** Runtime configuration for ItemDetails. */
 export interface ArdaItemDetailsRuntimeConfig {
   /* --- Model / Data Binding --- */
   /** Whether the panel is open. */
@@ -68,9 +68,12 @@ export interface ArdaItemDetailsRuntimeConfig {
   renderCardsTab?: (() => React.ReactNode) | undefined;
 }
 
-/** Combined props for ArdaItemDetails. */
-export interface ArdaItemDetailsProps
+/** Combined props for ItemDetails. */
+export interface ItemDetailsProps
   extends ArdaItemDetailsStaticConfig, ArdaItemDetailsRuntimeConfig {}
+
+/** @deprecated Use ItemDetailsProps */
+export type ArdaItemDetailsProps = ItemDetailsProps;
 
 // --- Default tabs ---
 
@@ -82,15 +85,15 @@ const DEFAULT_TABS: ItemDetailsTab[] = [
 // --- Component ---
 
 /**
- * ArdaItemDetails — item detail/edit slide-over panel.
+ * ItemDetails — item detail/edit slide-over panel.
  *
- * Compound component built from ArdaDrawer, ArdaItemDetailsHeader,
- * ArdaItemDetailsCardPreview, and ArdaFieldList molecules.
+ * Compound component built from Drawer, ItemDetailsHeader,
+ * ItemDetailsCardPreview, and ArdaFieldList molecules.
  *
  * Manages internal tab and card navigation state. All data and actions
  * are passed via props — no API calls or context consumption.
  */
-export function ArdaItemDetails({
+export function ItemDetails({
   // Static
   size = 'lg',
   tabs = DEFAULT_TABS,
@@ -107,7 +110,7 @@ export function ArdaItemDetails({
   renderCard,
   cardEmptyState,
   renderCardsTab,
-}: ArdaItemDetailsProps) {
+}: ItemDetailsProps) {
   const [activeTab, setActiveTab] = useState('details');
   const [currentCardIndex, setCurrentCardIndex] = useState(1);
 
@@ -128,20 +131,18 @@ export function ArdaItemDetails({
   const hasActions = (actions?.length ?? 0) > 0 || (overflowActions?.length ?? 0) > 0;
 
   return (
-    <ArdaDrawer open={open} onOpenChange={handleOpenChange} size={size} className={className}>
-      <ArdaDrawerHeader>
+    <Drawer open={open} onOpenChange={handleOpenChange} size={size} className={className}>
+      <DrawerHeader>
         {/* Visually hidden title for screen readers (Radix requirement) */}
-        <ArdaDrawerTitle className="sr-only">{displayTitle}</ArdaDrawerTitle>
-        <ArdaDrawerDescription className="sr-only">
-          View and manage item details.
-        </ArdaDrawerDescription>
+        <DrawerTitle className="sr-only">{displayTitle}</DrawerTitle>
+        <DrawerDescription className="sr-only">View and manage item details.</DrawerDescription>
 
         {/* Title row with close button */}
         <div className="flex items-center justify-between gap-2">
           <h2 className="flex-1 min-w-0 text-lg font-semibold leading-snug break-words text-foreground">
             {displayTitle}
           </h2>
-          <ArdaButton
+          <Button
             variant="ghost"
             size="icon"
             onClick={() => onOpenChange(false)}
@@ -149,17 +150,17 @@ export function ArdaItemDetails({
             aria-label="Close"
           >
             <XIcon className="size-4" />
-          </ArdaButton>
+          </Button>
         </div>
 
         {/* Tabs — full width */}
-        <ArdaItemDetailsHeader activeTab={activeTab} onTabChange={setActiveTab} tabs={tabs} />
-      </ArdaDrawerHeader>
+        <ItemDetailsHeader activeTab={activeTab} onTabChange={setActiveTab} tabs={tabs} />
+      </DrawerHeader>
 
-      <ArdaDrawerBody>
+      <DrawerBody>
         {activeTab === 'details' ? (
           <>
-            <ArdaItemDetailsCardPreview
+            <ItemDetailsCardPreview
               currentIndex={currentCardIndex}
               totalCards={cardCount}
               onIndexChange={setCurrentCardIndex}
@@ -169,7 +170,7 @@ export function ArdaItemDetails({
             >
               {hasActions && (
                 <div className="px-5 pt-2 pb-1">
-                  <ArdaItemDetailsHeader
+                  <ItemDetailsHeader
                     activeTab={activeTab}
                     onTabChange={setActiveTab}
                     tabs={[]}
@@ -178,13 +179,16 @@ export function ArdaItemDetails({
                   />
                 </div>
               )}
-            </ArdaItemDetailsCardPreview>
+            </ItemDetailsCardPreview>
             {fields && <ArdaFieldList fields={fields} />}
           </>
         ) : (
           renderCardsTab?.()
         )}
-      </ArdaDrawerBody>
-    </ArdaDrawer>
+      </DrawerBody>
+    </Drawer>
   );
 }
+
+/** @deprecated Use ItemDetails */
+export const ArdaItemDetails = ItemDetails;

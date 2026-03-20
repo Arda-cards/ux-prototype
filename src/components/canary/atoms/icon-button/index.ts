@@ -1,5 +1,6 @@
-export { ArdaIconButton } from './icon-button';
+export { IconButton, ArdaIconButton } from './icon-button';
 export type {
+  IconButtonProps,
   ArdaIconButtonProps,
   ArdaIconButtonStaticConfig,
   ArdaIconButtonRuntimeConfig,

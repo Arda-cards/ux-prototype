@@ -12,7 +12,7 @@ import {
 
 // --- Interfaces ---
 
-/** Design-time configuration for ArdaDrawer. */
+/** Design-time configuration for Drawer. */
 export interface ArdaDrawerStaticConfig {
   /* --- View / Layout / Controller --- */
   /** Width preset. `"md"` = 420px, `"lg"` = 460px, `"xl"` = 560px. Defaults to `"lg"`. */
@@ -25,7 +25,7 @@ export interface ArdaDrawerStaticConfig {
   children: React.ReactNode;
 }
 
-/** Runtime configuration for ArdaDrawer. */
+/** Runtime configuration for Drawer. */
 export interface ArdaDrawerRuntimeConfig {
   /* --- Model / Data Binding --- */
   /** Whether the drawer is open. */
@@ -34,8 +34,11 @@ export interface ArdaDrawerRuntimeConfig {
   onOpenChange: (open: boolean) => void;
 }
 
-/** Combined props for ArdaDrawer. */
-export interface ArdaDrawerProps extends ArdaDrawerStaticConfig, ArdaDrawerRuntimeConfig {}
+/** Combined props for Drawer. */
+export interface DrawerProps extends ArdaDrawerStaticConfig, ArdaDrawerRuntimeConfig {}
+
+/** @deprecated Use DrawerProps */
+export type ArdaDrawerProps = DrawerProps;
 
 // --- Size map ---
 
@@ -48,19 +51,19 @@ const sizeClasses = {
 // --- Components ---
 
 /**
- * ArdaDrawer — Arda-branded slide-over panel wrapping shadcn Sheet.
+ * Drawer — Arda-branded slide-over panel wrapping shadcn Sheet.
  *
  * Provides consistent width presets, overlay styling, and compound component
  * slots (Header, Body, Footer) for entity detail/edit views.
  */
-export function ArdaDrawer({
+export function Drawer({
   open,
   onOpenChange,
   size = 'lg',
   side = 'right',
   className,
   children,
-}: ArdaDrawerProps) {
+}: DrawerProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
@@ -75,8 +78,8 @@ export function ArdaDrawer({
   );
 }
 
-/** Sticky header slot for ArdaDrawer. */
-export function ArdaDrawerHeader({ className, children, ...props }: React.ComponentProps<'div'>) {
+/** Sticky header slot for Drawer. */
+export function DrawerHeader({ className, children, ...props }: React.ComponentProps<'div'>) {
   return (
     <SheetHeader
       className={cn('sticky top-0 z-40 border-b bg-background px-5 py-3', className)}
@@ -87,14 +90,18 @@ export function ArdaDrawerHeader({ className, children, ...props }: React.Compon
   );
 }
 
-/** Accessible title for ArdaDrawer (required by Radix for screen readers). */
-export const ArdaDrawerTitle = SheetTitle;
+/** Accessible title for Drawer (required by Radix for screen readers). */
+export const DrawerTitle = SheetTitle;
+/** @deprecated Use DrawerTitle */
+export const ArdaDrawerTitle = DrawerTitle;
 
-/** Accessible description for ArdaDrawer (optional, for screen readers). */
-export const ArdaDrawerDescription = SheetDescription;
+/** Accessible description for Drawer (optional, for screen readers). */
+export const DrawerDescription = SheetDescription;
+/** @deprecated Use DrawerDescription */
+export const ArdaDrawerDescription = DrawerDescription;
 
-/** Scrollable body slot for ArdaDrawer. */
-export function ArdaDrawerBody({ className, children, ...props }: React.ComponentProps<'div'>) {
+/** Scrollable body slot for Drawer. */
+export function DrawerBody({ className, children, ...props }: React.ComponentProps<'div'>) {
   return (
     <div className={cn('flex-1 overflow-y-auto', className)} {...props}>
       {children}
@@ -102,8 +109,8 @@ export function ArdaDrawerBody({ className, children, ...props }: React.Componen
   );
 }
 
-/** Sticky footer slot for ArdaDrawer. */
-export function ArdaDrawerFooter({ className, children, ...props }: React.ComponentProps<'div'>) {
+/** Sticky footer slot for Drawer. */
+export function DrawerFooter({ className, children, ...props }: React.ComponentProps<'div'>) {
   return (
     <SheetFooter
       className={cn(
@@ -116,3 +123,12 @@ export function ArdaDrawerFooter({ className, children, ...props }: React.Compon
     </SheetFooter>
   );
 }
+
+/** @deprecated Use Drawer */
+export const ArdaDrawer = Drawer;
+/** @deprecated Use DrawerHeader */
+export const ArdaDrawerHeader = DrawerHeader;
+/** @deprecated Use DrawerBody */
+export const ArdaDrawerBody = DrawerBody;
+/** @deprecated Use DrawerFooter */
+export const ArdaDrawerFooter = DrawerFooter;

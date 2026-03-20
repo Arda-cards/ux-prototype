@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { ArdaBadge } from './badge';
+import { Badge } from './badge';
 
 const meta = {
   title: 'Components/Canary/Atoms/Badge',
-  component: ArdaBadge,
+  component: Badge,
   parameters: {
     docs: {
       description: {
@@ -14,7 +14,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof ArdaBadge>;
+} satisfies Meta<typeof Badge>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -53,11 +53,11 @@ export const CustomMax: Story = {
 export const AllVariants: Story = {
   render: () => (
     <div className="flex items-center gap-2">
-      <ArdaBadge>Default</ArdaBadge>
-      <ArdaBadge variant="secondary">Secondary</ArdaBadge>
-      <ArdaBadge variant="outline">Outline</ArdaBadge>
-      <ArdaBadge variant="destructive">Destructive</ArdaBadge>
-      <ArdaBadge count={150} />
+      <Badge>Default</Badge>
+      <Badge variant="secondary">Secondary</Badge>
+      <Badge variant="outline">Outline</Badge>
+      <Badge variant="destructive">Destructive</Badge>
+      <Badge count={150} />
     </div>
   ),
 };

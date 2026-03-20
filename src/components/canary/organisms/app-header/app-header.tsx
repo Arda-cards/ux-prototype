@@ -1,10 +1,10 @@
 import type { LucideIcon } from 'lucide-react';
 
 import { cn } from '@/types/canary/utils';
-import { ArdaButton as Button } from '@/components/canary/atoms/button';
+import { Button } from '@/components/canary/atoms/button';
 import { Separator } from '@/components/canary/primitives/separator';
 import { ArdaSearchInput } from '../../atoms/search-input/search-input';
-import { ArdaIconButton } from '../../atoms/icon-button/icon-button';
+import { IconButton } from '../../atoms/icon-button/icon-button';
 
 // --- Types ---
 
@@ -60,21 +60,24 @@ export interface ArdaAppHeaderRuntimeConfig {
   onSearchChange?: (value: string) => void;
 }
 
-/** Combined props for ArdaAppHeader. */
-export interface ArdaAppHeaderProps
+/** Combined props for AppHeader. */
+export interface AppHeaderProps
   extends
     ArdaAppHeaderStaticConfig,
     ArdaAppHeaderRuntimeConfig,
     React.HTMLAttributes<HTMLElement> {}
 
+/** @deprecated Use AppHeaderProps */
+export type ArdaAppHeaderProps = AppHeaderProps;
+
 // --- Component ---
 
 /**
- * ArdaAppHeader — top navigation bar with search, labeled actions, and icon actions.
+ * AppHeader — top navigation bar with search, labeled actions, and icon actions.
  *
- * Composes ArdaSearchInput and ArdaIconButton atoms with shadcn/ui Button and Separator.
+ * Composes ArdaSearchInput and IconButton atoms with shadcn/ui Button and Separator.
  */
-export function ArdaAppHeader({
+export function AppHeader({
   buttonActions,
   actions,
   searchPlaceholder = 'Search',
@@ -85,7 +88,7 @@ export function ArdaAppHeader({
   className,
   children,
   ...props
-}: ArdaAppHeaderProps) {
+}: AppHeaderProps) {
   const visibleActions = actions?.filter((a) => a.visible !== false);
 
   return (
@@ -129,7 +132,7 @@ export function ArdaAppHeader({
 
         {/* Icon actions (e.g., Help, Notifications) */}
         {visibleActions?.map((action) => (
-          <ArdaIconButton
+          <IconButton
             key={action.key}
             icon={action.icon}
             label={action.label}
@@ -141,3 +144,6 @@ export function ArdaAppHeader({
     </header>
   );
 }
+
+/** @deprecated Use AppHeader */
+export const ArdaAppHeader = AppHeader;

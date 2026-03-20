@@ -10,7 +10,7 @@
  * to render the edit flow with ArdaSupplierForm.
  */
 import type { Meta } from '@storybook/react-vite';
-import { expect, userEvent } from 'storybook/test';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { ArdaSupplierForm } from '@/components/extras/organisms/reference/business-affiliates/supplier-form/supplier-form';
 import type { BusinessAffiliate, BusinessRoleType } from '@/types/extras';
@@ -321,29 +321,78 @@ const { Interactive, Stepwise, Automated } = createUseCaseStories<EditFormData>(
     goToScene(0);
     await delay();
 
-    /* Advance to edit step */
+    /* Advance to edit step — ArdaSupplierViewer is rendered in step 1 */
     const nextBtn = canvas.getByRole('button', { name: /next step/i });
     await userEvent.click(nextBtn);
     goToScene(1);
     await delay();
 
+    /* Wait for ArdaSupplierViewer to finish loading (getSupplier has 300ms delay) */
+    await waitFor(
+      () => {
+        // Loading overlay shows "Loading…"; once it's gone the viewer is ready
+        expect(canvas.queryByText('Loading…')).not.toBeInTheDocument();
+      },
+      { timeout: 5000 },
+    );
+
+    /* Enter edit mode in the viewer */
+    const editBtn = await waitFor(
+      () => canvas.getByRole('button', { name: /^edit$/i }),
+      { timeout: 5000 },
+    );
+    await userEvent.click(editBtn);
+
+    /* Expand the Contact Information sub-viewer */
+    const contactToggle = canvas.getByRole('button', { name: /contact information/i });
+    await userEvent.click(contactToggle);
+
     /* Update email field */
-    const emailInput = canvas.getByLabelText(/^email$/i) as HTMLInputElement;
+    const emailInput = await waitFor(
+      () => canvas.getByLabelText(/^email$/i) as HTMLInputElement,
+      { timeout: 5000 },
+    );
     expect(emailInput).toBeVisible();
     await userEvent.clear(emailInput);
     await userEvent.type(emailInput, SAMPLE.contactEmail);
     goToScene(2);
     await delay();
 
-    /* Update city field */
-    const cityInput = canvas.getByLabelText(/^city$/i) as HTMLInputElement;
+    /* Expand the Primary Address sub-viewer */
+    const addressToggle = canvas.getByRole('button', { name: /primary address/i });
+    await userEvent.click(addressToggle);
+
+    /* Update city field — scope to the Primary Address sub-viewer container to avoid
+       ambiguity with the Contact sub-viewer's postalAddress city field */
+    const cityInput = await waitFor(
+      () => {
+        // The SubViewerContainer renders: <div><button>Primary Address</button><div>fields</div></div>
+        // Get the container div (parent of the toggle button) and query within it
+        const container = addressToggle.closest('.border.border-gray-200.rounded-lg') as HTMLElement;
+        if (!container) throw new Error('Primary Address container not found');
+        return within(container).getByLabelText(/^city$/i) as HTMLInputElement;
+      },
+      { timeout: 5000 },
+    );
     expect(cityInput).toBeVisible();
     await userEvent.clear(cityInput);
     await userEvent.type(cityInput, SAMPLE.city);
     goToScene(3);
     await delay();
 
-    /* Submit */
+    /* Submit via the viewer's built-in Submit button */
+    const submitBtn = canvas.getByRole('button', { name: /^submit$/i });
+    await userEvent.click(submitBtn);
+
+    /* Wait for viewer to finish saving (updateSupplier has 300ms delay) */
+    await waitFor(
+      () => {
+        expect(canvas.queryByText('Loading…')).not.toBeInTheDocument();
+      },
+      { timeout: 5000 },
+    );
+
+    /* Advance the wizard to complete by clicking Save Changes */
     const saveBtn = canvas.getByRole('button', { name: /save changes/i });
     await userEvent.click(saveBtn);
     goToScene(4);

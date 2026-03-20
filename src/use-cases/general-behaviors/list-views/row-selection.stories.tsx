@@ -13,7 +13,7 @@ import type { ColDef } from 'ag-grid-community';
 import { Printer, Trash2, Download, ShoppingCart } from 'lucide-react';
 
 import { createEntityDataGrid } from '@/components/canary/organisms/shared/entity-data-grid/create-entity-data-grid';
-import { ArdaButton as Button } from '@/components/canary/atoms/button/button';
+import { Button } from '@/components/canary/atoms/button/button';
 import { OverflowToolbar } from '@/components/canary/molecules/overflow-toolbar/overflow-toolbar';
 import { storyStepDelay } from '@/components/canary/organisms/shared/entity-data-grid/story-step-delay';
 

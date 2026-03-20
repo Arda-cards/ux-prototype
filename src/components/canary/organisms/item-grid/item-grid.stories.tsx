@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 
 import { SidebarInset, SidebarTrigger } from '@/components/canary/primitives/sidebar';
-import { ArdaButton as Button } from '@/components/canary/atoms/button';
+import { Button } from '@/components/canary/atoms/button';
 import { OverflowToolbar } from '../../molecules/overflow-toolbar/overflow-toolbar';
 import {
   DropdownMenu,
@@ -42,8 +42,8 @@ import {
 } from '@/components/canary/primitives/sheet';
 import type { Item } from '@/types/extras';
 
-import { ArdaSidebar } from '../sidebar/sidebar';
-import { ArdaSidebarHeader } from '../../molecules/sidebar/sidebar-header';
+import { Sidebar } from '../sidebar/sidebar';
+import { SidebarHeader } from '../../molecules/sidebar/sidebar-header';
 import { SidebarNav } from '../../molecules/sidebar/sidebar-nav';
 import { SidebarNavItem } from '../../molecules/sidebar/sidebar-nav-item';
 import { SidebarUserMenu } from '../../molecules/sidebar/sidebar-user-menu';
@@ -336,7 +336,7 @@ export const Composition: Story = {
     };
 
     return (
-      <ArdaSidebar
+      <Sidebar
         defaultOpen
         content={
           <SidebarInset>
@@ -669,7 +669,7 @@ export const Composition: Story = {
           </SidebarInset>
         }
       >
-        <ArdaSidebarHeader teamName="Arda Cards" />
+        <SidebarHeader teamName="Arda Cards" />
         <SidebarNav>
           <SidebarNavItem icon={LayoutDashboard} label="Dashboard" />
           <SidebarNavItem icon={Package} label="Items" active />
@@ -690,7 +690,7 @@ export const Composition: Story = {
             },
           ]}
         />
-      </ArdaSidebar>
+      </Sidebar>
     );
   },
 };

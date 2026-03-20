@@ -4,7 +4,7 @@ import { LayoutDashboard, Package, ShoppingCart, Building2, Settings } from 'luc
 
 import { SidebarNav } from './sidebar-nav';
 import { SidebarNavItem } from './sidebar-nav-item';
-import { ArdaSidebar } from '../../organisms/sidebar/sidebar';
+import { Sidebar } from '../../organisms/sidebar/sidebar';
 
 const meta = {
   title: 'Components/Canary/Molecules/Sidebar/Nav',
@@ -15,7 +15,7 @@ const meta = {
       description: {
         component:
           'Scrollable nav section wrapping shadcn SidebarContent > SidebarGroup > SidebarMenu. ' +
-          'Must be rendered inside an ArdaSidebar (SidebarProvider context).',
+          'Must be rendered inside an Sidebar (SidebarProvider context).',
       },
     },
   },
@@ -28,7 +28,7 @@ type Story = StoryObj<typeof SidebarNav>;
 /** Default with a set of nav items. */
 export const Default: Story = {
   render: () => (
-    <ArdaSidebar defaultOpen>
+    <Sidebar defaultOpen>
       <SidebarNav>
         <SidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
         <SidebarNavItem icon={Package} label="Items" />
@@ -36,7 +36,7 @@ export const Default: Story = {
         <SidebarNavItem icon={Building2} label="Suppliers" />
         <SidebarNavItem icon={Settings} label="Settings" />
       </SidebarNav>
-    </ArdaSidebar>
+    </Sidebar>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -49,12 +49,12 @@ export const Default: Story = {
 /** With a group label above the nav items. */
 export const WithLabel: Story = {
   render: () => (
-    <ArdaSidebar defaultOpen>
+    <Sidebar defaultOpen>
       <SidebarNav label="Navigation">
         <SidebarNavItem icon={LayoutDashboard} label="Dashboard" />
         <SidebarNavItem icon={Settings} label="Settings" />
       </SidebarNav>
-    </ArdaSidebar>
+    </Sidebar>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);

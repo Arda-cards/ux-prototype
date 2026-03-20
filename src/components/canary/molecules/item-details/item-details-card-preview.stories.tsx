@@ -2,12 +2,12 @@ import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { SquarePen, ShoppingCart, Printer, Trash2 } from 'lucide-react';
 
-import { ArdaItemDetailsCardPreview } from './item-details-card-preview';
+import { ItemDetailsCardPreview } from './item-details-card-preview';
 import { ArdaGridAction } from '../grid-action/grid-action';
 
 const meta = {
   title: 'Components/Canary/Molecules/ItemDetails/ItemDetailsCardPreview',
-  component: ArdaItemDetailsCardPreview,
+  component: ItemDetailsCardPreview,
   parameters: {
     layout: 'centered',
     docs: {
@@ -19,10 +19,10 @@ const meta = {
     },
   },
   tags: ['autodocs'],
-} satisfies Meta<typeof ArdaItemDetailsCardPreview>;
+} satisfies Meta<typeof ItemDetailsCardPreview>;
 
 export default meta;
-type Story = StoryObj<typeof ArdaItemDetailsCardPreview>;
+type Story = StoryObj<typeof ItemDetailsCardPreview>;
 
 const noop = () => {};
 
@@ -38,7 +38,7 @@ export const Default: Story = {
     const [index, setIndex] = useState(1);
     return (
       <div className="w-[460px]">
-        <ArdaItemDetailsCardPreview
+        <ItemDetailsCardPreview
           currentIndex={index}
           totalCards={5}
           onIndexChange={setIndex}
@@ -55,7 +55,7 @@ export const WithActions: Story = {
     const [index, setIndex] = useState(1);
     return (
       <div className="w-[460px]">
-        <ArdaItemDetailsCardPreview
+        <ItemDetailsCardPreview
           currentIndex={index}
           totalCards={3}
           onIndexChange={setIndex}
@@ -67,7 +67,7 @@ export const WithActions: Story = {
             <ArdaGridAction icon={Printer} label="Print" onAction={noop} />
             <ArdaGridAction icon={Trash2} label="Delete" destructive onAction={noop} />
           </div>
-        </ArdaItemDetailsCardPreview>
+        </ItemDetailsCardPreview>
       </div>
     );
   },
@@ -77,12 +77,7 @@ export const WithActions: Story = {
 export const Loading: Story = {
   render: () => (
     <div className="w-[460px]">
-      <ArdaItemDetailsCardPreview
-        currentIndex={1}
-        totalCards={0}
-        onIndexChange={() => {}}
-        loading
-      />
+      <ItemDetailsCardPreview currentIndex={1} totalCards={0} onIndexChange={() => {}} loading />
     </div>
   ),
 };
@@ -91,7 +86,7 @@ export const Loading: Story = {
 export const Empty: Story = {
   render: () => (
     <div className="w-[460px]">
-      <ArdaItemDetailsCardPreview currentIndex={1} totalCards={0} onIndexChange={() => {}} />
+      <ItemDetailsCardPreview currentIndex={1} totalCards={0} onIndexChange={() => {}} />
     </div>
   ),
 };
@@ -100,7 +95,7 @@ export const Empty: Story = {
 export const SingleCard: Story = {
   render: () => (
     <div className="w-[460px]">
-      <ArdaItemDetailsCardPreview
+      <ItemDetailsCardPreview
         currentIndex={1}
         totalCards={1}
         onIndexChange={() => {}}

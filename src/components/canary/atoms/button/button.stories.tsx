@@ -1,18 +1,18 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { fn } from 'storybook/test';
 import { Printer, Trash2 } from 'lucide-react';
-import { ArdaButton } from './button';
+import { Button } from './button';
 
 const meta = {
   title: 'Components/Canary/Atoms/Button',
-  component: ArdaButton,
+  component: Button,
   parameters: {
     layout: 'centered',
   },
   args: {
     onClick: fn(),
   },
-} satisfies Meta<typeof ArdaButton>;
+} satisfies Meta<typeof Button>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -48,19 +48,19 @@ export const Large: Story = {
 export const WithIcon: Story = {
   args: { children: 'Print card' },
   render: (args) => (
-    <ArdaButton {...args}>
+    <Button {...args}>
       <Printer className="size-4" />
       Print card
-    </ArdaButton>
+    </Button>
   ),
 };
 
 export const IconOnly: Story = {
   args: { size: 'icon', 'aria-label': 'Delete' },
   render: (args) => (
-    <ArdaButton {...args}>
+    <Button {...args}>
       <Trash2 className="size-4" />
-    </ArdaButton>
+    </Button>
   ),
 };
 
@@ -75,11 +75,11 @@ export const Disabled: Story = {
 export const AllVariants: Story = {
   render: () => (
     <div className="flex flex-wrap items-center gap-3">
-      <ArdaButton variant="primary">Primary</ArdaButton>
-      <ArdaButton variant="secondary">Secondary</ArdaButton>
-      <ArdaButton variant="outline">Outline</ArdaButton>
-      <ArdaButton variant="ghost">Ghost</ArdaButton>
-      <ArdaButton variant="destructive">Destructive</ArdaButton>
+      <Button variant="primary">Primary</Button>
+      <Button variant="secondary">Secondary</Button>
+      <Button variant="outline">Outline</Button>
+      <Button variant="ghost">Ghost</Button>
+      <Button variant="destructive">Destructive</Button>
     </div>
   ),
 };
@@ -87,9 +87,9 @@ export const AllVariants: Story = {
 export const AllSizes: Story = {
   render: () => (
     <div className="flex flex-wrap items-center gap-3">
-      <ArdaButton size="sm">Small</ArdaButton>
-      <ArdaButton size="md">Medium</ArdaButton>
-      <ArdaButton size="lg">Large</ArdaButton>
+      <Button size="sm">Small</Button>
+      <Button size="md">Medium</Button>
+      <Button size="lg">Large</Button>
     </div>
   ),
 };

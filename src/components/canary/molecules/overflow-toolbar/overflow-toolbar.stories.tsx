@@ -10,7 +10,7 @@ import {
   Copy,
 } from 'lucide-react';
 
-import { ArdaButton as Button } from '@/components/canary/atoms/button';
+import { Button } from '@/components/canary/atoms/button';
 
 import { OverflowToolbar } from './overflow-toolbar';
 

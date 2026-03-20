@@ -4,7 +4,7 @@ import * as SidebarStories from './sidebar.stories';
 
 <Meta of={SidebarStories} />
 
-# ArdaSidebar
+# Sidebar
 
 Dark sidebar navigation built on shadcn Sidebar primitives. Compound component &#8212; compose with sub-components, don't configure with arrays.
 
@@ -16,7 +16,7 @@ Dark sidebar navigation built on shadcn Sidebar primitives. Compound component &
 
 | Component | Layer | Purpose |
 |---|---|---|
-| **ArdaSidebarHeader** | molecule | Brand logo + team name. Pass `teams` for a team switcher dropdown. |
+| **SidebarHeader** | molecule | Brand logo + team name. Pass `teams` for a team switcher dropdown. |
 | **SidebarNav** | molecule | Scrollable nav area. Wraps children in a `<nav>` landmark. |
 | **SidebarNavItem** | molecule | Nav button with icon, label, optional badge (count or dot), and active state. Count badges collapse to dots in icon-only mode. |
 | **SidebarNavGroup** | molecule | Collapsible section with chevron. Auto-expands when a child is active. |
@@ -79,8 +79,8 @@ function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <ArdaSidebar defaultOpen>
-      <ArdaSidebarHeader teamName="Arda Cards" />
+    <Sidebar defaultOpen>
+      <SidebarHeader teamName="Arda Cards" />
       <SidebarNav>
         <SidebarNavItem
           icon={Package}
@@ -103,7 +103,7 @@ function AppSidebar() {
           { key: 'logout', label: 'Log out', icon: LogOut, onClick: handleSignOut, destructive: true },
         ]}
       />
-    </ArdaSidebar>
+    </Sidebar>
   );
 }
 ```

@@ -2,7 +2,7 @@
 
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { cn } from '@/types/canary/utils';
-import { ArdaButton as Button } from '@/components/canary/atoms/button';
+import { Button } from '@/components/canary/atoms/button';
 import {
   DropdownMenu,
   DropdownMenuContent,

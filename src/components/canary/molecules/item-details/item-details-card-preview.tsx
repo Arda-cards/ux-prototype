@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 
 // --- Interfaces ---
 
-export interface ArdaItemDetailsCardPreviewProps {
+export interface ItemDetailsCardPreviewProps {
   /* --- Model / Data Binding --- */
   /** Current card index (1-based). */
   currentIndex: number;
@@ -40,12 +40,12 @@ const GAP = 16;
 // --- Component ---
 
 /**
- * ArdaItemDetailsCardPreview — centered card carousel with animated slide transitions.
+ * ItemDetailsCardPreview — centered card carousel with animated slide transitions.
  *
  * Renders all cards in a horizontal strip and translates to center the active card.
  * Peek cards on either side hint at more content. Supports swipe and click navigation.
  */
-export function ArdaItemDetailsCardPreview({
+export function ItemDetailsCardPreview({
   currentIndex,
   totalCards,
   onIndexChange,
@@ -54,7 +54,7 @@ export function ArdaItemDetailsCardPreview({
   emptyState,
   children,
   className,
-}: ArdaItemDetailsCardPreviewProps) {
+}: ItemDetailsCardPreviewProps) {
   const hasCards = totalCards > 0;
   const touchStartX = useRef<number | null>(null);
   const hasNext = currentIndex < totalCards;
@@ -201,3 +201,8 @@ export function ArdaItemDetailsCardPreview({
     </div>
   );
 }
+
+/** @deprecated Use ItemDetailsCardPreviewProps */
+export type ArdaItemDetailsCardPreviewProps = ItemDetailsCardPreviewProps;
+/** @deprecated Use ItemDetailsCardPreview */
+export const ArdaItemDetailsCardPreview = ItemDetailsCardPreview;

@@ -4,7 +4,7 @@ import * as ItemDetailsStories from './item-details.stories';
 
 <Meta of={ItemDetailsStories} />
 
-# ArdaItemDetails
+# ItemDetails
 
 Item detail slide-over panel with tabbed navigation, field list, card preview, and action toolbar.
 
@@ -20,8 +20,8 @@ Item detail slide-over panel with tabbed navigation, field list, card preview, a
 
 ## Purpose
 
-`ArdaItemDetails` is a compound organism built from `ArdaDrawer`, `ArdaItemDetailsHeader`,
-`ArdaFieldList`, `ArdaItemDetailsCardPreview`, and `ArdaActionToolbar`. It manages internal
+`ItemDetails` is a compound organism built from `Drawer`, `ItemDetailsHeader`,
+`FieldList`, `ItemDetailsCardPreview`, and `ActionToolbar`. It manages internal
 tab state and card navigation.
 
 Open the panel by setting `open={true}` and wiring `onOpenChange` to your state. Pass
@@ -140,7 +140,7 @@ custom cards tab content.
 ## Import
 
 ```tsx
-import { ArdaItemDetails } from '@/components/canary/organisms/item-details/item-details';
+import { ItemDetails } from '@/components/canary/organisms/item-details/item-details';
 // or from canary barrel:
-import { ArdaItemDetails } from '@arda-cards/design-system/canary';
+import { ItemDetails } from '@arda-cards/design-system/canary';
 ```

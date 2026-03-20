@@ -4,11 +4,11 @@ import { describe, it, expect } from 'vitest';
 import { Package, ShoppingCart } from 'lucide-react';
 
 import { SidebarNavItem } from './sidebar-nav-item';
-import { ArdaSidebar } from '../../organisms/sidebar/sidebar';
+import { Sidebar } from '../../organisms/sidebar/sidebar';
 
-/** Wrap in ArdaSidebar to provide SidebarProvider context. */
+/** Wrap in Sidebar to provide SidebarProvider context. */
 function renderInSidebar(ui: React.ReactElement) {
-  return render(<ArdaSidebar defaultOpen>{ui}</ArdaSidebar>);
+  return render(<Sidebar defaultOpen>{ui}</Sidebar>);
 }
 
 describe('SidebarNavItem', () => {

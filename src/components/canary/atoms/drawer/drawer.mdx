@@ -4,7 +4,7 @@ import * as DrawerStories from './drawer.stories';
 
 <Meta of={DrawerStories} />
 
-# ArdaDrawer
+# Drawer
 
 Slide-over drawer atom for detail panels and contextual editing.
 
@@ -20,12 +20,12 @@ Slide-over drawer atom for detail panels and contextual editing.
 
 ## Purpose
 
-`ArdaDrawer` slides in from the right side of the viewport. Use it for detail
+`Drawer` slides in from the right side of the viewport. Use it for detail
 panels, edit forms, and contextual actions that need more space than a dialog.
 For simple confirmations use `ArdaDialog` instead.
 
-The `ArdaItemDetails` organism builds on top of `ArdaDrawer` &#8212; prefer using
-`ArdaItemDetails` for item-specific detail panels.
+The `ItemDetails` organism builds on top of `Drawer` &#8212; prefer using
+`ItemDetails` for item-specific detail panels.
 
 ---
 
@@ -40,23 +40,23 @@ The `ArdaItemDetails` organism builds on top of `ArdaDrawer` &#8212; prefer usin
   </thead>
   <tbody>
     <tr>
-      <td><code>ArdaDrawer</code></td>
+      <td><code>Drawer</code></td>
       <td>Root provider. Controls open state and size.</td>
     </tr>
     <tr>
-      <td><code>ArdaDrawerHeader</code></td>
+      <td><code>DrawerHeader</code></td>
       <td>Sticky header area (title, tabs, close button).</td>
     </tr>
     <tr>
-      <td><code>ArdaDrawerTitle</code></td>
+      <td><code>DrawerTitle</code></td>
       <td>Drawer title. Use <code>sr-only</code> class if visually hidden.</td>
     </tr>
     <tr>
-      <td><code>ArdaDrawerDescription</code></td>
+      <td><code>DrawerDescription</code></td>
       <td>Accessible description. Use <code>sr-only</code> class if visually hidden.</td>
     </tr>
     <tr>
-      <td><code>ArdaDrawerBody</code></td>
+      <td><code>DrawerBody</code></td>
       <td>Scrollable content area.</td>
     </tr>
   </tbody>
@@ -99,10 +99,10 @@ The `ArdaItemDetails` organism builds on top of `ArdaDrawer` &#8212; prefer usin
 
 ```tsx
 import {
-  ArdaDrawer,
-  ArdaDrawerHeader,
-  ArdaDrawerTitle,
-  ArdaDrawerDescription,
-  ArdaDrawerBody,
+  Drawer,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerBody,
 } from '@/components/canary/atoms/drawer/drawer';
 ```

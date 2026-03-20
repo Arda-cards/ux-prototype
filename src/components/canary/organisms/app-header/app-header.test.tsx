@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { Bell, HelpCircle, ScanBarcode } from 'lucide-react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { ArdaAppHeader } from './app-header';
+import { AppHeader } from './app-header';
 import { TooltipProvider } from '@/components/canary/primitives/tooltip';
 
 const renderHeader = (ui: React.ReactElement) => render(<TooltipProvider>{ui}</TooltipProvider>);
@@ -15,35 +15,35 @@ const defaultActions = [
 
 const defaultButtonActions = [{ key: 'scan', icon: ScanBarcode, label: 'Scan' }];
 
-describe('ArdaAppHeader', () => {
+describe('AppHeader', () => {
   it('renders a header element', () => {
-    renderHeader(<ArdaAppHeader />);
+    renderHeader(<AppHeader />);
     expect(screen.getByRole('banner')).toBeInTheDocument();
   });
 
   it('renders the search input by default', () => {
-    renderHeader(<ArdaAppHeader />);
+    renderHeader(<AppHeader />);
     expect(screen.getByPlaceholderText('Search')).toBeInTheDocument();
   });
 
   it('hides the search input when showSearch is false', () => {
-    renderHeader(<ArdaAppHeader showSearch={false} />);
+    renderHeader(<AppHeader showSearch={false} />);
     expect(screen.queryByPlaceholderText('Search')).not.toBeInTheDocument();
   });
 
   it('renders button actions with labels', () => {
-    renderHeader(<ArdaAppHeader buttonActions={defaultButtonActions} />);
+    renderHeader(<AppHeader buttonActions={defaultButtonActions} />);
     expect(screen.getByRole('button', { name: /scan/i })).toBeInTheDocument();
   });
 
   it('renders icon actions with accessible labels', () => {
-    renderHeader(<ArdaAppHeader actions={defaultActions} />);
+    renderHeader(<AppHeader actions={defaultActions} />);
     expect(screen.getByRole('button', { name: 'Help' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Notifications' })).toBeInTheDocument();
   });
 
   it('renders notification badge', () => {
-    renderHeader(<ArdaAppHeader actions={defaultActions} />);
+    renderHeader(<AppHeader actions={defaultActions} />);
     expect(screen.getByRole('status')).toHaveTextContent('8');
   });
 
@@ -52,7 +52,7 @@ describe('ArdaAppHeader', () => {
       { key: 'help', icon: HelpCircle, label: 'Help', visible: false },
       { key: 'notifications', icon: Bell, label: 'Notifications' },
     ];
-    renderHeader(<ArdaAppHeader actions={actions} />);
+    renderHeader(<AppHeader actions={actions} />);
     expect(screen.queryByRole('button', { name: 'Help' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Notifications' })).toBeInTheDocument();
   });
@@ -61,7 +61,7 @@ describe('ArdaAppHeader', () => {
     const user = userEvent.setup();
     const handleScan = vi.fn();
     renderHeader(
-      <ArdaAppHeader
+      <AppHeader
         buttonActions={[{ key: 'scan', icon: ScanBarcode, label: 'Scan', onClick: handleScan }]}
       />,
     );
@@ -74,7 +74,7 @@ describe('ArdaAppHeader', () => {
     const user = userEvent.setup();
     const handleHelp = vi.fn();
     renderHeader(
-      <ArdaAppHeader
+      <AppHeader
         actions={[{ key: 'help', icon: HelpCircle, label: 'Help', onClick: handleHelp }]}
       />,
     );
@@ -84,14 +84,14 @@ describe('ArdaAppHeader', () => {
   });
 
   it('renders leading content', () => {
-    renderHeader(<ArdaAppHeader leading={<span data-testid="breadcrumb">Items</span>} />);
+    renderHeader(<AppHeader leading={<span data-testid="breadcrumb">Items</span>} />);
     expect(screen.getByTestId('breadcrumb')).toBeInTheDocument();
   });
 
   it('fires onSearchChange when typing', async () => {
     const user = userEvent.setup();
     const handleSearch = vi.fn();
-    renderHeader(<ArdaAppHeader onSearchChange={handleSearch} />);
+    renderHeader(<AppHeader onSearchChange={handleSearch} />);
 
     await user.type(screen.getByPlaceholderText('Search'), 'test');
     expect(handleSearch).toHaveBeenCalledWith('t');

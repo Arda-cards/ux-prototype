@@ -1,5 +1,8 @@
-export { ArdaItemDetailsHeader } from './item-details-header';
-export type { ArdaItemDetailsHeaderProps } from './item-details-header';
+export { ItemDetailsHeader, ArdaItemDetailsHeader } from './item-details-header';
+export type { ItemDetailsHeaderProps, ArdaItemDetailsHeaderProps } from './item-details-header';
 
-export { ArdaItemDetailsCardPreview } from './item-details-card-preview';
-export type { ArdaItemDetailsCardPreviewProps } from './item-details-card-preview';
+export { ItemDetailsCardPreview, ArdaItemDetailsCardPreview } from './item-details-card-preview';
+export type {
+  ItemDetailsCardPreviewProps,
+  ArdaItemDetailsCardPreviewProps,
+} from './item-details-card-preview';

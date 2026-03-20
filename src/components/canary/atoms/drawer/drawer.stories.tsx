@@ -1,13 +1,7 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import {
-  ArdaDrawer,
-  ArdaDrawerHeader,
-  ArdaDrawerTitle,
-  ArdaDrawerDescription,
-  ArdaDrawerBody,
-} from './drawer';
+import { Drawer, DrawerHeader, DrawerTitle, DrawerDescription, DrawerBody } from './drawer';
 import { ReadOnlyField } from '../read-only-field/read-only-field';
 
 const meta = {
@@ -39,18 +33,18 @@ export const Default: Story = {
         >
           Open drawer
         </button>
-        <ArdaDrawer open={open} onOpenChange={setOpen}>
-          <ArdaDrawerHeader>
-            <ArdaDrawerTitle>Item Details</ArdaDrawerTitle>
-            <ArdaDrawerDescription>View and manage this inventory item.</ArdaDrawerDescription>
-          </ArdaDrawerHeader>
-          <ArdaDrawerBody className="px-6 py-4 space-y-3">
+        <Drawer open={open} onOpenChange={setOpen}>
+          <DrawerHeader>
+            <DrawerTitle>Item Details</DrawerTitle>
+            <DrawerDescription>View and manage this inventory item.</DrawerDescription>
+          </DrawerHeader>
+          <DrawerBody className="px-6 py-4 space-y-3">
             <ReadOnlyField label="SKU" value="WDG-4420-BLK" />
             <ReadOnlyField label="Supplier" value="McMaster-Carr" />
             <ReadOnlyField label="Unit Price" value="$12.50" />
             <ReadOnlyField label="Location" value="Bin A-12" />
-          </ArdaDrawerBody>
-        </ArdaDrawer>
+          </DrawerBody>
+        </Drawer>
       </>
     );
   },
@@ -68,14 +62,14 @@ export const SizeMd: Story = {
         >
           Open medium drawer
         </button>
-        <ArdaDrawer open={open} onOpenChange={setOpen} size="md">
-          <ArdaDrawerHeader>
-            <ArdaDrawerTitle>Medium Drawer</ArdaDrawerTitle>
-          </ArdaDrawerHeader>
-          <ArdaDrawerBody className="px-6 py-4">
+        <Drawer open={open} onOpenChange={setOpen} size="md">
+          <DrawerHeader>
+            <DrawerTitle>Medium Drawer</DrawerTitle>
+          </DrawerHeader>
+          <DrawerBody className="px-6 py-4">
             <p className="text-sm text-muted-foreground">420px max width on desktop.</p>
-          </ArdaDrawerBody>
-        </ArdaDrawer>
+          </DrawerBody>
+        </Drawer>
       </>
     );
   },
@@ -93,14 +87,14 @@ export const SizeXl: Story = {
         >
           Open XL drawer
         </button>
-        <ArdaDrawer open={open} onOpenChange={setOpen} size="xl">
-          <ArdaDrawerHeader>
-            <ArdaDrawerTitle>Extra-Large Drawer</ArdaDrawerTitle>
-          </ArdaDrawerHeader>
-          <ArdaDrawerBody className="px-6 py-4">
+        <Drawer open={open} onOpenChange={setOpen} size="xl">
+          <DrawerHeader>
+            <DrawerTitle>Extra-Large Drawer</DrawerTitle>
+          </DrawerHeader>
+          <DrawerBody className="px-6 py-4">
             <p className="text-sm text-muted-foreground">560px max width on desktop.</p>
-          </ArdaDrawerBody>
-        </ArdaDrawer>
+          </DrawerBody>
+        </Drawer>
       </>
     );
   },

@@ -1,7 +1,7 @@
 /**
  * REF::ITM::0001 — Browse and Search Items
  *
- * Composition story: ArdaSidebar + AppHeader + ItemGrid (entity-data-grid-backed)
+ * Composition story: Sidebar + AppHeader + ItemGrid (entity-data-grid-backed)
  * with search, column toggle, and multi-select toolbar actions.
  *
  * Maps to: REF::ITM::0001 — Browse and Search Items
@@ -30,14 +30,14 @@ import {
 } from 'lucide-react';
 
 import { SidebarInset, SidebarTrigger } from '@/components/canary/primitives/sidebar';
-import { ArdaSidebar } from '@/components/canary/organisms/sidebar/sidebar';
-import { ArdaSidebarHeader } from '@/components/canary/molecules/sidebar/sidebar-header';
+import { Sidebar } from '@/components/canary/organisms/sidebar/sidebar';
+import { SidebarHeader } from '@/components/canary/molecules/sidebar/sidebar-header';
 import { SidebarNav } from '@/components/canary/molecules/sidebar/sidebar-nav';
 import { SidebarNavItem } from '@/components/canary/molecules/sidebar/sidebar-nav-item';
 import { SidebarUserMenu } from '@/components/canary/molecules/sidebar/sidebar-user-menu';
-import { ArdaAppHeader } from '@/components/canary/organisms/app-header/app-header';
+import { AppHeader } from '@/components/canary/organisms/app-header/app-header';
 import { ItemGrid, type ItemGridHandle } from '@/components/canary/organisms/item-grid/item-grid';
-import { ArdaButton as Button } from '@/components/canary/atoms/button/button';
+import { Button } from '@/components/canary/atoms/button/button';
 import { OverflowToolbar } from '@/components/canary/molecules/overflow-toolbar/overflow-toolbar';
 import {
   DropdownMenu,
@@ -217,11 +217,11 @@ function ItemsPage() {
     );
 
   return (
-    <ArdaSidebar
+    <Sidebar
       defaultOpen
       content={
         <SidebarInset>
-          <ArdaAppHeader leading={<SidebarTrigger className="self-center" />} showSearch={false} />
+          <AppHeader leading={<SidebarTrigger className="self-center" />} showSearch={false} />
           <main className="flex flex-1 flex-col gap-4 p-6">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">Items</h1>
@@ -240,7 +240,7 @@ function ItemsPage() {
         </SidebarInset>
       }
     >
-      <ArdaSidebarHeader teamName="Arda Cards" />
+      <SidebarHeader teamName="Arda Cards" />
       <SidebarNav>
         <SidebarNavItem icon={LayoutDashboard} label="Dashboard" />
         <SidebarNavItem icon={Package} label="Items" active />
@@ -255,7 +255,7 @@ function ItemsPage() {
           { key: 'logout', label: 'Log out', icon: LogOut, onClick: () => {}, destructive: true },
         ]}
       />
-    </ArdaSidebar>
+    </Sidebar>
   );
 }
 

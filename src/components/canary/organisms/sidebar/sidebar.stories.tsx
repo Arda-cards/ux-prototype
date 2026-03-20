@@ -15,8 +15,8 @@ import {
   Tag,
 } from 'lucide-react';
 
-import { ArdaSidebar } from './sidebar';
-import { ArdaSidebarHeader } from '../../molecules/sidebar/sidebar-header';
+import { Sidebar } from './sidebar';
+import { SidebarHeader } from '../../molecules/sidebar/sidebar-header';
 import { SidebarNav } from '../../molecules/sidebar/sidebar-nav';
 import { SidebarNavGroup } from '../../molecules/sidebar/sidebar-nav-group';
 import { SidebarUserMenu, type UserMenuAction } from '../../molecules/sidebar/sidebar-user-menu';
@@ -38,7 +38,7 @@ const mockActions: UserMenuAction[] = [
 
 const meta = {
   title: 'Components/Canary/Organisms/Sidebar',
-  component: ArdaSidebar,
+  component: Sidebar,
   parameters: {
     layout: 'fullscreen',
     docs: {
@@ -52,10 +52,10 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof ArdaSidebar>;
+} satisfies Meta<typeof Sidebar>;
 
 export default meta;
-type Story = StoryObj<typeof ArdaSidebar>;
+type Story = StoryObj<typeof Sidebar>;
 
 /** Default sidebar. Toggle `open` and `dark` in the controls panel. */
 export const Default: Story = {
@@ -68,8 +68,8 @@ export const Default: Story = {
     dark: { control: 'boolean' },
   },
   render: (args) => (
-    <ArdaSidebar {...args}>
-      <ArdaSidebarHeader teamName="Arda Cards" />
+    <Sidebar {...args}>
+      <SidebarHeader teamName="Arda Cards" />
 
       <SidebarNav>
         <SidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
@@ -86,7 +86,7 @@ export const Default: Story = {
       </SidebarNav>
 
       <SidebarUserMenu user={mockUser} actions={mockActions} />
-    </ArdaSidebar>
+    </Sidebar>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -98,8 +98,8 @@ export const Default: Story = {
 /** Nav items with notification badges — count, dot, and active combinations. */
 export const WithBadges: Story = {
   render: () => (
-    <ArdaSidebar defaultOpen>
-      <ArdaSidebarHeader teamName="Arda Cards" />
+    <Sidebar defaultOpen>
+      <SidebarHeader teamName="Arda Cards" />
 
       <SidebarNav>
         <SidebarNavItem icon={LayoutDashboard} label="Dashboard" />
@@ -110,15 +110,15 @@ export const WithBadges: Story = {
       </SidebarNav>
 
       <SidebarUserMenu user={mockUser} actions={mockActions} />
-    </ArdaSidebar>
+    </Sidebar>
   ),
 };
 
 /** Nested nav groups with auto-expand on active child. */
 export const WithGroups: Story = {
   render: () => (
-    <ArdaSidebar defaultOpen>
-      <ArdaSidebarHeader teamName="Arda Cards" />
+    <Sidebar defaultOpen>
+      <SidebarHeader teamName="Arda Cards" />
 
       <SidebarNav>
         <SidebarNavItem icon={LayoutDashboard} label="Dashboard" />
@@ -141,14 +141,14 @@ export const WithGroups: Story = {
       </SidebarNav>
 
       <SidebarUserMenu user={mockUser} actions={mockActions} />
-    </ArdaSidebar>
+    </Sidebar>
   ),
 };
 
 /** Full page layout — sidebar + content area with SidebarInset. Press Cmd+B to toggle. */
 export const Composition: Story = {
   render: () => (
-    <ArdaSidebar
+    <Sidebar
       defaultOpen
       content={
         <SidebarInset>
@@ -177,7 +177,7 @@ export const Composition: Story = {
         </SidebarInset>
       }
     >
-      <ArdaSidebarHeader teamName="Arda Cards" />
+      <SidebarHeader teamName="Arda Cards" />
 
       <SidebarNav>
         <SidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
@@ -186,6 +186,6 @@ export const Composition: Story = {
       </SidebarNav>
 
       <SidebarUserMenu user={mockUser} actions={mockActions} />
-    </ArdaSidebar>
+    </Sidebar>
   ),
 };

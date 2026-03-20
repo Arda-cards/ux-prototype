@@ -1,5 +1,7 @@
 export {
+  ItemDetails,
   ArdaItemDetails,
+  type ItemDetailsProps,
   type ArdaItemDetailsProps,
   type ArdaItemDetailsStaticConfig,
   type ArdaItemDetailsRuntimeConfig,
@@ -8,12 +10,19 @@ export {
 
 // Atoms (re-exported for convenience)
 export {
+  Drawer,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerBody,
+  DrawerFooter,
   ArdaDrawer,
   ArdaDrawerHeader,
   ArdaDrawerTitle,
   ArdaDrawerDescription,
   ArdaDrawerBody,
   ArdaDrawerFooter,
+  type DrawerProps,
   type ArdaDrawerProps,
 } from '../../atoms/drawer/drawer';
 
@@ -26,7 +35,9 @@ export {
 
 // Molecules (re-exported for custom composition)
 export {
+  ItemDetailsHeader,
   ArdaItemDetailsHeader,
+  type ItemDetailsHeaderProps,
   type ArdaItemDetailsHeaderProps,
 } from '../../molecules/item-details/item-details-header';
 
@@ -37,6 +48,8 @@ export {
 } from '../../molecules/field-list/field-list';
 
 export {
+  ItemDetailsCardPreview,
   ArdaItemDetailsCardPreview,
+  type ItemDetailsCardPreviewProps,
   type ArdaItemDetailsCardPreviewProps,
 } from '../../molecules/item-details/item-details-card-preview';

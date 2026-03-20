@@ -1,2 +1,7 @@
-export { ArdaButton, buttonVariants } from './button';
-export type { ArdaButtonProps, ArdaButtonStaticConfig, ArdaButtonRuntimeConfig } from './button';
+export { Button, ArdaButton, buttonVariants } from './button';
+export type {
+  ButtonProps,
+  ArdaButtonProps,
+  ArdaButtonStaticConfig,
+  ArdaButtonRuntimeConfig,
+} from './button';

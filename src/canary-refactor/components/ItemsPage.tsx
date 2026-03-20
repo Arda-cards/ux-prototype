@@ -37,8 +37,6 @@ import {
 } from 'lucide-react';
 import { Skeleton } from '@frontend/components/ui/skeleton';
 import Image from 'next/image';
-// --- Canary integration: forked ItemTableAGGrid with canary column presets ---
-import { ItemTableAGGrid, type ItemTableAGGridRef } from './ItemTableAGGrid';
 import { UnsavedChangesModal } from '@frontend/components/common/UnsavedChangesModal';
 
 import { ItemFormPanel } from '@frontend/components/items/ItemFormPanel';

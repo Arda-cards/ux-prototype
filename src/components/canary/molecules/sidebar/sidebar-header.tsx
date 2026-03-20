@@ -2,7 +2,7 @@
 
 import { cn } from '@/types/canary/utils';
 import {
-  SidebarHeader,
+  SidebarHeader as SidebarHeaderPrimitive,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
@@ -45,22 +45,20 @@ export interface ArdaSidebarHeaderRuntimeConfig {
 }
 
 /** Combined props for SidebarHeader. */
-export interface ArdaSidebarHeaderProps
+export interface SidebarHeaderProps
   extends ArdaSidebarHeaderStaticConfig, ArdaSidebarHeaderRuntimeConfig {
   /** Additional CSS classes. */
   className?: string;
 }
 
+/** @deprecated Use SidebarHeaderProps */
+export type ArdaSidebarHeaderProps = SidebarHeaderProps;
+
 // --- Component ---
 
-export function ArdaSidebarHeader({
-  teamName,
-  teams,
-  children,
-  className,
-}: ArdaSidebarHeaderProps) {
+export function SidebarHeader({ teamName, teams, children, className }: SidebarHeaderProps) {
   if (children) {
-    return <SidebarHeader className={className}>{children}</SidebarHeader>;
+    return <SidebarHeaderPrimitive className={className}>{children}</SidebarHeaderPrimitive>;
   }
 
   const name = teamName ?? 'Arda';
@@ -77,19 +75,19 @@ export function ArdaSidebarHeader({
   // Non-interactive header (default) — uses SidebarMenuButton for consistent collapsed centering
   if (!teams || teams.length === 0) {
     return (
-      <SidebarHeader className={cn('p-2', className)}>
+      <SidebarHeaderPrimitive className={cn('p-2', className)}>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton tooltip={name}>{brandMark}</SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-      </SidebarHeader>
+      </SidebarHeaderPrimitive>
     );
   }
 
   // Interactive header with team switcher
   return (
-    <SidebarHeader className={cn('p-2', className)}>
+    <SidebarHeaderPrimitive className={cn('p-2', className)}>
       <SidebarMenu>
         <SidebarMenuItem>
           <DropdownMenu>
@@ -112,6 +110,9 @@ export function ArdaSidebarHeader({
           </DropdownMenu>
         </SidebarMenuItem>
       </SidebarMenu>
-    </SidebarHeader>
+    </SidebarHeaderPrimitive>
   );
 }
+
+/** @deprecated Use SidebarHeader */
+export const ArdaSidebarHeader = SidebarHeader;

@@ -2,7 +2,7 @@
  * REF::BA::0002 — View Business Affiliate Details (Canary Variant)
  *
  * Click a row in the canary supplier grid to open a detail panel
- * built from canary ArdaItemDetails and ArdaFieldList.
+ * built from canary ItemDetails and ArdaFieldList.
  *
  * Maps to: REF::BA::0002 — View Business Affiliate Details
  */
@@ -23,13 +23,13 @@ import {
 } from 'lucide-react';
 
 import { SidebarInset, SidebarTrigger } from '@/components/canary/primitives/sidebar';
-import { ArdaSidebar } from '@/components/canary/organisms/sidebar/sidebar';
-import { ArdaSidebarHeader } from '@/components/canary/molecules/sidebar/sidebar-header';
+import { Sidebar } from '@/components/canary/organisms/sidebar/sidebar';
+import { SidebarHeader } from '@/components/canary/molecules/sidebar/sidebar-header';
 import { SidebarNav } from '@/components/canary/molecules/sidebar/sidebar-nav';
 import { SidebarNavItem } from '@/components/canary/molecules/sidebar/sidebar-nav-item';
 import { SidebarUserMenu } from '@/components/canary/molecules/sidebar/sidebar-user-menu';
-import { ArdaAppHeader } from '@/components/canary/organisms/app-header/app-header';
-import { ArdaItemDetails } from '@/components/canary/organisms/item-details/item-details';
+import { AppHeader } from '@/components/canary/organisms/app-header/app-header';
+import { ItemDetails } from '@/components/canary/organisms/item-details/item-details';
 import type { FieldDef } from '@/components/canary/molecules/field-list/field-list';
 import { createEntityDataGrid } from '@/components/canary/organisms/shared/entity-data-grid/create-entity-data-grid';
 import { storyStepDelay } from '../_shared/story-step-delay';
@@ -178,11 +178,11 @@ function SupplierDetailsCanaryPage() {
   ];
 
   return (
-    <ArdaSidebar
+    <Sidebar
       defaultOpen
       content={
         <SidebarInset>
-          <ArdaAppHeader
+          <AppHeader
             leading={<SidebarTrigger className="self-center" />}
             showSearch={false}
           />
@@ -203,7 +203,7 @@ function SupplierDetailsCanaryPage() {
           </main>
 
           {/* Supplier detail drawer */}
-          <ArdaItemDetails
+          <ItemDetails
             open={!!selectedSupplier}
             onOpenChange={(open) => { if (!open) setSelectedSupplier(null); }}
             title={selectedSupplier?.name ?? ''}
@@ -214,7 +214,7 @@ function SupplierDetailsCanaryPage() {
         </SidebarInset>
       }
     >
-      <ArdaSidebarHeader teamName="Arda Cards" />
+      <SidebarHeader teamName="Arda Cards" />
       <SidebarNav>
         <SidebarNavItem icon={LayoutDashboard} label="Dashboard" />
         <SidebarNavItem icon={Package} label="Items" />
@@ -229,7 +229,7 @@ function SupplierDetailsCanaryPage() {
           { key: 'logout', label: 'Log out', icon: LogOut, onClick: () => {}, destructive: true },
         ]}
       />
-    </ArdaSidebar>
+    </Sidebar>
   );
 }
 

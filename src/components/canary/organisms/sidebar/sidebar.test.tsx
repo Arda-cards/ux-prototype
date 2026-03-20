@@ -1,24 +1,24 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 
-import { ArdaSidebar } from './sidebar';
-import { ArdaSidebarHeader } from '../../molecules/sidebar/sidebar-header';
+import { Sidebar } from './sidebar';
+import { SidebarHeader } from '../../molecules/sidebar/sidebar-header';
 
-describe('ArdaSidebar', () => {
+describe('Sidebar', () => {
   it('renders children inside the sidebar provider', () => {
     render(
-      <ArdaSidebar>
+      <Sidebar>
         <div data-testid="child">Hello</div>
-      </ArdaSidebar>,
+      </Sidebar>,
     );
     expect(screen.getByTestId('child')).toBeInTheDocument();
   });
 
   it('applies className to the sidebar', () => {
     const { container } = render(
-      <ArdaSidebar className="test-sidebar">
+      <Sidebar className="test-sidebar">
         <div>Content</div>
-      </ArdaSidebar>,
+      </Sidebar>,
     );
     const sidebar = container.querySelector('[data-slot="sidebar-container"]');
     expect(sidebar?.className).toContain('test-sidebar');
@@ -26,9 +26,9 @@ describe('ArdaSidebar', () => {
 
   it('renders expanded by default', () => {
     const { container } = render(
-      <ArdaSidebar>
+      <Sidebar>
         <div>Content</div>
-      </ArdaSidebar>,
+      </Sidebar>,
     );
     const wrapper = container.querySelector('[data-state]');
     expect(wrapper).toHaveAttribute('data-state', 'expanded');
@@ -36,9 +36,9 @@ describe('ArdaSidebar', () => {
 
   it('renders collapsed when defaultOpen is false', () => {
     const { container } = render(
-      <ArdaSidebar defaultOpen={false}>
+      <Sidebar defaultOpen={false}>
         <div>Content</div>
-      </ArdaSidebar>,
+      </Sidebar>,
     );
     const wrapper = container.querySelector('[data-state]');
     expect(wrapper).toHaveAttribute('data-state', 'collapsed');
@@ -48,9 +48,9 @@ describe('ArdaSidebar', () => {
 describe('SidebarHeader', () => {
   it('renders team name alongside logo', () => {
     render(
-      <ArdaSidebar>
-        <ArdaSidebarHeader teamName="Arda Cards" />
-      </ArdaSidebar>,
+      <Sidebar>
+        <SidebarHeader teamName="Arda Cards" />
+      </Sidebar>,
     );
     expect(screen.getByText('Arda Cards')).toBeInTheDocument();
     expect(screen.getByAltText('Arda')).toBeInTheDocument();
@@ -58,11 +58,11 @@ describe('SidebarHeader', () => {
 
   it('renders custom children instead of default header', () => {
     render(
-      <ArdaSidebar>
-        <ArdaSidebarHeader>
+      <Sidebar>
+        <SidebarHeader>
           <span>Custom</span>
-        </ArdaSidebarHeader>
-      </ArdaSidebar>,
+        </SidebarHeader>
+      </Sidebar>,
     );
     expect(screen.getByText('Custom')).toBeInTheDocument();
   });

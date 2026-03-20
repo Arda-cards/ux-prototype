@@ -13,11 +13,11 @@ import {
   Trash2,
 } from 'lucide-react';
 
-import { ArdaItemDetailsHeader } from './item-details-header';
+import { ItemDetailsHeader } from './item-details-header';
 
 const meta = {
   title: 'Components/Canary/Molecules/ItemDetails/ItemDetailsHeader',
-  component: ArdaItemDetailsHeader,
+  component: ItemDetailsHeader,
   parameters: {
     layout: 'centered',
     docs: {
@@ -27,10 +27,10 @@ const meta = {
     },
   },
   tags: ['autodocs'],
-} satisfies Meta<typeof ArdaItemDetailsHeader>;
+} satisfies Meta<typeof ItemDetailsHeader>;
 
 export default meta;
-type Story = StoryObj<typeof ArdaItemDetailsHeader>;
+type Story = StoryObj<typeof ItemDetailsHeader>;
 
 const noop = () => {};
 
@@ -66,7 +66,7 @@ export const Default: Story = {
     const [tab, setTab] = useState('details');
     return (
       <div className="w-[460px] border rounded-lg p-4 bg-background">
-        <ArdaItemDetailsHeader
+        <ItemDetailsHeader
           activeTab={tab}
           onTabChange={setTab}
           tabs={defaultTabs}
@@ -84,7 +84,7 @@ export const TabsOnly: Story = {
     const [tab, setTab] = useState('cards');
     return (
       <div className="w-[460px] border rounded-lg p-4 bg-background">
-        <ArdaItemDetailsHeader activeTab={tab} onTabChange={setTab} tabs={defaultTabs} />
+        <ItemDetailsHeader activeTab={tab} onTabChange={setTab} tabs={defaultTabs} />
       </div>
     );
   },
@@ -94,7 +94,7 @@ export const TabsOnly: Story = {
 export const ActionsOnly: Story = {
   render: () => (
     <div className="w-[460px] border rounded-lg p-4 bg-background">
-      <ArdaItemDetailsHeader
+      <ItemDetailsHeader
         activeTab="details"
         onTabChange={() => {}}
         tabs={[]}

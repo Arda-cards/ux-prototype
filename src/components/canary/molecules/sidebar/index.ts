@@ -1,5 +1,5 @@
-export { ArdaSidebarHeader } from './sidebar-header';
-export type { ArdaSidebarHeaderProps, TeamOption } from './sidebar-header';
+export { SidebarHeader, ArdaSidebarHeader } from './sidebar-header';
+export type { SidebarHeaderProps, ArdaSidebarHeaderProps, TeamOption } from './sidebar-header';
 
 export { SidebarNavItem } from './sidebar-nav-item';
 export type { SidebarNavItemProps } from './sidebar-nav-item';

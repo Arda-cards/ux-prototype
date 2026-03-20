@@ -4,7 +4,7 @@ import { Package, ShoppingCart, Boxes } from 'lucide-react';
 
 import { SidebarNavGroup } from './sidebar-nav-group';
 import { SidebarNavItem } from './sidebar-nav-item';
-import { ArdaSidebar } from '../../organisms/sidebar/sidebar';
+import { Sidebar } from '../../organisms/sidebar/sidebar';
 import { SidebarNav } from './sidebar-nav';
 
 const meta = {
@@ -29,14 +29,14 @@ type Story = StoryObj<typeof SidebarNavGroup>;
 /** Collapsed by default — click to expand. */
 export const Default: Story = {
   render: () => (
-    <ArdaSidebar defaultOpen>
+    <Sidebar defaultOpen>
       <SidebarNav>
         <SidebarNavGroup label="Inventory" icon={Boxes}>
           <SidebarNavItem icon={Package} label="Items" />
           <SidebarNavItem icon={ShoppingCart} label="Orders" badge={2} />
         </SidebarNavGroup>
       </SidebarNav>
-    </ArdaSidebar>
+    </Sidebar>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -47,14 +47,14 @@ export const Default: Story = {
 /** Starts expanded. */
 export const DefaultExpanded: Story = {
   render: () => (
-    <ArdaSidebar defaultOpen>
+    <Sidebar defaultOpen>
       <SidebarNav>
         <SidebarNavGroup label="Inventory" icon={Boxes} defaultExpanded>
           <SidebarNavItem icon={Package} label="Items" />
           <SidebarNavItem icon={ShoppingCart} label="Orders" />
         </SidebarNavGroup>
       </SidebarNav>
-    </ArdaSidebar>
+    </Sidebar>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -65,13 +65,13 @@ export const DefaultExpanded: Story = {
 /** Auto-expands because child item is active. */
 export const AutoExpandActive: Story = {
   render: () => (
-    <ArdaSidebar defaultOpen>
+    <Sidebar defaultOpen>
       <SidebarNav>
         <SidebarNavGroup label="Inventory" icon={Boxes}>
           <SidebarNavItem icon={Package} label="Items" active />
           <SidebarNavItem icon={ShoppingCart} label="Orders" />
         </SidebarNavGroup>
       </SidebarNav>
-    </ArdaSidebar>
+    </Sidebar>
   ),
 };

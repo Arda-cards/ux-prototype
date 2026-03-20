@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Bell, HelpCircle, Settings, Search } from 'lucide-react';
 
-import { ArdaIconButton } from './icon-button';
+import { IconButton } from './icon-button';
 import { TooltipProvider } from '@/components/canary/primitives/tooltip';
 
 const meta = {
   title: 'Components/Canary/Atoms/IconButton',
-  component: ArdaIconButton,
+  component: IconButton,
   parameters: { layout: 'centered' },
   decorators: [
     (Story) => (
@@ -15,7 +15,7 @@ const meta = {
       </TooltipProvider>
     ),
   ],
-} satisfies Meta<typeof ArdaIconButton>;
+} satisfies Meta<typeof IconButton>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -54,10 +54,10 @@ export const NoTooltip: Story = {
 export const Group: StoryObj = {
   render: () => (
     <div className="flex items-center gap-2">
-      <ArdaIconButton icon={Search} label="Search" />
-      <ArdaIconButton icon={HelpCircle} label="Help" />
-      <ArdaIconButton icon={Bell} label="Notifications" badgeCount={3} />
-      <ArdaIconButton icon={Settings} label="Settings" />
+      <IconButton icon={Search} label="Search" />
+      <IconButton icon={HelpCircle} label="Help" />
+      <IconButton icon={Bell} label="Notifications" badgeCount={3} />
+      <IconButton icon={Settings} label="Settings" />
     </div>
   ),
 };

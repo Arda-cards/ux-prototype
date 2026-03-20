@@ -2,7 +2,7 @@
  * REF::BA::0001 — Browse and Search Business Affiliates (Canary Variant)
  *
  * Demonstrates the canary entity-data-grid factory for a non-item entity.
- * Uses ArdaSidebar + ArdaAppHeader + createEntityDataGrid for suppliers,
+ * Uses Sidebar + AppHeader + createEntityDataGrid for suppliers,
  * proving the factory is generic and not item-domain-specific.
  *
  * Maps to: REF::BA::0001 — Browse and Search Business Affiliates
@@ -23,13 +23,13 @@ import {
 } from 'lucide-react';
 
 import { SidebarInset, SidebarTrigger } from '@/components/canary/primitives/sidebar';
-import { ArdaSidebar } from '@/components/canary/organisms/sidebar/sidebar';
-import { ArdaSidebarHeader } from '@/components/canary/molecules/sidebar/sidebar-header';
+import { Sidebar } from '@/components/canary/organisms/sidebar/sidebar';
+import { SidebarHeader } from '@/components/canary/molecules/sidebar/sidebar-header';
 import { SidebarNav } from '@/components/canary/molecules/sidebar/sidebar-nav';
 import { SidebarNavItem } from '@/components/canary/molecules/sidebar/sidebar-nav-item';
 import { SidebarUserMenu } from '@/components/canary/molecules/sidebar/sidebar-user-menu';
-import { ArdaAppHeader } from '@/components/canary/organisms/app-header/app-header';
-import { ArdaButton as Button } from '@/components/canary/atoms/button/button';
+import { AppHeader } from '@/components/canary/organisms/app-header/app-header';
+import { Button } from '@/components/canary/atoms/button/button';
 import { createEntityDataGrid } from '@/components/canary/organisms/shared/entity-data-grid/create-entity-data-grid';
 import { storyStepDelay } from '../_shared/story-step-delay';
 
@@ -180,11 +180,11 @@ function SuppliersCanaryPage() {
   const [selectedSupplier, setSelectedSupplier] = useState<SupplierEntity | null>(null);
 
   return (
-    <ArdaSidebar
+    <Sidebar
       defaultOpen
       content={
         <SidebarInset>
-          <ArdaAppHeader
+          <AppHeader
             leading={<SidebarTrigger className="self-center" />}
             showSearch={false}
           />
@@ -217,7 +217,7 @@ function SuppliersCanaryPage() {
         </SidebarInset>
       }
     >
-      <ArdaSidebarHeader teamName="Arda Cards" />
+      <SidebarHeader teamName="Arda Cards" />
       <SidebarNav>
         <SidebarNavItem icon={LayoutDashboard} label="Dashboard" />
         <SidebarNavItem icon={Package} label="Items" />
@@ -232,7 +232,7 @@ function SuppliersCanaryPage() {
           { key: 'logout', label: 'Log out', icon: LogOut, onClick: () => {}, destructive: true },
         ]}
       />
-    </ArdaSidebar>
+    </Sidebar>
   );
 }
 

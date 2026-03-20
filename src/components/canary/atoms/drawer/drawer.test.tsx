@@ -2,25 +2,25 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import {
-  ArdaDrawer,
-  ArdaDrawerHeader,
-  ArdaDrawerTitle,
-  ArdaDrawerDescription,
-  ArdaDrawerBody,
-  ArdaDrawerFooter,
+  Drawer,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerBody,
+  DrawerFooter,
 } from './drawer';
 
-describe('ArdaDrawer', () => {
+describe('Drawer', () => {
   it('renders content when open', () => {
     render(
-      <ArdaDrawer open onOpenChange={() => {}}>
-        <ArdaDrawerHeader>
-          <ArdaDrawerTitle>Test Title</ArdaDrawerTitle>
-        </ArdaDrawerHeader>
-        <ArdaDrawerBody>
+      <Drawer open onOpenChange={() => {}}>
+        <DrawerHeader>
+          <DrawerTitle>Test Title</DrawerTitle>
+        </DrawerHeader>
+        <DrawerBody>
           <p>Body content</p>
-        </ArdaDrawerBody>
-      </ArdaDrawer>,
+        </DrawerBody>
+      </Drawer>,
     );
     expect(screen.getByText('Test Title')).toBeInTheDocument();
     expect(screen.getByText('Body content')).toBeInTheDocument();
@@ -28,37 +28,37 @@ describe('ArdaDrawer', () => {
 
   it('does not render content when closed', () => {
     render(
-      <ArdaDrawer open={false} onOpenChange={() => {}}>
-        <ArdaDrawerHeader>
-          <ArdaDrawerTitle>Hidden</ArdaDrawerTitle>
-        </ArdaDrawerHeader>
-      </ArdaDrawer>,
+      <Drawer open={false} onOpenChange={() => {}}>
+        <DrawerHeader>
+          <DrawerTitle>Hidden</DrawerTitle>
+        </DrawerHeader>
+      </Drawer>,
     );
     expect(screen.queryByText('Hidden')).not.toBeInTheDocument();
   });
 
   it('renders accessible description', () => {
     render(
-      <ArdaDrawer open onOpenChange={() => {}}>
-        <ArdaDrawerHeader>
-          <ArdaDrawerTitle>Title</ArdaDrawerTitle>
-          <ArdaDrawerDescription>Helpful description</ArdaDrawerDescription>
-        </ArdaDrawerHeader>
-      </ArdaDrawer>,
+      <Drawer open onOpenChange={() => {}}>
+        <DrawerHeader>
+          <DrawerTitle>Title</DrawerTitle>
+          <DrawerDescription>Helpful description</DrawerDescription>
+        </DrawerHeader>
+      </Drawer>,
     );
     expect(screen.getByText('Helpful description')).toBeInTheDocument();
   });
 
   it('renders footer content', () => {
     render(
-      <ArdaDrawer open onOpenChange={() => {}}>
-        <ArdaDrawerHeader>
-          <ArdaDrawerTitle>Title</ArdaDrawerTitle>
-        </ArdaDrawerHeader>
-        <ArdaDrawerFooter>
+      <Drawer open onOpenChange={() => {}}>
+        <DrawerHeader>
+          <DrawerTitle>Title</DrawerTitle>
+        </DrawerHeader>
+        <DrawerFooter>
           <button>Done</button>
-        </ArdaDrawerFooter>
-      </ArdaDrawer>,
+        </DrawerFooter>
+      </Drawer>,
     );
     expect(screen.getByRole('button', { name: 'Done' })).toBeInTheDocument();
   });
@@ -67,11 +67,11 @@ describe('ArdaDrawer', () => {
     const user = userEvent.setup();
     const onOpenChange = vi.fn();
     render(
-      <ArdaDrawer open onOpenChange={onOpenChange}>
-        <ArdaDrawerHeader>
-          <ArdaDrawerTitle>Title</ArdaDrawerTitle>
-        </ArdaDrawerHeader>
-      </ArdaDrawer>,
+      <Drawer open onOpenChange={onOpenChange}>
+        <DrawerHeader>
+          <DrawerTitle>Title</DrawerTitle>
+        </DrawerHeader>
+      </Drawer>,
     );
     // Pressing Escape should trigger onOpenChange
     await user.keyboard('{Escape}');

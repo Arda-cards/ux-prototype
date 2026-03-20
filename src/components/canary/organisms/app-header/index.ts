@@ -1,5 +1,6 @@
-export { ArdaAppHeader } from './app-header';
+export { AppHeader, ArdaAppHeader } from './app-header';
 export type {
+  AppHeaderProps,
   ArdaAppHeaderProps,
   ArdaAppHeaderStaticConfig,
   ArdaAppHeaderRuntimeConfig,

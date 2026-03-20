@@ -12,7 +12,7 @@ import {
   type ReactElement,
 } from 'react';
 import { MoreHorizontal } from 'lucide-react';
-import { ArdaButton as Button } from '@/components/canary/atoms/button';
+import { Button } from '@/components/canary/atoms/button';
 import {
   DropdownMenu,
   DropdownMenuContent,

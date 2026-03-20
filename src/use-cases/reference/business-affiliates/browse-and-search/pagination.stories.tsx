@@ -102,9 +102,15 @@ export const Default: Story = {
 
     await storyStepDelay();
 
-    // 10. Click "Previous page"
-    const prevButton3 = canvas.getByRole('button', { name: 'Previous page' });
-    expect(prevButton3).toBeEnabled();
+    // 10. Click "Previous page" — wait for button to be enabled (loading may still be in progress)
+    const prevButton3 = await waitFor(
+      () => {
+        const btn = canvas.getByRole('button', { name: 'Previous page' });
+        expect(btn).toBeEnabled();
+        return btn;
+      },
+      { timeout: 10000 },
+    );
     await userEvent.click(prevButton3);
 
     // ----- Back to Page 2 -----

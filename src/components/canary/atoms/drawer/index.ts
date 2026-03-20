@@ -1,4 +1,11 @@
 export {
+  Drawer,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerBody,
+  DrawerFooter,
+  // Deprecated aliases
   ArdaDrawer,
   ArdaDrawerHeader,
   ArdaDrawerTitle,
@@ -6,4 +13,9 @@ export {
   ArdaDrawerBody,
   ArdaDrawerFooter,
 } from './drawer';
-export type { ArdaDrawerProps, ArdaDrawerStaticConfig, ArdaDrawerRuntimeConfig } from './drawer';
+export type {
+  DrawerProps,
+  ArdaDrawerProps,
+  ArdaDrawerStaticConfig,
+  ArdaDrawerRuntimeConfig,
+} from './drawer';

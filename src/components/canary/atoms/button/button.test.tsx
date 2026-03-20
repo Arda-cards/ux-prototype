@@ -1,27 +1,27 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { ArdaButton } from './button';
+import { Button } from './button';
 
-describe('ArdaButton', () => {
+describe('Button', () => {
   it('renders children', () => {
-    render(<ArdaButton>Save</ArdaButton>);
+    render(<Button>Save</Button>);
     expect(screen.getByRole('button', { name: 'Save' })).toBeVisible();
   });
 
   it('calls onClick when clicked', () => {
     const onClick = vi.fn();
-    render(<ArdaButton onClick={onClick}>Save</ArdaButton>);
+    render(<Button onClick={onClick}>Save</Button>);
     fireEvent.click(screen.getByRole('button'));
     expect(onClick).toHaveBeenCalledOnce();
   });
 
   it('is disabled when disabled prop is true', () => {
-    render(<ArdaButton disabled>Save</ArdaButton>);
+    render(<Button disabled>Save</Button>);
     expect(screen.getByRole('button')).toBeDisabled();
   });
 
   it('is disabled and shows spinner when loading', () => {
-    render(<ArdaButton loading>Saving…</ArdaButton>);
+    render(<Button loading>Saving…</Button>);
     const button = screen.getByRole('button');
     expect(button).toBeDisabled();
     // Spinner SVG should be present
@@ -30,19 +30,19 @@ describe('ArdaButton', () => {
   });
 
   it('applies variant classes', () => {
-    render(<ArdaButton variant="destructive">Delete</ArdaButton>);
+    render(<Button variant="destructive">Delete</Button>);
     const button = screen.getByRole('button');
     expect(button.className).toContain('bg-destructive');
   });
 
   it('applies size classes', () => {
-    render(<ArdaButton size="sm">Small</ArdaButton>);
+    render(<Button size="sm">Small</Button>);
     const button = screen.getByRole('button');
     expect(button.className).toContain('h-8');
   });
 
   it('merges custom className', () => {
-    render(<ArdaButton className="mt-4">Save</ArdaButton>);
+    render(<Button className="mt-4">Save</Button>);
     const button = screen.getByRole('button');
     expect(button.className).toContain('mt-4');
   });

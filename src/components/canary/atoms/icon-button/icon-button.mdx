@@ -4,7 +4,7 @@ import * as IconButtonStories from './icon-button.stories';
 
 <Meta of={IconButtonStories} />
 
-# ArdaIconButton
+# IconButton
 
 Icon-only button with accessible label, optional badge count, and tooltip.
 
@@ -20,13 +20,13 @@ Icon-only button with accessible label, optional badge count, and tooltip.
 
 ## Purpose
 
-`ArdaIconButton` wraps `ArdaButton` (size `icon`) with:
+`IconButton` wraps `Button` (size `icon`) with:
 
 - A **required `label`** prop that populates `aria-label`.
 - An optional **`badgeCount`** for notification-style counts.
 - A **tooltip** that surfaces the label on hover/focus.
 
-Used in `ArdaAppHeader` for icon actions (Help, Notifications, User menu).
+Used in `AppHeader` for icon actions (Help, Notifications, User menu).
 
 ---
 
@@ -80,7 +80,7 @@ Used in `ArdaAppHeader` for icon actions (Help, Notifications, User menu).
 ## Import
 
 ```tsx
-import { ArdaIconButton } from '@/components/canary/atoms/icon-button/icon-button';
+import { IconButton } from '@/components/canary/atoms/icon-button/icon-button';
 // or from canary barrel:
-import { ArdaIconButton } from '@arda-cards/design-system/canary';
+import { IconButton } from '@arda-cards/design-system/canary';
 ```

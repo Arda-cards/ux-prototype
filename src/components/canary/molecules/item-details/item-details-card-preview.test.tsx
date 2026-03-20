@@ -1,29 +1,24 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
-import { ArdaItemDetailsCardPreview } from './item-details-card-preview';
+import { ItemDetailsCardPreview } from './item-details-card-preview';
 
-describe('ArdaItemDetailsCardPreview', () => {
+describe('ItemDetailsCardPreview', () => {
   it('shows loading state', () => {
     render(
-      <ArdaItemDetailsCardPreview
-        currentIndex={1}
-        totalCards={0}
-        onIndexChange={() => {}}
-        loading
-      />,
+      <ItemDetailsCardPreview currentIndex={1} totalCards={0} onIndexChange={() => {}} loading />,
     );
     expect(screen.getByText('Loading cards')).toBeInTheDocument();
   });
 
   it('shows empty state when no cards', () => {
-    render(<ArdaItemDetailsCardPreview currentIndex={1} totalCards={0} onIndexChange={() => {}} />);
+    render(<ItemDetailsCardPreview currentIndex={1} totalCards={0} onIndexChange={() => {}} />);
     expect(screen.getByText('No cards yet')).toBeInTheDocument();
   });
 
   it('renders card via renderCard prop', () => {
     render(
-      <ArdaItemDetailsCardPreview
+      <ItemDetailsCardPreview
         currentIndex={1}
         totalCards={3}
         onIndexChange={() => {}}
@@ -37,7 +32,7 @@ describe('ArdaItemDetailsCardPreview', () => {
     const user = userEvent.setup();
     const onIndexChange = vi.fn();
     render(
-      <ArdaItemDetailsCardPreview
+      <ItemDetailsCardPreview
         currentIndex={1}
         totalCards={3}
         onIndexChange={onIndexChange}
@@ -51,14 +46,14 @@ describe('ArdaItemDetailsCardPreview', () => {
 
   it('renders children slot', () => {
     render(
-      <ArdaItemDetailsCardPreview
+      <ItemDetailsCardPreview
         currentIndex={1}
         totalCards={1}
         onIndexChange={() => {}}
         renderCard={() => <div>Card</div>}
       >
         <div>Actions here</div>
-      </ArdaItemDetailsCardPreview>,
+      </ItemDetailsCardPreview>,
     );
     expect(screen.getByText('Actions here')).toBeInTheDocument();
   });

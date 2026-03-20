@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { SquarePen, Printer, ShoppingCart, Tag, ScanLine, Copy, Trash2 } from 'lucide-react';
 
-import { ArdaItemDetails } from './item-details';
+import { ItemDetails } from './item-details';
 import type { ToolbarAction, OverflowAction, FieldDef } from './index';
 
 const meta = {
@@ -13,7 +13,7 @@ const meta = {
       description: {
         component:
           'Item detail/edit slide-over panel. Compound component built from ' +
-          'ArdaDrawer, ArdaItemDetailsHeader, ArdaItemDetailsCardPreview, and ArdaFieldList.',
+          'Drawer, ItemDetailsHeader, ItemDetailsCardPreview, and ArdaFieldList.',
       },
     },
   },
@@ -89,7 +89,7 @@ export const Default: Story = {
         >
           Open item details
         </button>
-        <ArdaItemDetails
+        <ItemDetails
           open={open}
           onOpenChange={setOpen}
           title="Widget Assembly Kit"
@@ -109,7 +109,7 @@ export const CardsLoading: Story = {
   render: () => {
     const [open, setOpen] = useState(true);
     return (
-      <ArdaItemDetails
+      <ItemDetails
         open={open}
         onOpenChange={setOpen}
         title="Hex Bolt M8x30"
@@ -126,7 +126,7 @@ export const NoCards: Story = {
   render: () => {
     const [open, setOpen] = useState(true);
     return (
-      <ArdaItemDetails
+      <ItemDetails
         open={open}
         onOpenChange={setOpen}
         title="New Item (Draft)"
@@ -145,7 +145,7 @@ export const WithCardsTab: Story = {
   render: () => {
     const [open, setOpen] = useState(true);
     return (
-      <ArdaItemDetails
+      <ItemDetails
         open={open}
         onOpenChange={setOpen}
         title="Widget Assembly Kit"

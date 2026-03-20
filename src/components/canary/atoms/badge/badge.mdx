@@ -4,7 +4,7 @@ import * as BadgeStories from './badge.stories';
 
 <Meta of={BadgeStories} />
 
-# ArdaBadge
+# Badge
 
 Status badge atom with count capping and dot-indicator support.
 
@@ -20,7 +20,7 @@ Status badge atom with count capping and dot-indicator support.
 
 ## Purpose
 
-`ArdaBadge` wraps the shadcn `Badge` primitive with two Arda-specific features:
+`Badge` wraps the shadcn `Badge` primitive with two Arda-specific features:
 
 1. **Count mode** &#8212; pass `count={n}` to render a live count badge. Capped at `max` (default 99). Renders as `99+` when exceeded.
 2. **Dot mode** &#8212; pass `count={true}` (boolean) to render a dot indicator regardless of count. Used in collapsed sidebar nav items.
@@ -71,7 +71,7 @@ Status badge atom with count capping and dot-indicator support.
 ## Import
 
 ```tsx
-import { ArdaBadge } from '@/components/canary/atoms/badge/badge';
+import { Badge } from '@/components/canary/atoms/badge/badge';
 // or from canary barrel:
-import { ArdaBadge } from '@arda-cards/design-system/canary';
+import { Badge } from '@arda-cards/design-system/canary';
 ```

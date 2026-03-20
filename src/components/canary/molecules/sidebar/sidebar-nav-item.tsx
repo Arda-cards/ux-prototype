@@ -4,7 +4,7 @@ import { type LucideIcon } from 'lucide-react';
 
 import { cn } from '@/types/canary/utils';
 import { SidebarMenuItem, SidebarMenuButton } from '@/components/canary/primitives/sidebar';
-import { ArdaBadge } from '../../atoms/badge/badge';
+import { Badge } from '../../atoms/badge/badge';
 
 // --- Interfaces ---
 
@@ -81,13 +81,13 @@ export function SidebarNavItem({
           />
           {/* Count — fades out when collapsing, fades in when expanding */}
           {badge !== true && (
-            <ArdaBadge
+            <Badge
               variant="default"
               {...(typeof badge === 'number' && { count: badge })}
               className="absolute right-2 top-1/2 -translate-y-1/2 tabular-nums transition-opacity duration-150 motion-reduce:transition-none group-data-[collapsible=icon]:opacity-0"
             >
               {typeof badge === 'string' ? badge : undefined}
-            </ArdaBadge>
+            </Badge>
           )}
         </>
       )}

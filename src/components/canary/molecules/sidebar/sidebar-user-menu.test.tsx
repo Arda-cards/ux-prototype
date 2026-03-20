@@ -5,7 +5,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { Settings, ShieldCheck, LogOut } from 'lucide-react';
 
 import { SidebarUserMenu, type UserMenuAction } from './sidebar-user-menu';
-import { ArdaSidebar } from '../../organisms/sidebar/sidebar';
+import { Sidebar } from '../../organisms/sidebar/sidebar';
 
 const mockUser = {
   name: 'Callil Capuozzo',
@@ -19,7 +19,7 @@ const mockActions: UserMenuAction[] = [
 ];
 
 function renderInSidebar(ui: React.ReactElement) {
-  return render(<ArdaSidebar defaultOpen>{ui}</ArdaSidebar>);
+  return render(<Sidebar defaultOpen>{ui}</Sidebar>);
 }
 
 /** Get the user menu trigger button (contains the user's name). */

@@ -37,7 +37,7 @@ const buttonVariants = cva(
 
 // --- Interfaces ---
 
-/** Design-time configuration for ArdaButton. */
+/** Design-time configuration for Button. */
 export interface ArdaButtonStaticConfig extends VariantProps<typeof buttonVariants> {
   /* --- View / Layout / Controller --- */
   /** Render as a child element (Slot pattern for link-as-button). */
@@ -46,30 +46,33 @@ export interface ArdaButtonStaticConfig extends VariantProps<typeof buttonVarian
   className?: string;
 }
 
-/** Runtime configuration for ArdaButton. */
+/** Runtime configuration for Button. */
 export interface ArdaButtonRuntimeConfig {
   /* --- Model / Data Binding --- */
   /** Show a loading spinner and disable the button. */
   loading?: boolean;
 }
 
-/** Combined props for ArdaButton. */
-export interface ArdaButtonProps
+/** Combined props for Button. */
+export interface ButtonProps
   extends
     ArdaButtonStaticConfig,
     ArdaButtonRuntimeConfig,
     Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'className'> {}
 
+/** @deprecated Use ButtonProps */
+export type ArdaButtonProps = ButtonProps;
+
 // --- Component ---
 
 /**
- * ArdaButton — canonical button for the Arda design system.
+ * Button — canonical button for the Arda design system.
  *
  * Wraps CVA variants with Arda conventions: StaticConfig/RuntimeConfig split,
  * built-in loading state, `motion-reduce` support, and consistent focus rings.
  * Use this instead of shadcn `Button`.
  */
-export function ArdaButton({
+export function Button({
   children,
   variant = 'primary',
   size = 'md',
@@ -78,7 +81,7 @@ export function ArdaButton({
   className,
   disabled,
   ...props
-}: ArdaButtonProps) {
+}: ButtonProps) {
   const Comp = asChild ? Slot.Root : 'button';
 
   return (
@@ -96,3 +99,6 @@ export function ArdaButton({
 }
 
 export { buttonVariants };
+
+/** @deprecated Use Button */
+export const ArdaButton = Button;

@@ -2,12 +2,12 @@ import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Bell, HelpCircle, ScanBarcode } from 'lucide-react';
 
-import { ArdaAppHeader } from './app-header';
+import { AppHeader } from './app-header';
 import { TooltipProvider } from '@/components/canary/primitives/tooltip';
 
 const meta = {
   title: 'Components/Canary/Organisms/AppHeader',
-  component: ArdaAppHeader,
+  component: AppHeader,
   parameters: { layout: 'fullscreen' },
   decorators: [
     (Story) => (
@@ -16,7 +16,7 @@ const meta = {
       </TooltipProvider>
     ),
   ],
-} satisfies Meta<typeof ArdaAppHeader>;
+} satisfies Meta<typeof AppHeader>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -39,7 +39,7 @@ export const WithSearch: Story = {
   render: () => {
     const [search, setSearch] = useState('');
     return (
-      <ArdaAppHeader
+      <AppHeader
         actions={defaultActions}
         buttonActions={defaultButtonActions}
         searchValue={search}
@@ -95,7 +95,7 @@ export const Composition: Story = {
     const [search, setSearch] = useState('');
     return (
       <div className="min-h-[400px] bg-muted/30">
-        <ArdaAppHeader
+        <AppHeader
           leading={
             <span className="text-sm font-medium text-muted-foreground mr-4">
               Items &rsaquo; Inventory

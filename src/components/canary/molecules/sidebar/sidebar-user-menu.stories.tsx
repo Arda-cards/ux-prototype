@@ -3,7 +3,7 @@ import { expect, fn, userEvent, within } from 'storybook/test';
 import { Settings, ShieldCheck, LogOut } from 'lucide-react';
 
 import { SidebarUserMenu, type UserMenuAction } from './sidebar-user-menu';
-import { ArdaSidebar } from '../../organisms/sidebar/sidebar';
+import { Sidebar } from '../../organisms/sidebar/sidebar';
 
 const mockUser = {
   name: 'Callil Capuozzo',
@@ -41,9 +41,9 @@ type Story = StoryObj<typeof SidebarUserMenu>;
 /** Default expanded view with admin, settings, and logout. */
 export const Default: Story = {
   render: () => (
-    <ArdaSidebar defaultOpen>
+    <Sidebar defaultOpen>
       <SidebarUserMenu user={mockUser} actions={defaultActions} />
-    </ArdaSidebar>
+    </Sidebar>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -54,7 +54,7 @@ export const Default: Story = {
 /** With avatar image. */
 export const WithAvatar: Story = {
   render: () => (
-    <ArdaSidebar defaultOpen>
+    <Sidebar defaultOpen>
       <SidebarUserMenu
         user={{
           name: 'Uriel Eisen',
@@ -63,23 +63,23 @@ export const WithAvatar: Story = {
         }}
         actions={defaultActions}
       />
-    </ArdaSidebar>
+    </Sidebar>
   ),
 };
 
 /** Collapsed sidebar — avatar only, no text. */
 export const Collapsed: Story = {
   render: () => (
-    <ArdaSidebar defaultOpen={false}>
+    <Sidebar defaultOpen={false}>
       <SidebarUserMenu user={mockUser} actions={defaultActions} />
-    </ArdaSidebar>
+    </Sidebar>
   ),
 };
 
 /** With user role displayed below name. */
 export const WithRole: Story = {
   render: () => (
-    <ArdaSidebar defaultOpen>
+    <Sidebar defaultOpen>
       <SidebarUserMenu
         user={{
           name: 'Callil Capuozzo',
@@ -89,14 +89,14 @@ export const WithRole: Story = {
         }}
         actions={defaultActions}
       />
-    </ArdaSidebar>
+    </Sidebar>
   ),
 };
 
 /** Flyout open — shows the dropdown menu with all actions. */
 export const FlyoutOpen: Story = {
   render: () => (
-    <ArdaSidebar defaultOpen>
+    <Sidebar defaultOpen>
       <SidebarUserMenu
         user={{
           name: 'Callil Capuozzo',
@@ -106,7 +106,7 @@ export const FlyoutOpen: Story = {
         }}
         actions={defaultActions}
       />
-    </ArdaSidebar>
+    </Sidebar>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -118,13 +118,13 @@ export const FlyoutOpen: Story = {
 /** Minimal — logout only. */
 export const LogoutOnly: Story = {
   render: () => (
-    <ArdaSidebar defaultOpen>
+    <Sidebar defaultOpen>
       <SidebarUserMenu
         user={mockUser}
         actions={[
           { key: 'logout', label: 'Log out', icon: LogOut, onClick: fn(), destructive: true },
         ]}
       />
-    </ArdaSidebar>
+    </Sidebar>
   ),
 };

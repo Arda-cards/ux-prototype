@@ -1,73 +1,73 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 
-import { ArdaBadge } from './badge';
+import { Badge } from './badge';
 
-describe('ArdaBadge', () => {
+describe('Badge', () => {
   it('renders children', () => {
-    render(<ArdaBadge>3</ArdaBadge>);
+    render(<Badge>3</Badge>);
     expect(screen.getByText('3')).toBeInTheDocument();
   });
 
   it('renders string content', () => {
-    render(<ArdaBadge>New</ArdaBadge>);
+    render(<Badge>New</Badge>);
     expect(screen.getByText('New')).toBeInTheDocument();
   });
 
   it('renders with default variant', () => {
-    render(<ArdaBadge>5</ArdaBadge>);
+    render(<Badge>5</Badge>);
     expect(screen.getByText('5')).toHaveAttribute('data-variant', 'default');
   });
 
   it('renders secondary variant', () => {
-    render(<ArdaBadge variant="secondary">12</ArdaBadge>);
+    render(<Badge variant="secondary">12</Badge>);
     expect(screen.getByText('12')).toHaveAttribute('data-variant', 'secondary');
   });
 
   it('renders outline variant', () => {
-    render(<ArdaBadge variant="outline">7</ArdaBadge>);
+    render(<Badge variant="outline">7</Badge>);
     expect(screen.getByText('7')).toHaveAttribute('data-variant', 'outline');
   });
 
   it('applies custom className', () => {
-    render(<ArdaBadge className="custom">5</ArdaBadge>);
+    render(<Badge className="custom">5</Badge>);
     expect(screen.getByText('5')).toHaveClass('custom');
   });
 
   // --- count prop ---
 
   it('renders count as text', () => {
-    render(<ArdaBadge count={42} />);
+    render(<Badge count={42} />);
     expect(screen.getByText('42')).toBeInTheDocument();
   });
 
   it('caps count at 99+', () => {
-    render(<ArdaBadge count={150} />);
+    render(<Badge count={150} />);
     expect(screen.getByText('99+')).toBeInTheDocument();
   });
 
   it('shows exact count at boundary', () => {
-    render(<ArdaBadge count={99} />);
+    render(<Badge count={99} />);
     expect(screen.getByText('99')).toBeInTheDocument();
   });
 
   it('supports custom max', () => {
-    render(<ArdaBadge count={10} max={9} />);
+    render(<Badge count={10} max={9} />);
     expect(screen.getByText('9+')).toBeInTheDocument();
   });
 
   it('adds role="status" when count is provided', () => {
-    render(<ArdaBadge count={5} />);
+    render(<Badge count={5} />);
     expect(screen.getByRole('status')).toHaveTextContent('5');
   });
 
   it('does not add role="status" for children', () => {
-    render(<ArdaBadge>New</ArdaBadge>);
+    render(<Badge>New</Badge>);
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 
   it('count takes precedence over children', () => {
-    render(<ArdaBadge count={7}>ignored</ArdaBadge>);
+    render(<Badge count={7}>ignored</Badge>);
     expect(screen.getByText('7')).toBeInTheDocument();
     expect(screen.queryByText('ignored')).not.toBeInTheDocument();
   });

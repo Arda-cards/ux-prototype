@@ -5,10 +5,10 @@ import { describe, it, expect } from 'vitest';
 import { Boxes } from 'lucide-react';
 
 import { SidebarNavGroup } from './sidebar-nav-group';
-import { ArdaSidebar } from '../../organisms/sidebar/sidebar';
+import { Sidebar } from '../../organisms/sidebar/sidebar';
 
 function renderInSidebar(ui: React.ReactElement) {
-  return render(<ArdaSidebar defaultOpen>{ui}</ArdaSidebar>);
+  return render(<Sidebar defaultOpen>{ui}</Sidebar>);
 }
 
 /** Mock component with active prop for auto-expand testing. */

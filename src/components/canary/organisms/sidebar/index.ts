@@ -1,11 +1,15 @@
 export {
+  Sidebar,
   ArdaSidebar,
+  type SidebarProps,
   type ArdaSidebarProps,
   type ArdaSidebarStaticConfig,
   type ArdaSidebarRuntimeConfig,
 } from './sidebar';
 export {
+  SidebarHeader,
   ArdaSidebarHeader,
+  type SidebarHeaderProps,
   type ArdaSidebarHeaderProps,
   type ArdaSidebarHeaderStaticConfig,
   type ArdaSidebarHeaderRuntimeConfig,

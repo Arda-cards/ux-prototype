@@ -3,12 +3,50 @@
 
 // --- Atoms ---
 
-export { ArdaBadge } from './components/canary/atoms/badge/badge';
+export { Badge, ArdaBadge } from './components/canary/atoms/badge/badge';
 export type {
+  BadgeProps,
   ArdaBadgeProps,
   ArdaBadgeStaticConfig,
   ArdaBadgeRuntimeConfig,
 } from './components/canary/atoms/badge/badge';
+
+export { Button, ArdaButton, buttonVariants } from './components/canary/atoms/button/button';
+export type {
+  ButtonProps,
+  ArdaButtonProps,
+  ArdaButtonStaticConfig,
+  ArdaButtonRuntimeConfig,
+} from './components/canary/atoms/button/button';
+
+export {
+  Drawer,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerBody,
+  DrawerFooter,
+  ArdaDrawer,
+  ArdaDrawerHeader,
+  ArdaDrawerTitle,
+  ArdaDrawerDescription,
+  ArdaDrawerBody,
+  ArdaDrawerFooter,
+} from './components/canary/atoms/drawer/drawer';
+export type {
+  DrawerProps,
+  ArdaDrawerProps,
+  ArdaDrawerStaticConfig,
+  ArdaDrawerRuntimeConfig,
+} from './components/canary/atoms/drawer/drawer';
+
+export { IconButton, ArdaIconButton } from './components/canary/atoms/icon-button/icon-button';
+export type {
+  IconButtonProps,
+  ArdaIconButtonProps,
+  ArdaIconButtonStaticConfig,
+  ArdaIconButtonRuntimeConfig,
+} from './components/canary/atoms/icon-button/icon-button';
 
 export { BrandLogo, BrandIcon } from './components/canary/atoms/brand-logo/brand-logo';
 export type {
@@ -163,8 +201,12 @@ export type {
 
 // --- Molecules — Sidebar ---
 
-export { ArdaSidebarHeader } from './components/canary/molecules/sidebar/sidebar-header';
+export {
+  SidebarHeader,
+  ArdaSidebarHeader,
+} from './components/canary/molecules/sidebar/sidebar-header';
 export type {
+  SidebarHeaderProps,
   ArdaSidebarHeaderProps,
   ArdaSidebarHeaderStaticConfig,
   ArdaSidebarHeaderRuntimeConfig,
@@ -232,12 +274,39 @@ export type {
 
 // --- Organisms — Sidebar ---
 
-export { ArdaSidebar } from './components/canary/organisms/sidebar/sidebar';
+export { Sidebar, ArdaSidebar } from './components/canary/organisms/sidebar/sidebar';
 export type {
+  SidebarProps,
   ArdaSidebarProps,
   ArdaSidebarStaticConfig,
   ArdaSidebarRuntimeConfig,
 } from './components/canary/organisms/sidebar/sidebar';
+
+// --- Organisms — AppHeader ---
+
+export { AppHeader, ArdaAppHeader } from './components/canary/organisms/app-header/app-header';
+export type {
+  AppHeaderProps,
+  ArdaAppHeaderProps,
+  ArdaAppHeaderStaticConfig,
+  ArdaAppHeaderRuntimeConfig,
+  HeaderAction,
+  HeaderButtonAction,
+} from './components/canary/organisms/app-header/app-header';
+
+// --- Organisms — ItemDetails ---
+
+export {
+  ItemDetails,
+  ArdaItemDetails,
+} from './components/canary/organisms/item-details/item-details';
+export type {
+  ItemDetailsProps,
+  ArdaItemDetailsProps,
+  ArdaItemDetailsStaticConfig,
+  ArdaItemDetailsRuntimeConfig,
+  ItemDetailsTab,
+} from './components/canary/organisms/item-details/item-details';
 
 // --- Organisms — ItemGrid ---
 

@@ -16,7 +16,7 @@ import React from 'react';
 
 // --- Interfaces ---
 
-export interface ArdaItemDetailsHeaderProps {
+export interface ItemDetailsHeaderProps {
   /* --- Model / Data Binding --- */
   /** Currently active tab. */
   activeTab: string;
@@ -43,13 +43,13 @@ const DEFAULT_MAX_ACTIONS = 6;
 // --- Component ---
 
 /**
- * ArdaItemDetailsHeader — tab bar and action grid for the item detail drawer.
+ * ItemDetailsHeader — tab bar and action grid for the item detail drawer.
  *
  * Pure presentational molecule. Receives all data and callbacks via props.
  * Shows up to `maxActions` cells in a stable grid. Excess actions and
  * overflow actions collapse into a "More" dropdown as the last cell.
  */
-export function ArdaItemDetailsHeader({
+export function ItemDetailsHeader({
   activeTab,
   onTabChange,
   tabs,
@@ -57,7 +57,7 @@ export function ArdaItemDetailsHeader({
   overflowActions,
   maxActions = DEFAULT_MAX_ACTIONS,
   className,
-}: ArdaItemDetailsHeaderProps) {
+}: ItemDetailsHeaderProps) {
   const allPrimary = actions ?? [];
   const allOverflow = overflowActions ?? [];
 
@@ -166,3 +166,8 @@ export function ArdaItemDetailsHeader({
     </div>
   );
 }
+
+/** @deprecated Use ItemDetailsHeaderProps */
+export type ArdaItemDetailsHeaderProps = ItemDetailsHeaderProps;
+/** @deprecated Use ItemDetailsHeader */
+export const ArdaItemDetailsHeader = ItemDetailsHeader;

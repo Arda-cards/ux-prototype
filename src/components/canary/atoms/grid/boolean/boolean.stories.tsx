@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, within } from 'storybook/test';
+import { expect } from 'storybook/test';
 import { useState } from 'react';
 
 import { BooleanCellDisplay } from './boolean-cell-display';
@@ -112,7 +112,9 @@ export const Playground: Story = {
     displayFormat: 'checkbox',
   },
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await expect(canvas.getByRole('img', { hidden: true })).toBeInTheDocument();
+    // BooleanCellDisplay renders a Lucide SVG icon (aria-hidden) for checkbox format.
+    // Query the SVG directly since aria-hidden elements are excluded from role queries
+    // in real browser contexts (test runner uses Playwright/Chromium).
+    await expect(canvasElement.querySelector('svg')).toBeInTheDocument();
   },
 };

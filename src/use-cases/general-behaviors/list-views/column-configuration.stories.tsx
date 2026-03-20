@@ -232,20 +232,34 @@ type Story = StoryObj<typeof ColumnConfigPage>;
 /**
  * Default — demonstrates toggling column visibility.
  * Play function: toggle a column off, verify it disappears; toggle it back on.
+ *
+ * Note: AG Grid renders column headers in a virtual DOM layer. In Playwright/Chromium
+ * the ARIA role "columnheader" is not reliably surfaced in the accessibility tree,
+ * so we use AG Grid's DOM structure (.ag-header-cell[col-id="..."]) for visibility
+ * checks instead of getByRole('columnheader').
  */
 export const Default: Story = {
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
 
     await step('Grid renders with all columns visible', async () => {
+      // Wait for grid data to render
       const firstRow = await canvas.findByText(
         'Nitrile Gloves (M)',
         { selector: '[role="gridcell"]' },
         { timeout: 10000 },
       );
       expect(firstRow).toBeVisible();
-      // Verify Supplier column is visible
-      expect(canvas.getByRole('columnheader', { name: 'Supplier' })).toBeVisible();
+      // Verify Supplier column header is present using AG Grid DOM structure
+      // AG Grid renders headers as .ag-header-cell elements with col-id attributes.
+      // The column field is "supplier" so AG Grid assigns col-id="supplier".
+      await waitFor(
+        () => {
+          const supplierHeader = canvasElement.querySelector('.ag-header-cell[col-id="supplier"]');
+          expect(supplierHeader).not.toBeNull();
+        },
+        { timeout: 5000 },
+      );
     });
 
     await storyStepDelay();
@@ -258,7 +272,9 @@ export const Default: Story = {
     await step('Supplier column header disappears', async () => {
       await waitFor(
         () => {
-          expect(canvas.queryByRole('columnheader', { name: 'Supplier' })).not.toBeInTheDocument();
+          // When hidden, AG Grid removes the header cell from the DOM
+          const supplierHeader = canvasElement.querySelector('.ag-header-cell[col-id="supplier"]');
+          expect(supplierHeader).toBeNull();
         },
         { timeout: 5000 },
       );
@@ -274,7 +290,8 @@ export const Default: Story = {
     await step('Supplier column header reappears', async () => {
       await waitFor(
         () => {
-          expect(canvas.getByRole('columnheader', { name: 'Supplier' })).toBeVisible();
+          const supplierHeader = canvasElement.querySelector('.ag-header-cell[col-id="supplier"]');
+          expect(supplierHeader).not.toBeNull();
         },
         { timeout: 5000 },
       );

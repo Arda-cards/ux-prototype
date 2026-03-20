@@ -3,7 +3,7 @@ import { expect, fn, within } from 'storybook/test';
 import { LayoutDashboard, Package, ShoppingCart, Building2, Settings } from 'lucide-react';
 
 import { SidebarNavItem } from './sidebar-nav-item';
-import { ArdaSidebar } from '../../organisms/sidebar/sidebar';
+import { Sidebar } from '../../organisms/sidebar/sidebar';
 import { SidebarNav } from './sidebar-nav';
 
 const meta = {
@@ -17,7 +17,7 @@ const meta = {
           'A navigation button wrapping shadcn SidebarMenuItem + SidebarMenuButton. ' +
           'Supports icon, label, badge, active state, and automatic tooltips in collapsed mode. ' +
           'Consumers handle navigation via onClick (e.g. router.push). ' +
-          'Must be rendered inside an ArdaSidebar (provides SidebarProvider context).',
+          'Must be rendered inside an Sidebar (provides SidebarProvider context).',
       },
     },
   },
@@ -43,11 +43,11 @@ export const Default: Story = {
     label: 'Items',
   },
   render: (args) => (
-    <ArdaSidebar defaultOpen>
+    <Sidebar defaultOpen>
       <SidebarNav>
         <SidebarNavItem {...args} />
       </SidebarNav>
-    </ArdaSidebar>
+    </Sidebar>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -64,11 +64,11 @@ export const Active: Story = {
     active: true,
   },
   render: (args) => (
-    <ArdaSidebar defaultOpen>
+    <Sidebar defaultOpen>
       <SidebarNav>
         <SidebarNavItem {...args} />
       </SidebarNav>
-    </ArdaSidebar>
+    </Sidebar>
   ),
 };
 
@@ -80,11 +80,11 @@ export const WithBadge: Story = {
     badge: 3,
   },
   render: (args) => (
-    <ArdaSidebar defaultOpen>
+    <Sidebar defaultOpen>
       <SidebarNav>
         <SidebarNavItem {...args} />
       </SidebarNav>
-    </ArdaSidebar>
+    </Sidebar>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -100,18 +100,18 @@ export const WithDotBadge: Story = {
     badge: true,
   },
   render: (args) => (
-    <ArdaSidebar defaultOpen>
+    <Sidebar defaultOpen>
       <SidebarNav>
         <SidebarNavItem {...args} />
       </SidebarNav>
-    </ArdaSidebar>
+    </Sidebar>
   ),
 };
 
 /** Multiple nav items composed together — count badges, dot badges, and active states. */
 export const Composition: Story = {
   render: () => (
-    <ArdaSidebar defaultOpen>
+    <Sidebar defaultOpen>
       <SidebarNav>
         <SidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
         <SidebarNavItem icon={Package} label="Items" badge={true} />
@@ -119,6 +119,6 @@ export const Composition: Story = {
         <SidebarNavItem icon={Building2} label="Suppliers" badge={true} active />
         <SidebarNavItem icon={Settings} label="Settings" />
       </SidebarNav>
-    </ArdaSidebar>
+    </Sidebar>
   ),
 };

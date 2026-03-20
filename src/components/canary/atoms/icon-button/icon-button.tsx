@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/canary/pri
 
 // --- Interfaces ---
 
-/** Design-time configuration for ArdaIconButton. */
+/** Design-time configuration for IconButton. */
 export interface ArdaIconButtonStaticConfig {
   /* --- View / Layout / Controller --- */
   /** Lucide icon component to render. */
@@ -19,7 +19,7 @@ export interface ArdaIconButtonStaticConfig {
   showTooltip?: boolean;
 }
 
-/** Runtime configuration for ArdaIconButton. */
+/** Runtime configuration for IconButton. */
 export interface ArdaIconButtonRuntimeConfig {
   /* --- Model / Data Binding --- */
   /** Badge count displayed as an overlay. When undefined, no badge is shown. */
@@ -28,21 +28,24 @@ export interface ArdaIconButtonRuntimeConfig {
   onClick?: () => void;
 }
 
-/** Combined props for ArdaIconButton. */
-export interface ArdaIconButtonProps
+/** Combined props for IconButton. */
+export interface IconButtonProps
   extends
     ArdaIconButtonStaticConfig,
     ArdaIconButtonRuntimeConfig,
     Omit<React.HTMLAttributes<HTMLButtonElement>, 'onClick'> {}
 
+/** @deprecated Use IconButtonProps */
+export type ArdaIconButtonProps = IconButtonProps;
+
 // --- Component ---
 
 /**
- * ArdaIconButton — an icon-only button with optional notification badge and tooltip.
+ * IconButton — an icon-only button with optional notification badge and tooltip.
  *
  * Wraps shadcn/ui Button (ghost variant, icon size) and Tooltip.
  */
-export function ArdaIconButton({
+export function IconButton({
   icon: Icon,
   label,
   iconSize = 20,
@@ -51,7 +54,7 @@ export function ArdaIconButton({
   onClick,
   className,
   ...props
-}: ArdaIconButtonProps) {
+}: IconButtonProps) {
   const button = (
     <Button
       variant="ghost"
@@ -83,3 +86,6 @@ export function ArdaIconButton({
     </Tooltip>
   );
 }
+
+/** @deprecated Use IconButton */
+export const ArdaIconButton = IconButton;
