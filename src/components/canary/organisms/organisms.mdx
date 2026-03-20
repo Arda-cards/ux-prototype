@@ -1,0 +1,60 @@
+{/* organisms.mdx */}
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Components/Canary/Organisms/Guide" />
+
+# Canary Organisms
+
+Organisms are the largest reusable UI compositions in the canary component system. Each organism assembles multiple molecules and atoms into a complete, self-contained UI section &#8212; a sidebar, an app header, a data grid page, or an entity detail panel.
+
+**Import**: `import { Sidebar, AppHeader, ItemGrid } from '@arda-cards/design-system/canary'`
+
+---
+
+## Standard Organisms
+
+<table>
+  <thead>
+    <tr>
+      <th>Organism</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="?path=/docs/components-canary-organisms-appheader--docs">AppHeader</a></td>
+      <td>Top navigation bar with icon actions, button actions, optional search input, and leading content slot (breadcrumbs). Responsive with tooltip-wrapped icon buttons.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-organisms-itemdetails--docs">ItemDetails</a></td>
+      <td>Slide-over detail panel (Drawer) for inventory items. Shows field list, tabbed content (details + card preview), and an action toolbar header. Opened by row click in ItemGrid.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-organisms-itemgrid--docs">ItemGrid</a></td>
+      <td>Item inventory grid built on <code>createEntityDataGrid</code>. Delegates search, drag-to-scroll, auto-publish, pagination, toolbar, and actions to the entity-data-grid factory. Domain-specific: curated columns, typeahead lookups, custom renderers.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-organisms-sidebar--docs">Sidebar</a></td>
+      <td>Application sidebar with dark theme, collapsible navigation, team header, nav groups, and user menu. Built on shadcn Sidebar primitive with Arda branding. Supports mobile Sheet drawer.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Sub-folders
+
+<table>
+  <thead>
+    <tr>
+      <th>Folder</th>
+      <th>Contents</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="?path=/docs/components-canary-organisms-shared-entity-data-grid--docs">Shared</a></td>
+      <td><code>createEntityDataGrid</code> factory (row-auto-publish, search, actions column, pagination modes, toolbar, auto-height, drag-to-scroll) and <code>createEntityDataGridShim</code> (deprecated migration wrapper). The foundation for all entity grid organisms.</td>
+    </tr>
+  </tbody>
+</table>
