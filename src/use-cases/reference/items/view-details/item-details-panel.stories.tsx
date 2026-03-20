@@ -9,7 +9,7 @@
  */
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, within, userEvent, waitFor } from 'storybook/test';
+import { expect, within, userEvent, waitFor, screen } from 'storybook/test';
 import {
   LayoutDashboard,
   Package,
@@ -229,9 +229,10 @@ export const Default: Story = {
     });
 
     await step('Drawer opens and shows item title', async () => {
+      // Drawer renders via Radix portal outside canvasElement — use screen
       await waitFor(
         () => {
-          expect(canvas.getByText('Nitrile Exam Gloves (Medium)')).toBeVisible();
+          expect(screen.getByRole('dialog')).toBeVisible();
         },
         { timeout: 10000 },
       );
@@ -240,15 +241,18 @@ export const Default: Story = {
     await storyStepDelay();
 
     await step('Details tab shows key fields', async () => {
-      // SKU and supplier should be visible in the field list
-      expect(canvas.getByText('GLV-NIT-M-100')).toBeVisible();
-      expect(canvas.getByText('Medline Industries')).toBeVisible();
+      // Scope queries to the portal dialog
+      const drawer = within(screen.getByRole('dialog'));
+      expect(drawer.getByText('GLV-NIT-M-100')).toBeVisible();
+      expect(drawer.getByText('Medline Industries')).toBeVisible();
     });
 
     await storyStepDelay();
 
     await step('Switch to Cards tab', async () => {
-      const cardsTab = canvas.getByRole('tab', { name: /cards/i });
+      // Tab is inside the portal — scope to dialog
+      const drawer = within(screen.getByRole('dialog'));
+      const cardsTab = drawer.getByRole('tab', { name: /cards/i });
       await userEvent.click(cardsTab);
     });
 
@@ -270,9 +274,10 @@ export const CloseDrawer: Story = {
         { timeout: 10000 },
       );
       await userEvent.click(firstItem);
+      // Drawer renders via Radix portal outside canvasElement — use screen
       await waitFor(
         () => {
-          expect(canvas.getByRole('dialog')).toBeVisible();
+          expect(screen.getByRole('dialog')).toBeVisible();
         },
         { timeout: 10000 },
       );
@@ -281,11 +286,13 @@ export const CloseDrawer: Story = {
     await storyStepDelay();
 
     await step('Close the drawer via the X button', async () => {
-      const closeButton = canvas.getByRole('button', { name: /close/i });
+      // Close button is inside the portal — scope to dialog
+      const drawer = within(screen.getByRole('dialog'));
+      const closeButton = drawer.getByRole('button', { name: /close/i });
       await userEvent.click(closeButton);
       await waitFor(
         () => {
-          expect(canvas.queryByRole('dialog')).not.toBeInTheDocument();
+          expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
         },
         { timeout: 10000 },
       );

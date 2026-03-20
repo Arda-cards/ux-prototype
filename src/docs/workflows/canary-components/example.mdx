@@ -2,7 +2,9 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 <Meta title="Docs/Workflows/Canary Components/Example" />
 
-# Canary Component Example: ArdaDetailField
+# Canary Component Example: ReadOnlyField (formerly ArdaDetailField)
+
+> **Historical record.** This page is a transcript of the original extraction of `ArdaDetailField` during design-session-1, Rounds 2-6. That component has since been renamed to `ReadOnlyField` and moved to `src/components/canary/atoms/read-only-field/`. References to `ArdaDetailField` and `detail-field` below are preserved as written; use `ReadOnlyField` / `read-only-field` in new work.
 
 > Transcript of applying Phases 1-3 of the [How to Extract and Publish](./how-to-extract-and-publish.mdx) workflow. Recorded during design-session-1, Rounds 2-6.
 
@@ -281,12 +283,13 @@ Were replaced with:
 After the agent completed Phases 2&#8211;3, the component was added to the canary barrel file (`src/canary.ts`) under the `// --- Atoms ---` section:
 
 ```tsx
-export { ArdaDetailField, detailFieldVariants } from './components/canary/atoms/detail-field/detail-field';
+// Current equivalent in src/canary.ts (component renamed to ReadOnlyField)
+export { ReadOnlyField, readOnlyFieldVariants } from './components/canary/atoms/read-only-field/read-only-field';
 export type {
-  ArdaDetailFieldProps,
-  ArdaDetailFieldStaticConfig,
-  ArdaDetailFieldRuntimeConfig,
-} from './components/canary/atoms/detail-field/detail-field';
+  ReadOnlyFieldProps,
+  ReadOnlyFieldStaticConfig,
+  ReadOnlyFieldRuntimeConfig,
+} from './components/canary/atoms/read-only-field/read-only-field';
 ```
 
 Then the package contents docs were regenerated:
@@ -362,7 +365,7 @@ The two screenshots are visually identical at the page level. The canary compone
     <tr>
       <th>Aspect</th>
       <th>Vendored (inline)</th>
-      <th>ArdaDetailField (canary)</th>
+      <th>ReadOnlyField (canary)</th>
     </tr>
   </thead>
   <tbody>

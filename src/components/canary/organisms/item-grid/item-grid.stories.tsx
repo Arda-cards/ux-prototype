@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, within, userEvent } from 'storybook/test';
+import { expect, within, userEvent, waitFor } from 'storybook/test';
 import { useState, useRef, useCallback } from 'react';
 import {
   LayoutDashboard,
@@ -201,7 +201,12 @@ export const Empty: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(canvas.getByText('0 items')).toBeInTheDocument();
+    await waitFor(
+      () => {
+        expect(canvas.getByText('0 items')).toBeInTheDocument();
+      },
+      { timeout: 5000 },
+    );
   },
 };
 
@@ -235,10 +240,17 @@ export const WithSearch: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const input = canvas.getByPlaceholderText('Search items\u2026');
+    // Wait for the search input to be present (grid has rendered)
+    const input = await canvas.findByRole('searchbox', {}, { timeout: 10000 });
     await userEvent.type(input, 'glove');
-    // entity-data-grid shows "N of M items" when a search is active
-    await expect(canvas.getByText('1 of 12 items')).toBeInTheDocument();
+    // entity-data-grid shows "N of M items" when a search is active;
+    // wrap in waitFor to allow the 150 ms debounce to flush
+    await waitFor(
+      () => {
+        expect(canvas.getByText('1 of 12 items')).toBeInTheDocument();
+      },
+      { timeout: 5000 },
+    );
   },
 };
 

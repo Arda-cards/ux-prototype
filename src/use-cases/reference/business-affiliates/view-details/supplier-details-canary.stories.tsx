@@ -8,7 +8,7 @@
  */
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, within, userEvent, waitFor } from 'storybook/test';
+import { expect, within, userEvent, waitFor, screen } from 'storybook/test';
 import type { ColDef } from 'ag-grid-community';
 import {
   LayoutDashboard,
@@ -274,9 +274,10 @@ export const Default: Story = {
         selector: '[role="gridcell"]',
       });
       await userEvent.click(firstRow);
+      // Drawer renders via Radix portal outside canvasElement — use screen
       await waitFor(
         () => {
-          expect(canvas.getByRole('dialog')).toBeVisible();
+          expect(screen.getByRole('dialog')).toBeVisible();
         },
         { timeout: 10000 },
       );
@@ -285,19 +286,23 @@ export const Default: Story = {
     await storyStepDelay();
 
     await step('Drawer shows supplier name and key fields', async () => {
-      expect(canvas.getByText('Apex Medical Distributors')).toBeVisible();
-      expect(canvas.getByText('Dr. Maria Santos')).toBeVisible();
-      expect(canvas.getByText('msantos@apexmedical.com')).toBeVisible();
+      // Scope queries to the portal dialog so we don't match grid cells
+      const drawer = within(screen.getByRole('dialog'));
+      expect(drawer.getByText('Apex Medical Distributors')).toBeVisible();
+      expect(drawer.getByText('Dr. Maria Santos')).toBeVisible();
+      expect(drawer.getByText('msantos@apexmedical.com')).toBeVisible();
     });
 
     await storyStepDelay();
 
     await step('Close the drawer', async () => {
-      const closeButton = canvas.getByRole('button', { name: /close/i });
+      // Close button is inside the portal — scope to dialog
+      const drawer = within(screen.getByRole('dialog'));
+      const closeButton = drawer.getByRole('button', { name: /close/i });
       await userEvent.click(closeButton);
       await waitFor(
         () => {
-          expect(canvas.queryByRole('dialog')).not.toBeInTheDocument();
+          expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
         },
         { timeout: 10000 },
       );

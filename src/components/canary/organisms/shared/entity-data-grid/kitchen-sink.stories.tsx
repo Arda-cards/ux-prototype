@@ -415,6 +415,9 @@ export const KitchenSink: Story = {
         selector: '[role="gridcell"]',
       });
       await userEvent.dblClick(nameCell);
+      // Wait briefly for the cell editor to mount, then type to dirty the row
+      await new Promise<void>((resolve) => setTimeout(resolve, 200));
+      await userEvent.keyboard(' (edited)');
     });
 
     await storyStepDelay(600);

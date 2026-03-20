@@ -9,7 +9,7 @@
  *   GEN::LST::0004 — Filter Entity List
  */
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, within, userEvent, waitFor } from 'storybook/test';
+import { expect, within, userEvent, waitFor, screen } from 'storybook/test';
 import type { ColDef } from 'ag-grid-community';
 
 import { createEntityDataGrid } from '@/components/canary/organisms/shared/entity-data-grid/create-entity-data-grid';
@@ -200,9 +200,19 @@ export const SortByColumn: Story = {
 
     await storyStepDelay();
 
-    await step('Click Category header to sort ascending', async () => {
+    await step('Open Category sort menu and sort ascending', async () => {
+      // SortMenuHeader renders a ⋮ button; clicking the header directly does not sort.
+      // Find the sort options button inside the Category column header.
       const categoryHeader = canvas.getByRole('columnheader', { name: /category/i });
-      await userEvent.click(categoryHeader);
+      const sortBtn = within(categoryHeader).getByRole('button', { name: /sort options/i });
+      await userEvent.click(sortBtn);
+      // The dropdown renders in a portal on document.body — use screen
+      const ascOption = await screen.findByRole(
+        'button',
+        { name: /sort ascending/i },
+        { timeout: 5000 },
+      );
+      await userEvent.click(ascOption);
     });
 
     await step('Grid rows are now sorted by category A-Z', async () => {
@@ -225,9 +235,17 @@ export const SortByColumn: Story = {
 
     await storyStepDelay();
 
-    await step('Click Category header again to sort descending', async () => {
+    await step('Open Category sort menu and sort descending', async () => {
       const categoryHeader = canvas.getByRole('columnheader', { name: /category/i });
-      await userEvent.click(categoryHeader);
+      const sortBtn = within(categoryHeader).getByRole('button', { name: /sort options/i });
+      await userEvent.click(sortBtn);
+      // The dropdown renders in a portal on document.body — use screen
+      const descOption = await screen.findByRole(
+        'button',
+        { name: /sort descending/i },
+        { timeout: 5000 },
+      );
+      await userEvent.click(descOption);
     });
 
     await step('Grid rows are now sorted by category Z-A', async () => {
@@ -344,8 +362,17 @@ export const SortAndFilterCombined: Story = {
     await storyStepDelay();
 
     await step('Sort by Name ascending', async () => {
+      // SortMenuHeader renders a ⋮ button; clicking the header directly does not sort.
       const nameHeader = canvas.getByRole('columnheader', { name: /name/i });
-      await userEvent.click(nameHeader);
+      const sortBtn = within(nameHeader).getByRole('button', { name: /sort options/i });
+      await userEvent.click(sortBtn);
+      // The dropdown renders in a portal on document.body — use screen
+      const ascOption = await screen.findByRole(
+        'button',
+        { name: /sort ascending/i },
+        { timeout: 5000 },
+      );
+      await userEvent.click(ascOption);
     });
 
     await storyStepDelay();

@@ -198,7 +198,7 @@ export const Default: Story = {
     await step('Selection count shows 1 row selected', async () => {
       await waitFor(
         () => {
-          expect(canvas.getByText(/1 row selected/)).toBeVisible();
+          expect(canvas.getByText(/1 of \d+ selected/)).toBeVisible();
         },
         { timeout: 5000 },
       );
@@ -224,7 +224,7 @@ export const Default: Story = {
     await step('Selection count shows 2 rows selected', async () => {
       await waitFor(
         () => {
-          expect(canvas.getByText(/2 rows selected/)).toBeVisible();
+          expect(canvas.getByText(/2 of \d+ selected/)).toBeVisible();
         },
         { timeout: 5000 },
       );
