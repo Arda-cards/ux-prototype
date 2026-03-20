@@ -106,8 +106,10 @@ export const Editor: Story = {
 // Playground
 // ============================================================================
 
-export const Playground: Story = {
+export const Playground: StoryObj = {
   argTypes: {
+    value: { control: 'boolean', description: 'Boolean value' },
+    displayFormat: { control: 'select', options: ['checkbox', 'yes-no'] },
     mode: {
       control: 'radio',
       options: ['display', 'editor'],
@@ -127,12 +129,17 @@ export const Playground: Story = {
     if (mode === 'editor') {
       return (
         <div className="border border-border bg-white p-2" style={{ width: 200, height: 32 }}>
-          <BooleanCellEditor value={value} stopEditing={() => {}} />
+          <BooleanCellEditor {...(value !== undefined ? { value } : {})} stopEditing={() => {}} />
         </div>
       );
     }
 
-    return <BooleanCellDisplay value={value} displayFormat={displayFormat} />;
+    return (
+      <BooleanCellDisplay
+        {...(value !== undefined ? { value } : {})}
+        {...(displayFormat !== undefined ? { displayFormat } : {})}
+      />
+    );
   },
   play: async ({ canvasElement }) => {
     await expect(canvasElement.querySelector('svg')).toBeInTheDocument();

@@ -29,6 +29,21 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof SidebarHeader>;
 
+/**
+ * Interactive Controls playground — adjust `teamName` in the Controls panel.
+ * `teams` is a complex array and cannot be driven by a simple control.
+ */
+export const Playground: Story = {
+  args: {
+    teamName: 'Arda Cards',
+  },
+  render: (args) => (
+    <Sidebar defaultOpen>
+      <SidebarHeader {...args} />
+    </Sidebar>
+  ),
+};
+
 /** Default header with team name. */
 export const Default: Story = {
   args: {
@@ -80,19 +95,4 @@ export const CustomChildren: Story = {
     const canvas = within(canvasElement);
     await expect(canvas.getByText('Custom Header')).toBeVisible();
   },
-};
-
-/**
- * Interactive Controls playground — adjust `teamName` in the Controls panel.
- * `teams` is a complex array and cannot be driven by a simple control.
- */
-export const Playground: Story = {
-  args: {
-    teamName: 'Arda Cards',
-  },
-  render: (args) => (
-    <Sidebar defaultOpen>
-      <SidebarHeader {...args} />
-    </Sidebar>
-  ),
 };

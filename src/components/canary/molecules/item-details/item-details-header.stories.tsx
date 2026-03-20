@@ -31,6 +31,28 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof ItemDetailsHeader>;
 
+/**
+ * Interactive Controls playground — the tab and actions props are complex
+ * objects; this story pre-populates a typical configuration. Switch tabs
+ * interactively.
+ */
+export const Playground: Story = {
+  render: () => {
+    const [tab, setTab] = useState('details');
+    return (
+      <div className="w-[460px] border rounded-lg p-4 bg-background">
+        <ItemDetailsHeader
+          activeTab={tab}
+          onTabChange={setTab}
+          tabs={defaultTabs}
+          actions={defaultActions}
+          overflowActions={defaultOverflow}
+        />
+      </div>
+    );
+  },
+};
+
 const noop = () => {};
 
 const defaultTabs = [
@@ -101,26 +123,4 @@ export const ActionsOnly: Story = {
       />
     </div>
   ),
-};
-
-/**
- * Interactive Controls playground — the tab and actions props are complex
- * objects; this story pre-populates a typical configuration. Switch tabs
- * interactively.
- */
-export const Playground: Story = {
-  render: () => {
-    const [tab, setTab] = useState('details');
-    return (
-      <div className="w-[460px] border rounded-lg p-4 bg-background">
-        <ItemDetailsHeader
-          activeTab={tab}
-          onTabChange={setTab}
-          tabs={defaultTabs}
-          actions={defaultActions}
-          overflowActions={defaultOverflow}
-        />
-      </div>
-    );
-  },
 };

@@ -44,8 +44,10 @@ export const Playground: Story = {
     size: 'lg',
     side: 'right',
   },
-  render: (args) => {
+  render: (args: { size?: 'md' | 'lg' | 'xl'; side?: 'left' | 'right' }) => {
     const [open, setOpen] = useState(false);
+    const size = args.size ?? 'lg';
+    const side = args.side ?? 'right';
     return (
       <>
         <button
@@ -54,10 +56,10 @@ export const Playground: Story = {
         >
           Open drawer
         </button>
-        <Drawer open={open} onOpenChange={setOpen} size={args.size} side={args.side}>
+        <Drawer open={open} onOpenChange={setOpen} size={size} side={side}>
           <DrawerHeader>
             <DrawerTitle>
-              Drawer ({args.size ?? 'lg'}, {args.side ?? 'right'})
+              Drawer ({size}, {side})
             </DrawerTitle>
             <DrawerDescription>Playground drawer instance.</DrawerDescription>
           </DrawerHeader>

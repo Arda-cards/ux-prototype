@@ -23,6 +23,26 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof ItemDetailsCardPreview>;
 
+/**
+ * Interactive Controls playground — `currentIndex`, `totalCards`, and `loading`
+ * can be toggled in the Controls panel.
+ */
+export const Playground: Story = {
+  render: () => {
+    const [index, setIndex] = useState(1);
+    return (
+      <div className="w-[460px]">
+        <ItemDetailsCardPreview
+          currentIndex={index}
+          totalCards={3}
+          onIndexChange={setIndex}
+          renderCard={(i) => <MockCard index={i} />}
+        />
+      </div>
+    );
+  },
+};
+
 const noop = () => {};
 
 const MockCard = ({ index }: { index: number }) => (
@@ -102,24 +122,4 @@ export const SingleCard: Story = {
       />
     </div>
   ),
-};
-
-/**
- * Interactive Controls playground — `currentIndex`, `totalCards`, and `loading`
- * can be toggled in the Controls panel.
- */
-export const Playground: Story = {
-  render: () => {
-    const [index, setIndex] = useState(1);
-    return (
-      <div className="w-[460px]">
-        <ItemDetailsCardPreview
-          currentIndex={index}
-          totalCards={3}
-          onIndexChange={setIndex}
-          renderCard={(i) => <MockCard index={i} />}
-        />
-      </div>
-    );
-  },
 };

@@ -29,8 +29,8 @@ export const Playground: Story = {
   },
   render: (args: { variant?: 'default' | 'inverted' | 'mono' | 'mono-inverted' }) => (
     <div className="p-6 bg-sidebar rounded-lg flex items-center gap-4">
-      <BrandLogo variant={args.variant} />
-      <BrandIcon variant={args.variant} />
+      <BrandLogo {...(args.variant !== undefined ? { variant: args.variant } : {})} />
+      <BrandIcon {...(args.variant !== undefined ? { variant: args.variant } : {})} />
     </div>
   ),
   args: {

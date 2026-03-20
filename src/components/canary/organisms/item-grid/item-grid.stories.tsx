@@ -169,6 +169,22 @@ const actionsColumn = {
   cellRenderer: makeActionsRenderer((item) => console.log('View:', item.name)),
 };
 
+/**
+ * Interactive Controls playground — use the Controls panel to toggle
+ * `loading`, `error`, and `enableRowSelection`. Items and lookups are
+ * pre-populated with fixture data.
+ */
+export const Playground: Story = {
+  render: () => (
+    <ItemGrid
+      items={itemGridFixtures}
+      lookups={mockLookups}
+      enableRowSelection
+      actionsColumn={actionsColumn}
+    />
+  ),
+};
+
 /** Default grid — editable, selection, typeahead lookups, all features on. */
 export const Default: Story = {
   render: () => {
@@ -693,20 +709,4 @@ export const Composition: Story = {
       </Sidebar>
     );
   },
-};
-
-/**
- * Interactive Controls playground — use the Controls panel to toggle
- * `loading`, `error`, and `enableRowSelection`. Items and lookups are
- * pre-populated with fixture data.
- */
-export const Playground: Story = {
-  render: () => (
-    <ItemGrid
-      items={itemGridFixtures}
-      lookups={mockLookups}
-      enableRowSelection
-      actionsColumn={actionsColumn}
-    />
-  ),
 };

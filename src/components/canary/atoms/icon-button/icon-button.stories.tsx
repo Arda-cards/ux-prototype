@@ -25,7 +25,6 @@ export const Playground: Story = {
     label: { control: 'text' },
     showTooltip: { control: 'boolean' },
     badgeCount: { control: 'number' },
-    disabled: { control: 'boolean' },
     icon: { table: { disable: true } },
   },
   args: {

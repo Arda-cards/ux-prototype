@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Button } from '@/components/canary/primitives/button';
+import { Button } from '@/components/canary/atoms/button/button';
 
 import {
   Dialog,
@@ -39,9 +39,9 @@ export const Playground: Story = {
     open: false,
   },
   render: (args) => {
-    const [open, setOpen] = useState(args.open);
+    const [open, setOpen] = useState(args.open ?? false);
     return (
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={(v) => setOpen(v)}>
         <DialogTrigger asChild>
           <Button onClick={() => setOpen(true)}>Open Dialog</Button>
         </DialogTrigger>
