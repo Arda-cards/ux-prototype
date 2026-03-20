@@ -306,6 +306,15 @@ type Story = StoryObj<typeof DataGrid>;
  * Column definitions and row data are fixed in this story.
  */
 export const Playground: Story = {
+  argTypes: {
+    height: { control: 'number', description: 'Grid height in pixels' },
+    loading: { control: 'boolean', description: 'Show loading overlay' },
+    enableRowSelection: { control: 'boolean', description: 'Enable row selection' },
+    enableMultiRowSelection: { control: 'boolean', description: 'Enable multi-row selection' },
+    enableCellEditing: { control: 'boolean', description: 'Enable inline cell editing' },
+    columnDefs: { table: { disable: true } },
+    rowData: { table: { disable: true } },
+  },
   args: {
     columnDefs: columnDefs as unknown as AnyColDef[],
     rowData: sampleData as Record<string, unknown>[],

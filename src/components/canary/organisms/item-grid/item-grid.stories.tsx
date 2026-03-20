@@ -175,11 +175,31 @@ const actionsColumn = {
  * pre-populated with fixture data.
  */
 export const Playground: Story = {
-  render: () => (
+  argTypes: {
+    editable: { control: 'boolean', description: 'Enable inline cell editing' },
+    enableRowSelection: { control: 'boolean', description: 'Show row selection checkboxes' },
+    loading: { control: 'boolean', description: 'Show loading overlay' },
+    autoHeight: { control: 'boolean', description: 'Grid grows to fit content' },
+  },
+  args: {
+    editable: true,
+    enableRowSelection: true,
+    loading: false,
+    autoHeight: false,
+  },
+  render: (args: {
+    editable?: boolean;
+    enableRowSelection?: boolean;
+    loading?: boolean;
+    autoHeight?: boolean;
+  }) => (
     <ItemGrid
       items={itemGridFixtures}
       lookups={mockLookups}
-      enableRowSelection
+      {...(args.editable ? { editable: true } : {})}
+      {...(args.enableRowSelection ? { enableRowSelection: true } : {})}
+      {...(args.loading ? { loading: true } : {})}
+      {...(args.autoHeight ? { autoHeight: true } : {})}
       actionsColumn={actionsColumn}
     />
   ),
