@@ -1,4 +1,4 @@
-import { formatNumber } from '@/lib/data-types/formatters';
+import { formatNumber } from '@/components/extras/atoms/shared/formatters';
 import { FieldLabel, type FieldLabelProps } from '../field-label';
 
 /** Design-time configuration for number field display. */

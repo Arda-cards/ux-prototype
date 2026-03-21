@@ -1,4 +1,4 @@
-import type { AtomMode, AtomProps } from '@/lib/data-types/atom-types';
+import type { AtomMode, AtomProps } from '@/components/extras/atoms/shared/props';
 import { ArdaNumberFieldDisplay, type ArdaNumberFieldDisplayProps } from './number-field-display';
 import { ArdaNumberFieldEditor, type ArdaNumberFieldEditorProps } from './number-field-editor';
 

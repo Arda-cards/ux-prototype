@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 
-import type { AtomProps } from '@/lib/data-types/atom-types';
+import type { AtomProps } from '@/components/extras/atoms/shared/props';
 import type {
   DesignConfig,
   MountConfig,

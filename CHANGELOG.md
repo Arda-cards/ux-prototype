@@ -18,6 +18,82 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.0.0] - 2026-03-20
+
+### Added
+
+- Canary primitives layer: 13 stock shadcn/ui components in `components/canary/primitives/`
+  (collapsible, dropdown-menu, input, label, separator, sheet, sidebar, skeleton, table, tabs,
+  textarea, toggle, tooltip) plus button primitive
+- Canary atoms: avatar, badge (ArdaBadge), button (ArdaButton), card, dialog, drawer (ArdaDrawer),
+  icon-button, icon-label, input-group, read-only-field, search-input, brand-logo
+- Canary `SelectCellEditor` atom with custom listbox, keyboard navigation, checkmark indicator,
+  ARIA roles, and `createSelectCellEditor` factory — replaces `EnumCellEditor`
+- Canary sidebar organism (ArdaSidebar) with 5 sidebar molecules (header, nav, nav-item,
+  nav-group, user-menu)
+- Canary app-header organism with search, action buttons, leading content
+- Canary item-details organism with drawer, field list, card preview, action toolbar
+- Canary item-grid organism built on entity-data-grid factory — delegates all general-purpose
+  capabilities (search, drag-to-scroll, auto-publish, pagination, toolbar, actions column)
+- Entity-data-grid row-auto-publish lifecycle: `onRowPublish` async callback, pending changes
+  accumulation per row, 50ms debounce on blur, row visual states (saving/error CSS classes),
+  imperative `saveAll`/`discardAll`/`getDirtyRowIds` ref API
+- Entity-data-grid search/filter UI: `searchConfig` factory config, 150ms debounce, count display
+- Entity-data-grid actions column: `actionsColumn` InitConfig (mount-time ColDef)
+- Entity-data-grid client-side pagination mode: `paginationMode: 'client'` StaticConfig
+- Entity-data-grid toolbar slot, auto-height mode, drag-to-scroll opt-in
+- Entity-data-grid `getGridApi()` on ref for imperative AG Grid access
+- Use-case composition stories: items browse/view/edit (REF::ITM), suppliers browse/view (REF::BA),
+  list view behaviors (GEN::LST), entity-data-grid KitchenSink
+- MDX documentation for all new atoms, molecules, organisms, and primitives layer
+- Arda orange design token system in globals.css + tokens.css (OKLch palette, control heights,
+  state ramp, Geist Mono font, touch-device responsive sizing)
+- `themeQuartz` AG Grid theming with design-system token mapping in DataGrid molecule
+
+### Changed
+
+- `canary.ts` barrel: added all new component exports; removed ArdaDetailField
+- `tokens.css` is now single source of truth for token values; `globals.css` imports it
+- DataGrid molecule uses `themeQuartz` (replaced `'legacy'` theme string)
+- Entity-data-grid editing: row-auto-publish replaces cell-granular `onEntityUpdated`
+- Entity-data-grid-shim: deprecated (kept for migration compatibility)
+
+### Removed
+
+- `ArdaDetailField` atom (replaced by `ReadOnlyField`)
+- `EnumCellEditor` / `EnumCellDisplay` atoms (replaced by `SelectCellEditor` / `SelectCellDisplay`)
+- `useDirtyTracking` as primary hook (superseded by `useRowAutoPublish`; kept as re-export)
+- Legacy sidebar CSS (`.sidebar-menu-button-hover`, `[data-active='true']` styles)
+- `@radix-ui/react-tooltip` production dependency (superseded by `radix-ui` unified package)
+
+## [3.0.0] - 2026-03-17
+
+### Added
+
+- Canary cell atoms: text, number, boolean, date, enum (Display + Editor + factory each),
+  memo (Display + Editor + MemoButtonCell + createMemoButtonCellEditor), color (Display + Editor + factory)
+- Canary `ActionCellRenderer<T>` atom with portal dropdown menu
+- Canary `DataGrid<T>` molecule with `SortMenuHeader` (portal dropdown), `useColumnPersistence`,
+  AG Grid native row selection (`headerCheckbox: true`)
+- Canary `createEntityDataGrid<T>()` factory with multi-sort, filtering, cell editing lifecycle, getRowClass
+- Canary `createEntityDataGridShim<T>()` vendored-compatible wrapper with row actions, double-click,
+  hasActiveSearch, initialState, extended ref (refreshData, getSelectedRows, selectAll, deselectAll)
+- Canary `useDirtyTracking<T>()` composable hook
+- `PaginationData` type in `types/canary/pagination.ts`
+- Canary `formatters` utilities in `components/canary/atoms/shared/formatters.ts`
+- Canary `ag-theme-arda.css` styles with SortMenuHeader CSS classes
+- Canary-refactor stories for Items Grid and Item Detail (hybrid canary grid + vendored page chrome)
+- ESLint boundary rule: canary code cannot import from extras
+
+### Changed
+
+- `canary.ts` barrel: added all new component, type, and hook exports
+- `types/canary.ts`: added `PaginationData` export
+
+### Removed
+
+- `CanaryAtomPlaceholder`, `CanaryMoleculePlaceholder`, `CanaryOrganismPlaceholder` components and exports
+
 ## [2.1.0] - 2026-03-06
 
 ### Added

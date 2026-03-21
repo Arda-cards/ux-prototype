@@ -1,7 +1,5 @@
 import React from 'react';
 
-import { cn } from '@/lib/utils';
-
 /** Design-time configuration for the stable molecule placeholder. */
 export interface StableMoleculePlaceholderStaticConfig {
   /** Title text displayed in the card header. */
@@ -22,10 +20,7 @@ export function StableMoleculePlaceholder({
 }: StableMoleculePlaceholderProps) {
   return (
     <div
-      className={cn(
-        'flex flex-col gap-2 rounded-lg border border-dashed border-blue-400 bg-blue-50 p-4',
-        className,
-      )}
+      className={`flex flex-col gap-2 rounded-lg border border-dashed border-blue-400 bg-blue-50 p-4 ${className ?? ''}`.trim()}
       {...props}
     >
       <div className="flex items-center gap-2">

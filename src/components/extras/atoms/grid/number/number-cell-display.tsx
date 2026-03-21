@@ -1,4 +1,4 @@
-import { formatNumber } from '@/lib/data-types/formatters';
+import { formatNumber } from '@/components/extras/atoms/shared/formatters';
 
 /** Design-time configuration for number cell display. */
 export interface NumberCellDisplayStaticConfig {

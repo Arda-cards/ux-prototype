@@ -3,7 +3,6 @@ import { expect, within } from 'storybook/test';
 import { AgGridReact } from 'ag-grid-react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
-import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
 
 import { TypeaheadOption } from '@/components/extras/atoms/typeahead/typeahead';

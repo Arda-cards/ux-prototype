@@ -1,0 +1,158 @@
+{/* card.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as CardStories from './card.stories';
+
+<Meta of={CardStories} />
+
+# Card
+
+Compound surface atom providing a rounded, bordered container with structured header, content, and footer slots.
+
+**Atom** &#8212; Canary | Import: `import { Card, CardHeader, CardTitle, CardContent } from '@arda-cards/design-system/canary'`
+
+---
+
+## Playground
+
+<Canvas of={CardStories.Playground} />
+
+---
+
+## All Variants
+
+<Canvas of={CardStories.AllVariants} />
+
+---
+
+## Purpose
+
+`Card` provides a rounded (`rounded-xl`), bordered, shadowed surface for grouping related content. It is a pure composition surface &#8212; render any children inside it. Common uses include detail panels, dashboard widgets, settings sections, and kanban-style card previews.
+
+Compose sub-components to build the desired layout:
+
+```tsx
+<Card>
+  <CardHeader>
+    <CardTitle>Inventory Summary</CardTitle>
+    <CardDescription>Last updated 2 minutes ago</CardDescription>
+    <CardAction>
+      <Button variant="ghost" size="sm">Edit</Button>
+    </CardAction>
+  </CardHeader>
+  <CardContent>
+    {/* body content */}
+  </CardContent>
+  <CardFooter>
+    <Button variant="outline">View all</Button>
+  </CardFooter>
+</Card>
+```
+
+---
+
+## Sub-components
+
+<table>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Card</code></td>
+      <td>Root container. Sets background (<code>bg-card</code>), border, radius, and shadow. Uses a flex-column layout with a 24 px gap between sections.</td>
+    </tr>
+    <tr>
+      <td><code>CardHeader</code></td>
+      <td>Header grid area with standard horizontal padding. Automatically accommodates a <code>CardAction</code> in a right-aligned column when present.</td>
+    </tr>
+    <tr>
+      <td><code>CardTitle</code></td>
+      <td>Semibold heading text. Rendered as a <code>div</code> &#8212; wrap in a heading element (<code>h2</code>, etc.) if semantic heading level matters.</td>
+    </tr>
+    <tr>
+      <td><code>CardDescription</code></td>
+      <td>Muted small description text below the title.</td>
+    </tr>
+    <tr>
+      <td><code>CardAction</code></td>
+      <td>Right-aligned action area in the header grid. Use for a single icon button or kebab menu.</td>
+    </tr>
+    <tr>
+      <td><code>CardContent</code></td>
+      <td>Main body with standard horizontal padding (<code>px-6</code>). No vertical padding &#8212; add as needed.</td>
+    </tr>
+    <tr>
+      <td><code>CardFooter</code></td>
+      <td>Footer row with standard horizontal padding. Typically holds action buttons.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Props
+
+All Card sub-components forward `className` and all standard `React.ComponentProps<'div'>` attributes. There are no component-specific props &#8212; control appearance with Tailwind utility classes via `className`.
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>className</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Additional CSS classes merged via <code>cn()</code>.</td>
+    </tr>
+    <tr>
+      <td><code>children</code></td>
+      <td><code>ReactNode</code></td>
+      <td>&#8212;</td>
+      <td>Slot content.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Accessibility
+
+- `Card` renders as a `div`. If the card represents a landmark section, wrap it in an appropriate ARIA role (e.g., `<section aria-labelledby="card-title-id">`).
+- `CardTitle` renders as a `div` for layout flexibility. Use a semantic heading (`h2`, `h3`, etc.) inside `CardTitle` when the card title should appear in the document outline.
+
+---
+
+## Import
+
+```tsx
+// From canary barrel (recommended)
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardAction,
+  CardContent,
+  CardFooter,
+} from '@arda-cards/design-system/canary';
+
+// Direct import
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardAction,
+  CardContent,
+  CardFooter,
+} from '@/components/canary/atoms/card/card';
+```

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { X, Pencil, Package, ImageOff, ChevronDown, ChevronRight } from 'lucide-react';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/types/canary/utils';
 import { ArdaConfirmDialog } from '@/components/extras/atoms/confirm-dialog/confirm-dialog';
 import { ArdaItemSupplySection } from '@/components/extras/organisms/reference/items/item-supply-section/item-supply-section';
 import type {

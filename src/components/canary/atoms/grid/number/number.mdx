@@ -1,0 +1,99 @@
+{/* number.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as Stories from './number.stories';
+
+<Meta of={Stories} />
+
+# Number Cell
+
+Display and editor for numeric grid fields. Right-aligned with tabular-nums font feature for clean column alignment. Supports configurable decimal precision.
+
+**Grid Atom** &#8212; see [Grid Guide](?path=/docs/components-canary-atoms-grid-guide--docs)
+
+---
+
+## Playground
+
+Use the Controls panel to adjust `value` and `precision`.
+
+<Canvas of={Stories.Playground} />
+
+---
+
+## Display Variants
+
+<Canvas of={Stories.Display} />
+
+## Editor
+
+<Canvas of={Stories.Editor} />
+
+---
+
+## Props &#8212; Display (`NumberCellDisplay`)
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>value</code></td>
+      <td><code>number</code></td>
+      <td>&#8212;</td>
+      <td>Numeric value to display. Renders an em-dash when undefined.</td>
+    </tr>
+    <tr>
+      <td><code>precision</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Number of decimal places. Uses <code>toFixed(precision)</code> formatting.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Props &#8212; Editor Factory (`createNumberCellEditor`)
+
+<table>
+  <thead>
+    <tr>
+      <th>Config</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>precision</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Decimal precision for the input field step value.</td>
+    </tr>
+    <tr>
+      <td><code>min</code></td>
+      <td><code>number</code></td>
+      <td>&#8212;</td>
+      <td>Minimum allowed value.</td>
+    </tr>
+    <tr>
+      <td><code>max</code></td>
+      <td><code>number</code></td>
+      <td>&#8212;</td>
+      <td>Maximum allowed value.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { NumberCellDisplay, createNumberCellEditor } from '@arda-cards/design-system/canary';
+```

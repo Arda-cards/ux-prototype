@@ -1,0 +1,126 @@
+{/* action-toolbar.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as ActionToolbarStories from './action-toolbar.stories';
+
+<Meta of={ActionToolbarStories} />
+
+# ArdaActionToolbar
+
+Responsive action bar that promotes items from an overflow dropdown as container width allows.
+
+**Molecule** &#8212; Canary | Import: `@/components/canary/molecules/action-toolbar/action-toolbar`
+
+---
+
+## Playground
+
+Use the Controls panel to inspect props. Actions are pre-populated.
+
+<Canvas of={ActionToolbarStories.Playground} />
+
+---
+
+## Default
+
+<Canvas of={ActionToolbarStories.Default} />
+
+---
+
+## Purpose
+
+`ArdaActionToolbar` renders a list of `ToolbarAction` items as icon+label buttons when
+space allows, collapsing overflow items into a `MoreHorizontal` dropdown. It uses
+`ResizeObserver` to measure available container width at runtime &#8212; no breakpoints
+needed.
+
+Use this when you have a known action set and want automatic overflow behavior.
+For dynamically composed children use `OverflowToolbar` instead.
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>actions</code></td>
+      <td><code>ToolbarAction[]</code></td>
+      <td>&#8212;</td>
+      <td>Primary actions. Rendered as buttons; overflow into dropdown when constrained.</td>
+    </tr>
+    <tr>
+      <td><code>overflowActions</code></td>
+      <td><code>OverflowAction[]</code></td>
+      <td>&#8212;</td>
+      <td>Always-overflow actions (e.g. destructive or low-priority). Always in the dropdown.</td>
+    </tr>
+    <tr>
+      <td><code>className</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Additional CSS classes on the container.</td>
+    </tr>
+  </tbody>
+</table>
+
+### ToolbarAction
+
+<table>
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>key</code></td>
+      <td><code>string</code></td>
+      <td>Unique key for React list rendering.</td>
+    </tr>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>Button label text.</td>
+    </tr>
+    <tr>
+      <td><code>icon</code></td>
+      <td><code>LucideIcon</code></td>
+      <td>Icon displayed before the label.</td>
+    </tr>
+    <tr>
+      <td><code>onAction</code></td>
+      <td><code>() =&#62; void</code></td>
+      <td>Called when the action is triggered.</td>
+    </tr>
+    <tr>
+      <td><code>loading</code></td>
+      <td><code>boolean</code></td>
+      <td>Shows spinner; disables the button.</td>
+    </tr>
+    <tr>
+      <td><code>destructive</code></td>
+      <td><code>boolean</code></td>
+      <td>Renders the action in destructive (red) style.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { ArdaActionToolbar } from '@/components/canary/molecules/action-toolbar/action-toolbar';
+// or from canary barrel:
+import { ArdaActionToolbar } from '@arda-cards/design-system/canary';
+```

@@ -1,0 +1,223 @@
+{/* drawer.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as DrawerStories from './drawer.stories';
+
+<Meta of={DrawerStories} />
+
+# Drawer
+
+Slide-over panel for detail views and contextual editing.
+
+**Atom** &#8212; Canary | Import: `import { Drawer, DrawerHeader, DrawerBody, DrawerFooter } from '@arda-cards/design-system/canary'`
+
+---
+
+## Stories
+
+Drawer uses a Sheet (Radix portal) which renders to `document.body`. Inline Canvas embeds are not supported for portal-based components in docs mode. View stories individually:
+
+- [Playground](?path=/story/components-canary-atoms-drawer--playground) &#8212; Toggle size and side from controls
+- [All Variants](?path=/story/components-canary-atoms-drawer--all-variants) &#8212; All size/side combinations
+- [Default](?path=/story/components-canary-atoms-drawer--default) &#8212; Standard right-side drawer
+- [Size Md](?path=/story/components-canary-atoms-drawer--size-md) &#8212; Medium width (420px)
+- [Size Xl](?path=/story/components-canary-atoms-drawer--size-xl) &#8212; Extra-large width (560px)
+
+---
+
+## Purpose
+
+`Drawer` slides in from the edge of the viewport (right by default). Use it for detail panels, edit forms, and contextual actions that need more space than a modal dialog. For simple confirmations, use `Dialog` instead.
+
+The drawer is controlled: the caller owns the `open` state and provides `onOpenChange` to handle close events (close button, overlay click, Escape key). Auto-focus is suppressed on open so focus management can be handled explicitly by the consuming component.
+
+---
+
+## Sub-components
+
+<table>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Drawer</code></td>
+      <td>Root provider. Controls open state, size, and side.</td>
+    </tr>
+    <tr>
+      <td><code>DrawerHeader</code></td>
+      <td>Sticky header area &#8212; title, tabs, close button. Pinned to the top with a bottom border.</td>
+    </tr>
+    <tr>
+      <td><code>DrawerTitle</code></td>
+      <td>Accessible drawer title (required by Radix for screen readers). Apply <code>sr-only</code> to hide visually.</td>
+    </tr>
+    <tr>
+      <td><code>DrawerDescription</code></td>
+      <td>Accessible description (optional). Apply <code>sr-only</code> to hide visually.</td>
+    </tr>
+    <tr>
+      <td><code>DrawerBody</code></td>
+      <td>Scrollable content area that expands to fill available height.</td>
+    </tr>
+    <tr>
+      <td><code>DrawerFooter</code></td>
+      <td>Sticky footer area pinned to the bottom with a top border. Intended for action buttons.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Size variants
+
+<table>
+  <thead>
+    <tr>
+      <th>Value</th>
+      <th>Max width</th>
+      <th>Use</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>'md'</code></td>
+      <td>420px</td>
+      <td>Compact detail views with few fields.</td>
+    </tr>
+    <tr>
+      <td><code>'lg'</code></td>
+      <td>460px</td>
+      <td>Standard detail panels. Default.</td>
+    </tr>
+    <tr>
+      <td><code>'xl'</code></td>
+      <td>560px</td>
+      <td>Wide edit forms or panels with multiple columns.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Medium (420px)
+
+<Canvas of={DrawerStories.SizeMd} />
+
+### Extra-large (560px)
+
+<Canvas of={DrawerStories.SizeXl} />
+
+---
+
+## Usage pattern
+
+```tsx
+function ItemDetailPanel({ itemId, onClose }: Props) {
+  const [open, setOpen] = React.useState(true);
+
+  return (
+    <Drawer open={open} onOpenChange={(v) => { setOpen(v); if (!v) onClose(); }}>
+      <DrawerHeader>
+        <DrawerTitle>Item Details</DrawerTitle>
+        <DrawerDescription className="sr-only">View and manage this inventory item.</DrawerDescription>
+      </DrawerHeader>
+      <DrawerBody className="px-6 py-4 space-y-3">
+        <ReadOnlyField label="SKU" value="WDG-4420-BLK" />
+        <ReadOnlyField label="Supplier" value="McMaster-Carr" />
+      </DrawerBody>
+      <DrawerFooter>
+        <Button variant="outline" onClick={() => setOpen(false)}>Close</Button>
+      </DrawerFooter>
+    </Drawer>
+  );
+}
+```
+
+---
+
+## Props &#8212; Drawer
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>open</code></td>
+      <td><code>boolean</code></td>
+      <td>required</td>
+      <td>Whether the drawer is open. Caller owns this state.</td>
+    </tr>
+    <tr>
+      <td><code>onOpenChange</code></td>
+      <td><code>(open: boolean) =&#62; void</code></td>
+      <td>required</td>
+      <td>Called when open state should change (overlay click, Escape, close button).</td>
+    </tr>
+    <tr>
+      <td><code>size</code></td>
+      <td><code>'md' | 'lg' | 'xl'</code></td>
+      <td><code>'lg'</code></td>
+      <td>Width preset for the drawer panel.</td>
+    </tr>
+    <tr>
+      <td><code>side</code></td>
+      <td><code>'left' | 'right'</code></td>
+      <td><code>'right'</code></td>
+      <td>Edge the drawer slides in from.</td>
+    </tr>
+    <tr>
+      <td><code>children</code></td>
+      <td><code>ReactNode</code></td>
+      <td>required</td>
+      <td>Drawer content &#8212; compose with <code>DrawerHeader</code>, <code>DrawerBody</code>, <code>DrawerFooter</code>.</td>
+    </tr>
+    <tr>
+      <td><code>className</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Additional CSS classes on the content panel.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Accessibility
+
+- `DrawerTitle` is required &#8212; it provides the accessible name for the dialog role. Use `className="sr-only"` to hide it visually while keeping it available to screen readers.
+- `DrawerDescription` is optional but recommended for complex drawers.
+- Focus is not auto-moved on open (auto-focus is suppressed); set focus explicitly on the first interactive element if needed.
+- Pressing Escape or clicking the backdrop closes the drawer and calls `onOpenChange(false)`.
+
+---
+
+## Import
+
+```tsx
+// From canary barrel (recommended)
+import {
+  Drawer,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerBody,
+  DrawerFooter,
+} from '@arda-cards/design-system/canary';
+
+// Direct import
+import {
+  Drawer,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerBody,
+  DrawerFooter,
+} from '@/components/canary/atoms/drawer/drawer';
+```

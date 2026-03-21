@@ -1,0 +1,101 @@
+{/* icon-label.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as IconLabelStories from './icon-label.stories';
+
+<Meta of={IconLabelStories} />
+
+# IconLabel
+
+Inline icon + text pair with consistent 16 px icon sizing, 8 px gap, and overflow truncation.
+
+**Atom** &#8212; Canary | Import: `import { IconLabel } from '@arda-cards/design-system/canary'`
+
+---
+
+## Playground
+
+<Canvas of={IconLabelStories.Playground} />
+
+---
+
+## All Variants
+
+<Canvas of={IconLabelStories.AllVariants} />
+
+---
+
+## Purpose
+
+`IconLabel` renders a Lucide icon alongside a text label as a single inline `span`. It fixes the icon at 16&#215;16 px via `[&>svg]:size-4`, applies a consistent 8 px gap, and truncates overflow text with an ellipsis when the container is width-constrained.
+
+Use it in navigation items, menu entries, dropdown options, status indicators, and any context where an icon must accompany inline text with predictable alignment.
+
+---
+
+## Default
+
+<Canvas of={IconLabelStories.Default} />
+
+## Long label (truncated)
+
+<Canvas of={IconLabelStories.Truncated} />
+
+## Composition
+
+<Canvas of={IconLabelStories.Composition} />
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>icon</code></td>
+      <td><code>LucideIcon</code></td>
+      <td>required</td>
+      <td>Lucide icon component. Rendered at 16&#215;16 px.</td>
+    </tr>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>required</td>
+      <td>Text label rendered next to the icon. Truncates with ellipsis on overflow.</td>
+    </tr>
+    <tr>
+      <td><code>className</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Additional CSS classes on the wrapper <code>span</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+`IconLabel` has no size, color, or variant props &#8212; it inherits font size and color from its container via CSS inheritance. To adjust size, set a text-size or color utility on the parent.
+
+---
+
+## Accessibility
+
+- The icon is decorative and carries no independent `aria-label`. The visible `label` text provides the accessible name for the surrounding interactive element (link, button, menu item).
+- Do not use `IconLabel` as the sole content of an interactive element without also providing an `aria-label` on that element if the icon is meaningful.
+
+---
+
+## Import
+
+```tsx
+// From canary barrel (recommended)
+import { IconLabel } from '@arda-cards/design-system/canary';
+
+// Direct import
+import { IconLabel } from '@/components/canary/atoms/icon-label/icon-label';
+```

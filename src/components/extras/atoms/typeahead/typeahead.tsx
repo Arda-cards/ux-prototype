@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/types/canary/utils';
 
 export interface TypeaheadOption {
   label: string;

@@ -1,4 +1,4 @@
-import { formatText } from '@/lib/data-types/formatters';
+import { formatText } from '@/components/extras/atoms/shared/formatters';
 
 /** Design-time configuration for text cell display. */
 export interface TextCellDisplayStaticConfig {

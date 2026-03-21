@@ -1,0 +1,87 @@
+{/* boolean.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as Stories from './boolean.stories';
+
+<Meta of={Stories} />
+
+# Boolean Cell
+
+Display and editor for true/false grid fields. Supports two visual formats: a checkbox icon or a &#8220;Yes&#8221;/&#8220;No&#8221; text label.
+
+**Grid Atom** &#8212; see [Grid Guide](?path=/docs/components-canary-atoms-grid-guide--docs)
+
+---
+
+## Playground
+
+Use the Controls panel to toggle `value` and switch `displayFormat`.
+
+<Canvas of={Stories.Playground} />
+
+---
+
+## Display Variants
+
+<Canvas of={Stories.Display} />
+
+## Editor
+
+<Canvas of={Stories.Editor} />
+
+---
+
+## Props &#8212; Display (`BooleanCellDisplay`)
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>value</code></td>
+      <td><code>boolean</code></td>
+      <td>&#8212;</td>
+      <td>Boolean value to display. Renders an em-dash when undefined.</td>
+    </tr>
+    <tr>
+      <td><code>displayFormat</code></td>
+      <td><code>'checkbox' | 'yes-no'</code></td>
+      <td><code>'checkbox'</code></td>
+      <td>Visual format. <code>checkbox</code> renders a Lucide icon; <code>yes-no</code> renders text.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Props &#8212; Editor Factory (`createBooleanCellEditor`)
+
+<table>
+  <thead>
+    <tr>
+      <th>Config</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>displayFormat</code></td>
+      <td><code>'checkbox' | 'yes-no'</code></td>
+      <td><code>'checkbox'</code></td>
+      <td>Format used in the inline editor cell.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { BooleanCellDisplay, createBooleanCellEditor } from '@arda-cards/design-system/canary';
+```

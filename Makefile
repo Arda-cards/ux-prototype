@@ -1,4 +1,4 @@
-.PHONY: help install dev build build-lib lint lint-fix typecheck check test test-coverage coverage-summary serve preview publish clean
+.PHONY: help install dev build build-lib lint lint-fix typecheck check test test-coverage coverage-summary ci serve preview publish clean
 
 ## -- Local Development -------------------------------------------------------
 
@@ -37,6 +37,17 @@ test-coverage: ## Run unit tests with coverage (fails if below thresholds)
 
 coverage-summary: ## Show coverage summary
 	npm run coverage:summary
+
+## -- CI (reproduces GitHub Actions build-and-test) ---------------------------
+
+ci: lint typecheck test build ## Full CI pipeline: lint, typecheck, unit tests, Storybook build, play function tests, VRT
+	npx playwright install --with-deps chromium
+	npx concurrently -k -s first -n "SB,TEST" \
+		"npx http-server storybook-static --port 6008 --silent" \
+		"npx wait-on http://127.0.0.1:6008 && npx test-storybook --testTimeout 30000 --skipTags skip-ci"
+	npx concurrently -k -s first -n "SB,VRT" \
+		"npx http-server storybook-static --port 6008 --silent" \
+		"npx wait-on http://127.0.0.1:6008 && npx playwright test --project=vrt"
 
 ## -- Serving & Publishing ----------------------------------------------------
 

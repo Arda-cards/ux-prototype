@@ -1,0 +1,268 @@
+{/* button.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as ButtonStories from './button.stories';
+
+<Meta of={ButtonStories} />
+
+# Button
+
+Canonical action button for all Arda UI. Extends the shadcn Button primitive with a built-in loading state, `motion-reduce` support, and consistent focus rings mapped to Arda design-system color tokens.
+
+**Atom** &#8212; Canary | Import: `import { Button } from '@arda-cards/design-system/canary'`
+
+---
+
+## Playground
+
+Use the controls panel below to interactively adjust variant, size, loading, and disabled states.
+
+<Canvas of={ButtonStories.Playground} />
+
+---
+
+## All Variants
+
+<Canvas of={ButtonStories.AllVariants} />
+
+## All Sizes
+
+<Canvas of={ButtonStories.AllSizes} />
+
+---
+
+## Color Variants
+
+Five color variants control the button's visual emphasis and semantic meaning.
+
+<table>
+  <thead>
+    <tr>
+      <th>Variant</th>
+      <th>Use</th>
+      <th>Appearance</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>primary</code></td>
+      <td>Primary call-to-action. Default.</td>
+      <td>Solid orange background, white text.</td>
+    </tr>
+    <tr>
+      <td><code>secondary</code></td>
+      <td>Secondary action alongside a primary.</td>
+      <td>Muted gray background.</td>
+    </tr>
+    <tr>
+      <td><code>ghost</code></td>
+      <td>Minimal emphasis &#8212; toolbars, inline actions.</td>
+      <td>No background or border; hover reveals accent fill.</td>
+    </tr>
+    <tr>
+      <td><code>destructive</code></td>
+      <td>Irreversible or dangerous actions (delete, remove).</td>
+      <td>Red background, white text.</td>
+    </tr>
+    <tr>
+      <td><code>outline</code></td>
+      <td>Tertiary or neutral action.</td>
+      <td>Border, transparent background; hover reveals accent fill.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Primary
+
+<Canvas of={ButtonStories.Primary} />
+
+### Secondary
+
+<Canvas of={ButtonStories.Secondary} />
+
+### Ghost
+
+<Canvas of={ButtonStories.Ghost} />
+
+### Destructive
+
+<Canvas of={ButtonStories.Destructive} />
+
+### Outline
+
+<Canvas of={ButtonStories.Outline} />
+
+---
+
+## Size Variants
+
+Five size presets control height, padding, and icon dimensions.
+
+<table>
+  <thead>
+    <tr>
+      <th>Size</th>
+      <th>Height</th>
+      <th>Use</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>sm</code></td>
+      <td>32px</td>
+      <td>Compact contexts &#8212; table rows, toolbars.</td>
+    </tr>
+    <tr>
+      <td><code>md</code></td>
+      <td>36px</td>
+      <td>Default for forms and page actions.</td>
+    </tr>
+    <tr>
+      <td><code>lg</code></td>
+      <td>40px</td>
+      <td>Hero CTAs, onboarding flows.</td>
+    </tr>
+    <tr>
+      <td><code>icon</code></td>
+      <td>36&#215;36px</td>
+      <td>Square icon-only button (default size).</td>
+    </tr>
+    <tr>
+      <td><code>icon-sm</code></td>
+      <td>32&#215;32px</td>
+      <td>Compact icon-only button.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Small
+
+<Canvas of={ButtonStories.Small} />
+
+### Large
+
+<Canvas of={ButtonStories.Large} />
+
+---
+
+## With Icon
+
+Icons are placed as children alongside text. SVG icons auto-size to 16&#215;16px via the `[&_svg]:size-4` utility.
+
+<Canvas of={ButtonStories.WithIcon} />
+
+## Icon Only
+
+Use `size="icon"` or `size="icon-sm"` for square icon-only buttons. Always provide an `aria-label` for accessibility.
+
+<Canvas of={ButtonStories.IconOnly} />
+
+---
+
+## Loading State
+
+When `loading` is `true`, a spinner replaces the leading icon slot and the button is disabled. The spinner respects `motion-reduce` (animation stops for users who prefer reduced motion).
+
+<Canvas of={ButtonStories.Loading} />
+
+## Disabled State
+
+Standard HTML `disabled` attribute. Pointer events are suppressed and opacity is reduced.
+
+<Canvas of={ButtonStories.Disabled} />
+
+---
+
+## Composition: asChild
+
+Use `asChild` to render a different element (e.g., a link) with Button styling via Radix `Slot`:
+
+```tsx
+<Button asChild variant="ghost">
+  <a href="/items">View all items</a>
+</Button>
+```
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>variant</code></td>
+      <td><code>'primary' | 'secondary' | 'ghost' | 'destructive' | 'outline'</code></td>
+      <td><code>'primary'</code></td>
+      <td>Color variant.</td>
+    </tr>
+    <tr>
+      <td><code>size</code></td>
+      <td><code>'sm' | 'md' | 'lg' | 'icon' | 'icon-sm'</code></td>
+      <td><code>'md'</code></td>
+      <td>Size preset.</td>
+    </tr>
+    <tr>
+      <td><code>loading</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Shows spinner overlay and disables interaction.</td>
+    </tr>
+    <tr>
+      <td><code>asChild</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Render as child element via Radix Slot (link-as-button pattern).</td>
+    </tr>
+    <tr>
+      <td><code>disabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Standard HTML disabled state.</td>
+    </tr>
+    <tr>
+      <td><code>className</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Additional CSS classes merged via <code>cn()</code>.</td>
+    </tr>
+    <tr>
+      <td><code>children</code></td>
+      <td><code>ReactNode</code></td>
+      <td>&#8212;</td>
+      <td>Button content &#8212; text, icons, or both.</td>
+    </tr>
+  </tbody>
+</table>
+
+Also accepts all standard `React.ButtonHTMLAttributes` (`onClick`, `type`, `aria-label`, etc.).
+
+---
+
+## Accessibility
+
+- Focus ring: 2px `ring` token, visible on keyboard focus via `focus-visible`.
+- Destructive variant uses `ring-destructive` for its focus indicator.
+- `motion-reduce`: loading spinner animation stops for users who prefer reduced motion.
+- Icon-only buttons require `aria-label`.
+
+---
+
+## Import
+
+```tsx
+// From canary barrel (recommended)
+import { Button } from '@arda-cards/design-system/canary';
+
+// Direct import
+import { Button } from '@/components/canary/atoms/button/button';
+
+// CVA variants (for extending)
+import { buttonVariants } from '@arda-cards/design-system/canary';
+```

@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 
-import type { AtomMode } from '@/lib/data-types/atom-types';
+import type { AtomMode } from '@/components/extras/atoms/shared/props';
 import { ArdaCustomFieldDisplay } from './custom-field-display';
 import { ArdaCustomFieldEditor } from './custom-field-editor';
 import { ArdaCustomFieldInteractive } from './custom-field-interactive';

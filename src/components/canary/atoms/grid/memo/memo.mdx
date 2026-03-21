@@ -1,0 +1,138 @@
+{/* memo.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as Stories from './memo.stories';
+
+<Meta of={Stories} />
+
+# Memo Cell
+
+Display and editor for multi-line text grid fields. The display truncates at a configurable character limit and shows the full text on hover. Provides two editor variants: an inline `textarea` and a button-cell that opens a modal dialog.
+
+**Grid Atom** &#8212; see [Grid Guide](?path=/docs/components-canary-atoms-grid-guide--docs)
+
+---
+
+## Playground
+
+Use the Controls panel to adjust `value`, `maxLength`, and `hoverDelay`.
+
+<Canvas of={Stories.Playground} />
+
+---
+
+## Display Variants
+
+<Canvas of={Stories.Display} />
+
+## Inline Editor
+
+<Canvas of={Stories.Editor} />
+
+## MemoButton (Modal Pattern)
+
+<Canvas of={Stories.MemoButton} />
+
+---
+
+## Props &#8212; Display (`MemoCellDisplay`)
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>value</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Memo text. Empty string or undefined renders nothing.</td>
+    </tr>
+    <tr>
+      <td><code>maxLength</code></td>
+      <td><code>number</code></td>
+      <td><code>100</code></td>
+      <td>Maximum characters before truncation. Text beyond this length is shown on hover.</td>
+    </tr>
+    <tr>
+      <td><code>hoverDelay</code></td>
+      <td><code>number</code></td>
+      <td><code>500</code></td>
+      <td>Milliseconds before the hover overlay appears.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Props &#8212; Editor Factory (`createMemoCellEditor`)
+
+<table>
+  <thead>
+    <tr>
+      <th>Config</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>placeholder</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Placeholder text shown in the textarea when empty.</td>
+    </tr>
+  </tbody>
+</table>
+
+### MemoButtonCell
+
+Use `MemoButtonCell` for a read-only display cell with a pencil icon that opens a modal dialog editor. This is the preferred pattern for long-form text that shouldn&#8217;t be edited inline.
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>value</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Current memo text.</td>
+    </tr>
+    <tr>
+      <td><code>editable</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Shows the edit icon button when <code>true</code>.</td>
+    </tr>
+    <tr>
+      <td><code>onSave</code></td>
+      <td><code>(value: string) =&#62; void</code></td>
+      <td>&#8212;</td>
+      <td>Called when the user saves from the modal dialog.</td>
+    </tr>
+    <tr>
+      <td><code>title</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Dialog title.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { MemoCellDisplay, createMemoCellEditor, MemoButtonCell } from '@arda-cards/design-system/canary';
+```

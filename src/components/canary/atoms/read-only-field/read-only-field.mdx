@@ -1,0 +1,132 @@
+{/* read-only-field.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as ReadOnlyFieldStories from './read-only-field.stories';
+
+<Meta of={ReadOnlyFieldStories} />
+
+# ReadOnlyField
+
+Label + value display atom for entity detail views and read-only forms.
+
+**Atom** &#8212; Canary | Import: `import { ReadOnlyField } from '@arda-cards/design-system/canary'`
+
+---
+
+## Playground
+
+<Canvas of={ReadOnlyFieldStories.Playground} />
+
+---
+
+## All Variants
+
+<Canvas of={ReadOnlyFieldStories.AllVariants} />
+
+---
+
+## Purpose
+
+`ReadOnlyField` renders a stacked pair: a muted uppercase label above monospaced value text. It is the canonical display atom for named data fields in entity detail drawers, item panels, and supplier views.
+
+When `value` is `undefined` or an empty string, the component shows a fallback string (default: em dash `&#8212;`). Custom rendering is supported via `children`, which takes precedence over `value` and `fallback`.
+
+---
+
+## Default
+
+<Canvas of={ReadOnlyFieldStories.Default} />
+
+## Empty value (fallback)
+
+<Canvas of={ReadOnlyFieldStories.EmptyValue} />
+
+## Custom fallback text
+
+<Canvas of={ReadOnlyFieldStories.CustomFallback} />
+
+## Compact variant
+
+<Canvas of={ReadOnlyFieldStories.Compact} />
+
+## Custom value via children
+
+<Canvas of={ReadOnlyFieldStories.WithChildren} />
+
+## Composition (multiple fields)
+
+<Canvas of={ReadOnlyFieldStories.Composition} />
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>required</td>
+      <td>Field label rendered as muted uppercase text above the value.</td>
+    </tr>
+    <tr>
+      <td><code>value</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Field value displayed as plain text. Shows <code>fallback</code> when absent or empty.</td>
+    </tr>
+    <tr>
+      <td><code>fallback</code></td>
+      <td><code>string</code></td>
+      <td><code>'&#8212;'</code></td>
+      <td>Text displayed when <code>value</code> is <code>undefined</code> or empty. Ignored when <code>children</code> is provided.</td>
+    </tr>
+    <tr>
+      <td><code>variant</code></td>
+      <td><code>'default' | 'compact'</code></td>
+      <td><code>'default'</code></td>
+      <td>Visual density. <code>'compact'</code> reduces the gap between label and value to 1 px.</td>
+    </tr>
+    <tr>
+      <td><code>children</code></td>
+      <td><code>ReactNode</code></td>
+      <td>&#8212;</td>
+      <td>Custom value rendering. Overrides <code>value</code> and <code>fallback</code> when provided.</td>
+    </tr>
+    <tr>
+      <td><code>className</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Additional CSS classes on the wrapper <code>div</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+Also accepts all standard `React.HTMLAttributes<HTMLDivElement>` attributes.
+
+---
+
+## Accessibility
+
+- The label is rendered as a `span` with `text-muted-foreground` styling &#8212; it is not a `<label>` element, since this is a read-only display atom, not an interactive form field.
+- For interactive form fields, use the shadcn `Label` + `Input` pattern or `InputGroup`.
+- Value text is rendered in `font-mono` for numeric and code-like values to improve readability in dense layouts.
+
+---
+
+## Import
+
+```tsx
+// From canary barrel (recommended)
+import { ReadOnlyField } from '@arda-cards/design-system/canary';
+
+// Direct import
+import { ReadOnlyField } from '@/components/canary/atoms/read-only-field/read-only-field';
+```

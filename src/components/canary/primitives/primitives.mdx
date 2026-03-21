@@ -1,0 +1,155 @@
+{/* primitives.mdx */}
+import { Meta } from '@storybook/addon-docs/blocks';
+import * as PrimitivesStories from './primitives.stories';
+
+<Meta of={PrimitivesStories} />
+
+# Canary Primitives
+
+Stock shadcn/ui components installed unchanged into the Arda component library.
+
+**Layer**: Primitives &#8212; peer of `atoms/`, the lowest level in the canary hierarchy.
+
+---
+
+## Purpose
+
+Primitives are raw shadcn/ui building blocks. They are:
+
+- **Installed as-is** &#8212; no Arda-specific customization beyond import path.
+- **Internal only** &#8212; not exported from `canary.ts`. Import primitives directly.
+- **Regenerated via CLI** &#8212; do not hand-edit primitive source files.
+
+When a primitive needs customization (e.g., a badge with count logic), promote it
+to an atom in `atoms/` instead of modifying the primitive.
+
+---
+
+## What is included
+
+<table>
+  <thead>
+    <tr>
+      <th>File</th>
+      <th>shadcn component</th>
+      <th>Primary use</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>button.tsx</code></td>
+      <td>Button</td>
+      <td>Base for Button atom (do not use directly)</td>
+    </tr>
+    <tr>
+      <td><code>collapsible.tsx</code></td>
+      <td>Collapsible</td>
+      <td>Sidebar nav groups, supplier drawer sections</td>
+    </tr>
+    <tr>
+      <td><code>dropdown-menu.tsx</code></td>
+      <td>DropdownMenu</td>
+      <td>Toolbar action menus, column visibility dropdowns</td>
+    </tr>
+    <tr>
+      <td><code>input.tsx</code></td>
+      <td>Input</td>
+      <td>Base for InputGroup atom</td>
+    </tr>
+    <tr>
+      <td><code>label.tsx</code></td>
+      <td>Label</td>
+      <td>Form field labels</td>
+    </tr>
+    <tr>
+      <td><code>separator.tsx</code></td>
+      <td>Separator</td>
+      <td>Horizontal/vertical dividers in AppHeader, drawers</td>
+    </tr>
+    <tr>
+      <td><code>sheet.tsx</code></td>
+      <td>Sheet</td>
+      <td>Slide-over panels in extras layer (vendor; use Drawer in canary)</td>
+    </tr>
+    <tr>
+      <td><code>sidebar.tsx</code></td>
+      <td>Sidebar</td>
+      <td>Foundation for Sidebar organism</td>
+    </tr>
+    <tr>
+      <td><code>skeleton.tsx</code></td>
+      <td>Skeleton</td>
+      <td>Loading placeholders</td>
+    </tr>
+    <tr>
+      <td><code>table.tsx</code></td>
+      <td>Table</td>
+      <td>Simple data tables (not the AG Grid wrapper)</td>
+    </tr>
+    <tr>
+      <td><code>tabs.tsx</code></td>
+      <td>Tabs</td>
+      <td>Tab navigation used in ItemDetails and other organisms</td>
+    </tr>
+    <tr>
+      <td><code>textarea.tsx</code></td>
+      <td>Textarea</td>
+      <td>Multi-line text input</td>
+    </tr>
+    <tr>
+      <td><code>toggle.tsx</code></td>
+      <td>Toggle</td>
+      <td>Toolbar toggle buttons</td>
+    </tr>
+    <tr>
+      <td><code>tooltip.tsx</code></td>
+      <td>Tooltip</td>
+      <td>Icon button tooltips, collapsed sidebar item labels</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import convention
+
+```tsx
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger }
+  from '@/components/canary/primitives/dropdown-menu';
+
+import { SidebarProvider, SidebarInset, SidebarTrigger }
+  from '@/components/canary/primitives/sidebar';
+
+import { Tabs, TabsList, TabsTrigger, TabsContent }
+  from '@/components/canary/primitives/tabs';
+```
+
+Import from the individual primitive file, not from a barrel. Each primitive file
+corresponds to a single shadcn component.
+
+---
+
+## Regenerating a primitive
+
+To update or add a primitive, run the shadcn CLI in `ux-prototype/`:
+
+```sh
+npx shadcn@latest add <component-name>
+```
+
+This overwrites the file in `src/components/canary/primitives/`. Review the diff
+before committing &#8212; shadcn may change import paths or Tailwind classes.
+
+---
+
+## Primitives vs atoms
+
+| | Primitives | Atoms |
+|---|---|---|
+| Source | Stock shadcn &#8212; CLI generated | Custom &#8212; hand-crafted |
+| Exported | No | Yes (via `canary.ts`) |
+| Modified | No &#8212; regenerate via CLI | Yes &#8212; hand-edited |
+| Stories | Integration check only | Full story + test + MDX |
+
+When a use case requires a modified version of a primitive (e.g., Badge with count capping),
+create an atom in `atoms/` that wraps the primitive &#8212; do not fork the primitive itself.

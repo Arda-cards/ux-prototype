@@ -7,18 +7,7 @@ import { handlers } from '@frontend/mocks/handlers';
 import '../src/styles/globals.css';
 import '../src/styles/ag-theme-arda.css';
 
-// MSW initialization — runs once before any story mounts.
-// When Storybook is built with a non-root base path (e.g., /ux-prototype/ on
-// GitHub Pages), Vite sets import.meta.env.BASE_URL accordingly. MSW must
-// register its service worker at the correct path — otherwise the browser
-// rejects the registration because the default `/mockServiceWorker.js` falls
-// outside the deployment scope.
-initialize({
-  onUnhandledRequest: 'bypass',
-  serviceWorker: {
-    url: `${import.meta.env.BASE_URL}mockServiceWorker.js`,
-  },
-});
+initialize({ onUnhandledRequest: 'bypass' });
 
 const preview: Preview = {
   decorators: [withAgentation, withFullAppProviders],
@@ -62,7 +51,62 @@ const preview: Preview = {
             'Organisms',
             ['Guide', 'Shared', 'Reference', '*'],
             'Canary',
-            ['Atoms', 'Molecules', 'Organisms', '*'],
+            [
+              'Atoms',
+              [
+                'Guide',
+                'Avatar',
+                'Badge',
+                'BrandLogo',
+                'Button',
+                'Card',
+                'Dialog',
+                'Drawer',
+                'IconButton',
+                'IconLabel',
+                'InputGroup',
+                'ReadOnlyField',
+                'SearchInput',
+                'Grid',
+                ['Guide', '*'],
+                '*',
+              ],
+              'Molecules',
+              [
+                'Guide',
+                'ActionToolbar',
+                'DataGrid',
+                'FieldList',
+                'GridAction',
+                'OverflowToolbar',
+                'ItemDetails',
+                ['Guide', '*'],
+                'ItemGrid',
+                ['Guide', '*'],
+                'Sidebar',
+                ['Guide', '*'],
+                '*',
+              ],
+              'Organisms',
+              [
+                'Guide',
+                'AppHeader',
+                'ItemDetails',
+                'ItemGrid',
+                'Sidebar',
+                'Shared',
+                [
+                  'Guide',
+                  'Entity Data Grid',
+                  ['Docs', 'Playground', '*'],
+                  'Entity Data Grid Shim',
+                  '*',
+                ],
+                '*',
+              ],
+              'Primitives',
+              '*',
+            ],
             'Extras',
             ['Atoms', 'Molecules', 'Organisms', '*'],
             '*',
@@ -81,43 +125,14 @@ const preview: Preview = {
           'Canary Refactor',
           'Use Cases',
           [
+            'General Behaviors',
+            ['Description', 'List Views', ['Description', '*'], '*'],
             'Reference',
             [
               'Business Affiliates',
-              [
-                'Description',
-                'BA-0001 Browse and Search',
-                [
-                  'Description',
-                  '0001 View Suppliers List',
-                  '0002 Search by Name',
-                  '0003 Toggle Column Visibility',
-                  '0005 Select Multiple',
-                  '0006 Pagination',
-                  '0007 Deep Link',
-                ],
-                'BA-0002 View Details',
-                ['Description', '0001 Supplier Details Panel'],
-                'BA-0003 Create Supplier',
-                [
-                  'Description',
-                  '0001 Happy Path',
-                  '0002 Validation Errors',
-                  '0003 [Experimental] Wizard',
-                ],
-                'BA-0004 Edit Supplier',
-                ['Description', '0001 Happy Path', '0002 Validation Errors'],
-                'BA-0005 Delete Supplier',
-                [
-                  'Description',
-                  '0001 Delete from List',
-                  '0002 Delete from Detail Panel',
-                  '0003 Delete Error',
-                ],
-                'BR-0002 Affiliate Typeahead',
-                ['Description', '0002 Create on the Fly'],
-                '*',
-              ],
+              ['Description', '*', 'Ignore'],
+              'Items',
+              ['Description', '*'],
               '*',
             ],
             'Procurement',

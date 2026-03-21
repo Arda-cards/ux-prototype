@@ -1,0 +1,104 @@
+{/* grid.mdx */}
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Components/Canary/Atoms/Grid/Guide" />
+
+# Grid Cell Atoms
+
+Specialized cell renderers and editors for use inside AG Grid columns. Each atom provides a display component (read-only rendering) and an editor component (inline editing) for a specific data type.
+
+These atoms depend on AG Grid's component lifecycle (`ICellRendererParams`, `ICellEditorParams`) and should not be used outside a grid context. They are registered in column definitions via the `cellRenderer` and `cellEditor` properties.
+
+**Import**: `import { TextCellDisplay, createTextCellEditor } from '@arda-cards/design-system/canary'`
+
+---
+
+## Cell Types
+
+<table>
+  <thead>
+    <tr>
+      <th>Atom</th>
+      <th>Display</th>
+      <th>Editor</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="?path=/docs/components-canary-atoms-grid-action-cell-renderer--docs">Action</a></td>
+      <td><code>ActionCellRenderer</code></td>
+      <td>&#8212;</td>
+      <td>Row-level action buttons (view, edit, delete) in a pinned column.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-atoms-grid-boolean--docs">Boolean</a></td>
+      <td><code>BooleanCellDisplay</code></td>
+      <td><code>createBooleanCellEditor</code></td>
+      <td>Checkbox renderer for true/false fields.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-atoms-grid-color--docs">Color</a></td>
+      <td><code>ColorCellDisplay</code></td>
+      <td><code>createColorCellEditor</code></td>
+      <td>Color swatch with configurable color map.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-atoms-grid-date--docs">Date</a></td>
+      <td><code>DateCellDisplay</code></td>
+      <td><code>createDateCellEditor</code></td>
+      <td>Date renderer with locale-aware formatting.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-atoms-grid-memo--docs">Memo</a></td>
+      <td><code>MemoCellDisplay</code></td>
+      <td><code>createMemoCellEditor</code></td>
+      <td>Multi-line text with expandable editor and button-cell variant.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-atoms-grid-number--docs">Number</a></td>
+      <td><code>NumberCellDisplay</code></td>
+      <td><code>createNumberCellEditor</code></td>
+      <td>Right-aligned numeric renderer with tabular-nums styling.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-atoms-grid-select--docs">Select</a></td>
+      <td><code>SelectCellDisplay</code></td>
+      <td><code>createSelectCellEditor</code></td>
+      <td>Dropdown editor with keyboard navigation, checkmark indicator, and ARIA listbox. Accepts both <code>SelectOption[]</code> and <code>Record&#60;string, string&#62;</code> formats.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-atoms-grid-text--docs">Text</a></td>
+      <td><code>TextCellDisplay</code></td>
+      <td><code>createTextCellEditor</code></td>
+      <td>Default text cell with truncation and tooltip on overflow.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Factory Pattern
+
+All editors follow the factory pattern for AG Grid column definition registration:
+
+```tsx
+import { createTextCellEditor, TextCellDisplay } from '@arda-cards/design-system/canary';
+
+const columnDefs = [
+  {
+    field: 'name',
+    cellRenderer: (params) => <TextCellDisplay value={params.value} />,
+    cellEditor: createTextCellEditor({ maxLength: 100 }),
+    editable: true,
+  },
+];
+```
+
+The factory function bakes static configuration into a component that AG Grid instantiates per cell. This avoids re-creating config on every render.
+
+---
+
+## Integration with Entity Data Grid
+
+When using `createEntityDataGrid`, cell atoms are referenced in column definitions passed to the factory config. The entity-data-grid handles the editing lifecycle (auto-publish on row blur) &#8212; cell atoms only need to render and capture values.

@@ -1,17 +1,24 @@
-// @ts-nocheck
 'use client';
+
+/**
+ * Canary-refactor fork of app/item/[itemId]/page.tsx
+ *
+ * Single change from the vendored original:
+ *   import ItemsPage from '@frontend/app/items/page'
+ *   → import ItemsPage from './ItemsPage'
+ *
+ * This file is excluded from tsconfig.json and eslint.config.mjs.
+ * The @frontend/ alias resolves only in Storybook at runtime.
+ */
 
 import { useEffect } from 'react';
 import { usePathname, useRouter, useParams } from 'next/navigation';
+// --- Canary integration: forked ItemsPage ---
 import ItemsPage from './ItemsPage';
 
 /**
  * Item detail page with bookmarkable URL
  * Route: /item/[itemId] or /item/[itemId]/[...slug]
- * Examples:
- *   - /item/asdf-asdf-asdf-asdf
- *   - /item/asdf-asdf-asdf-asdf/label (redirects to clean URL)
- *   - /item/asdf-asdf-asdf-asdf/breadcrumb (redirects to clean URL)
  *
  * This page renders ItemsPage, which automatically detects the itemId
  * from the URL pathname and opens the details panel for that item.

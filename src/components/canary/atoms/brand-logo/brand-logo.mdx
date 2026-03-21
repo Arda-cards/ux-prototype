@@ -1,0 +1,122 @@
+{/* brand-logo.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as BrandLogoStories from './brand-logo.stories';
+
+<Meta of={BrandLogoStories} />
+
+# BrandLogo
+
+Arda brand identity atoms in four color variants.
+
+**Atom** &#8212; Canary | Import: `import { BrandLogo, BrandIcon } from '@arda-cards/design-system/canary'`
+
+---
+
+## All Variants
+
+<Canvas of={BrandLogoStories.AllVariants} />
+
+---
+
+## Purpose
+
+Two separate components serve different contexts:
+
+- **`BrandLogo`** is the full Arda wordmark (55&#215;30 px). Use it in expanded sidebars, app headers, and login pages.
+- **`BrandIcon`** is the compact square mark (30&#215;30 px). Use it in collapsed sidebars, favicons, and mobile headers where horizontal space is constrained.
+
+Both components render an `<img>` element with a fixed `alt="Arda"` attribute and accept the same `variant` and `className` props.
+
+---
+
+## Color Variants
+
+<table>
+  <thead>
+    <tr>
+      <th>Variant</th>
+      <th>Background context</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>default</code></td>
+      <td>Dark/sidebar</td>
+      <td>Orange icon background, white wordmark text. Standard logo on the Arda sidebar.</td>
+    </tr>
+    <tr>
+      <td><code>inverted</code></td>
+      <td>Light/white</td>
+      <td>White icon background, orange wordmark text. Use on light-colored or white backgrounds.</td>
+    </tr>
+    <tr>
+      <td><code>mono</code></td>
+      <td>Dark/sidebar</td>
+      <td>Monochrome (white) rendition for sidebar contexts where color should be suppressed.</td>
+    </tr>
+    <tr>
+      <td><code>mono-inverted</code></td>
+      <td>Light/white</td>
+      <td>Monochrome (dark) rendition for light backgrounds.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Full wordmark
+
+<Canvas of={BrandLogoStories.Wordmark} />
+
+### Compact icon
+
+<Canvas of={BrandLogoStories.Icon} />
+
+---
+
+## Props
+
+Both `BrandLogo` and `BrandIcon` accept the same props:
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>variant</code></td>
+      <td><code>'default' | 'inverted' | 'mono' | 'mono-inverted'</code></td>
+      <td><code>'default'</code></td>
+      <td>Color variant. Choose based on the background color of the containing surface.</td>
+    </tr>
+    <tr>
+      <td><code>className</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Additional CSS classes merged via <code>cn()</code>. The default height is <code>h-7</code> (<code>28px</code>); override with a height utility if needed.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Accessibility
+
+- Both components render `alt="Arda"` on the underlying `<img>` element, satisfying alt-text requirements.
+- If the logo is purely decorative (adjacent branded text already identifies the product), pass `className` with `aria-hidden` applied directly, or wrap in a container with `aria-hidden="true"`.
+
+---
+
+## Import
+
+```tsx
+// From canary barrel (recommended)
+import { BrandLogo, BrandIcon } from '@arda-cards/design-system/canary';
+
+// Direct import
+import { BrandLogo, BrandIcon } from '@/components/canary/atoms/brand-logo/brand-logo';
+```

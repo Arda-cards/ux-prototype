@@ -74,7 +74,7 @@ Always check the [shadcn/ui component catalog](https://ui.shadcn.com/docs/compon
     <tr>
       <td>Class composition</td>
       <td><code>cn()</code> (clsx + tailwind-merge)</td>
-      <td><code>@/lib/utils</code></td>
+      <td><code>@/types/canary/utils</code></td>
     </tr>
     <tr>
       <td>Icons</td>
@@ -126,9 +126,9 @@ This gives you a working component with:
 Create an Arda wrapper that imports the shadcn primitive and extends it:
 
 ```tsx
-import { Button as ShadcnButton, type buttonVariants } from '@/components/ui/button';
+import { Button as ShadcnButton, type buttonVariants } from '@/components/canary/primitives/button';
 import { cva, type VariantProps } from 'class-variance-authority';
-import { cn } from '@/lib/utils';
+import { cn } from '@/types/canary/utils';
 
 // Arda-specific variant extensions
 const ardaButtonVariants = cva(
@@ -211,7 +211,7 @@ Before writing any component code, **always check the upstream catalogs first**:
 2. If the component is fundamentally a row/column data display (sortable table, filterable grid, editable cells, row grouping):
    - Use `AgGridReact` from the existing `ag-grid-react` dependency as the rendering core.
    - Create an Arda wrapper that provides Arda-specific `ColDef` defaults, theme tokens, and the StaticConfig/RuntimeConfig interface split.
-   - See the existing `createArdaEntityDataGrid` factory in `src/components/extras/organisms/shared/entity-data-grid/` for the established pattern.
+   - For canary components, see the `createArdaEntityDataGrid` factory in `src/components/canary/organisms/shared/entity-data-grid/` for the established pattern (returns `{ Component }`, not the bare component). The extras version at `src/components/extras/organisms/shared/entity-data-grid/` is the original reference; prefer the canary version for new work.
 3. If only a sub-feature is needed (e.g., cell renderer, status bar panel):
    - Implement it as a custom AG Grid component following the [AG Grid Component docs](https://www.ag-grid.com/react-data-grid/components/).
 
@@ -401,7 +401,7 @@ Use CVA (class-variance-authority) for all components with variant dimensions. T
 
 ```tsx
 import { cva, type VariantProps } from 'class-variance-authority';
-import { cn } from '@/lib/utils';
+import { cn } from '@/types/canary/utils';
 
 const badgeVariants = cva(
   // Base classes (always applied)
@@ -485,7 +485,7 @@ Use CVA when there are **2+ variant dimensions** or **3+ values in a single dime
 ### 6.1 General Rules
 
 1. **Tailwind utility classes** are the primary styling mechanism.
-2. **`cn()` from `@/lib/utils`** for all conditional class composition. Never string-concatenate class names manually.
+2. **`cn()` from `@/types/canary/utils`** for all conditional class composition. Never string-concatenate class names manually.
 3. **CVA** for variant-driven class selection.
 4. **Accept a `className` prop** on every component for consumer overrides.
 5. **CSS files** (`.css`) only when Tailwind alone is insufficient (keyframe animations, complex pseudo-element styles). Use `arda-` prefixed class names in CSS files.
@@ -831,27 +831,27 @@ Where:
     <tr>
       <td>File names</td>
       <td>kebab-case</td>
-      <td><code>detail-field.tsx</code></td>
+      <td><code>read-only-field.tsx</code></td>
     </tr>
     <tr>
       <td>Component names</td>
-      <td>PascalCase with <code>Arda</code> prefix</td>
-      <td><code>ArdaDetailField</code></td>
+      <td>PascalCase (no prefix required for non-prefixed canary components)</td>
+      <td><code>ReadOnlyField</code></td>
     </tr>
     <tr>
       <td>CSS classes</td>
       <td><code>arda-</code> prefix (BEM when needed)</td>
-      <td><code>arda-detail-field</code></td>
+      <td><code>arda-read-only-field</code></td>
     </tr>
     <tr>
       <td>Type exports</td>
-      <td><code>Arda&#123;Name&#125;Props</code>, <code>...StaticConfig</code>, <code>...RuntimeConfig</code></td>
-      <td><code>ArdaDetailFieldProps</code></td>
+      <td><code>&#123;Name&#125;Props</code>, <code>...StaticConfig</code>, <code>...RuntimeConfig</code></td>
+      <td><code>ReadOnlyFieldProps</code></td>
     </tr>
     <tr>
       <td>CVA exports</td>
       <td><code>&#123;name&#125;Variants</code></td>
-      <td><code>detailFieldVariants</code></td>
+      <td><code>readOnlyFieldVariants</code></td>
     </tr>
   </tbody>
 </table>
@@ -1190,6 +1190,8 @@ When creating or updating a component, deliver:
 8. **Don't** force empty `InitConfig` or `RuntimeConfig` interfaces when a component doesn't need them.
 9. **Don't** build from scratch when a shadcn/ui or AG Grid component can be imported and extended.
 10. **Don't** import from `extras/` in canary components or from `canary/` in stable components.
+11. **Don't** add `cursor-default` to individual display components &#8212; the global [Cursor Policy](?path=/docs/docs-workflows-using-the-design-system--docs#cursor-policy) handles it automatically via `[data-slot]`.
+12. **Don't** override `cursor: text` on read-only elements &#8212; the global rule already prevents the I-beam cursor.
 
 ---
 

@@ -336,7 +336,7 @@ The vendored code establishes the foundation for a component migration project. 
 ### How it works
 
 1. A page is forked from its vendored counterpart in `src/dev-witness/` into a matching path under `src/canary-refactor/`.
-2. Vendored sub-components are replaced one-by-one with canary equivalents (e.g., `ArdaDetailField` replacing inline `flex flex-col gap-1` blocks).
+2. Vendored sub-components are replaced one-by-one with canary equivalents (e.g., `ReadOnlyField` replacing inline `flex flex-col gap-1` blocks).
 3. Intentional deviations from the Dev Witness baseline are documented in the story JSDoc comment with a **Intentional deviations from Dev Witness** block listing before/after values.
 4. The `withFullAppProviders` decorator wraps Canary Refactor stories automatically &#8212; no additional setup is required.
 

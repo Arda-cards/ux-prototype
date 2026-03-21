@@ -1,0 +1,128 @@
+{/* atoms.mdx */}
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Components/Canary/Atoms/Guide" />
+
+# Canary Atoms
+
+Atoms are the smallest functional UI building blocks in the Arda Canary component system. Each atom encapsulates a single, focused concern &#8212; a button, a badge, a search field &#8212; and carries no business logic. Molecules and organisms are built by composing atoms together.
+
+All atoms are exported from the canary barrel:
+
+```tsx
+import { Avatar, Badge, Button, Card, Dialog, Drawer, SearchInput } from '@arda-cards/design-system/canary';
+```
+
+---
+
+## Standard Atoms
+
+<table>
+  <thead>
+    <tr>
+      <th>Atom</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="?path=/docs/components-canary-atoms-avatar--docs">Avatar</a></td>
+      <td>Circular user avatar built on Radix UI primitives. Supports image display with an initials fallback, three sizes (<code>default</code>, <code>sm</code>, <code>lg</code>), an optional status badge overlay, and a group composition pattern for stacked avatar lists.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-atoms-badge--docs">Badge</a></td>
+      <td>Small inline status badge wrapping the shadcn Badge primitive. Supports four visual variants and a <code>count</code> prop that auto-caps numeric values at a configurable maximum (default 99+).</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-atoms-brandlogo--docs">BrandLogo</a></td>
+      <td>Arda brand identity atoms in four color variants (<code>default</code>, <code>inverted</code>, <code>mono</code>, <code>mono-inverted</code>). <code>BrandLogo</code> is the full wordmark (55&#215;30 px); <code>BrandIcon</code> is the compact square mark (30&#215;30 px) for collapsed sidebars and favicons.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-atoms-button--docs">Button</a></td>
+      <td>Canonical action button with five color variants, five size presets, a built-in loading spinner, and <code>asChild</code> support for link-as-button patterns. Includes Arda design-token focus rings and <code>motion-reduce</code> support.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-atoms-card--docs">Card</a></td>
+      <td>Compound surface atom providing a rounded, bordered content container. Composed from <code>Card</code>, <code>CardHeader</code>, <code>CardTitle</code>, <code>CardDescription</code>, <code>CardAction</code>, <code>CardContent</code>, and <code>CardFooter</code> sub-components.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-atoms-dialog--docs">Dialog</a></td>
+      <td>Modal dialog built on Radix Dialog primitives with Arda styling. Use for confirmations, quick-add forms, and alerts. Compose with <code>DialogHeader</code>, <code>DialogTitle</code>, <code>DialogDescription</code>, <code>DialogFooter</code>, and <code>DialogClose</code>.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-atoms-drawer--docs">Drawer</a></td>
+      <td>Slide-over panel built on shadcn Sheet. Provides three width presets (<code>md</code>, <code>lg</code>, <code>xl</code>), optional left or right side entry, and compound slots &#8212; <code>DrawerHeader</code>, <code>DrawerBody</code>, and <code>DrawerFooter</code> &#8212; for structured detail and edit views.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-atoms-iconbutton--docs">IconButton</a></td>
+      <td>Icon-only button with a required accessible label, an optional notification badge count, and an auto-shown tooltip. Wraps <code>Button</code> (ghost variant, icon size) and the Radix Tooltip primitive.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-atoms-iconlabel--docs">IconLabel</a></td>
+      <td>Inline icon + text pair rendered as a single <code>span</code>. Fixes the icon at 16&#215;16 px, applies a consistent 8 px gap, and truncates overflow text. Used in nav items, menus, and status indicators.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-atoms-inputgroup--docs">InputGroup</a></td>
+      <td>Compound input container that groups a text or textarea control with inline addons, prefix/suffix text, and inline action buttons. Supports four addon alignment positions and unified focus and error states across the group.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-atoms-readonlyfield--docs">ReadOnlyField</a></td>
+      <td>Label + value display atom for entity detail views. Renders a muted uppercase label above monospaced value text, with a configurable empty-state fallback (default: em dash). Supports <code>default</code> and <code>compact</code> density variants and custom value rendering via <code>children</code>.</td>
+    </tr>
+    <tr>
+      <td><a href="?path=/docs/components-canary-atoms-searchinput--docs">SearchInput</a></td>
+      <td>Controlled search field wrapping the shadcn Input primitive with a positioned Lucide <code>Search</code> icon. Accepts <code>value</code> / <code>onChange</code> for controlled usage and a configurable <code>maxWidth</code>. Used in entity-data-grid toolbars.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Grid Cell Atoms
+
+The `atoms/grid/` group contains specialized cell renderers and editors for use inside AG Grid columns. These are excluded from the standard atom catalog because they depend on AG Grid's component lifecycle and should not be used outside a grid context.
+
+<table>
+  <thead>
+    <tr>
+      <th>Atom</th>
+      <th>AG Grid role</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>grid/action</code></td>
+      <td>Action button cell renderer for row-level actions.</td>
+    </tr>
+    <tr>
+      <td><code>grid/boolean</code></td>
+      <td>Checkbox cell renderer for boolean fields.</td>
+    </tr>
+    <tr>
+      <td><code>grid/color</code></td>
+      <td>Color swatch cell renderer.</td>
+    </tr>
+    <tr>
+      <td><code>grid/date</code></td>
+      <td>Date cell renderer with locale-aware formatting.</td>
+    </tr>
+    <tr>
+      <td><code>grid/memo</code></td>
+      <td>Multi-line text cell renderer / editor.</td>
+    </tr>
+    <tr>
+      <td><code>grid/number</code></td>
+      <td>Numeric cell renderer with right-alignment.</td>
+    </tr>
+    <tr>
+      <td><code>grid/select</code></td>
+      <td>Dropdown cell editor for enumerated values.</td>
+    </tr>
+    <tr>
+      <td><code>grid/text</code></td>
+      <td>Read-only text cell renderer.</td>
+    </tr>
+  </tbody>
+</table>
+
+See the stories under `Components/Canary/Atoms/Grid/*` for interactive examples of each grid cell atom.

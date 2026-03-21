@@ -1,0 +1,252 @@
+{/* input-group.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as InputGroupStories from './input-group.stories';
+
+<Meta of={InputGroupStories} />
+
+# InputGroup
+
+Compound input container with inline addons, prefix/suffix text, and action buttons.
+
+**Atom** &#8212; Canary | Import: `import { InputGroup, InputGroupAddon, InputGroupInput } from '@arda-cards/design-system/canary'`
+
+---
+
+## Playground
+
+<Canvas of={InputGroupStories.Playground} />
+
+---
+
+## All Variants
+
+<Canvas of={InputGroupStories.AllVariants} />
+
+---
+
+## Purpose
+
+`InputGroup` groups a text input or textarea with inline addons (icons, labels, currency symbols, action buttons). It renders as a single visually unified field with a shared border, focus ring, and error state rather than separate adjacent elements.
+
+Compose sub-components to build the desired layout:
+
+```tsx
+// Leading currency symbol
+<InputGroup>
+  <InputGroupAddon align="inline-start">
+    <InputGroupText>$</InputGroupText>
+  </InputGroupAddon>
+  <InputGroupInput placeholder="0.00" type="number" />
+</InputGroup>
+
+// Trailing action button
+<InputGroup>
+  <InputGroupInput placeholder="Search..." />
+  <InputGroupAddon align="inline-end">
+    <InputGroupButton>
+      <SearchIcon />
+    </InputGroupButton>
+  </InputGroupAddon>
+</InputGroup>
+```
+
+---
+
+## Sub-components
+
+<table>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>InputGroup</code></td>
+      <td>Root container. Provides the shared border, focus ring, error state, and flex layout. Sets <code>role="group"</code>.</td>
+    </tr>
+    <tr>
+      <td><code>InputGroupAddon</code></td>
+      <td>Positions content at one of four alignment points via the <code>align</code> prop. Clicking the addon focuses the inner input.</td>
+    </tr>
+    <tr>
+      <td><code>InputGroupInput</code></td>
+      <td>The text input control inside the group. Removes its own border and background so the group border shows through.</td>
+    </tr>
+    <tr>
+      <td><code>InputGroupTextarea</code></td>
+      <td>A textarea variant of the input control. The group height expands automatically.</td>
+    </tr>
+    <tr>
+      <td><code>InputGroupText</code></td>
+      <td>Plain text or icon rendered inside an addon (e.g., currency symbol, unit label).</td>
+    </tr>
+    <tr>
+      <td><code>InputGroupButton</code></td>
+      <td>A compact ghost button sized to fit inside the addon area. Sizes: <code>xs</code>, <code>sm</code>, <code>icon-xs</code>, <code>icon-sm</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Addon alignment
+
+<table>
+  <thead>
+    <tr>
+      <th>Value</th>
+      <th>Position</th>
+      <th>Use</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>'inline-start'</code></td>
+      <td>Left of the input</td>
+      <td>Leading icon, currency symbol, prefix text. Default.</td>
+    </tr>
+    <tr>
+      <td><code>'inline-end'</code></td>
+      <td>Right of the input</td>
+      <td>Trailing unit, clear button, action button.</td>
+    </tr>
+    <tr>
+      <td><code>'block-start'</code></td>
+      <td>Above the input</td>
+      <td>Label or description rendered above the input within the group border.</td>
+    </tr>
+    <tr>
+      <td><code>'block-end'</code></td>
+      <td>Below the input</td>
+      <td>Helper text or character count rendered below the input within the group border.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Props &#8212; InputGroup
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>className</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Additional CSS classes on the group container.</td>
+    </tr>
+    <tr>
+      <td><code>children</code></td>
+      <td><code>ReactNode</code></td>
+      <td>&#8212;</td>
+      <td>Compose with <code>InputGroupAddon</code>, <code>InputGroupInput</code>, or <code>InputGroupTextarea</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Props &#8212; InputGroupAddon
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'inline-start' | 'inline-end' | 'block-start' | 'block-end'</code></td>
+      <td><code>'inline-start'</code></td>
+      <td>Where to place the addon relative to the input.</td>
+    </tr>
+    <tr>
+      <td><code>className</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Additional CSS classes.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Props &#8212; InputGroupButton
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>size</code></td>
+      <td><code>'xs' | 'sm' | 'icon-xs' | 'icon-sm'</code></td>
+      <td><code>'xs'</code></td>
+      <td>Button size preset inside the addon area.</td>
+    </tr>
+    <tr>
+      <td><code>variant</code></td>
+      <td>Button variant</td>
+      <td><code>'ghost'</code></td>
+      <td>Button color variant.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Focus and error states
+
+Focus ring and error styling are applied at the `InputGroup` level, not the individual input:
+
+- **Focus**: When `InputGroupInput` or `InputGroupTextarea` receives `focus-visible`, the group border and ring update to use `ring` design tokens.
+- **Error**: When the input carries `aria-invalid="true"`, the group border turns destructive.
+
+---
+
+## Accessibility
+
+- `InputGroup` renders with `role="group"`. Pair it with an external `<label>` (via `htmlFor`) or `aria-label` / `aria-labelledby` on the group to give it an accessible name.
+- Clicking anywhere in `InputGroupAddon` (other than embedded buttons) focuses the group's input control.
+- Always provide `aria-label` or `aria-describedby` on the input for screen reader context.
+
+---
+
+## Import
+
+```tsx
+// From canary barrel (recommended)
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupTextarea,
+  InputGroupText,
+  InputGroupButton,
+} from '@arda-cards/design-system/canary';
+
+// Direct import
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupTextarea,
+  InputGroupText,
+  InputGroupButton,
+} from '@/components/canary/atoms/input-group/input-group';
+```

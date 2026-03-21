@@ -1,4 +1,4 @@
-import type { AtomMode, AtomProps } from '@/lib/data-types/atom-types';
+import type { AtomMode, AtomProps } from '@/components/extras/atoms/shared/props';
 import { ArdaTimeFieldDisplay, type ArdaTimeFieldDisplayProps } from './time-field-display';
 import { ArdaTimeFieldEditor, type ArdaTimeFieldEditorProps } from './time-field-editor';
 

@@ -203,8 +203,15 @@ export function SuppliersPage({
     new Set(TOGGLEABLE_COLUMNS.map((c) => c.id)),
   );
 
-  // Debounce search input
+  // Debounce search input — only reset to page 0 when searchTerm actively changes,
+  // not on the initial mount (which would conflict with programmatic page navigation).
+  const isMounted = useRef(false);
   useEffect(() => {
+    if (!isMounted.current) {
+      isMounted.current = true;
+      setDebouncedSearch(searchTerm);
+      return;
+    }
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm);
       setCurrentPage(0); // Reset to first page on search

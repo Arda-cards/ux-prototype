@@ -1,5 +1,4 @@
 import { Meta } from '@storybook/addon-docs/blocks';
-import LinkTo from '@storybook/addon-links/react';
 import { docsUrl } from '../../links';
 
 <Meta title="Use Cases/Reference/Business Affiliates/Description" />
@@ -32,17 +31,17 @@ search filtering, column configuration, row selection, pagination, and deep link
   <tbody>
     <tr>
       <td>0001</td>
-      <td><LinkTo title="Use Cases/Reference/Business Affiliates/BA-0001 Browse and Search/0001 View Suppliers List" story="Default">View Suppliers List</LinkTo></td>
+      <td>View Suppliers List</td>
       <td>Default grid with all affiliates, plus empty, loading, and error states</td>
     </tr>
     <tr>
       <td>0002</td>
-      <td><LinkTo title="Use Cases/Reference/Business Affiliates/BA-0001 Browse and Search/0002 Search by Name" story="Default">Search by Name</LinkTo></td>
+      <td>Search by Name</td>
       <td>Type in the search box to filter the grid by affiliate name; includes no-results state</td>
     </tr>
     <tr>
       <td>0003</td>
-      <td><LinkTo title="Use Cases/Reference/Business Affiliates/BA-0001 Browse and Search/0003 Toggle Column Visibility" story="Default">Toggle Column Visibility</LinkTo></td>
+      <td>Toggle Column Visibility</td>
       <td>Open the column-visibility panel, toggle columns on/off, verify Save/Cancel semantics</td>
     </tr>
     <tr>
@@ -52,17 +51,17 @@ search filtering, column configuration, row selection, pagination, and deep link
     </tr>
     <tr>
       <td>0005</td>
-      <td><LinkTo title="Use Cases/Reference/Business Affiliates/BA-0001 Browse and Search/0005 Select Multiple" story="Default">Select Multiple</LinkTo></td>
+      <td>Select Multiple</td>
       <td>Select individual rows and select-all for bulk operations</td>
     </tr>
     <tr>
       <td>0006</td>
-      <td><LinkTo title="Use Cases/Reference/Business Affiliates/BA-0001 Browse and Search/0006 Pagination" story="Default">Pagination</LinkTo></td>
+      <td>Pagination</td>
       <td>Navigate across pages with 15-assertion automated play function spanning 3 pages</td>
     </tr>
     <tr>
       <td>0007</td>
-      <td><LinkTo title="Use Cases/Reference/Business Affiliates/BA-0001 Browse and Search/0007 Deep Link" story="Default">Deep Link</LinkTo></td>
+      <td>Deep Link</td>
       <td>Open the detail drawer directly via `initialAffiliateId` prop</td>
     </tr>
   </tbody>
@@ -86,7 +85,7 @@ Create, Edit, and Delete-from-Panel flows.
   <tbody>
     <tr>
       <td>0001</td>
-      <td><LinkTo title="Use Cases/Reference/Business Affiliates/BA-0002 View Details/0001 Supplier Details Panel" story="Default">Supplier Details Panel</LinkTo></td>
+      <td>Supplier Details Panel</td>
       <td>Full drawer with collapsible sections: Default, MinimalData, CloseDrawer, SectionCollapse variants</td>
     </tr>
   </tbody>
@@ -109,17 +108,17 @@ mode with blank form fields across collapsible sections.
   <tbody>
     <tr>
       <td>0001</td>
-      <td><LinkTo title="Use Cases/Reference/Business Affiliates/BA-0003 Create Supplier/0001 Happy Path" story="Interactive">Happy Path</LinkTo></td>
+      <td>Happy Path</td>
       <td>Full create flow: open drawer &#8594; fill all sections &#8594; save &#8594; verify in grid (Interactive + Automated)</td>
     </tr>
     <tr>
       <td>0002</td>
-      <td><LinkTo title="Use Cases/Reference/Business Affiliates/BA-0003 Create Supplier/0002 Validation Errors" story="EmptyNameBlocked">Validation Errors</LinkTo></td>
+      <td>Validation Errors</td>
       <td>Error paths: Save disabled when name empty, 500 network error, 409 duplicate-name error</td>
     </tr>
     <tr>
       <td>0003</td>
-      <td><LinkTo title="Use Cases/Reference/Business Affiliates/BA-0003 Create Supplier/0003 [Experimental] Wizard" story="Interactive">[Experimental] Wizard</LinkTo></td>
+      <td>[Experimental] Wizard</td>
       <td>Original 4-step wizard form (per SD-5): Identity &#8594; Contact &#8594; Address/Legal &#8594; Review</td>
     </tr>
   </tbody>
@@ -143,12 +142,12 @@ to view mode.
   <tbody>
     <tr>
       <td>0001</td>
-      <td><LinkTo title="Use Cases/Reference/Business Affiliates/BA-0004 Edit Supplier/0001 Happy Path" story="Interactive">Happy Path</LinkTo></td>
+      <td>Happy Path</td>
       <td>Full view &#8594; edit &#8594; save round-trip (Interactive, Stepwise, Automated)</td>
     </tr>
     <tr>
       <td>0002</td>
-      <td><LinkTo title="Use Cases/Reference/Business Affiliates/BA-0004 Edit Supplier/0002 Validation Errors" story="ClearRequiredField">Validation Errors</LinkTo></td>
+      <td>Validation Errors</td>
       <td>Clear required field (Save disabled), cancel discards changes, network error on save</td>
     </tr>
   </tbody>
@@ -171,17 +170,17 @@ Covers both list-based and panel-based deletion flows.
   <tbody>
     <tr>
       <td>0001</td>
-      <td><LinkTo title="Use Cases/Reference/Business Affiliates/BA-0005 Delete Supplier/0001 Delete from List" story="SingleDelete">Delete from List</LinkTo></td>
+      <td>Delete from List</td>
       <td>Single delete, bulk delete, and cancel delete from the list view via row selection</td>
     </tr>
     <tr>
       <td>0002</td>
-      <td><LinkTo title="Use Cases/Reference/Business Affiliates/BA-0005 Delete Supplier/0002 Delete from Detail Panel" story="ConfirmDelete">Delete from Detail Panel</LinkTo></td>
+      <td>Delete from Detail Panel</td>
       <td>Delete via the detail drawer&#39;s Delete button with confirm/cancel dialog</td>
     </tr>
     <tr>
       <td>0003</td>
-      <td><LinkTo title="Use Cases/Reference/Business Affiliates/BA-0005 Delete Supplier/0003 Delete Error" story="NetworkError">Delete Error</LinkTo></td>
+      <td>Delete Error</td>
       <td>Server returns 500 &#8212; error toast shown, row preserved in grid</td>
     </tr>
   </tbody>
@@ -205,7 +204,7 @@ a new one inline.
   <tbody>
     <tr>
       <td>0002</td>
-      <td><LinkTo title="Use Cases/Reference/Business Affiliates/BR-0002 Affiliate Typeahead/0002 Create on the Fly" story="SelectExisting">Create on the Fly</LinkTo></td>
+      <td>Create on the Fly</td>
       <td>Typeahead lookup + inline create: select existing, create new, loading, empty, keyboard nav, escape dismiss</td>
     </tr>
   </tbody>

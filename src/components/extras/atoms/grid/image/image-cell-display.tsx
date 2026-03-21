@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ImageIcon, ImageOff } from 'lucide-react';
-import { formatImageUrl } from '@/lib/data-types/formatters';
+import { formatImageUrl } from '@/components/extras/atoms/shared/formatters';
 
 /** Design-time configuration for image cell display. */
 export interface ImageCellDisplayStaticConfig {

@@ -89,7 +89,7 @@ Document the following:
   <tbody>
     <tr>
       <td><strong>Name</strong></td>
-      <td>`ArdaDetailField` (PascalCase with Arda prefix)</td>
+      <td>`ReadOnlyField` (PascalCase; `Arda` prefix is optional for canary atoms)</td>
     </tr>
     <tr>
       <td><strong>Concept</strong></td>
@@ -154,26 +154,27 @@ Use the decision flowchart from the [Consolidated Component Guidelines, Section 
 **Directory:** `src/components/canary/atoms/{component-name}/`
 
 ```bash
-mkdir -p src/components/canary/atoms/detail-field
+mkdir -p src/components/canary/atoms/read-only-field
 ```
 
-**File:** `detail-field.tsx`
+**File:** `read-only-field.tsx`
 
 Follow the structure from the [Consolidated Guidelines, Section 4](consolidated-component-guidelines.md#4-component-api-design):
 
 ```tsx
 import { cva, type VariantProps } from 'class-variance-authority';
-import { cn } from '@/lib/utils';
+import { cn } from '@/types/canary/utils';
 
 // --- CVA variant definition ---
 
-const detailFieldVariants = cva(
+const readOnlyFieldVariants = cva(
   'flex flex-col gap-1',  // base
   {
     variants: {
       variant: {
         default: '',
         compact: 'gap-0.5',
+        inline: 'flex-row items-center gap-2',
       },
     },
     defaultVariants: { variant: 'default' },
@@ -183,8 +184,8 @@ const detailFieldVariants = cva(
 // --- Interfaces ---
 
 /** Design-time configuration. */
-export interface ArdaDetailFieldStaticConfig
-  extends VariantProps<typeof detailFieldVariants> {
+export interface ReadOnlyFieldStaticConfig
+  extends VariantProps<typeof readOnlyFieldVariants> {
   /** The field label displayed above the value. */
   label: string;
   /** Text shown when value is undefined/empty. */
@@ -192,23 +193,23 @@ export interface ArdaDetailFieldStaticConfig
 }
 
 /** Runtime configuration. */
-export interface ArdaDetailFieldRuntimeConfig {
+export interface ReadOnlyFieldRuntimeConfig {
   /* --- Model / Data Binding --- */
   /** The field value to display. */
-  value?: string;
+  value?: string | React.ReactNode;
   /** Custom value rendering (overrides value + fallback). */
   children?: React.ReactNode;
 }
 
 /** Combined props. */
-export interface ArdaDetailFieldProps
-  extends ArdaDetailFieldStaticConfig,
-    ArdaDetailFieldRuntimeConfig,
+export interface ReadOnlyFieldProps
+  extends ReadOnlyFieldStaticConfig,
+    ReadOnlyFieldRuntimeConfig,
     React.HTMLAttributes<HTMLDivElement> {}
 
 // --- Component ---
 
-export function ArdaDetailField({
+export function ReadOnlyField({
   label,
   value,
   fallback = '\u2014',
@@ -216,11 +217,11 @@ export function ArdaDetailField({
   children,
   className,
   ...props
-}: ArdaDetailFieldProps) {
+}: ReadOnlyFieldProps) {
   const display = children ?? (value || fallback);
 
   return (
-    <div className={cn(detailFieldVariants({ variant }), className)} {...props}>
+    <div className={cn(readOnlyFieldVariants({ variant }), className)} {...props}>
       <span className="text-sm text-muted-foreground font-medium">
         {label}
       </span>
@@ -231,7 +232,7 @@ export function ArdaDetailField({
   );
 }
 
-export { detailFieldVariants };
+export { readOnlyFieldVariants };
 ```
 
 **Key checks:**
@@ -244,16 +245,16 @@ export { detailFieldVariants };
 
 ### Step 2.3: Create Stories
 
-**File:** `detail-field.stories.tsx`
+**File:** `read-only-field.stories.tsx`
 
 ```tsx
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
-import { ArdaDetailField } from './detail-field';
+import { ReadOnlyField } from './read-only-field';
 
-const meta: Meta<typeof ArdaDetailField> = {
-  title: 'Components/Canary/Atoms/Detail Field',
-  component: ArdaDetailField,
+const meta: Meta<typeof ReadOnlyField> = {
+  title: 'Components/Canary/Atoms/Read Only Field',
+  component: ReadOnlyField,
   parameters: {
     docs: {
       description: {
@@ -266,13 +267,13 @@ const meta: Meta<typeof ArdaDetailField> = {
   argTypes: {
     label:    { control: 'text', table: { category: 'Static' } },
     fallback: { control: 'text', table: { category: 'Static' } },
-    variant:  { control: 'select', options: ['default', 'compact'], table: { category: 'Static' } },
+    variant:  { control: 'select', options: ['default', 'compact', 'inline'], table: { category: 'Static' } },
     value:    { control: 'text', table: { category: 'Runtime' } },
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof ArdaDetailField>;
+type Story = StoryObj<typeof ReadOnlyField>;
 
 /** Default rendering with a label and value. */
 export const Default: Story = {
@@ -307,11 +308,11 @@ export const Compact: Story = {
 export const Composition: Story = {
   render: () => (
     <div className="w-[400px] space-y-3 p-4">
-      <ArdaDetailField label="SKU" value="ITEM-001-A" />
-      <ArdaDetailField label="General Ledger Code" value="4200-100" />
-      <ArdaDetailField label="Unit Price" value="$12.50" />
-      <ArdaDetailField label="Link" fallback="No link available" />
-      <ArdaDetailField label="Number of Cards" value="3" />
+      <ReadOnlyField label="SKU" value="ITEM-001-A" />
+      <ReadOnlyField label="General Ledger Code" value="4200-100" />
+      <ReadOnlyField label="Unit Price" value="$12.50" />
+      <ReadOnlyField label="Link" fallback="No link available" />
+      <ReadOnlyField label="Number of Cards" value="3" />
     </div>
   ),
 };
@@ -324,41 +325,41 @@ export const Playground: Story = {
 
 ### Step 2.4: Create Tests
 
-**File:** `detail-field.test.tsx`
+**File:** `read-only-field.test.tsx`
 
 ```tsx
 import { render, screen } from '@testing-library/react';
-import { ArdaDetailField } from './detail-field';
+import { ReadOnlyField } from './read-only-field';
 
-describe('ArdaDetailField', () => {
+describe('ReadOnlyField', () => {
   it('renders label and value', () => {
-    render(<ArdaDetailField label="SKU" value="ABC-123" />);
+    render(<ReadOnlyField label="SKU" value="ABC-123" />);
     expect(screen.getByText('SKU')).toBeInTheDocument();
     expect(screen.getByText('ABC-123')).toBeInTheDocument();
   });
 
   it('renders fallback when value is undefined', () => {
-    render(<ArdaDetailField label="Code" />);
+    render(<ReadOnlyField label="Code" />);
     expect(screen.getByText('\u2014')).toBeInTheDocument();
   });
 
   it('renders custom fallback', () => {
-    render(<ArdaDetailField label="Link" fallback="No link" />);
+    render(<ReadOnlyField label="Link" fallback="No link" />);
     expect(screen.getByText('No link')).toBeInTheDocument();
   });
 
   it('renders children instead of value', () => {
     render(
-      <ArdaDetailField label="Custom">
+      <ReadOnlyField label="Custom">
         <a href="#">Click here</a>
-      </ArdaDetailField>
+      </ReadOnlyField>
     );
     expect(screen.getByText('Click here')).toBeInTheDocument();
   });
 
   it('applies className prop', () => {
     const { container } = render(
-      <ArdaDetailField label="Test" value="Val" className="my-custom" />
+      <ReadOnlyField label="Test" value="Val" className="my-custom" />
     );
     expect(container.firstChild).toHaveClass('my-custom');
   });
@@ -367,7 +368,7 @@ describe('ArdaDetailField', () => {
 
 ### Step 2.5: Create MDX Documentation
 
-**File:** `detail-field.mdx`
+**File:** `read-only-field.mdx`
 
 Follow the structure from [Consolidated Guidelines, Section 10.5](consolidated-component-guidelines.md#105-mdx-documentation). Include:
 1. Title and description
@@ -441,7 +442,7 @@ Canary Refactor: item-detail.stories.tsx
   -> imports ItemDetailPage from './components/ItemDetailPage'  (FORKED)
     -> imports ItemsPage from './components/ItemsPage'  (FORKED)
       -> imports ItemDetailsPanel from './components/ItemDetailsPanel'  (FORKED)
-        <- ArdaDetailField replaces 5 inline blocks
+        <- ReadOnlyField replaces 5 inline blocks
 ```
 
 Each forked file is identical to the vendored original except for the changed import path pointing to the next fork in the chain.
@@ -553,12 +554,12 @@ Add the new component to the appropriate barrel file so consumers can import it.
 ```tsx
 // In src/canary.ts, under the appropriate // --- Section --- comment
 
-export { ArdaDetailField, detailFieldVariants } from './components/canary/atoms/detail-field/detail-field';
+export { ReadOnlyField, readOnlyFieldVariants } from './components/canary/atoms/read-only-field/read-only-field';
 export type {
-  ArdaDetailFieldProps,
-  ArdaDetailFieldStaticConfig,
-  ArdaDetailFieldRuntimeConfig,
-} from './components/canary/atoms/detail-field/detail-field';
+  ReadOnlyFieldProps,
+  ReadOnlyFieldStaticConfig,
+  ReadOnlyFieldRuntimeConfig,
+} from './components/canary/atoms/read-only-field/read-only-field';
 ```
 
 Then regenerate the package contents inventory:
@@ -572,28 +573,28 @@ See [Publishing &#8594; Pre-publish: Update Barrel Exports and Package Contents 
 ### Step 4.2: Create Branch and Commit
 
 ```bash
-git checkout -b jmpicnic/canary-detail-field
-git add src/components/canary/atoms/detail-field/
+git checkout -b jmpicnic/canary-{component-name}
+git add src/components/canary/atoms/{component-name}/
 git add src/canary.ts
 git add src/canary-refactor/
 git add src/docs/workflows/using-the-design-system.mdx
 git add tests/vrt/
-git commit -m "Add ArdaDetailField canary atom and Canary Refactor adoption"
+git commit -m "Add {ComponentName} canary atom and Canary Refactor adoption"
 ```
 
 ### Step 4.3: Create Pull Request
 
 ```bash
 gh pr create \
-  --title "Add ArdaDetailField canary atom" \
+  --title "Add {ComponentName} canary atom" \
   --body "## Summary
-- New canary atom: ArdaDetailField (label/value pair for detail views)
-- Adopted in Canary Refactor / Items / Item Detail (replaces 5 inline blocks)
+- New canary atom: {ComponentName} ({1-line description})
+- Adopted in Canary Refactor / {Section} / {Page} (replaces {N} inline blocks)
 - Stories, tests, and MDX documentation included
 
 ## Verification
-- [ ] Storybook: Components/Canary/Atoms/Detail Field renders correctly
-- [ ] Canary Refactor / Items / Item Detail matches Dev Witness visually
+- [ ] Storybook: Components/Canary/Atoms/{Component Name} renders correctly
+- [ ] Canary Refactor / {Section} / {Page} matches Dev Witness visually
 - [ ] Unit tests pass: npm run test
 - [ ] VRT comparison: npm run test:vrt (if baselines exist)"
 ```
@@ -791,6 +792,119 @@ Before running VRT, verify that both stories load and render correctly:
 - VRT setup: workspace/projects/ad-hoc/ux-prototype/component-workflow-support/vrt-setup-notes.md
 - Worked example: ux-prototype/src/docs/workflows/canary-components/example.mdx
 ```
+
+---
+
+## Canary Grid Library Conventions
+
+The following conventions apply specifically to grid-related canary components introduced in the list-view branch. They supplement the general guidance above.
+
+### Utility and formatter imports
+
+<table>
+  <thead>
+    <tr>
+      <th>What</th>
+      <th>Import path</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>cn()</code> class utility (clsx + tailwind-merge)</td>
+      <td><code>@/types/canary/utils</code></td>
+    </tr>
+    <tr>
+      <td>Shared number/currency/date formatters</td>
+      <td><code>@/components/canary/atoms/shared/formatters</code></td>
+    </tr>
+  </tbody>
+</table>
+
+> **Note:** Do not import `cn` from `@/lib/utils`. The canary track uses `@/types/canary/utils` as the canonical location. The ESLint `canary-cannot-import-extras` boundary prevents importing from `@/components/extras/` or `@/types/extras/`.
+
+### Grid atom file structure
+
+Grid cell components live under `src/components/canary/atoms/grid/{type}/` and follow the Display + Editor + factory pattern:
+
+```
+src/components/canary/atoms/grid/
+  text/
+    text-cell-display.tsx     ← read-only renderer
+    text-cell-editor.tsx      ← inline editor + createTextCellEditor factory
+    text.stories.tsx
+    text.test.tsx
+    index.ts                  ← re-exports Display, Editor, factory, and types
+  number/
+    number-cell-display.tsx
+    number-cell-editor.tsx
+    ...
+  enum/
+  boolean/
+  date/
+  color/
+  memo/
+  action/
+```
+
+Each type exports a `create{Type}CellEditor` factory function used by AG Grid column definitions. Use the `index.ts` barrel for all imports within the grid library.
+
+### Canary barrel exports
+
+All public canary components are exported from `src/canary.ts`. After creating a new grid component, add exports under the appropriate section comment:
+
+```tsx
+// In src/canary.ts
+export { TextCellDisplay } from './components/canary/atoms/grid/text/text-cell-display';
+export { TextCellEditor, createTextCellEditor } from './components/canary/atoms/grid/text/text-cell-editor';
+export type { TextCellDisplayProps } from './components/canary/atoms/grid/text/text-cell-display';
+```
+
+Then regenerate the package contents inventory:
+
+```bash
+node tools/update-package-contents.js
+```
+
+### ESLint boundary: canary cannot import extras
+
+The `no-restricted-imports` rule in `eslint.config.mjs` prevents canary code from importing extras. If you see:
+
+```
+Canary code must not import from extras. Port the dependency to canary first.
+```
+
+The fix is to move the shared dependency into the canary track (e.g., move a formatter from `extras/` to `canary/atoms/shared/`) before importing it from canary code.
+
+### Molecule and organism structure
+
+<table>
+  <thead>
+    <tr>
+      <th>Level</th>
+      <th>Directory</th>
+      <th>Key file</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Molecule (data grid wrapper)</td>
+      <td><code>src/components/canary/molecules/data-grid/</code></td>
+      <td><code>data-grid.tsx</code></td>
+    </tr>
+    <tr>
+      <td>Organism (entity data grid factory)</td>
+      <td><code>src/components/canary/organisms/shared/entity-data-grid/</code></td>
+      <td><code>createArdaEntityDataGrid</code> factory</td>
+    </tr>
+    <tr>
+      <td>Organism (shim for backwards compat)</td>
+      <td><code>src/components/canary/organisms/shared/entity-data-grid-shim/</code></td>
+      <td>Re-exports via shim wrapper</td>
+    </tr>
+  </tbody>
+</table>
+
+The `createArdaEntityDataGrid` factory returns `{ Component }` (not the bare component). This is the standard factory return convention for all canary organism factories &#8212; follow the same pattern when creating new organism factories.
 
 ---
 

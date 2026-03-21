@@ -10,14 +10,9 @@
  * ag-theme-quartz instead and import ag-grid.css + ag-theme-quartz.css directly.
  */
 
-/* AG Grid CSS is imported without the layer() directive here because Rollup
- * strips @import layer() context during code-splitting, producing unlayered
- * CSS chunks that override the layered Arda overrides below. Instead, a Vite
- * transform plugin in .storybook/main.ts wraps AG Grid CSS content in
- * @layer base { } at build time — this survives code-splitting because the
- * layer wrapper is part of the CSS content, not an import directive. */
-@import 'ag-grid-community/styles/ag-grid.css';
-@import 'ag-grid-community/styles/ag-theme-alpine.css';
+/* ag-grid.css removed — conflicts with themeQuartz (AG Grid error #106).
+ * AG Grid v34 Theming API provides its own structural CSS. */
+@import 'ag-grid-community/styles/ag-theme-alpine.css' layer(base);
 
 @layer base {
 

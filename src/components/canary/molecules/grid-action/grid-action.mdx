@@ -1,0 +1,131 @@
+{/* grid-action.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as GridActionStories from './grid-action.stories';
+
+<Meta of={GridActionStories} />
+
+# ArdaGridAction
+
+App-launcher-style action cell with an icon container and a short text label underneath.
+
+**Molecule** &#8212; Canary | Import: `@/components/canary/molecules/grid-action/grid-action`
+
+---
+
+## Playground
+
+Use the Controls panel to toggle `loading`, `destructive`, and edit `label` / `shortLabel`.
+
+<Canvas of={GridActionStories.Playground} />
+
+---
+
+## Default
+
+<Canvas of={GridActionStories.Default} />
+
+## Grid Layout
+
+Multiple actions composed in a flex grid &#8212; the typical usage inside `ItemDetailsHeader`.
+
+<Canvas of={GridActionStories.Grid} />
+
+## States
+
+<Canvas of={GridActionStories.Loading} />
+
+<Canvas of={GridActionStories.Destructive} />
+
+---
+
+## Purpose
+
+`ArdaGridAction` renders an icon button with a short label below it, matching the iOS share-sheet
+or app-launcher visual pattern. It is the unit cell used in the `ItemDetailsHeader` action grid.
+
+The short label defaults to the first word of `label` if `shortLabel` is not provided. In `loading`
+state the icon is replaced with a spinner and the label reads &#8220;Wait&#8230;&#8221;.
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Category</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>icon</code></td>
+      <td>Static</td>
+      <td><code>LucideIcon</code></td>
+      <td>Required</td>
+      <td>Icon rendered inside the square container.</td>
+    </tr>
+    <tr>
+      <td><code>label</code></td>
+      <td>Static</td>
+      <td><code>string</code></td>
+      <td>Required</td>
+      <td>Full label &#8212; used for <code>aria-label</code>.</td>
+    </tr>
+    <tr>
+      <td><code>shortLabel</code></td>
+      <td>Static</td>
+      <td><code>string</code></td>
+      <td>First word of <code>label</code></td>
+      <td>Short display label shown below the icon.</td>
+    </tr>
+    <tr>
+      <td><code>destructive</code></td>
+      <td>Static</td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Applies red tint to the icon container and label.</td>
+    </tr>
+    <tr>
+      <td><code>className</code></td>
+      <td>Static</td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Additional CSS classes on the outer button.</td>
+    </tr>
+    <tr>
+      <td><code>onAction</code></td>
+      <td>Runtime</td>
+      <td><code>() =&#62; void</code></td>
+      <td>Required</td>
+      <td>Called when the button is clicked.</td>
+    </tr>
+    <tr>
+      <td><code>loading</code></td>
+      <td>Runtime</td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Shows a spinner; disables the button.</td>
+    </tr>
+    <tr>
+      <td><code>disabled</code></td>
+      <td>Runtime</td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Disables the button without showing a spinner.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { ArdaGridAction } from '@/components/canary/molecules/grid-action/grid-action';
+// or from canary barrel:
+import { ArdaGridAction } from '@arda-cards/design-system/canary';
+```

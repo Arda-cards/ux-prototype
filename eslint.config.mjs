@@ -11,7 +11,7 @@ import noHardcodedColors from './tools/eslint-rules/no-hardcoded-colors.js';
 
 export default [// ── Global ignores ──────────────────────────────────────────────────
 {
-  ignores: ['dist/**', 'node_modules/**', 'public/**', 'storybook-static/**', 'coverage/**', 'src/vendored/**', 'src/shims/**', 'src/decorators/**', 'src/dev-witness/**', 'src/canary-refactor/components/**', 'src/use-cases/reference/business-affiliates/**', 'tests/**', 'playwright.config.ts', 'scratch/**'],
+  ignores: ['dist/**', 'node_modules/**', 'public/**', 'storybook-static/**', 'coverage/**', 'src/vendored/**', 'src/shims/**', 'src/decorators/**', 'src/dev-witness/**', 'src/canary-refactor/**', 'src/use-cases/reference/business-affiliates/**', 'tests/**', 'playwright.config.ts', 'scratch/**'],
 }, // ── Prettier (disable conflicting format rules) ───────────────────
 prettierConfig, // ── TypeScript strict rules ─────────────────────────────────────────
 {
@@ -112,6 +112,12 @@ prettierConfig, // ── TypeScript strict rules ──────────
     'src/components/extras/molecules/data-grid/**/*.tsx',
     'src/components/extras/organisms/shared/entity-data-grid/**/*.ts',
     'src/components/extras/organisms/shared/entity-data-grid/**/*.tsx',
+    'src/components/canary/molecules/data-grid/**/*.ts',
+    'src/components/canary/molecules/data-grid/**/*.tsx',
+    'src/components/canary/organisms/shared/entity-data-grid/**/*.ts',
+    'src/components/canary/organisms/shared/entity-data-grid/**/*.tsx',
+    'src/components/canary/organisms/shared/entity-data-grid-shim/**/*.ts',
+    'src/components/canary/organisms/shared/entity-data-grid-shim/**/*.tsx',
   ],
   rules: {
     '@typescript-eslint/no-explicit-any': 'off',
@@ -144,6 +150,19 @@ prettierConfig, // ── TypeScript strict rules ──────────
         {
           group: ['**/extras/*', '**/extras/**', '@/components/extras/*', '@/components/extras/**'],
           message: 'Stable code must not import from extras. Promote the component first.',
+        },
+      ],
+    }],
+  },
+}, // ── Subpath boundaries: canary code must not import from extras ──────
+{
+  files: ['src/components/canary/**/*.ts', 'src/components/canary/**/*.tsx', 'src/types/canary/**/*.ts'],
+  rules: {
+    'no-restricted-imports': ['error', {
+      patterns: [
+        {
+          group: ['**/extras/*', '**/extras/**', '@/components/extras/*', '@/components/extras/**', '@/types/extras/*', '@/types/extras/**'],
+          message: 'Canary code must not import from extras. Port the dependency to canary first.',
         },
       ],
     }],

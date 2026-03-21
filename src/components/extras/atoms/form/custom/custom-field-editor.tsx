@@ -1,4 +1,4 @@
-import type { AtomMode } from '@/lib/data-types/atom-types';
+import type { AtomMode } from '@/components/extras/atoms/shared/props';
 import { FieldLabel, type FieldLabelProps } from '../field-label';
 
 /** Design-time configuration for custom field editor. */

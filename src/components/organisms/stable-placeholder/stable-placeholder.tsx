@@ -1,7 +1,5 @@
 import React from 'react';
 
-import { cn } from '@/lib/utils';
-
 /** Design-time configuration for the stable organism placeholder. */
 export interface StableOrganismPlaceholderStaticConfig {
   /** Title text displayed in the header. */
@@ -25,10 +23,7 @@ export function StableOrganismPlaceholder({
 }: StableOrganismPlaceholderProps) {
   return (
     <div
-      className={cn(
-        'flex flex-col rounded-lg border border-dashed border-blue-400 bg-blue-50',
-        className,
-      )}
+      className={`flex flex-col rounded-lg border border-dashed border-blue-400 bg-blue-50 ${className ?? ''}`.trim()}
       {...props}
     >
       <div className="border-b border-blue-300 p-4">

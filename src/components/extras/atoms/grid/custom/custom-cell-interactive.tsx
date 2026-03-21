@@ -1,4 +1,4 @@
-import type { AtomMode, AtomProps } from '@/lib/data-types/atom-types';
+import type { AtomMode, AtomProps } from '@/components/extras/atoms/shared/props';
 import { ArdaCustomCellDisplay } from './custom-cell-display';
 
 /** Props for the interactive custom grid cell. */

@@ -8,7 +8,7 @@
  * All properties are readonly to enforce immutability of configuration objects.
  */
 
-import type { AtomProps } from '@/lib/data-types/atom-types';
+import type { AtomProps } from '@/components/extras/atoms/shared/props';
 
 // ============================================================================
 // Primitive Type Aliases
