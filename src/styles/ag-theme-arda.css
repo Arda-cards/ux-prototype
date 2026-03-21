@@ -10,7 +10,8 @@
  * ag-theme-quartz instead and import ag-grid.css + ag-theme-quartz.css directly.
  */
 
-@import 'ag-grid-community/styles/ag-grid.css' layer(base);
+/* ag-grid.css removed — conflicts with themeQuartz (AG Grid error #106).
+ * AG Grid v34 Theming API provides its own structural CSS. */
 @import 'ag-grid-community/styles/ag-theme-alpine.css' layer(base);
 
 @layer base {

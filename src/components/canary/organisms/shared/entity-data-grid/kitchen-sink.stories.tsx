@@ -411,9 +411,11 @@ export const KitchenSink: Story = {
     await storyStepDelay();
 
     await step('Double-click a cell to start editing', async () => {
-      const nameCell = canvas.getByText('Item 002 \u2014 Chemicals', {
+      // AG Grid may render buffer rows — use getAllByText and take first
+      const nameCells = canvas.getAllByText('Item 002 \u2014 Chemicals', {
         selector: '[role="gridcell"]',
       });
+      const nameCell = nameCells[0] as HTMLElement;
       await userEvent.dblClick(nameCell);
       // Wait for the cell editor input to mount before typing
       await waitFor(

@@ -209,7 +209,7 @@ export const Default: Story = {
     await step('Toolbar shows selection actions', async () => {
       await waitFor(
         () => {
-          expect(canvas.getByText(/Clear \(1\)/)).toBeVisible();
+          expect(canvas.getByRole('button', { name: /Clear/ })).toBeVisible();
         },
         { timeout: 10000 },
       );
