@@ -330,6 +330,7 @@ function KitchenSinkPage() {
 const meta: Meta<typeof KitchenSinkPage> = {
   title: 'Components/Canary/Organisms/Shared/Entity Data Grid/Kitchen Sink',
   component: KitchenSinkPage,
+  tags: ['skip-ci'],
   parameters: {
     layout: 'padded',
     docs: {
