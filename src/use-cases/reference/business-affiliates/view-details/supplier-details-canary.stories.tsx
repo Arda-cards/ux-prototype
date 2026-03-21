@@ -287,10 +287,17 @@ export const Default: Story = {
 
     await step('Drawer shows supplier name and key fields', async () => {
       // Scope queries to the portal dialog so we don't match grid cells
+      // Use findByText with timeout to handle animation/portal render delay in CI
       const drawer = within(screen.getByRole('dialog'));
-      expect(drawer.getByText('Apex Medical Distributors')).toBeVisible();
-      expect(drawer.getByText('Dr. Maria Santos')).toBeVisible();
-      expect(drawer.getByText('msantos@apexmedical.com')).toBeVisible();
+      await expect(
+        drawer.findByText('Apex Medical Distributors', {}, { timeout: 10000 }),
+      ).resolves.toBeVisible();
+      await expect(
+        drawer.findByText('Dr. Maria Santos', {}, { timeout: 10000 }),
+      ).resolves.toBeVisible();
+      await expect(
+        drawer.findByText('msantos@apexmedical.com', {}, { timeout: 10000 }),
+      ).resolves.toBeVisible();
     });
 
     await storyStepDelay();

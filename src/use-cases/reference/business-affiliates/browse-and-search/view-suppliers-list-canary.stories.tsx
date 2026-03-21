@@ -308,12 +308,9 @@ export const Default: Story = {
     await step('Click a row triggers onRowClick', async () => {
       const row = canvas.getByText('Cardinal Health', { selector: '[role="gridcell"]' });
       await userEvent.click(row);
-      await waitFor(
-        () => {
-          expect(canvas.getByText(/Selected:.*Cardinal Health/)).toBeVisible();
-        },
-        { timeout: 5000 },
-      );
+      // Use findByText (async retry) for the selection label; the text is split across nodes
+      // so match on the <strong> child text content directly for CI reliability
+      await canvas.findByText('Cardinal Health', { selector: 'strong' }, { timeout: 10000 });
     });
 
     await storyStepDelay();

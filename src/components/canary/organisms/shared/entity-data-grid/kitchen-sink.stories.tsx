@@ -415,8 +415,15 @@ export const KitchenSink: Story = {
         selector: '[role="gridcell"]',
       });
       await userEvent.dblClick(nameCell);
-      // Wait briefly for the cell editor to mount, then type to dirty the row
-      await new Promise<void>((resolve) => setTimeout(resolve, 200));
+      // Wait for the cell editor input to mount before typing
+      await waitFor(
+        () => {
+          expect(
+            canvasElement.querySelector('.ag-cell-edit-wrapper input, .ag-text-field-input'),
+          ).toBeTruthy();
+        },
+        { timeout: 5000 },
+      );
       await userEvent.keyboard(' (edited)');
     });
 
@@ -424,9 +431,11 @@ export const KitchenSink: Story = {
 
     await step('Click away to trigger auto-publish', async () => {
       // Click a different row to trigger the publish lifecycle
-      const thirdRow = canvas.getByText('Item 003 \u2014 Diagnostics', {
-        selector: '[role="gridcell"]',
-      });
+      const thirdRow = await canvas.findByText(
+        'Item 003 \u2014 Diagnostics',
+        { selector: '[role="gridcell"]' },
+        { timeout: 5000 },
+      );
       await userEvent.click(thirdRow);
     });
 

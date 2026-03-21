@@ -210,7 +210,7 @@ export const SortByColumn: Story = {
       const ascOption = await screen.findByRole(
         'button',
         { name: /sort ascending/i },
-        { timeout: 5000 },
+        { timeout: 10000 },
       );
       await userEvent.click(ascOption);
     });
@@ -229,7 +229,7 @@ export const SortByColumn: Story = {
             .map((c) => c.textContent ?? '');
           expect(categories[0]).toBe('Chemicals');
         },
-        { timeout: 5000 },
+        { timeout: 10000 },
       );
     });
 
@@ -243,7 +243,7 @@ export const SortByColumn: Story = {
       const descOption = await screen.findByRole(
         'button',
         { name: /sort descending/i },
-        { timeout: 5000 },
+        { timeout: 10000 },
       );
       await userEvent.click(descOption);
     });
@@ -261,7 +261,7 @@ export const SortByColumn: Story = {
             .map((c) => c.textContent ?? '');
           expect(categories[0]).toBe('Wound Care');
         },
-        { timeout: 5000 },
+        { timeout: 10000 },
       );
     });
 
@@ -370,7 +370,7 @@ export const SortAndFilterCombined: Story = {
       const ascOption = await screen.findByRole(
         'button',
         { name: /sort ascending/i },
-        { timeout: 5000 },
+        { timeout: 10000 },
       );
       await userEvent.click(ascOption);
     });

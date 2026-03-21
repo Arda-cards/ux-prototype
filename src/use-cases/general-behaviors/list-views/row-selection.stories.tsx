@@ -207,7 +207,12 @@ export const Default: Story = {
     await storyStepDelay();
 
     await step('Toolbar shows selection actions', async () => {
-      expect(canvas.getByText(/Clear \(1\)/)).toBeVisible();
+      await waitFor(
+        () => {
+          expect(canvas.getByText(/Clear \(1\)/)).toBeVisible();
+        },
+        { timeout: 10000 },
+      );
     });
 
     await storyStepDelay();

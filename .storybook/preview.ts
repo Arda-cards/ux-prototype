@@ -7,7 +7,7 @@ import { handlers } from '@frontend/mocks/handlers';
 import '../src/styles/globals.css';
 import '../src/styles/ag-theme-arda.css';
 
-initialize({ onUnhandledRequest: 'bypass', waitUntilReady: true });
+initialize({ onUnhandledRequest: 'bypass' });
 
 const preview: Preview = {
   decorators: [withAgentation, withFullAppProviders],
