@@ -275,9 +275,12 @@ export const Default: Story = {
       });
       await userEvent.click(firstRow);
       // Drawer renders via Radix portal outside canvasElement — use screen
+      // Radix Sheet may render multiple [role="dialog"] elements; take the last one (content panel)
       await waitFor(
         () => {
-          expect(screen.getByRole('dialog')).toBeVisible();
+          const dialogs = screen.getAllByRole('dialog');
+          expect(dialogs.length).toBeGreaterThan(0);
+          expect(dialogs[dialogs.length - 1]).toBeVisible();
         },
         { timeout: 10000 },
       );
@@ -286,9 +289,9 @@ export const Default: Story = {
     await storyStepDelay();
 
     await step('Drawer shows supplier name and key fields', async () => {
-      // Scope queries to the portal dialog so we don't match grid cells
-      // Use findByText with timeout to handle animation/portal render delay in CI
-      const drawer = within(screen.getByRole('dialog'));
+      // Scope queries to the last dialog portal (content panel, not overlay)
+      const dialogs = screen.getAllByRole('dialog');
+      const drawer = within(dialogs[dialogs.length - 1]);
       await expect(
         drawer.findByText('Apex Medical Distributors', {}, { timeout: 10000 }),
       ).resolves.toBeVisible();
@@ -303,8 +306,9 @@ export const Default: Story = {
     await storyStepDelay();
 
     await step('Close the drawer', async () => {
-      // Close button is inside the portal — scope to dialog
-      const drawer = within(screen.getByRole('dialog'));
+      // Close button is inside the portal — scope to last dialog (content panel)
+      const dialogs = screen.getAllByRole('dialog');
+      const drawer = within(dialogs[dialogs.length - 1]);
       const closeButton = drawer.getByRole('button', { name: /close/i });
       await userEvent.click(closeButton);
       await waitFor(
