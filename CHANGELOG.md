@@ -18,6 +18,15 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.0.1] - 2026-03-24
+
+### Fixed
+
+- MSW service worker registration on GitHub Pages: use relative URL (`./mockServiceWorker.js`)
+  instead of default absolute (`/mockServiceWorker.js`) so the worker resolves correctly under
+  the `/ux-prototype/` base path. Fixes all stories with per-story MSW handlers (Business
+  Affiliates, Dev Witness Items Grid, etc.) that showed `InvalidStateError` on the published site.
+
 ## [4.0.0] - 2026-03-20
 
 ### Added
