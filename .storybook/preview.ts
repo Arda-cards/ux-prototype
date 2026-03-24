@@ -7,7 +7,10 @@ import { handlers } from '@frontend/mocks/handlers';
 import '../src/styles/globals.css';
 import '../src/styles/ag-theme-arda.css';
 
-initialize({ onUnhandledRequest: 'bypass' });
+initialize({
+  onUnhandledRequest: 'bypass',
+  serviceWorker: { url: './mockServiceWorker.js' },
+});
 
 const preview: Preview = {
   decorators: [withAgentation, withFullAppProviders],
