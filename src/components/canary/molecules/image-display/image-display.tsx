@@ -65,10 +65,7 @@ export function ImageDisplay({ imageUrl, entityTypeDisplayName }: ImageDisplayPr
   return (
     <div
       data-slot="image-display"
-      className={cn(
-        'relative w-full h-full overflow-hidden rounded bg-muted',
-        'flex items-center justify-center',
-      )}
+      className={cn('relative w-full h-full rounded bg-muted', 'flex items-center justify-center')}
     >
       {/* Skeleton shimmer — visible only while loading */}
       {imageUrl !== null && loadState === 'loading' && (
