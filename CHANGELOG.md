@@ -48,14 +48,11 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
 - 112 new unit tests (96 test files / 1159 total tests)
 - 76 new Storybook stories across 15 story files
 
-### Changed
+### Fixed
 
 - `src/types/canary/` restructured: `utils.ts`, `pagination.ts`, `date-time.ts` moved into
   `utilities/` subdirectory with barrel re-export (116 import paths updated)
 - Primitives MDX: standalone `Meta title` (now appears in sidebar); added 6 new primitives to table
-
-### Fixed
-
 - Tabs primitive: `data-horizontal:flex-col` replaced with `data-[orientation=horizontal]:flex-col`
   (selector never matched because Radix sets `data-orientation="horizontal"`, not `data-horizontal`)
 - Slider primitive: track height made unconditional (`h-1.5` instead of
