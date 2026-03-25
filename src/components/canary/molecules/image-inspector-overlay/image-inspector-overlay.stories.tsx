@@ -28,39 +28,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof ImageInspectorOverlay>;
-
-/**
- * Playground &#8212; use the Controls panel to toggle `open` and adjust `imageUrl`.
- * Click the button below to open the overlay programmatically.
- */
-export const Playground: Story = {
-  args: {
-    imageUrl: MOCK_ITEM_IMAGE,
-    open: false,
-  },
-  render: (args) => {
-    const [open, setOpen] = useState(args.open ?? false);
-    return (
-      <div className="flex flex-col items-center gap-3">
-        <Button onClick={() => setOpen(true)}>Open Inspector</Button>
-        <ImageInspectorOverlay
-          {...args}
-          open={open}
-          onClose={() => setOpen(false)}
-          onEdit={() => {
-            alert('Edit clicked');
-            setOpen(false);
-          }}
-        />
-      </div>
-    );
-  },
-};
-
-/**
- * ViewOnly &#8212; no `onEdit` callback. Only the close button and Escape / click-outside
- * are available for dismissal.
- */
 export const ViewOnly: Story = {
   render: () => {
     const [open, setOpen] = useState(false);
@@ -125,3 +92,36 @@ export const DismissMethods: Story = {
     );
   },
 };
+
+/**
+ * Playground &#8212; use the Controls panel to toggle `open` and adjust `imageUrl`.
+ * Click the button below to open the overlay programmatically.
+ */
+export const Playground: Story = {
+  args: {
+    imageUrl: MOCK_ITEM_IMAGE,
+    open: false,
+  },
+  render: (args) => {
+    const [open, setOpen] = useState(args.open ?? false);
+    return (
+      <div className="flex flex-col items-center gap-3">
+        <Button onClick={() => setOpen(true)}>Open Inspector</Button>
+        <ImageInspectorOverlay
+          {...args}
+          open={open}
+          onClose={() => setOpen(false)}
+          onEdit={() => {
+            alert('Edit clicked');
+            setOpen(false);
+          }}
+        />
+      </div>
+    );
+  },
+};
+
+/**
+ * ViewOnly &#8212; no `onEdit` callback. Only the close button and Escape / click-outside
+ * are available for dismissal.
+ */

@@ -22,36 +22,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof ItemDetailsCardPreview>;
-
-/**
- * Interactive Controls playground — `currentIndex`, `totalCards`, and `loading`
- * can be toggled in the Controls panel.
- */
-export const Playground: Story = {
-  render: () => {
-    const [index, setIndex] = useState(1);
-    return (
-      <div className="w-[460px]">
-        <ItemDetailsCardPreview
-          currentIndex={index}
-          totalCards={3}
-          onIndexChange={setIndex}
-          renderCard={(i) => <MockCard index={i} />}
-        />
-      </div>
-    );
-  },
-};
-
-const noop = () => {};
-
-const MockCard = ({ index }: { index: number }) => (
-  <div className="flex h-full w-full items-center justify-center rounded-lg border border-dashed border-border/60 bg-background">
-    <span className="text-xs text-muted-foreground">Card {index}</span>
-  </div>
-);
-
-/** Multiple cards with lightbox-style arrow navigation. */
 export const Default: Story = {
   render: () => {
     const [index, setIndex] = useState(1);
@@ -123,3 +93,33 @@ export const SingleCard: Story = {
     </div>
   ),
 };
+
+/**
+ * Interactive Controls playground — `currentIndex`, `totalCards`, and `loading`
+ * can be toggled in the Controls panel.
+ */
+export const Playground: Story = {
+  render: () => {
+    const [index, setIndex] = useState(1);
+    return (
+      <div className="w-[460px]">
+        <ItemDetailsCardPreview
+          currentIndex={index}
+          totalCards={3}
+          onIndexChange={setIndex}
+          renderCard={(i) => <MockCard index={i} />}
+        />
+      </div>
+    );
+  },
+};
+
+const noop = () => {};
+
+const MockCard = ({ index }: { index: number }) => (
+  <div className="flex h-full w-full items-center justify-center rounded-lg border border-dashed border-border/60 bg-background">
+    <span className="text-xs text-muted-foreground">Card {index}</span>
+  </div>
+);
+
+/** Multiple cards with lightbox-style arrow navigation. */

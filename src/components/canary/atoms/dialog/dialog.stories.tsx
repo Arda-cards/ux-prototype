@@ -30,41 +30,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof meta>;
-
-export const Playground: Story = {
-  argTypes: {
-    open: { control: 'boolean' },
-  },
-  args: {
-    open: false,
-  },
-  render: (args) => {
-    const [open, setOpen] = useState(args.open ?? false);
-    return (
-      <Dialog open={open} onOpenChange={(v) => setOpen(v)}>
-        <DialogTrigger asChild>
-          <Button onClick={() => setOpen(true)}>Open Dialog</Button>
-        </DialogTrigger>
-        <DialogContent showCloseButton={true}>
-          <DialogHeader>
-            <DialogTitle>Dialog Title</DialogTitle>
-            <DialogDescription>
-              This is the dialog description. It provides context about the action.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-2 text-sm text-muted-foreground">Dialog body content goes here.</div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
-            <Button>Confirm</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    );
-  },
-};
-
 export const Default: Story = {
   render: () => {
     const [open, setOpen] = useState(false);
@@ -190,6 +155,40 @@ export const WithFooterClose: Story = {
           </div>
           <DialogFooter showCloseButton>
             <Button>Edit Item</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  },
+};
+
+export const Playground: Story = {
+  argTypes: {
+    open: { control: 'boolean' },
+  },
+  args: {
+    open: false,
+  },
+  render: (args) => {
+    const [open, setOpen] = useState(args.open ?? false);
+    return (
+      <Dialog open={open} onOpenChange={(v) => setOpen(v)}>
+        <DialogTrigger asChild>
+          <Button onClick={() => setOpen(true)}>Open Dialog</Button>
+        </DialogTrigger>
+        <DialogContent showCloseButton={true}>
+          <DialogHeader>
+            <DialogTitle>Dialog Title</DialogTitle>
+            <DialogDescription>
+              This is the dialog description. It provides context about the action.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-2 text-sm text-muted-foreground">Dialog body content goes here.</div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button>Confirm</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

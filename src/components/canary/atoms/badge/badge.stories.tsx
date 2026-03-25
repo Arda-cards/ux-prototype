@@ -19,24 +19,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof meta>;
-
-export const Playground: Story = {
-  argTypes: {
-    variant: {
-      control: 'select',
-      options: ['default', 'secondary', 'destructive', 'outline', 'ghost', 'link', 'error-overlay'],
-    },
-    count: { control: 'number' },
-    max: { control: 'number' },
-    children: { control: 'text' },
-  },
-  args: {
-    variant: 'default',
-    children: '42',
-  },
-};
-
-/** Default — uses primary color (Arda orange). */
 export const Default: Story = {
   args: { children: '3' },
 };
@@ -133,3 +115,21 @@ export const ErrorOverlayInContext: Story = {
     </div>
   ),
 };
+
+export const Playground: Story = {
+  argTypes: {
+    variant: {
+      control: 'select',
+      options: ['default', 'secondary', 'destructive', 'outline', 'ghost', 'link', 'error-overlay'],
+    },
+    count: { control: 'number' },
+    max: { control: 'number' },
+    children: { control: 'text' },
+  },
+  args: {
+    variant: 'default',
+    children: '42',
+  },
+};
+
+/** Default — uses primary color (Arda orange). */

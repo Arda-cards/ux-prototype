@@ -12,22 +12,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof meta>;
-
-/**
- * Interactive Controls playground — use the Controls panel to toggle
- * `loading`, `destructive`, and edit `label` / `shortLabel`.
- */
-export const Playground: Story = {
-  args: {
-    icon: SquarePen,
-    label: 'Edit item',
-    shortLabel: 'Edit',
-    loading: false,
-    destructive: false,
-    onAction: () => {},
-  },
-};
-
 export const Default: Story = {
   args: {
     icon: SquarePen,
@@ -72,4 +56,19 @@ export const Grid: StoryObj<typeof ArdaGridAction> = {
       <ArdaGridAction icon={Trash2} label="Delete" destructive onAction={() => {}} />
     </div>
   ),
+};
+
+/**
+ * Interactive Controls playground — use the Controls panel to toggle
+ * `loading`, `destructive`, and edit `label` / `shortLabel`.
+ */
+export const Playground: Story = {
+  args: {
+    icon: SquarePen,
+    label: 'Edit item',
+    shortLabel: 'Edit',
+    loading: false,
+    destructive: false,
+    onAction: () => {},
+  },
 };

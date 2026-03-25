@@ -31,34 +31,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof ImageHoverPreview>;
-
-/**
- * Playground &#8212; adjust `imageUrl`, `entityTypeDisplayName`, and `propertyDisplayName`
- * in the Controls panel. The trigger is a 64&#215;64 ImageDisplay thumbnail.
- */
-export const Playground: Story = {
-  args: {
-    imageUrl: MOCK_ITEM_IMAGE,
-    entityTypeDisplayName: 'Item',
-    propertyDisplayName: 'Product Image',
-  },
-  render: (args) => (
-    <ImageHoverPreview {...args}>
-      <div className="w-16 h-16 cursor-pointer">
-        <ImageDisplay
-          imageUrl={args.imageUrl}
-          entityTypeDisplayName={args.entityTypeDisplayName}
-          propertyDisplayName={args.propertyDisplayName}
-        />
-      </div>
-    </ImageHoverPreview>
-  ),
-};
-
-/**
- * HoverToPreview &#8212; hover the thumbnail to reveal the 256&#215;256 preview popover.
- * The delay is ~500 ms.
- */
 export const HoverToPreview: Story = {
   render: () => (
     <div className="flex flex-col items-center gap-3">
@@ -141,3 +113,31 @@ export const MultipleInRow: Story = {
     );
   },
 };
+
+/**
+ * Playground &#8212; adjust `imageUrl`, `entityTypeDisplayName`, and `propertyDisplayName`
+ * in the Controls panel. The trigger is a 64&#215;64 ImageDisplay thumbnail.
+ */
+export const Playground: Story = {
+  args: {
+    imageUrl: MOCK_ITEM_IMAGE,
+    entityTypeDisplayName: 'Item',
+    propertyDisplayName: 'Product Image',
+  },
+  render: (args) => (
+    <ImageHoverPreview {...args}>
+      <div className="w-16 h-16 cursor-pointer">
+        <ImageDisplay
+          imageUrl={args.imageUrl}
+          entityTypeDisplayName={args.entityTypeDisplayName}
+          propertyDisplayName={args.propertyDisplayName}
+        />
+      </div>
+    </ImageHoverPreview>
+  ),
+};
+
+/**
+ * HoverToPreview &#8212; hover the thumbnail to reveal the 256&#215;256 preview popover.
+ * The delay is ~500 ms.
+ */

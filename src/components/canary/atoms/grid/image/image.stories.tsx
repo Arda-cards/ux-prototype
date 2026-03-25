@@ -62,56 +62,6 @@ function MiniGrid({ rows, height = 250 }: { rows: MockItem[]; height?: number })
     </div>
   );
 }
-
-// ============================================================================
-// 1. Playground — controls on config fields
-// ============================================================================
-
-export const Playground: Story = {
-  argTypes: {
-    value: {
-      control: 'text',
-      description: 'Image URL (null for no image)',
-      table: { category: 'Runtime' },
-    },
-  },
-  args: {
-    config: ITEM_IMAGE_CONFIG,
-    value: MOCK_ITEMS[0]?.imageUrl ?? null,
-    data: {},
-  },
-  render: (args) => (
-    <div style={{ width: 400 }}>
-      <MiniGrid
-        rows={[
-          {
-            id: 'preview',
-            name: 'Preview Row',
-            sku: 'PX-0001',
-            imageUrl: args.value ?? null,
-            unitCost: 1.0,
-          },
-        ]}
-        height={120}
-      />
-      <div className="mt-4 p-3 bg-muted rounded text-xs text-muted-foreground">
-        <strong>Standalone cell:</strong>
-        <div className="mt-2 border border-border rounded p-2 inline-flex">
-          <ImageCellDisplay
-            config={args.config}
-            value={args.value ?? null}
-            data={args.data ?? {}}
-          />
-        </div>
-      </div>
-    </div>
-  ),
-};
-
-// ============================================================================
-// 2. GridDisplay — static grid with 4 visual states
-// ============================================================================
-
 export const GridDisplay: Story = {
   render: () => <MiniGrid rows={MOCK_ITEMS} />,
 };
@@ -301,3 +251,52 @@ export const EditorFactoryDemo: Story = {
     );
   },
 };
+
+// ============================================================================
+// 1. Playground — controls on config fields
+// ============================================================================
+
+export const Playground: Story = {
+  argTypes: {
+    value: {
+      control: 'text',
+      description: 'Image URL (null for no image)',
+      table: { category: 'Runtime' },
+    },
+  },
+  args: {
+    config: ITEM_IMAGE_CONFIG,
+    value: MOCK_ITEMS[0]?.imageUrl ?? null,
+    data: {},
+  },
+  render: (args) => (
+    <div style={{ width: 400 }}>
+      <MiniGrid
+        rows={[
+          {
+            id: 'preview',
+            name: 'Preview Row',
+            sku: 'PX-0001',
+            imageUrl: args.value ?? null,
+            unitCost: 1.0,
+          },
+        ]}
+        height={120}
+      />
+      <div className="mt-4 p-3 bg-muted rounded text-xs text-muted-foreground">
+        <strong>Standalone cell:</strong>
+        <div className="mt-2 border border-border rounded p-2 inline-flex">
+          <ImageCellDisplay
+            config={args.config}
+            value={args.value ?? null}
+            data={args.data ?? {}}
+          />
+        </div>
+      </div>
+    </div>
+  ),
+};
+
+// ============================================================================
+// 2. GridDisplay — static grid with 4 visual states
+// ============================================================================

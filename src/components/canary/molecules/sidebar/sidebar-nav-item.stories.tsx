@@ -35,26 +35,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof SidebarNavItem>;
-
-/**
- * Interactive Controls playground — adjust `label`, `active`, and `badge`
- * in the Controls panel to explore all variants.
- */
-export const Playground: Story = {
-  args: {
-    icon: Package,
-    label: 'Items',
-    active: false,
-    badge: 3,
-  },
-  render: (args) => (
-    <SidebarNav>
-      <SidebarNavItem {...args} />
-    </SidebarNav>
-  ),
-};
-
-/** Default inactive state inside a sidebar. */
 export const Default: Story = {
   args: {
     icon: Package,
@@ -130,3 +110,23 @@ export const Composition: Story = {
     </SidebarNav>
   ),
 };
+
+/**
+ * Interactive Controls playground — adjust `label`, `active`, and `badge`
+ * in the Controls panel to explore all variants.
+ */
+export const Playground: Story = {
+  args: {
+    icon: Package,
+    label: 'Items',
+    active: false,
+    badge: 3,
+  },
+  render: (args) => (
+    <SidebarNav>
+      <SidebarNavItem {...args} />
+    </SidebarNav>
+  ),
+};
+
+/** Default inactive state inside a sidebar. */

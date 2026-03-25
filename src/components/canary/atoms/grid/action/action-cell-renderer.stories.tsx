@@ -123,20 +123,6 @@ export const SingleAction: Story = {
     actions: [{ label: 'Delete', icon: <Trash2 className="w-4 h-4" />, onClick: fn() }],
   },
 };
-
-/** Interactive Controls playground */
-export const Playground: Story = {
-  args: {
-    rowData: demoEntity,
-    actions: defaultActions,
-    disabled: false,
-  },
-};
-
-// ============================================================================
-// AllVariants
-// ============================================================================
-
 export const AllVariants: Story = {
   parameters: { layout: 'padded' },
   render: () => (
@@ -177,3 +163,16 @@ export const AllVariants: Story = {
     </div>
   ),
 };
+
+/** Interactive Controls playground */
+export const Playground: Story = {
+  args: {
+    rowData: demoEntity,
+    actions: defaultActions,
+    disabled: false,
+  },
+};
+
+// ============================================================================
+// AllVariants
+// ============================================================================

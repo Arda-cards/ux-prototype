@@ -26,22 +26,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof ImageDisplay>;
-
-/** Interactive playground — adjust props via the Controls panel. */
-export const Playground: Story = {
-  args: {
-    imageUrl: MOCK_ITEM_IMAGE,
-    entityTypeDisplayName: 'Item',
-    propertyDisplayName: 'Product Image',
-  },
-  render: (args) => (
-    <div className="w-32 h-32">
-      <ImageDisplay {...args} />
-    </div>
-  ),
-};
-
-/** Image successfully loaded. */
 export const Loaded: Story = {
   render: () => (
     <div className="w-32 h-32">
@@ -198,3 +182,19 @@ export const WhiteImageContrast: Story = {
     </div>
   ),
 };
+
+/** Interactive playground — adjust props via the Controls panel. */
+export const Playground: Story = {
+  args: {
+    imageUrl: MOCK_ITEM_IMAGE,
+    entityTypeDisplayName: 'Item',
+    propertyDisplayName: 'Product Image',
+  },
+  render: (args) => (
+    <div className="w-32 h-32">
+      <ImageDisplay {...args} />
+    </div>
+  ),
+};
+
+/** Image successfully loaded. */

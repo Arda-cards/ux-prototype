@@ -39,16 +39,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof SidebarUserMenu>;
-
-/**
- * Interactive Controls playground — `user` and `actions` are complex objects.
- * This story pre-populates a typical configuration with all standard actions.
- */
-export const Playground: Story = {
-  render: () => <SidebarUserMenu user={mockUser} actions={defaultActions} />,
-};
-
-/** Default expanded view with admin, settings, and logout. */
 export const Default: Story = {
   render: () => <SidebarUserMenu user={mockUser} actions={defaultActions} />,
   play: async ({ canvasElement }) => {
@@ -139,3 +129,13 @@ export const LogoutOnly: Story = {
     />
   ),
 };
+
+/**
+ * Interactive Controls playground — `user` and `actions` are complex objects.
+ * This story pre-populates a typical configuration with all standard actions.
+ */
+export const Playground: Story = {
+  render: () => <SidebarUserMenu user={mockUser} actions={defaultActions} />,
+};
+
+/** Default expanded view with admin, settings, and logout. */

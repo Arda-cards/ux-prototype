@@ -217,28 +217,6 @@ const meta: Meta<typeof DemoDataGrid> = {
 
 export default meta;
 type Story = StoryObj<typeof DemoDataGrid>;
-
-// ============================================================================
-// Playground — interactive controls for runtime props
-// ============================================================================
-
-export const Playground: Story = {
-  argTypes: {
-    loading: { control: 'boolean' },
-    enableCellEditing: { control: 'boolean' },
-  },
-  args: {
-    data: mockData,
-    loading: false,
-    enableCellEditing: true,
-    activeTab: 'playground',
-  },
-};
-
-// ============================================================================
-// Basic stories
-// ============================================================================
-
 export const Default: Story = {
   args: {
     data: mockData,
@@ -954,3 +932,24 @@ export const Interactive: Story = {
     );
   },
 };
+
+// ============================================================================
+// Playground — interactive controls for runtime props
+// ============================================================================
+
+export const Playground: Story = {
+  argTypes: {
+    loading: { control: 'boolean' },
+    enableCellEditing: { control: 'boolean' },
+  },
+  args: {
+    data: mockData,
+    loading: false,
+    enableCellEditing: true,
+    activeTab: 'playground',
+  },
+};
+
+// ============================================================================
+// Basic stories
+// ============================================================================

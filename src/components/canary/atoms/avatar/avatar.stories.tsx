@@ -26,24 +26,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof meta>;
-
-export const Playground: Story = {
-  argTypes: {
-    size: {
-      control: 'select',
-      options: ['default', 'sm', 'lg'],
-    },
-  },
-  args: {
-    size: 'default',
-  },
-  render: (args) => (
-    <Avatar {...args}>
-      <AvatarFallback>JD</AvatarFallback>
-    </Avatar>
-  ),
-};
-
 export const Default: Story = {
   render: () => (
     <Avatar>
@@ -236,5 +218,22 @@ export const AllVariants: Story = {
         </AvatarGroup>
       </div>
     </div>
+  ),
+};
+
+export const Playground: Story = {
+  argTypes: {
+    size: {
+      control: 'select',
+      options: ['default', 'sm', 'lg'],
+    },
+  },
+  args: {
+    size: 'default',
+  },
+  render: (args) => (
+    <Avatar {...args}>
+      <AvatarFallback>JD</AvatarFallback>
+    </Avatar>
   ),
 };

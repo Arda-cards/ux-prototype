@@ -19,21 +19,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof meta>;
-
-export const Playground: Story = {
-  argTypes: {
-    label: { control: 'text' },
-    showTooltip: { control: 'boolean' },
-    badgeCount: { control: 'number' },
-    icon: { table: { disable: true } },
-  },
-  args: {
-    icon: Bell,
-    label: 'Notifications',
-    showTooltip: true,
-  },
-};
-
 export const Default: Story = {
   args: {
     icon: HelpCircle,
@@ -107,4 +92,18 @@ export const AllVariants: StoryObj = {
       </div>
     </div>
   ),
+};
+
+export const Playground: Story = {
+  argTypes: {
+    label: { control: 'text' },
+    showTooltip: { control: 'boolean' },
+    badgeCount: { control: 'number' },
+    icon: { table: { disable: true } },
+  },
+  args: {
+    icon: Bell,
+    label: 'Notifications',
+    showTooltip: true,
+  },
 };

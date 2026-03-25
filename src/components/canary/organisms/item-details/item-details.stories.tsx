@@ -76,41 +76,6 @@ const MockCard = ({ index }: { index: number }) => {
     </div>
   );
 };
-
-/**
- * Interactive Controls playground — the drawer opens immediately.
- * This story pre-populates a full configuration with fields, actions,
- * overflow actions, and a mock card renderer.
- */
-export const Playground: Story = {
-  render: () => {
-    const [open, setOpen] = useState(true);
-    return (
-      <div className="flex h-screen items-center justify-center bg-muted/50">
-        {!open && (
-          <button
-            onClick={() => setOpen(true)}
-            className="rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background"
-          >
-            Open item details
-          </button>
-        )}
-        <ItemDetails
-          open={open}
-          onOpenChange={setOpen}
-          title="Widget Assembly Kit"
-          fields={sampleFields}
-          actions={sampleActions}
-          overflowActions={sampleOverflow}
-          cardCount={3}
-          renderCard={(i) => <MockCard index={i} />}
-        />
-      </div>
-    );
-  },
-};
-
-/** Default — full item details panel with cards and toolbar. */
 export const Default: Story = {
   render: () => {
     const [open, setOpen] = useState(true);
@@ -198,3 +163,38 @@ export const WithCardsTab: Story = {
     );
   },
 };
+
+/**
+ * Interactive Controls playground — the drawer opens immediately.
+ * This story pre-populates a full configuration with fields, actions,
+ * overflow actions, and a mock card renderer.
+ */
+export const Playground: Story = {
+  render: () => {
+    const [open, setOpen] = useState(true);
+    return (
+      <div className="flex h-screen items-center justify-center bg-muted/50">
+        {!open && (
+          <button
+            onClick={() => setOpen(true)}
+            className="rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background"
+          >
+            Open item details
+          </button>
+        )}
+        <ItemDetails
+          open={open}
+          onOpenChange={setOpen}
+          title="Widget Assembly Kit"
+          fields={sampleFields}
+          actions={sampleActions}
+          overflowActions={sampleOverflow}
+          cardCount={3}
+          renderCard={(i) => <MockCard index={i} />}
+        />
+      </div>
+    );
+  },
+};
+
+/** Default — full item details panel with cards and toolbar. */

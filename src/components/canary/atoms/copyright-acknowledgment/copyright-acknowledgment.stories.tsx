@@ -23,18 +23,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof meta>;
-
-export const Playground: Story = {
-  argTypes: {
-    acknowledged: { control: 'boolean' },
-    disabled: { control: 'boolean' },
-  },
-  args: {
-    acknowledged: false,
-    disabled: false,
-  },
-};
-
 export const Unchecked: Story = {
   args: {
     acknowledged: false,
@@ -90,5 +78,16 @@ export const InDialogContext: Story = {
         </div>
       </div>
     );
+  },
+};
+
+export const Playground: Story = {
+  argTypes: {
+    acknowledged: { control: 'boolean' },
+    disabled: { control: 'boolean' },
+  },
+  args: {
+    acknowledged: false,
+    disabled: false,
   },
 };

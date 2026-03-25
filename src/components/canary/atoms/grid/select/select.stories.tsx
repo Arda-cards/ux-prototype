@@ -328,27 +328,6 @@ export const BothFormats: Story = {
     });
   },
 };
-
-// ============================================================================
-// Playground — args-only, no render override; responds to Controls panel
-// ============================================================================
-
-/**
- * Interactive Controls playground for SelectCellDisplay.
- * Edit `value` in the Controls panel to see the label lookup in action.
- * `options` is fixed (complex type — cannot be driven by a control).
- */
-export const Playground: Story = {
-  args: {
-    value: 'PENDING',
-    options: orderStatusOptions,
-  },
-};
-
-// ============================================================================
-// AllVariants
-// ============================================================================
-
 export const AllVariants: Story = {
   parameters: { layout: 'padded' },
   render: () => (
@@ -385,3 +364,23 @@ export const AllVariants: Story = {
     </div>
   ),
 };
+
+// ============================================================================
+// Playground — args-only, no render override; responds to Controls panel
+// ============================================================================
+
+/**
+ * Interactive Controls playground for SelectCellDisplay.
+ * Edit `value` in the Controls panel to see the label lookup in action.
+ * `options` is fixed (complex type — cannot be driven by a control).
+ */
+export const Playground: Story = {
+  args: {
+    value: 'PENDING',
+    options: orderStatusOptions,
+  },
+};
+
+// ============================================================================
+// AllVariants
+// ============================================================================

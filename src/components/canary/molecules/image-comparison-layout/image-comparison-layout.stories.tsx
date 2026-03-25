@@ -45,24 +45,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof ImageComparisonLayout>;
-
-/** Interactive playground &#8212; adjust props via the Controls panel. */
-export const Playground: Story = {
-  args: {
-    existingImageUrl: MOCK_ITEM_IMAGE,
-    entityTypeDisplayName: ITEM_IMAGE_CONFIG.entityTypeDisplayName,
-    propertyDisplayName: ITEM_IMAGE_CONFIG.propertyDisplayName,
-  },
-  render: (args) => (
-    <div className="max-w-2xl">
-      <ImageComparisonLayout {...args}>
-        <NewImagePlaceholder />
-      </ImageComparisonLayout>
-    </div>
-  ),
-};
-
-/** Desktop side-by-side layout with an existing image and a new image placeholder. */
 export const DesktopSideBySide: Story = {
   render: () => (
     <div className="max-w-2xl">
@@ -137,3 +119,21 @@ export const ExistingImageBroken: Story = {
     </div>
   ),
 };
+
+/** Interactive playground &#8212; adjust props via the Controls panel. */
+export const Playground: Story = {
+  args: {
+    existingImageUrl: MOCK_ITEM_IMAGE,
+    entityTypeDisplayName: ITEM_IMAGE_CONFIG.entityTypeDisplayName,
+    propertyDisplayName: ITEM_IMAGE_CONFIG.propertyDisplayName,
+  },
+  render: (args) => (
+    <div className="max-w-2xl">
+      <ImageComparisonLayout {...args}>
+        <NewImagePlaceholder />
+      </ImageComparisonLayout>
+    </div>
+  ),
+};
+
+/** Desktop side-by-side layout with an existing image and a new image placeholder. */

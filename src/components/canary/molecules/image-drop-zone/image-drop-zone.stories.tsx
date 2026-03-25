@@ -45,20 +45,6 @@ const meta: Meta<typeof ImageDropZone> = {
 
 export default meta;
 type Story = StoryObj<typeof ImageDropZone>;
-
-/**
- * Interactive Controls playground.
- * Use the Controls panel to toggle accepted formats. Actions log onInput and onDismiss.
- */
-export const Playground: Story = {
-  args: {
-    acceptedFormats: ITEM_IMAGE_CONFIG.acceptedFormats,
-  },
-};
-
-/**
- * Default idle appearance &#8212; dashed border, upload button, URL field.
- */
 export const IdleState: Story = {
   args: {
     acceptedFormats: ITEM_IMAGE_CONFIG.acceptedFormats,
@@ -189,3 +175,17 @@ export const InputClassification: Story = {
     acceptedFormats: ITEM_IMAGE_CONFIG.acceptedFormats,
   },
 };
+
+/**
+ * Interactive Controls playground.
+ * Use the Controls panel to toggle accepted formats. Actions log onInput and onDismiss.
+ */
+export const Playground: Story = {
+  args: {
+    acceptedFormats: ITEM_IMAGE_CONFIG.acceptedFormats,
+  },
+};
+
+/**
+ * Default idle appearance &#8212; dashed border, upload button, URL field.
+ */

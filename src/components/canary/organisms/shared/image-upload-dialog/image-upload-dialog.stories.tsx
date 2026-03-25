@@ -50,24 +50,6 @@ const meta: Meta<typeof ImageUploadDialog> = {
 
 export default meta;
 type Story = StoryObj<typeof ImageUploadDialog>;
-
-/**
- * Interactive Controls playground.
- * Toggle open, existingImageUrl, and config via the Controls panel.
- * Actions log onConfirm and onCancel.
- */
-export const Playground: Story = {
-  args: {
-    open: true,
-    existingImageUrl: null,
-    config: ITEM_IMAGE_CONFIG,
-  },
-};
-
-/**
- * EmptyImage state &#8212; dialog opens with no image staged.
- * Shows the ImageDropZone for file or URL input.
- */
 export const EmptyImageState: Story = {
   args: {
     open: true,
@@ -311,3 +293,21 @@ export const FullHappyPath: Story = {
     existingImageUrl: null,
   },
 };
+
+/**
+ * Interactive Controls playground.
+ * Toggle open, existingImageUrl, and config via the Controls panel.
+ * Actions log onConfirm and onCancel.
+ */
+export const Playground: Story = {
+  args: {
+    open: true,
+    existingImageUrl: null,
+    config: ITEM_IMAGE_CONFIG,
+  },
+};
+
+/**
+ * EmptyImage state &#8212; dialog opens with no image staged.
+ * Shows the ImageDropZone for file or URL input.
+ */

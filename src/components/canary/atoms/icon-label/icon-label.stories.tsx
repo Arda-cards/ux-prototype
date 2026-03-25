@@ -24,19 +24,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof IconLabel>;
-
-export const Playground: Story = {
-  argTypes: {
-    label: { control: 'text' },
-    icon: { table: { disable: true } },
-  },
-  args: {
-    icon: Package,
-    label: 'Items',
-  },
-};
-
-/** Default — icon and label inline. */
 export const Default: Story = {
   args: {
     icon: Package,
@@ -102,3 +89,16 @@ export const AllVariants: Story = {
     </div>
   ),
 };
+
+export const Playground: Story = {
+  argTypes: {
+    label: { control: 'text' },
+    icon: { table: { disable: true } },
+  },
+  args: {
+    icon: Package,
+    label: 'Items',
+  },
+};
+
+/** Default — icon and label inline. */

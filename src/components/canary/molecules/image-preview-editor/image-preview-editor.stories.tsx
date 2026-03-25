@@ -61,21 +61,6 @@ const meta: Meta<typeof ImagePreviewEditor> = {
 
 export default meta;
 type Story = StoryObj<typeof ImagePreviewEditor>;
-
-/**
- * Interactive Controls playground.
- * Adjust aspect ratio and image source in the Controls panel.
- */
-export const Playground: Story = {
-  args: {
-    aspectRatio: 1,
-    imageData: MOCK_ITEM_IMAGE,
-  },
-};
-
-/**
- * Default view &#8212; 1:1 aspect ratio with MOCK_ITEM_IMAGE.
- */
 export const DefaultView: Story = {
   args: {
     aspectRatio: 1,
@@ -195,3 +180,18 @@ export const UrlImageLoading: Story = {
     },
   },
 };
+
+/**
+ * Interactive Controls playground.
+ * Adjust aspect ratio and image source in the Controls panel.
+ */
+export const Playground: Story = {
+  args: {
+    aspectRatio: 1,
+    imageData: MOCK_ITEM_IMAGE,
+  },
+};
+
+/**
+ * Default view &#8212; 1:1 aspect ratio with MOCK_ITEM_IMAGE.
+ */

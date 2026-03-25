@@ -44,22 +44,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof ImageFormField>;
-
-/**
- * Playground &#8212; adjust `imageUrl` and `disabled` in the Controls panel.
- * Actions log `onChange` calls.
- */
-export const Playground: Story = {
-  args: {
-    imageUrl: MOCK_ITEM_IMAGE,
-    disabled: false,
-  },
-};
-
-/**
- * WithImage &#8212; field with a current image.
- * Hover the thumbnail to reveal three action icons: Eye, Pencil, Trash.
- */
 export const WithImage: Story = {
   args: {
     imageUrl: MOCK_ITEM_IMAGE,
@@ -165,3 +149,19 @@ export const EditFlow: Story = {
     imageUrl: MOCK_ITEM_IMAGE,
   },
 };
+
+/**
+ * Playground &#8212; adjust `imageUrl` and `disabled` in the Controls panel.
+ * Actions log `onChange` calls.
+ */
+export const Playground: Story = {
+  args: {
+    imageUrl: MOCK_ITEM_IMAGE,
+    disabled: false,
+  },
+};
+
+/**
+ * WithImage &#8212; field with a current image.
+ * Hover the thumbnail to reveal three action icons: Eye, Pencil, Trash.
+ */
