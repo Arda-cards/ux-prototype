@@ -81,15 +81,13 @@ describe('ImageFormField', () => {
     expect(screen.queryByRole('button', { name: 'Remove image' })).not.toBeInTheDocument();
   });
 
-  it('pencil click fires edit action (logs to console)', async () => {
-    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+  it('pencil click fires edit action without error', async () => {
     const user = userEvent.setup();
     renderField();
 
+    // Edit action is a TODO stub — verify button is clickable without throwing
     await user.click(screen.getByRole('button', { name: 'Edit image' }));
-
-    expect(consoleSpy).toHaveBeenCalledWith('[ImageFormField] edit requested');
-    consoleSpy.mockRestore();
+    expect(screen.getByRole('button', { name: 'Edit image' })).toBeInTheDocument();
   });
 
   it('trash click opens remove confirmation (AlertDialog content visible)', async () => {

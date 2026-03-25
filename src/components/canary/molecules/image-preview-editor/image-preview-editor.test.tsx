@@ -60,12 +60,13 @@ describe('ImagePreviewEditor', () => {
     expect(screen.getByTestId('mock-cropper')).toBeInTheDocument();
   });
 
-  it('renders toolbar with zoom slider, rotate button, and reset button', async () => {
+  it('renders toolbar with zoom slider, rotate buttons, and reset button', async () => {
     renderEditor();
     // The Radix Slider thumb renders with role="slider" but starts with display:none until the
     // collection index is resolved in a second render pass. Use findByRole to wait for visibility.
     expect(await screen.findByRole('slider')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /rotate/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^rotate 90 degrees clockwise$/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /counter-clockwise/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /reset/i })).toBeInTheDocument();
   });
 
@@ -83,14 +84,20 @@ describe('ImagePreviewEditor', () => {
     );
   });
 
-  it('rotate button increments rotation by 90 degrees', async () => {
+  it('clockwise rotate button increments rotation by 90 degrees', async () => {
     const user = userEvent.setup();
     const { onCropChange } = renderEditor();
 
-    const rotateBtn = screen.getByRole('button', { name: /rotate/i });
-    await user.click(rotateBtn);
-
+    await user.click(screen.getByRole('button', { name: /^rotate 90 degrees clockwise$/i }));
     expect(onCropChange).toHaveBeenCalledWith(expect.objectContaining({ rotation: 90 }));
+  });
+
+  it('counter-clockwise rotate button decrements rotation by 90 degrees', async () => {
+    const user = userEvent.setup();
+    const { onCropChange } = renderEditor();
+
+    await user.click(screen.getByRole('button', { name: /counter-clockwise/i }));
+    expect(onCropChange).toHaveBeenCalledWith(expect.objectContaining({ rotation: 270 }));
   });
 
   it('reset button calls onReset', async () => {

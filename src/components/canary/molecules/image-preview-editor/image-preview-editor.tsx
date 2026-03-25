@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Cropper, { type Area, type Point } from 'react-easy-crop';
-import { RotateCw, RotateCcw } from 'lucide-react';
+import { RotateCw, RotateCcw, Undo2 } from 'lucide-react';
 
 import { cn } from '@/types/canary/utilities/utils';
 import { Slider } from '@/components/canary/primitives/slider';
@@ -96,9 +96,17 @@ export function ImagePreviewEditor({
     [onCropChange, zoom, rotation],
   );
 
-  const handleRotate = React.useCallback(() => {
+  const handleRotateCw = React.useCallback(() => {
     setRotation((prev) => {
       const next = (prev + 90) % 360;
+      onCropChange({ pixelCrop: { x: 0, y: 0, width: 0, height: 0 }, zoom, rotation: next });
+      return next;
+    });
+  }, [onCropChange, zoom]);
+
+  const handleRotateCcw = React.useCallback(() => {
+    setRotation((prev) => {
+      const next = (prev - 90 + 360) % 360;
       onCropChange({ pixelCrop: { x: 0, y: 0, width: 0, height: 0 }, zoom, rotation: next });
       return next;
     });
@@ -145,11 +153,21 @@ export function ImagePreviewEditor({
           />
         </div>
 
+        {/* Rotate counter-clockwise */}
+        <button
+          type="button"
+          aria-label="Rotate 90 degrees counter-clockwise"
+          onClick={handleRotateCcw}
+          className={TOOLBAR_BUTTON_CLASS}
+        >
+          <RotateCcw className="size-4" />
+        </button>
+
         {/* Rotate clockwise */}
         <button
           type="button"
           aria-label="Rotate 90 degrees clockwise"
-          onClick={handleRotate}
+          onClick={handleRotateCw}
           className={TOOLBAR_BUTTON_CLASS}
         >
           <RotateCw className="size-4" />
@@ -162,7 +180,7 @@ export function ImagePreviewEditor({
           onClick={handleReset}
           className={TOOLBAR_BUTTON_CLASS}
         >
-          <RotateCcw className="size-4" />
+          <Undo2 className="size-4" />
         </button>
       </div>
     </div>
