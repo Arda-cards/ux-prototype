@@ -90,12 +90,12 @@ export const DoubleClickEdit: Story = {
   render: () => (
     <div>
       <p className="mb-3 text-sm text-muted-foreground">
-        Double-click an image cell to open the ImageUploadDialog. The dialog shows the current image
-        for comparison. Confirm commits a new URL; Cancel discards.
+        Double-click an image cell to open the ImageUploadDialog. Double-click the Name cell to
+        verify text editing works (proves AG Grid editing is active).
       </p>
       <div className="ag-theme-quartz" style={{ height: 150, width: '100%' }}>
         <AgGridReact<MockItem>
-          rowData={MOCK_ITEMS.slice(0, 2)}
+          rowData={MOCK_ITEMS.slice(0, 3)}
           columnDefs={[
             {
               field: 'imageUrl',
@@ -106,7 +106,8 @@ export const DoubleClickEdit: Story = {
               editable: true,
               width: 60,
             },
-            { field: 'name', headerName: 'Name', flex: 1 },
+            { field: 'name', headerName: 'Name', editable: true, flex: 1 },
+            { field: 'sku', headerName: 'SKU', width: 100 },
           ]}
           rowHeight={40}
           headerHeight={36}
