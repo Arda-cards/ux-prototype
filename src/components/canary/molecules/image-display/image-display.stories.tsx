@@ -1,9 +1,15 @@
 import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { MOCK_ITEM_IMAGE, MOCK_BROKEN_IMAGE } from '@/components/canary/__mocks__/image-story-data';
+import {
+  MOCK_ITEM_IMAGE,
+  MOCK_BROKEN_IMAGE,
+  ITEM_IMAGE_CONFIG,
+} from '@/components/canary/__mocks__/image-story-data';
 
 import { ImageDisplay } from './image-display';
+import { ImageUploadDialog } from '@/components/canary/organisms/shared/image-upload-dialog/image-upload-dialog';
+import type { ImageUploadResult } from '@/types/canary/utilities/image-field-config';
 
 const meta = {
   title: 'Components/Canary/Molecules/ImageDisplay',
@@ -181,6 +187,63 @@ export const WhiteImageContrast: Story = {
       </p>
     </div>
   ),
+};
+
+/**
+ * Click-to-edit demo &#8212; standalone thumbnail with ImageUploadDialog integration.
+ * No AG Grid involved. Click the thumbnail to open the upload dialog. Confirm
+ * to update the image URL; Cancel to keep the current image.
+ */
+export const ClickToEdit: Story = {
+  render: () => {
+    const [imageUrl, setImageUrl] = React.useState<string | null>(MOCK_ITEM_IMAGE);
+    const [dialogOpen, setDialogOpen] = React.useState(false);
+
+    const handleConfirm = (result: ImageUploadResult) => {
+      setImageUrl(result.imageUrl);
+      setDialogOpen(false);
+    };
+
+    const handleCancel = () => {
+      setDialogOpen(false);
+    };
+
+    return (
+      <div className="flex flex-col items-center gap-4">
+        <p className="text-sm text-muted-foreground max-w-xs text-center">
+          Click the thumbnail to open the ImageUploadDialog. Confirm to change the image; Cancel to
+          keep the current one.
+        </p>
+
+        {/* Clickable thumbnail */}
+        <button
+          type="button"
+          onClick={() => setDialogOpen(true)}
+          className="w-32 h-32 rounded-lg overflow-hidden cursor-pointer border-2 border-transparent hover:border-primary transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          aria-label="Edit image"
+        >
+          <ImageDisplay
+            imageUrl={imageUrl}
+            entityTypeDisplayName="Item"
+            propertyDisplayName="Product Image"
+          />
+        </button>
+
+        <span className="text-xs text-muted-foreground font-mono break-all max-w-xs text-center">
+          {imageUrl ?? '(no image)'}
+        </span>
+
+        {/* Upload dialog */}
+        <ImageUploadDialog
+          config={ITEM_IMAGE_CONFIG}
+          existingImageUrl={imageUrl}
+          open={dialogOpen}
+          onConfirm={handleConfirm}
+          onCancel={handleCancel}
+        />
+      </div>
+    );
+  },
 };
 
 /** Interactive playground — adjust props via the Controls panel. */
