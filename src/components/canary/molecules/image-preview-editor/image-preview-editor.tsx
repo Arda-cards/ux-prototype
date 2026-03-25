@@ -35,7 +35,7 @@ export type ImagePreviewEditorProps = ImagePreviewEditorStaticProps &
 // --- Helpers ---
 
 const TOOLBAR_BUTTON_CLASS = cn(
-  'inline-flex items-center justify-center rounded p-1',
+  'inline-flex items-center justify-center rounded-md p-2',
   'text-muted-foreground hover:text-foreground bg-transparent hover:bg-accent',
   'transition-colors cursor-pointer border-0',
   'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
@@ -120,9 +120,9 @@ export function ImagePreviewEditor({
   }, [onReset]);
 
   return (
-    <div data-slot="image-preview-editor" className="flex flex-col gap-2">
-      {/* Crop area */}
-      <div className="relative w-full" style={{ height: 320 }}>
+    <div data-slot="image-preview-editor" className="flex flex-col gap-3" style={{ minWidth: 280 }}>
+      {/* Crop area — square aspect container */}
+      <div className="relative w-full aspect-square min-h-[200px] max-h-[400px] bg-muted rounded overflow-hidden">
         {imageSrc && (
           <Cropper
             image={imageSrc}
@@ -138,11 +138,11 @@ export function ImagePreviewEditor({
         )}
       </div>
 
-      {/* Toolbar */}
-      <div className="bg-muted rounded p-2 flex items-center gap-2">
-        {/* Zoom slider */}
-        <div className="flex-1 flex items-center gap-2">
-          <span className="text-xs text-muted-foreground shrink-0">Zoom</span>
+      {/* Toolbar — two rows for usability */}
+      <div className="bg-muted rounded-lg p-3 flex flex-col gap-3">
+        {/* Row 1: Zoom slider */}
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium text-muted-foreground shrink-0">Zoom</span>
           <Slider
             min={1}
             max={3}
@@ -150,38 +150,42 @@ export function ImagePreviewEditor({
             value={[zoom]}
             onValueChange={handleZoomChange}
             aria-label="Zoom"
+            className="flex-1"
           />
         </div>
 
-        {/* Rotate counter-clockwise */}
-        <button
-          type="button"
-          aria-label="Rotate 90 degrees counter-clockwise"
-          onClick={handleRotateCcw}
-          className={TOOLBAR_BUTTON_CLASS}
-        >
-          <RotateCcw className="size-4" />
-        </button>
+        {/* Row 2: Rotate + Reset buttons */}
+        <div className="flex items-center justify-center gap-3">
+          {/* Rotate counter-clockwise */}
+          <button
+            type="button"
+            aria-label="Rotate 90 degrees counter-clockwise"
+            onClick={handleRotateCcw}
+            className={TOOLBAR_BUTTON_CLASS}
+          >
+            <RotateCcw className="size-5" />
+          </button>
 
-        {/* Rotate clockwise */}
-        <button
-          type="button"
-          aria-label="Rotate 90 degrees clockwise"
-          onClick={handleRotateCw}
-          className={TOOLBAR_BUTTON_CLASS}
-        >
-          <RotateCw className="size-4" />
-        </button>
+          {/* Rotate clockwise */}
+          <button
+            type="button"
+            aria-label="Rotate 90 degrees clockwise"
+            onClick={handleRotateCw}
+            className={TOOLBAR_BUTTON_CLASS}
+          >
+            <RotateCw className="size-5" />
+          </button>
 
-        {/* Reset */}
-        <button
-          type="button"
-          aria-label="Reset"
-          onClick={handleReset}
-          className={TOOLBAR_BUTTON_CLASS}
-        >
-          <Undo2 className="size-4" />
-        </button>
+          {/* Reset */}
+          <button
+            type="button"
+            aria-label="Reset"
+            onClick={handleReset}
+            className={TOOLBAR_BUTTON_CLASS}
+          >
+            <Undo2 className="size-5" />
+          </button>
+        </div>
       </div>
     </div>
   );

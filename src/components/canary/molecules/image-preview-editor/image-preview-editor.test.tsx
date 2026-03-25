@@ -65,7 +65,9 @@ describe('ImagePreviewEditor', () => {
     // The Radix Slider thumb renders with role="slider" but starts with display:none until the
     // collection index is resolved in a second render pass. Use findByRole to wait for visibility.
     expect(await screen.findByRole('slider')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^rotate 90 degrees clockwise$/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /^rotate 90 degrees clockwise$/i }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /counter-clockwise/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /reset/i })).toBeInTheDocument();
   });

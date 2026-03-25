@@ -1,0 +1,147 @@
+{/* image.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as Stories from './image.stories';
+
+<Meta of={Stories} />
+
+# Image Cell
+
+AG Grid cell renderer and editor for image columns. The display atom wraps
+`ImageDisplay` inside `ImageHoverPreview` to provide a 256&#215;256 popover on hover,
+plus Eye (inspect) and Pencil (edit) action icons that appear on mouse-over.
+
+**Grid Atom** &#8212; Display + Editor pair pattern. The editor is a placeholder
+that cancels immediately; `ImageUploadDialog` will be wired in a future phase.
+
+---
+
+## GridDisplay
+
+Four visual states in a single grid: loaded image, alternate image, null (no image), and broken URL.
+
+<Canvas of={Stories.GridDisplay} />
+
+---
+
+## Interactions
+
+### Hover Preview
+
+After hovering over an image cell for ~500 ms, a 256&#215;256 popover appears showing
+the full `ImageDisplay`. Moving the pointer away closes the popover immediately.
+
+<Canvas of={Stories.HoverPreview} />
+
+### Hover Action Icons
+
+Two icon buttons appear on hover:
+
+- **Eye** &#8212; opens the inspector (future phase). Suppressed when `value` is null.
+- **Pencil** &#8212; opens the image editor (future phase). Always shown on hover.
+
+<Canvas of={Stories.HoverActionIcons} />
+
+### Broken Image &#8212; Eye Suppressed for Null
+
+The Eye icon is rendered for broken URLs (there is a URL; it just failed) but is
+suppressed entirely when `imageUrl` is `null`.
+
+<Canvas of={Stories.ErrorCellNoInspector} />
+
+---
+
+## Keyboard Navigation
+
+### Enter to Edit
+
+Tab to a cell in the Image column and press **Enter** to trigger the cell editor.
+The editor cancels immediately in this phase; `ImageUploadDialog` integration is planned.
+
+<Canvas of={Stories.KeyboardEdit} />
+
+---
+
+## Editor Factory
+
+`createImageCellEditor(config)` curries the `ImageFieldConfig` and returns a component
+you can pass directly to `cellEditor` in a column definition.
+
+<Canvas of={Stories.EditorFactoryDemo} />
+
+---
+
+## Props &#8212; Display (`ImageCellDisplay`)
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Required</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>config</code></td>
+      <td><code>ImageFieldConfig</code></td>
+      <td>Yes</td>
+      <td>Field-level configuration (entity labels, accepted formats, size limits).</td>
+    </tr>
+    <tr>
+      <td><code>value</code></td>
+      <td><code>string | null</code></td>
+      <td>Yes</td>
+      <td>Image URL from the row. Null shows an initials placeholder; Eye icon is suppressed.</td>
+    </tr>
+    <tr>
+      <td><code>data</code></td>
+      <td><code>Record&#60;string, unknown&#62;</code></td>
+      <td>Yes</td>
+      <td>Full row data supplied by AG Grid (reserved for future context actions).</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Props &#8212; Editor (`ImageCellEditor` / `createImageCellEditor`)
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Required</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>value</code></td>
+      <td><code>string | null</code></td>
+      <td>Yes</td>
+      <td>Current image URL. Returned unchanged by <code>getValue()</code> on cancel.</td>
+    </tr>
+    <tr>
+      <td><code>data</code></td>
+      <td><code>Record&#60;string, unknown&#62;</code></td>
+      <td>Yes</td>
+      <td>Full row data supplied by AG Grid.</td>
+    </tr>
+    <tr>
+      <td><code>stopEditing</code></td>
+      <td><code>(cancel?: boolean) =&#62; void</code></td>
+      <td>No</td>
+      <td>AG Grid callback to exit edit mode. Called with <code>true</code> on mount (placeholder).</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { ImageCellDisplay, createImageCellEditor } from '@arda-cards/design-system/canary';
+```

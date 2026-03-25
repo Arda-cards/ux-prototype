@@ -1,0 +1,79 @@
+{/* form.mdx */}
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Components/Canary/Molecules/Form/Guide" />
+
+# Form Field Molecules
+
+Form-specific field renderers that mirror the `atoms/grid/` cell-type pattern
+for use inside entity create/edit forms.
+
+**Layer**: Molecules &#8594; Form
+
+---
+
+## Pattern
+
+Each form field type gets its own subdirectory under `form/`:
+`form/<type>/`. The naming convention is `{Type}FormField`, paralleling the
+`{Type}CellDisplay` / `{Type}CellEditor` naming in the grid layer.
+
+This creates a uniform `{Type}{Layer}{Role}` naming pattern across the library:
+
+<table>
+  <thead>
+    <tr>
+      <th>Context</th>
+      <th>Pattern</th>
+      <th>Example</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Grid display</td>
+      <td><code>{'{'}Type{'}'}CellDisplay</code></td>
+      <td><code>ImageCellDisplay</code></td>
+    </tr>
+    <tr>
+      <td>Grid editor</td>
+      <td><code>{'{'}Type{'}'}CellEditor</code></td>
+      <td><code>ImageCellEditor</code></td>
+    </tr>
+    <tr>
+      <td>Form field</td>
+      <td><code>{'{'}Type{'}'}FormField</code></td>
+      <td><code>ImageFormField</code></td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Current Field Types
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Directory</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Image</td>
+      <td><code>form/image/</code></td>
+      <td>Implemented</td>
+    </tr>
+  </tbody>
+</table>
+
+Future candidates: `TextFormField`, `SelectFormField`, `DateFormField`.
+
+---
+
+## Import
+
+```tsx
+import { ImageFormField } from '@/components/canary/molecules/form/image';
+```

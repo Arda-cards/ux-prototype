@@ -1,6 +1,24 @@
 // Canary exports — in-development components not yet promoted to stable.
 // Consumers: import { ... } from '@arda-cards/design-system/canary';
 
+// --- Utilities and Types ---
+
+export { getInitials } from './types/canary/utilities/get-initials';
+export { getCroppedImage } from './types/canary/utilities/get-cropped-image';
+export type {
+  ImageMimeType,
+  ImageFieldStaticConfig,
+  ImageFieldInitConfig,
+  ImageFieldConfig,
+  ImageInput,
+  ImageInputFile,
+  ImageInputUrl,
+  ImageInputError,
+  ImageUploadResult,
+  PixelCrop,
+  CropData,
+} from './types/canary/utilities/image-field-config';
+
 // --- Atoms ---
 
 export { Badge, ArdaBadge } from './components/canary/atoms/badge/badge';
@@ -178,6 +196,22 @@ export type {
   ColorCellEditorHandle,
 } from './components/canary/atoms/grid/color';
 
+// Cell atoms: image
+export {
+  ImageCellDisplay,
+  ImageCellEditor,
+  createImageCellEditor,
+} from './components/canary/atoms/grid/image';
+export type {
+  ImageCellDisplayProps,
+  ImageCellEditorProps,
+  ImageCellEditorHandle,
+} from './components/canary/atoms/grid/image';
+
+// Atoms: CopyrightAcknowledgment
+export { CopyrightAcknowledgment } from './components/canary/atoms/copyright-acknowledgment';
+export type { CopyrightAcknowledgmentProps } from './components/canary/atoms/copyright-acknowledgment';
+
 // Cell atoms: action
 export { ActionCellRenderer } from './components/canary/atoms/grid/action';
 export type {
@@ -188,6 +222,28 @@ export type {
 } from './components/canary/atoms/grid/action';
 
 // --- Molecules ---
+
+// Molecules: Image components
+export { ImageDisplay } from './components/canary/molecules/image-display';
+export type { ImageDisplayProps } from './components/canary/molecules/image-display';
+
+export { ImageDropZone } from './components/canary/molecules/image-drop-zone';
+export type { ImageDropZoneProps } from './components/canary/molecules/image-drop-zone';
+
+export { ImagePreviewEditor } from './components/canary/molecules/image-preview-editor';
+export type { ImagePreviewEditorProps } from './components/canary/molecules/image-preview-editor';
+
+export { ImageHoverPreview } from './components/canary/molecules/image-hover-preview';
+export type { ImageHoverPreviewProps } from './components/canary/molecules/image-hover-preview';
+
+export { ImageInspectorOverlay } from './components/canary/molecules/image-inspector-overlay';
+export type { ImageInspectorOverlayProps } from './components/canary/molecules/image-inspector-overlay';
+
+export { ImageComparisonLayout } from './components/canary/molecules/image-comparison-layout';
+export type { ImageComparisonLayoutProps } from './components/canary/molecules/image-comparison-layout';
+
+export { ImageFormField } from './components/canary/molecules/form/image';
+export type { ImageFormFieldProps } from './components/canary/molecules/form/image';
 
 export { DataGrid, GridImage, useColumnPersistence } from './components/canary/molecules/data-grid';
 export type {
@@ -264,6 +320,10 @@ export type {
   DirtyTrackingOptions,
   DirtyTrackingResult,
 } from './components/canary/organisms/shared/entity-data-grid';
+
+// Organisms: ImageUploadDialog
+export { ImageUploadDialog } from './components/canary/organisms/shared/image-upload-dialog';
+export type { ImageUploadDialogProps } from './components/canary/organisms/shared/image-upload-dialog';
 
 export { createEntityDataGridShim } from './components/canary/organisms/shared/entity-data-grid-shim';
 export type {
