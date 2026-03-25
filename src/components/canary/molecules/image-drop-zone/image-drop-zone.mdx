@@ -1,0 +1,116 @@
+{/* image-drop-zone.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as ImageDropZoneStories from './image-drop-zone.stories';
+
+<Meta of={ImageDropZoneStories} />
+
+# ImageDropZone
+
+Unified image input surface for the Arda design system. Accepts images via drag-and-drop,
+file picker, or URL entry &#8212; all from a single component.
+
+**Molecule** &#8212; Canary | Import: `@/components/canary/molecules/image-drop-zone`
+
+---
+
+## Playground
+
+Use the Controls panel to toggle accepted formats. The Actions panel logs `onInput` and `onDismiss` calls.
+
+<Canvas of={ImageDropZoneStories.Playground} />
+
+---
+
+## Input Methods
+
+`ImageDropZone` classifies each submission as one of three `ImageInput` union variants:
+
+<table>
+  <thead>
+    <tr>
+      <th>Method</th>
+      <th>Resulting type</th>
+      <th>Validation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Drag and drop a file</td>
+      <td><code>&#123; type: 'file', file &#125;</code></td>
+      <td>MIME type must be in <code>acceptedFormats</code></td>
+    </tr>
+    <tr>
+      <td>Upload from computer (file picker)</td>
+      <td><code>&#123; type: 'file', file &#125;</code></td>
+      <td>MIME type must be in <code>acceptedFormats</code></td>
+    </tr>
+    <tr>
+      <td>Paste image URL &#8594; Enter</td>
+      <td><code>&#123; type: 'url', url &#125;</code></td>
+      <td>Must begin with <code>https://</code></td>
+    </tr>
+  </tbody>
+</table>
+
+On validation failure the component emits `{ type: 'error', message }` and shows an
+inline error message below the drop zone.
+
+---
+
+## Error Handling
+
+Errors are displayed inline in `text-destructive` beneath the input area. Two classes of errors
+are handled:
+
+- **Invalid file type** &#8212; the dropped or selected file's MIME type is not in `acceptedFormats`.
+- **Non-HTTPS URL** &#8212; the submitted URL does not start with `https://`.
+
+<Canvas of={ImageDropZoneStories.ValidationError} />
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Category</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>acceptedFormats</code></td>
+      <td>Init</td>
+      <td><code>ImageMimeType[]</code></td>
+      <td>Required</td>
+      <td>Accepted MIME types for file uploads. Validated against dropped and selected files.</td>
+    </tr>
+    <tr>
+      <td><code>onInput</code></td>
+      <td>Runtime</td>
+      <td><code>(input: ImageInput) =&#62; void</code></td>
+      <td>Required</td>
+      <td>Called with the classified input on every valid submission (or with an error variant on failure).</td>
+    </tr>
+    <tr>
+      <td><code>onDismiss</code></td>
+      <td>Runtime</td>
+      <td><code>() =&#62; void</code></td>
+      <td>Required</td>
+      <td>Called when the user clicks the Dismiss button.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { ImageDropZone } from '@/components/canary/molecules/image-drop-zone';
+import type { ImageDropZoneProps } from '@/components/canary/molecules/image-drop-zone';
+```

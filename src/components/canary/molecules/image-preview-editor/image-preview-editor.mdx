@@ -1,0 +1,153 @@
+{/* image-preview-editor.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as ImagePreviewEditorStories from './image-preview-editor.stories';
+
+<Meta of={ImagePreviewEditorStories} />
+
+# ImagePreviewEditor
+
+Crop and edit an image at a locked aspect ratio. Provides zoom, rotation, and reset controls
+via a compact toolbar beneath the crop area.
+
+**Molecule** &#8212; Canary | Import: `@/components/canary/molecules/image-preview-editor`
+
+---
+
+## Playground
+
+Adjust `aspectRatio` and `imageData` in the Controls panel. The Actions panel logs every
+`onCropChange` call with the current `CropData`.
+
+<Canvas of={ImagePreviewEditorStories.Playground} />
+
+---
+
+## Edit Operations
+
+<table>
+  <thead>
+    <tr>
+      <th>Control</th>
+      <th>UI element</th>
+      <th>Effect</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Pan</td>
+      <td>Drag the crop area</td>
+      <td>Moves the crop window over the image</td>
+    </tr>
+    <tr>
+      <td>Zoom</td>
+      <td>Slider (1&#8212;3&#215;)</td>
+      <td>Scales the image inside the crop area</td>
+    </tr>
+    <tr>
+      <td>Rotate</td>
+      <td>&#8635; button</td>
+      <td>Increments rotation by 90&#176; per click (0 &#8594; 90 &#8594; 180 &#8594; 270 &#8594; 0)</td>
+    </tr>
+    <tr>
+      <td>Reset</td>
+      <td>&#8634; button</td>
+      <td>Restores zoom to 1&#215;, rotation to 0&#176;, and crop to center</td>
+    </tr>
+  </tbody>
+</table>
+
+Every state change (crop position, zoom, rotation) is emitted via `onCropChange` with
+a `CropData` object containing `pixelCrop`, `zoom`, and `rotation`.
+
+---
+
+## Reset
+
+The Reset button (&#8634;) restores all edit state to defaults and calls `onReset`.
+Use this to let users abandon edits and return to the original image.
+
+<Canvas of={ImagePreviewEditorStories.ResetBehavior} />
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Category</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>aspectRatio</code></td>
+      <td>Static</td>
+      <td><code>number</code></td>
+      <td>Required</td>
+      <td>Locked aspect ratio for the crop area. E.g. <code>1</code> for square, <code>1.778</code> for 16:9.</td>
+    </tr>
+    <tr>
+      <td><code>imageData</code></td>
+      <td>Runtime</td>
+      <td><code>File | Blob | string</code></td>
+      <td>Required</td>
+      <td>Image source. <code>File</code> and <code>Blob</code> are converted to object URLs automatically. Strings are treated as URLs.</td>
+    </tr>
+    <tr>
+      <td><code>onCropChange</code></td>
+      <td>Runtime</td>
+      <td><code>(cropData: CropData) =&#62; void</code></td>
+      <td>Required</td>
+      <td>Called on every crop, zoom, or rotation change with the current <code>CropData</code>.</td>
+    </tr>
+    <tr>
+      <td><code>onReset</code></td>
+      <td>Runtime</td>
+      <td><code>() =&#62; void</code></td>
+      <td>Required</td>
+      <td>Called when the user clicks the Reset button. Internal state is also reset.</td>
+    </tr>
+  </tbody>
+</table>
+
+### CropData
+
+<table>
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>pixelCrop</code></td>
+      <td><code>PixelCrop</code></td>
+      <td>Pixel coordinates of the crop area (x, y, width, height).</td>
+    </tr>
+    <tr>
+      <td><code>zoom</code></td>
+      <td><code>number</code></td>
+      <td>Current zoom level (1&#8212;3).</td>
+    </tr>
+    <tr>
+      <td><code>rotation</code></td>
+      <td><code>number</code></td>
+      <td>Current rotation in degrees (0, 90, 180, or 270).</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { ImagePreviewEditor } from '@/components/canary/molecules/image-preview-editor';
+import type { ImagePreviewEditorProps } from '@/components/canary/molecules/image-preview-editor';
+```

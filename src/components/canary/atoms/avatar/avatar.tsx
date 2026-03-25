@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Avatar as AvatarPrimitive } from 'radix-ui';
 
 import { cn } from '@/types/canary/utilities/utils';
+import { getInitials } from '@/types/canary/utilities';
 
 function Avatar({
   className,
@@ -35,8 +36,14 @@ function AvatarImage({ className, ...props }: React.ComponentProps<typeof Avatar
 
 function AvatarFallback({
   className,
+  entityName,
+  children,
   ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Fallback>) {
+}: React.ComponentProps<typeof AvatarPrimitive.Fallback> & {
+  entityName?: string;
+}) {
+  const content =
+    entityName !== undefined && children === undefined ? getInitials(entityName) : children;
   return (
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
@@ -45,7 +52,9 @@ function AvatarFallback({
         className,
       )}
       {...props}
-    />
+    >
+      {content}
+    </AvatarPrimitive.Fallback>
   );
 }
 

@@ -1,0 +1,85 @@
+{/* image-display.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as Stories from './image-display.stories';
+
+<Meta of={Stories} />
+
+# ImageDisplay
+
+Foundational image rendering molecule. Handles all four visual states of an image field: loaded, loading (shimmer), error (broken URL), and no image (null URL).
+
+**Molecule** &#8212; Canary | Import: `@/components/canary/molecules/image-display`
+
+---
+
+## Playground
+
+Adjust `imageUrl`, `entityTypeDisplayName`, and `propertyDisplayName` in the Controls panel.
+
+<Canvas of={Stories.Playground} />
+
+---
+
+## Visual States
+
+All four states rendered side-by-side.
+
+<Canvas of={Stories.AllStates} />
+
+---
+
+## Design Decision: No Border
+
+The container uses `bg-muted` as its background. No border is applied &#8212; the muted background
+provides sufficient contrast even for white product images.
+
+<Canvas of={Stories.WhiteImageContrast} />
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Category</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>imageUrl</code></td>
+      <td>Runtime</td>
+      <td><code>string | null</code></td>
+      <td>Required</td>
+      <td>Image URL. <code>null</code> shows initials without an error badge (&#8220;no image&#8221; state). A string that fails to load shows initials with an error badge.</td>
+    </tr>
+    <tr>
+      <td><code>entityTypeDisplayName</code></td>
+      <td>Init</td>
+      <td><code>string</code></td>
+      <td>Required</td>
+      <td>Display name of the entity type (e.g. &#8220;Item&#8221;). Used to derive initials shown in the placeholder. &#8220;Item&#8221; &#8594; &#8220;I&#8221;, &#8220;Spare Part&#8221; &#8594; &#8220;SP&#8221;.</td>
+    </tr>
+    <tr>
+      <td><code>propertyDisplayName</code></td>
+      <td>Init</td>
+      <td><code>string</code></td>
+      <td>Required</td>
+      <td>Display name of the image property (e.g. &#8220;Product Image&#8221;). Reserved for tooltips and accessibility labels in future iterations.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { ImageDisplay } from '@/components/canary/molecules/image-display';
+// or
+import type { ImageDisplayProps } from '@/components/canary/molecules/image-display';
+```

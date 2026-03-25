@@ -124,6 +124,39 @@ Compose the sub-components explicitly to control what appears in each slot:
 
 ---
 
+## entityName &#8212; Auto-computed initials
+
+Pass `entityName` to `AvatarFallback` to have initials computed automatically via `getInitials`. This is an alternative to providing `children` manually; if both are present, `children` wins.
+
+```tsx
+<Avatar>
+  <AvatarImage src={user.avatarUrl} alt={user.name} />
+  <AvatarFallback entityName={user.name} />
+</Avatar>
+```
+
+`getInitials` returns the first letter of up to two words, uppercased. An empty or whitespace-only name returns `?`.
+
+<Canvas of={AvatarStories.InitialsFromName} />
+
+### All sizes with image
+
+<Canvas of={AvatarStories.AllSizesWithImage} />
+
+### All sizes with fallback
+
+<Canvas of={AvatarStories.AllSizesWithFallback} />
+
+### All sizes with badge
+
+<Canvas of={AvatarStories.AllSizesWithBadge} />
+
+### Image load error showing fallback
+
+<Canvas of={AvatarStories.ImageLoadError} />
+
+---
+
 ## Props &#8212; Avatar
 
 <table>
@@ -155,7 +188,26 @@ Compose the sub-components explicitly to control what appears in each slot:
 
 `AvatarImage` accepts all `React.ComponentProps` of Radix `Avatar.Image` (including `src` and `alt`).
 
-`AvatarFallback` accepts all `React.ComponentProps` of Radix `Avatar.Fallback`.
+`AvatarFallback` accepts all `React.ComponentProps` of Radix `Avatar.Fallback`, plus:
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>entityName</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>When provided and <code>children</code> is absent, auto-computes initials via <code>getInitials</code>. An empty string produces <code>?</code>.</td>
+    </tr>
+  </tbody>
+</table>
 
 ---
 
