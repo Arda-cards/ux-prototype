@@ -28,7 +28,7 @@ vi.mock('@/components/canary/molecules/image-preview-editor/image-preview-editor
       </span>
       <button
         onClick={() =>
-          onCropChange({ pixelCrop: { x: 0, y: 0, width: 0, height: 0 }, zoom: 1, rotation: 0 })
+          onCropChange({ pixelCrop: { x: 0, y: 0, width: 100, height: 100 }, zoom: 1, rotation: 0 })
         }
       >
         crop
@@ -99,6 +99,10 @@ vi.mock('@/components/canary/atoms/copyright-acknowledgment/copyright-acknowledg
   ),
 }));
 
+vi.mock('@/types/canary/utilities/get-cropped-image', () => ({
+  getCroppedImage: vi.fn().mockResolvedValue(new Blob(['cropped'], { type: 'image/jpeg' })),
+}));
+
 // --- Test config ---
 
 const CONFIG: ImageFieldConfig = {
@@ -136,7 +140,7 @@ describe('ImageUploadDialog', () => {
     expect(screen.queryByTestId('image-drop-zone')).not.toBeInTheDocument();
   });
 
-  it('renders ImageDropZone in EmptyImage state', () => {
+  it('renders ImageDropZone in EmptyImage state (no existingImageUrl)', () => {
     renderDialog();
     expect(screen.getByTestId('image-drop-zone')).toBeInTheDocument();
   });
@@ -301,8 +305,14 @@ describe('ImageUploadDialog', () => {
     }
   });
 
-  it('comparison layout shown when existingImageUrl set', async () => {
+  it('comparison layout shown when existingImageUrl set and new image provided', async () => {
     renderDialog({ existingImageUrl: 'https://example.com/existing.jpg' });
+    // When existingImageUrl is set, dialog opens in EditExisting state (no drop zone)
+    // To reach ProvidedImage with comparison, click "Upload New Image" first
+    fireEvent.click(screen.getByRole('button', { name: 'Upload New Image' }));
+    await waitFor(() => {
+      expect(screen.getByTestId('image-drop-zone')).toBeInTheDocument();
+    });
     fireEvent.click(screen.getByText('drop file'));
     await waitFor(() => {
       expect(screen.getByTestId('image-comparison-layout')).toBeInTheDocument();
@@ -315,6 +325,115 @@ describe('ImageUploadDialog', () => {
     await waitFor(() => {
       expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
       expect(screen.queryByTestId('image-comparison-layout')).not.toBeInTheDocument();
+    });
+  });
+
+  // --- EditExisting state tests ---
+
+  describe('EditExisting state (existingImageUrl provided)', () => {
+    const EXISTING_URL = 'https://example.com/existing.jpg';
+
+    it('opens in EditExisting state when existingImageUrl is provided', () => {
+      renderDialog({ existingImageUrl: EXISTING_URL });
+      expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
+      expect(screen.queryByTestId('image-drop-zone')).not.toBeInTheDocument();
+    });
+
+    it('shows the existing image URL in ImagePreviewEditor', () => {
+      renderDialog({ existingImageUrl: EXISTING_URL });
+      expect(screen.getByTestId('preview-src')).toHaveTextContent(EXISTING_URL);
+    });
+
+    it('does NOT show CopyrightAcknowledgment in EditExisting state', () => {
+      renderDialog({ existingImageUrl: EXISTING_URL });
+      expect(screen.queryByTestId('copyright-acknowledgment')).not.toBeInTheDocument();
+    });
+
+    it('shows "Upload New Image", "Cancel", and "Confirm" buttons in EditExisting state', () => {
+      renderDialog({ existingImageUrl: EXISTING_URL });
+      expect(screen.getByRole('button', { name: 'Upload New Image' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Confirm' })).toBeInTheDocument();
+    });
+
+    it('shows dialog title as "Edit Product Image" in EditExisting state', () => {
+      renderDialog({ existingImageUrl: EXISTING_URL });
+      expect(screen.getByText('Edit Product Image')).toBeInTheDocument();
+    });
+
+    it('"Upload New Image" button transitions to EmptyImage (shows drop zone)', async () => {
+      renderDialog({ existingImageUrl: EXISTING_URL });
+      fireEvent.click(screen.getByRole('button', { name: 'Upload New Image' }));
+      await waitFor(() => {
+        expect(screen.getByTestId('image-drop-zone')).toBeInTheDocument();
+        expect(screen.queryByTestId('image-preview-editor')).not.toBeInTheDocument();
+      });
+    });
+
+    it('"Cancel" in EditExisting calls onCancel', () => {
+      const onCancel = vi.fn();
+      renderDialog({ existingImageUrl: EXISTING_URL, onCancel });
+      fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+      expect(onCancel).toHaveBeenCalledOnce();
+    });
+
+    it('"Confirm" in EditExisting triggers upload (enters Uploading state)', async () => {
+      vi.useFakeTimers();
+      try {
+        renderDialog({ existingImageUrl: EXISTING_URL });
+
+        await act(async () => {
+          fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+          await Promise.resolve();
+        });
+
+        await act(async () => {
+          vi.advanceTimersByTime(100);
+          await Promise.resolve();
+        });
+
+        expect(screen.getByRole('progressbar')).toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('"Confirm" in EditExisting calls onConfirm after upload completes', async () => {
+      vi.useFakeTimers();
+      try {
+        const { mockUpload } = await import('@/components/canary/__mocks__/image-story-data');
+        (mockUpload as ReturnType<typeof vi.fn>).mockResolvedValue(
+          'https://cdn.example.com/images/mock-uploaded.jpg',
+        );
+        const onConfirm = vi.fn();
+        renderDialog({ existingImageUrl: EXISTING_URL, onConfirm });
+
+        await act(async () => {
+          fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+          await Promise.resolve();
+        });
+
+        await act(async () => {
+          vi.advanceTimersByTime(2000);
+          await Promise.resolve();
+        });
+
+        await act(async () => {
+          await Promise.resolve();
+        });
+
+        expect(onConfirm).toHaveBeenCalledWith(
+          expect.objectContaining({ imageUrl: 'https://cdn.example.com/images/mock-uploaded.jpg' }),
+        );
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('opens in EmptyImage state when existingImageUrl is null', () => {
+      renderDialog({ existingImageUrl: null });
+      expect(screen.getByTestId('image-drop-zone')).toBeInTheDocument();
+      expect(screen.queryByTestId('image-preview-editor')).not.toBeInTheDocument();
     });
   });
 });

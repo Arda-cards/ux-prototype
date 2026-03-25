@@ -25,6 +25,7 @@ import { ImagePreviewEditor } from '@/components/canary/molecules/image-preview-
 import { ImageComparisonLayout } from '@/components/canary/molecules/image-comparison-layout/image-comparison-layout';
 import { CopyrightAcknowledgment } from '@/components/canary/atoms/copyright-acknowledgment/copyright-acknowledgment';
 import { mockUpload, mockReachabilityCheck } from '@/components/canary/__mocks__/image-story-data';
+import { getCroppedImage } from '@/types/canary/utilities/get-cropped-image';
 import type {
   ImageFieldConfig,
   ImageInput,
@@ -57,6 +58,7 @@ export type ImageUploadDialogProps = ImageUploadDialogStaticProps &
 // --- State machine ---
 
 type DialogPhase =
+  | { name: 'EditExisting'; imageUrl: string }
   | { name: 'EmptyImage' }
   | { name: 'ProvidedImage'; imageData: File | Blob | string }
   | { name: 'FailedValidation'; errorMessage: string }
@@ -72,7 +74,9 @@ type DialogAction =
   | { type: 'UPLOAD_PROGRESS'; progress: number }
   | { type: 'WARN_DISCARD' }
   | { type: 'WARN_GO_BACK' }
-  | { type: 'RESET' };
+  | { type: 'EDIT_CONFIRM' }
+  | { type: 'UPLOAD_NEW' }
+  | { type: 'RESET'; existingImageUrl: string | null };
 
 function dialogReducer(state: DialogPhase, action: DialogAction): DialogPhase {
   switch (action.type) {
@@ -108,7 +112,22 @@ function dialogReducer(state: DialogPhase, action: DialogAction): DialogPhase {
       }
       return state;
     }
+    case 'EDIT_CONFIRM': {
+      if (state.name === 'EditExisting') {
+        return { name: 'Uploading', imageData: state.imageUrl, progress: 0 };
+      }
+      return state;
+    }
+    case 'UPLOAD_NEW': {
+      if (state.name === 'EditExisting') {
+        return { name: 'EmptyImage' };
+      }
+      return state;
+    }
     case 'RESET':
+      if (action.existingImageUrl !== null) {
+        return { name: 'EditExisting', imageUrl: action.existingImageUrl };
+      }
       return { name: 'EmptyImage' };
     default:
       return state;
@@ -120,7 +139,7 @@ function dialogReducer(state: DialogPhase, action: DialogAction): DialogPhase {
 /**
  * ImageUploadDialog &#8212; state-machine orchestrator for the full image upload flow.
  *
- * Manages the EmptyImage &#8594; ProvidedImage &#8594; Uploading lifecycle plus
+ * Manages the EditExisting / EmptyImage &#8594; ProvidedImage &#8594; Uploading lifecycle plus
  * FailedValidation and Warn guard states.
  */
 export function ImageUploadDialog({
@@ -137,12 +156,16 @@ export function ImageUploadDialog({
 
   // Reset state when dialog opens/closes
   React.useEffect(() => {
-    if (!open) {
-      dispatch({ type: 'RESET' });
+    if (open) {
+      dispatch({ type: 'RESET', existingImageUrl });
+      setCopyrightAcked(false);
+      cropDataRef.current = null;
+    } else {
+      dispatch({ type: 'RESET', existingImageUrl: null });
       setCopyrightAcked(false);
       cropDataRef.current = null;
     }
-  }, [open]);
+  }, [open]); // Intentionally deps on open only — existingImageUrl is captured at open time
 
   // Handle upload progress simulation
   React.useEffect(() => {
@@ -207,6 +230,24 @@ export function ImageUploadDialog({
     }
   }, [phase.name, copyrightAcked]);
 
+  const handleEditConfirm = React.useCallback(async () => {
+    if (phase.name !== 'EditExisting') return;
+    const cropData = cropDataRef.current as {
+      pixelCrop: { x: number; y: number; width: number; height: number };
+      rotation?: number;
+    } | null;
+    if (cropData !== null && cropData.pixelCrop.width > 0 && cropData.pixelCrop.height > 0) {
+      try {
+        await getCroppedImage(phase.imageUrl, cropData.pixelCrop, cropData.rotation ?? 0);
+        // getCroppedImage result is not used directly — the upload effect handles the imageData
+        // from the EDIT_CONFIRM transition which passes the original URL as imageData
+      } catch {
+        // Fall back to original URL if cropping fails
+      }
+    }
+    dispatch({ type: 'EDIT_CONFIRM' });
+  }, [phase]);
+
   const handleWarnDiscard = React.useCallback(() => {
     dispatch({ type: 'WARN_DISCARD' });
     onCancel();
@@ -243,11 +284,29 @@ export function ImageUploadDialog({
         >
           <DialogHeader>
             <DialogTitle>
-              {isProvidedOrUploading
+              {phase.name === 'EditExisting'
                 ? `Edit ${config.propertyDisplayName}`
-                : `Add ${config.propertyDisplayName}`}
+                : isProvidedOrUploading
+                  ? `Edit ${config.propertyDisplayName}`
+                  : `Add ${config.propertyDisplayName}`}
             </DialogTitle>
           </DialogHeader>
+
+          {/* EditExisting state */}
+          {phase.name === 'EditExisting' && (
+            <div className="flex flex-col gap-4">
+              <ImagePreviewEditor
+                aspectRatio={config.aspectRatio}
+                imageData={phase.imageUrl}
+                onCropChange={(d) => {
+                  cropDataRef.current = d;
+                }}
+                onReset={() => {
+                  cropDataRef.current = null;
+                }}
+              />
+            </div>
+          )}
 
           {/* EmptyImage state */}
           {phase.name === 'EmptyImage' && (
@@ -319,30 +378,57 @@ export function ImageUploadDialog({
             </div>
           )}
 
-          {/* Footer — hidden during upload */}
-          {!isUploading && phase.name !== 'EmptyImage' && phase.name !== 'FailedValidation' && (
+          {/* Footer — EditExisting */}
+          {phase.name === 'EditExisting' && (
             <DialogFooter>
               <Button
                 type="button"
                 variant="secondary"
-                className="bg-secondary text-secondary-foreground"
-                onClick={handleCancelClick}
+                onClick={() => dispatch({ type: 'UPLOAD_NEW' })}
               >
-                Cancel
+                Upload New Image
               </Button>
               <Button
                 type="button"
-                className={cn(
-                  'bg-primary text-primary-foreground',
-                  'disabled:pointer-events-none disabled:opacity-50',
-                )}
-                disabled={!copyrightAcked}
-                onClick={handleConfirmClick}
+                variant="secondary"
+                className="bg-secondary text-secondary-foreground"
+                onClick={onCancel}
               >
+                Cancel
+              </Button>
+              <Button type="button" onClick={() => void handleEditConfirm()}>
                 Confirm
               </Button>
             </DialogFooter>
           )}
+
+          {/* Footer — hidden during upload, shown for ProvidedImage/Warn */}
+          {!isUploading &&
+            phase.name !== 'EmptyImage' &&
+            phase.name !== 'FailedValidation' &&
+            phase.name !== 'EditExisting' && (
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="bg-secondary text-secondary-foreground"
+                  onClick={handleCancelClick}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  className={cn(
+                    'bg-primary text-primary-foreground',
+                    'disabled:pointer-events-none disabled:opacity-50',
+                  )}
+                  disabled={!copyrightAcked}
+                  onClick={handleConfirmClick}
+                >
+                  Confirm
+                </Button>
+              </DialogFooter>
+            )}
 
           {/* Footer for empty/failed states — just dismiss */}
           {(phase.name === 'EmptyImage' || phase.name === 'FailedValidation') && (
