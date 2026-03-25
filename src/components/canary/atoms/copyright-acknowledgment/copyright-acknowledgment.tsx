@@ -1,5 +1,3 @@
-import * as React from 'react';
-
 import { cn } from '@/types/canary/utilities/utils';
 import { Checkbox } from '@/components/canary/primitives/checkbox';
 import { Label } from '@/components/canary/primitives/label';

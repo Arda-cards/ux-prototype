@@ -18,8 +18,8 @@ function Slider({
   return (
     <SliderPrimitive.Root
       data-slot="slider"
-      defaultValue={defaultValue}
-      value={value}
+      {...(defaultValue !== undefined && { defaultValue })}
+      {...(value !== undefined && { value })}
       min={min}
       max={max}
       className={cn(
@@ -30,7 +30,7 @@ function Slider({
     >
       <SliderPrimitive.Track
         data-slot="slider-track"
-        className="relative grow overflow-hidden rounded-full bg-secondary h-1.5 w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-1.5"
+        className="relative grow overflow-hidden rounded-full bg-border h-1.5 w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-1.5"
       >
         <SliderPrimitive.Range
           data-slot="slider-range"

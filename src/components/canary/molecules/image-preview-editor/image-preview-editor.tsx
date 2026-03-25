@@ -128,6 +128,8 @@ export function ImagePreviewEditor({
             image={imageSrc}
             crop={crop}
             zoom={zoom}
+            minZoom={0.5}
+            maxZoom={3}
             rotation={rotation}
             aspect={aspectRatio}
             onCropChange={setCrop}
@@ -144,7 +146,7 @@ export function ImagePreviewEditor({
         <div className="flex items-center gap-3">
           <span className="text-sm font-medium text-muted-foreground shrink-0">Zoom</span>
           <Slider
-            min={1}
+            min={0.5}
             max={3}
             step={0.1}
             value={[zoom]}

@@ -80,7 +80,9 @@ describe('ImageComparisonLayout', () => {
     expect(images.length).toBeGreaterThan(0);
 
     // Trigger error on the broken image — initials placeholder should appear
-    fireEvent.error(images[0]);
+    const firstImage = images[0];
+    expect(firstImage).toBeInTheDocument();
+    fireEvent.error(firstImage!);
 
     // "Item" → initials "I"
     const initialsEls = screen.getAllByText('I');

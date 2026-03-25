@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { Eye, Pencil } from 'lucide-react';
 
 import { cn } from '@/types/canary/utilities/utils';

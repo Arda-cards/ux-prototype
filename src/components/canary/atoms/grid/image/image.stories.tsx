@@ -77,7 +77,7 @@ export const Playground: Story = {
   },
   args: {
     config: ITEM_IMAGE_CONFIG,
-    value: MOCK_ITEMS[0].imageUrl,
+    value: MOCK_ITEMS[0]?.imageUrl ?? null,
     data: {},
   },
   render: (args) => (

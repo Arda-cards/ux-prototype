@@ -55,6 +55,10 @@ export const DisabledUnchecked: Story = {
 };
 
 export const InDialogContext: Story = {
+  args: {
+    acknowledged: false,
+    onAcknowledge: fn(),
+  },
   render: () => {
     const [acknowledged, setAcknowledged] = useState(false);
     return (

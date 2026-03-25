@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useDropzone } from 'react-dropzone';
+import { useDropzone, type FileRejection } from 'react-dropzone';
 
 import { cn } from '@/types/canary/utilities/utils';
 import { Button } from '@/components/canary/primitives/button';
@@ -43,29 +43,33 @@ export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDrop
   const [error, setError] = React.useState<string | null>(null);
 
   const onDrop = React.useCallback(
-    (acceptedFiles: File[], rejectedFiles: { file: File; errors: { code: string }[] }[]) => {
+    (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
       setError(null);
 
       if (rejectedFiles.length > 0) {
         const rejected = rejectedFiles[0];
-        const mimeError = rejected.errors.find((e) => e.code === 'file-invalid-type');
-        if (mimeError) {
-          const formats = acceptedFormats.join(', ');
-          setError(`Invalid file type. Accepted formats: ${formats}`);
-          onInput({ type: 'error', message: `Invalid file type. Accepted formats: ${formats}` });
-          return;
+        if (rejected !== undefined) {
+          const mimeError = rejected.errors.find((e) => e.code === 'file-invalid-type');
+          if (mimeError) {
+            const formats = acceptedFormats.join(', ');
+            setError(`Invalid file type. Accepted formats: ${formats}`);
+            onInput({ type: 'error', message: `Invalid file type. Accepted formats: ${formats}` });
+            return;
+          }
         }
       }
 
       if (acceptedFiles.length > 0) {
         const file = acceptedFiles[0];
-        if (!acceptedFormats.includes(file.type as ImageMimeType)) {
-          const formats = acceptedFormats.join(', ');
-          setError(`Invalid file type. Accepted formats: ${formats}`);
-          onInput({ type: 'error', message: `Invalid file type. Accepted formats: ${formats}` });
-          return;
+        if (file !== undefined) {
+          if (!acceptedFormats.includes(file.type as ImageMimeType)) {
+            const formats = acceptedFormats.join(', ');
+            setError(`Invalid file type. Accepted formats: ${formats}`);
+            onInput({ type: 'error', message: `Invalid file type. Accepted formats: ${formats}` });
+            return;
+          }
+          onInput({ type: 'file', file });
         }
-        onInput({ type: 'file', file });
       }
     },
     [acceptedFormats, onInput],
