@@ -479,7 +479,7 @@ export const DataGrid = forwardRef(
       ...(enableCellEditing
         ? {
             singleClickEdit: false,
-            stopEditingWhenCellsLoseFocus: true,
+            stopEditingWhenCellsLoseFocus: false,
             enterNavigatesVertically: true,
             enterNavigatesVerticallyAfterEdit: true,
           }

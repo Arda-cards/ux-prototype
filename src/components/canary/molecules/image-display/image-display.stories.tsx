@@ -211,16 +211,19 @@ export const DoubleClickToEdit: Story = {
     return (
       <div className="flex flex-col items-center gap-4">
         <p className="text-sm text-muted-foreground max-w-xs text-center">
-          Double-click the thumbnail to open the ImageUploadDialog. Confirm to change the image;
-          Cancel to keep the current one.
+          Double-click the thumbnail (or focus it and press Enter) to open the ImageUploadDialog.
+          Confirm to change the image; Cancel to keep the current one.
         </p>
 
-        {/* Clickable thumbnail */}
+        {/* Clickable thumbnail — double-click or Enter to edit */}
         <button
           type="button"
           onDoubleClick={() => setDialogOpen(true)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') setDialogOpen(true);
+          }}
           className="w-32 h-32 rounded-lg overflow-hidden cursor-pointer border-2 border-transparent hover:border-primary transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          aria-label="Edit image"
+          aria-label="Edit image — double-click or press Enter"
         >
           <ImageDisplay
             imageUrl={imageUrl}

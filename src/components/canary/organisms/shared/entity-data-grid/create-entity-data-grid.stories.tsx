@@ -966,8 +966,9 @@ const imageDemoCols: ColDef<ImageDemoEntity>[] = [
     cellRenderer: ImageCellDisplay,
     cellRendererParams: { config: IMAGE_DEMO_CONFIG },
     cellEditor: createImageCellEditor(IMAGE_DEMO_CONFIG),
+    editable: true,
   },
-  { field: 'name', headerName: 'Name', flex: 1 },
+  { field: 'name', headerName: 'Name', editable: true, flex: 1 },
   { field: 'sku', headerName: 'SKU', width: 120 },
   {
     field: 'unitCost',
@@ -1061,11 +1062,14 @@ const { Component: ImageDemoGrid } = createEntityDataGrid<ImageDemoEntity>({
  * - **Row 3**: No image (null) &#8212; initials placeholder "P"
  * - **Row 4**: Broken URL &#8212; initials + error badge
  */
-export const WithImageColumn: StoryObj<typeof ImageDemoGrid> = {
+export const WithImageColumn: Story = {
   render: () => (
-    <div className="ag-theme-quartz" style={{ height: 320, width: '100%' }}>
-      <ImageDemoGrid data={imageDemoData} loading={false} enableCellEditing={true} />
-    </div>
+    <ImageDemoGrid
+      data={imageDemoData}
+      loading={false}
+      enableCellEditing={true}
+      activeTab="image-demo"
+    />
   ),
 };
 
