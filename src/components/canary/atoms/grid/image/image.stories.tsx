@@ -9,7 +9,7 @@ import {
   type MockItem,
 } from '@/components/canary/__mocks__/image-story-data';
 import { ImageCellDisplay } from './image-cell-display';
-import { ImageCellEditor, createImageCellEditor } from './image-cell-editor';
+import { createImageCellEditor } from './image-cell-editor';
 
 // ============================================================================
 // Column definitions
@@ -83,47 +83,15 @@ export const HoverPreview: Story = {
 };
 
 // ============================================================================
-// 4. HoverActionIcons — eye + pencil affordances
-// ============================================================================
-
-export const HoverActionIcons: Story = {
-  render: () => (
-    <div>
-      <p className="mb-3 text-sm text-muted-foreground">
-        Hover over an image cell to reveal the Eye (inspect) and Pencil (edit) action icons. The Eye
-        icon is suppressed for rows with no image (row 3: Spring Pin).
-      </p>
-      <MiniGrid rows={MOCK_ITEMS} />
-    </div>
-  ),
-};
-
-// ============================================================================
-// 5. InspectorFromGrid — hover then click Eye (placeholder)
-// ============================================================================
-
-export const InspectorFromGrid: Story = {
-  render: () => (
-    <div>
-      <p className="mb-3 text-sm text-muted-foreground">
-        Hover over an image cell to reveal the Eye icon, then click it. Full inspector panel will be
-        wired in a future phase.
-      </p>
-      <MiniGrid rows={MOCK_ITEMS.slice(0, 1)} height={120} />
-    </div>
-  ),
-};
-
-// ============================================================================
-// 6. DoubleClickEdit — double-click to open editor (placeholder)
+// 4. DoubleClickEdit — double-click to open ImageUploadDialog
 // ============================================================================
 
 export const DoubleClickEdit: Story = {
   render: () => (
     <div>
       <p className="mb-3 text-sm text-muted-foreground">
-        Double-clicking an image cell triggers the editor. ImageUploadDialog will be wired in a
-        future phase; for now the editor cancels immediately.
+        Double-click an image cell to open the ImageUploadDialog. The dialog shows the current image
+        for comparison. Confirm commits a new URL; Cancel discards.
       </p>
       <div className="ag-theme-quartz" style={{ height: 150, width: '100%' }}>
         <AgGridReact<MockItem>
@@ -134,7 +102,7 @@ export const DoubleClickEdit: Story = {
               headerName: 'Image',
               cellRenderer: ImageCellDisplay,
               cellRendererParams: { config: ITEM_IMAGE_CONFIG },
-              cellEditor: ImageCellEditor,
+              cellEditor: createImageCellEditor(ITEM_IMAGE_CONFIG),
               editable: true,
               width: 60,
             },
@@ -149,15 +117,14 @@ export const DoubleClickEdit: Story = {
 };
 
 // ============================================================================
-// 7. KeyboardEdit — navigate then Enter to edit (placeholder)
+// 5. KeyboardEdit — Tab + Enter to open ImageUploadDialog
 // ============================================================================
 
 export const KeyboardEdit: Story = {
   render: () => (
     <div>
       <p className="mb-3 text-sm text-muted-foreground">
-        Tab to an image cell and press Enter to trigger edit mode. The editor cancels immediately
-        until ImageUploadDialog is wired.
+        Tab to an image cell and press Enter to open the ImageUploadDialog.
       </p>
       <div className="ag-theme-quartz" style={{ height: 150, width: '100%' }}>
         <AgGridReact<MockItem>
@@ -168,7 +135,7 @@ export const KeyboardEdit: Story = {
               headerName: 'Image',
               cellRenderer: ImageCellDisplay,
               cellRendererParams: { config: ITEM_IMAGE_CONFIG },
-              cellEditor: ImageCellEditor,
+              cellEditor: createImageCellEditor(ITEM_IMAGE_CONFIG),
               editable: true,
               width: 60,
             },
@@ -183,10 +150,10 @@ export const KeyboardEdit: Story = {
 };
 
 // ============================================================================
-// 8. ErrorCellNoInspector — broken image, Eye suppressed
+// 6. ErrorStates — broken URL and null image rows
 // ============================================================================
 
-export const ErrorCellNoInspector: Story = {
+export const ErrorStates: Story = {
   render: () => {
     const errorRows: MockItem[] = [
       {

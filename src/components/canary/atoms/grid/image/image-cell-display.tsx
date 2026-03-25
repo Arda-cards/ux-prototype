@@ -1,5 +1,3 @@
-import { Eye, Pencil } from 'lucide-react';
-
 import { cn } from '@/types/canary/utilities/utils';
 import type { ImageFieldConfig } from '@/types/canary/utilities/image-field-config';
 import { ImageDisplay } from '@/components/canary/molecules/image-display/image-display';
@@ -44,10 +42,7 @@ export type ImageCellDisplayProps = ImageCellDisplayStaticProps &
  */
 export function ImageCellDisplay({ config, value }: ImageCellDisplayProps) {
   return (
-    <div
-      data-slot="image-cell-display"
-      className={cn('group relative flex items-center justify-center w-8 h-8')}
-    >
+    <div data-slot="image-cell-display" className={cn('flex items-center justify-center w-8 h-8')}>
       <ImageHoverPreview
         imageUrl={value}
         entityTypeDisplayName={config.entityTypeDisplayName}
@@ -61,47 +56,6 @@ export function ImageCellDisplay({ config, value }: ImageCellDisplayProps) {
           />
         </div>
       </ImageHoverPreview>
-
-      {/* Hover action icons overlay */}
-      <div
-        className={cn(
-          'absolute inset-0 flex items-center justify-center gap-0.5',
-          'opacity-0 group-hover:opacity-100',
-          'transition-opacity duration-150',
-          'pointer-events-none',
-        )}
-      >
-        {value !== null && (
-          <button
-            type="button"
-            aria-label="Inspect image"
-            className={cn(
-              'pointer-events-auto',
-              'flex items-center justify-center',
-              'w-3.5 h-3.5 rounded',
-              'bg-black/50 text-white',
-              'hover:bg-black/70',
-            )}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Eye className="w-2.5 h-2.5" aria-hidden="true" />
-          </button>
-        )}
-        <button
-          type="button"
-          aria-label="Edit image"
-          className={cn(
-            'pointer-events-auto',
-            'flex items-center justify-center',
-            'w-3.5 h-3.5 rounded',
-            'bg-black/50 text-white',
-            'hover:bg-black/70',
-          )}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Pencil className="w-2.5 h-2.5" aria-hidden="true" />
-        </button>
-      </div>
     </div>
   );
 }
