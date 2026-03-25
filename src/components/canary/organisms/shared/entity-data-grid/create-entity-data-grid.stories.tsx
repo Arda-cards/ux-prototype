@@ -6,6 +6,7 @@ import type { ColDef } from 'ag-grid-community';
 import { createEntityDataGrid, type EntityDataGridRef } from './create-entity-data-grid';
 import { storyStepDelay } from './story-step-delay';
 import { ImageCellDisplay } from '@/components/canary/atoms/grid/image/image-cell-display';
+import { createImageCellEditor } from '@/components/canary/atoms/grid/image/image-cell-editor';
 import type { ImageFieldConfig } from '@/types/canary/utilities/image-field-config';
 
 // ============================================================================
@@ -964,6 +965,7 @@ const imageDemoCols: ColDef<ImageDemoEntity>[] = [
     sortable: false,
     cellRenderer: ImageCellDisplay,
     cellRendererParams: { config: IMAGE_DEMO_CONFIG },
+    cellEditor: createImageCellEditor(IMAGE_DEMO_CONFIG),
   },
   { field: 'name', headerName: 'Name', flex: 1 },
   { field: 'sku', headerName: 'SKU', width: 120 },
@@ -1020,29 +1022,49 @@ const imageDemoData: ImageDemoEntity[] = [
   },
 ];
 
+const IMAGE_EDITABLE_FIELDS = new Set(['imageUrl']);
+
 const { Component: ImageDemoGrid } = createEntityDataGrid<ImageDemoEntity>({
   displayName: 'ImageDemoGrid',
   persistenceKeyPrefix: 'canary-image-demo-grid',
   columnDefs: imageDemoCols,
   defaultColDef: { sortable: true, filter: false, resizable: true },
   getEntityId: (e) => e.id,
+  enhanceEditableColumnDefs: (defs, { enabled }) => {
+    if (!enabled) return defs;
+    return defs.map((col) => {
+      const key = (col.field as string) || '';
+      if (!IMAGE_EDITABLE_FIELDS.has(key)) return col;
+      return { ...col, editable: true };
+    });
+  },
 });
 
 /**
- * Entity grid with an image column. Demonstrates ImageCellDisplay integrated
- * into the entity data grid factory:
+ * Entity grid with an image column. Demonstrates the full ImageCellDisplay +
+ * ImageCellEditor integration inside the entity data grid factory:
  *
- * - **Row 1, 2, 5, 6**: Loaded images &#8212; hover to see the 256&#215;256
- *   preview popover; hover action icons (eye, pencil) appear on the thumbnail.
- * - **Row 3**: No image (null) &#8212; shows initials placeholder "P" (for
- *   "Part"); eye icon is suppressed on hover.
- * - **Row 4**: Broken URL &#8212; shows initials with error badge; eye icon
- *   suppressed.
+ * **Display behaviors (hover):**
+ * - Hover a loaded image to see a 256&#215;256 preview popover (500ms delay).
+ * - Action icons (eye, pencil) appear on hover.
+ * - Eye icon is suppressed when the image URL is null or broken.
+ *
+ * **Editing behaviors (double-click / Enter):**
+ * - Double-click or press Enter on an image cell to open ImageUploadDialog.
+ * - The dialog shows the current image for comparison (if one exists).
+ * - Confirm an upload to commit a new URL to the cell.
+ * - Cancel to discard without changing the cell value.
+ * - Single click selects the row (suppressClickEdit is set).
+ *
+ * **Row states:**
+ * - **Rows 1, 2, 5, 6**: Loaded images
+ * - **Row 3**: No image (null) &#8212; initials placeholder "P"
+ * - **Row 4**: Broken URL &#8212; initials + error badge
  */
 export const WithImageColumn: StoryObj<typeof ImageDemoGrid> = {
   render: () => (
     <div className="ag-theme-quartz" style={{ height: 320, width: '100%' }}>
-      <ImageDemoGrid data={imageDemoData} loading={false} enableCellEditing={false} />
+      <ImageDemoGrid data={imageDemoData} loading={false} enableCellEditing={true} />
     </div>
   ),
 };
