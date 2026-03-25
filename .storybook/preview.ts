@@ -7,14 +7,36 @@ import { handlers } from '@frontend/mocks/handlers';
 import '../src/styles/globals.css';
 import '../src/styles/ag-theme-arda.css';
 
-initialize({
-  onUnhandledRequest: 'bypass',
-  serviceWorker: { url: './mockServiceWorker.js' },
-});
+// MSW initialization — wrapped in try-catch so stories still render when the
+// service worker can't register (e.g., Playwright headless, cross-origin iframes,
+// or environments without ServiceWorker support).
+try {
+  initialize({
+    onUnhandledRequest: 'bypass',
+    serviceWorker: { url: './mockServiceWorker.js' },
+  });
+} catch {
+  // Service worker registration failed — MSW handlers won't intercept requests
+  // but stories will still render with real network calls or static data.
+  console.warn(
+    '[MSW] Service worker initialization failed — stories will render without mock handlers.',
+  );
+}
+
+// Wrap mswLoader so that ServiceWorker failures (e.g., in Playwright headless,
+// cross-origin iframes) don't crash story rendering.
+const safeMswLoader: typeof mswLoader = async (context) => {
+  try {
+    return await mswLoader(context);
+  } catch {
+    // MSW loader failed — story renders without mock interception
+    return {};
+  }
+};
 
 const preview: Preview = {
   decorators: [withAgentation, withFullAppProviders],
-  loaders: [mswLoader],
+  loaders: [safeMswLoader],
   initialGlobals: {
     agentationEnabled: false,
   },
