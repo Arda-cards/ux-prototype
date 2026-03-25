@@ -32,9 +32,11 @@ export type ImageCellEditorProps = ImageCellEditorStaticProps &
     config: ImageFieldConfig;
   };
 
-/** Ref handle exposing getValue for AG Grid. */
+/** Ref handle exposing getValue and isPopup for AG Grid. */
 export interface ImageCellEditorHandle {
   getValue: () => string | null;
+  /** Tells AG Grid this is a popup editor — prevents focus-loss stop editing. */
+  isPopup: () => boolean;
 }
 
 /**
@@ -46,12 +48,15 @@ export interface ImageCellEditorHandle {
  * `stopEditing(false)` commits the change. On cancel, `stopEditing(true)`
  * discards.
  *
+ * Declares `isPopup() => true` so AG Grid treats this as a popup editor.
+ * This prevents the grid from stopping editing when the Radix Dialog
+ * portal moves focus to `document.body`.
+ *
  * Usage in column definitions:
  * ```ts
  * {
  *   field: 'imageUrl',
  *   cellEditor: createImageCellEditor(ITEM_IMAGE_CONFIG),
- *   // AG Grid double-clicks to edit by default; no suppressClickEdit needed
  * }
  * ```
  */
@@ -62,13 +67,12 @@ export const ImageCellEditor = forwardRef<ImageCellEditorHandle, ImageCellEditor
 
     useImperativeHandle(ref, () => ({
       getValue: () => currentValue,
+      isPopup: () => true,
     }));
 
     const handleConfirm = (result: ImageUploadResult) => {
       setCurrentValue(result.imageUrl);
       setDialogOpen(false);
-      // Use setTimeout to let React flush the state update before AG Grid
-      // reads getValue() via the ref.
       setTimeout(() => stopEditing?.(false), 0);
     };
 
@@ -102,22 +106,10 @@ ImageCellEditor.displayName = 'ImageCellEditor';
 
 /**
  * Factory helper for creating an image cell editor with a curried config.
- *
- * The factory captures the `ImageFieldConfig` at column-definition time and
- * injects it as a prop so the AG Grid runtime doesn't need to know about it.
- *
- * @example
- * ```ts
- * const colDef = {
- *   field: 'imageUrl',
- *   cellEditor: createImageCellEditor(ITEM_IMAGE_CONFIG),
- *   // AG Grid double-clicks to edit by default; no suppressClickEdit needed
- * };
- * ```
  */
 export function createImageCellEditor(config: ImageFieldConfig) {
   const WrappedEditor = forwardRef<ImageCellEditorHandle, ImageCellEditorRuntimeProps>(
-    (props, ref) => <ImageCellEditor {...props} config={config} ref={ref} />,
+    (props, editorRef) => <ImageCellEditor {...props} config={config} ref={editorRef} />,
   );
   WrappedEditor.displayName = `ImageCellEditor(${config.entityTypeDisplayName})`;
   return WrappedEditor;
