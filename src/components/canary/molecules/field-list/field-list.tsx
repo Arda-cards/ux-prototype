@@ -1,4 +1,4 @@
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 import { ReadOnlyField } from '../../atoms/read-only-field/read-only-field';
 
 // --- Interfaces ---

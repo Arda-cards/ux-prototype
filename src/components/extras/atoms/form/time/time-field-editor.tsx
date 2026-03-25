@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 
-import { cn } from '@/types/canary/utils';
-import { getBrowserTimezone, getTimezoneAbbreviation } from '@/types/canary/date-time';
+import { cn } from '@/types/canary/utilities/utils';
+import { getBrowserTimezone, getTimezoneAbbreviation } from '@/types/canary/utilities/date-time';
 import { FieldLabel, type FieldLabelProps } from '../field-label';
 
 /** Design-time configuration for time field editor. */

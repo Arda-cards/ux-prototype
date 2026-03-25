@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 import { Button } from '@/components/canary/atoms/button';
 import {
   DropdownMenu,

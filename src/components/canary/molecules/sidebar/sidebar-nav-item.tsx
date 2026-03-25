@@ -2,7 +2,7 @@
 
 import { type LucideIcon } from 'lucide-react';
 
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 import { SidebarMenuItem, SidebarMenuButton } from '@/components/canary/primitives/sidebar';
 import { Badge } from '../../atoms/badge/badge';
 

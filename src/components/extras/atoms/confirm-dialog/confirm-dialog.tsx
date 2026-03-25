@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useId, useRef } from 'react';
 
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 
 /** Design-time configuration. */
 export interface ArdaConfirmDialogStaticConfig {

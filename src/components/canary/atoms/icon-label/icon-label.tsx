@@ -1,5 +1,5 @@
 import { type LucideIcon } from 'lucide-react';
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 
 export interface IconLabelProps {
   icon: LucideIcon;

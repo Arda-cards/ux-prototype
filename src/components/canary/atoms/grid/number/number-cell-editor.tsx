@@ -1,6 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 
 /** Design-time configuration for number cell editor. */
 export interface NumberCellEditorStaticConfig {

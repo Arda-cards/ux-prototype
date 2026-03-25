@@ -1,5 +1,5 @@
 import { formatTime } from '@/components/extras/atoms/shared/formatters';
-import { getBrowserTimezone } from '@/types/canary/date-time';
+import { getBrowserTimezone } from '@/types/canary/utilities/date-time';
 
 /** Design-time configuration for time cell display. */
 export interface TimeCellDisplayStaticConfig {

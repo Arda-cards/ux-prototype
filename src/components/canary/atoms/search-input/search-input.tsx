@@ -1,6 +1,6 @@
 import { Search } from 'lucide-react';
 
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 import { Input } from '@/components/canary/primitives/input';
 
 // --- Interfaces ---

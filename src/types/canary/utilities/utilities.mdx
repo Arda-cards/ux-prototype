@@ -1,0 +1,184 @@
+{/* utilities.mdx */}
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Components/Canary/Utilities" />
+
+# Utilities
+
+Plain TypeScript functions shared across canary components. These have no React
+dependency and live under `src/types/canary/utilities/`.
+
+---
+
+## `getInitials`
+
+Derives display initials from an entity name string. Splits on whitespace,
+takes the first character of each word (up to two), and uppercases the result.
+
+**Import:**
+
+```ts
+import { getInitials } from '@arda-cards/design-system/canary';
+```
+
+**Signature:** `getInitials(name: string): string`
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Output</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>"Hex Bolt"</code></td>
+      <td><code>"HB"</code></td>
+      <td>Two words &#8594; two initials</td>
+    </tr>
+    <tr>
+      <td><code>"Hex Bolt M10x30"</code></td>
+      <td><code>"HB"</code></td>
+      <td>Three words &#8594; first two only</td>
+    </tr>
+    <tr>
+      <td><code>"Bolt"</code></td>
+      <td><code>"B"</code></td>
+      <td>Single word &#8594; one initial</td>
+    </tr>
+    <tr>
+      <td><code>"A"</code></td>
+      <td><code>"A"</code></td>
+      <td>Single character</td>
+    </tr>
+    <tr>
+      <td><code>""</code></td>
+      <td><code>"?"</code></td>
+      <td>Empty &#8594; fallback</td>
+    </tr>
+    <tr>
+      <td><code>"  "</code></td>
+      <td><code>"?"</code></td>
+      <td>Whitespace-only &#8594; fallback</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## `getCroppedImage`
+
+Canvas helper that applies crop coordinates, zoom factor, and rotation angle
+to an image source and returns a `Blob`.
+
+**Import:**
+
+```ts
+import { getCroppedImage } from '@arda-cards/design-system/canary';
+```
+
+**Signature:**
+
+```ts
+getCroppedImage(
+  imageSrc: string,
+  pixelCrop: PixelCrop,
+  rotation?: number,       // degrees, default 0
+  outputFormat?: string,    // MIME type, default 'image/jpeg'
+  quality?: number,         // 0-1, default 0.85
+): Promise<Blob>
+```
+
+<table>
+  <thead>
+    <tr>
+      <th>Parameter</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>imageSrc</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Data URL, object URL, or HTTPS URL of the source image</td>
+    </tr>
+    <tr>
+      <td><code>pixelCrop</code></td>
+      <td><code>PixelCrop</code></td>
+      <td>&#8212;</td>
+      <td>Crop region in pixels (from react-easy-crop)</td>
+    </tr>
+    <tr>
+      <td><code>rotation</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Rotation angle in degrees</td>
+    </tr>
+    <tr>
+      <td><code>outputFormat</code></td>
+      <td><code>string</code></td>
+      <td><code>'image/jpeg'</code></td>
+      <td>Output MIME type</td>
+    </tr>
+    <tr>
+      <td><code>quality</code></td>
+      <td><code>number</code></td>
+      <td><code>0.85</code></td>
+      <td>JPEG quality (0&#8211;1)</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Shared Types
+
+The `image-field-config` module exports the configuration and data types used
+across all image components:
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>ImageMimeType</code></td>
+      <td>Union of accepted image MIME types</td>
+    </tr>
+    <tr>
+      <td><code>ImageFieldStaticConfig</code></td>
+      <td>System-level constraints (aspect ratio, formats, size limits)</td>
+    </tr>
+    <tr>
+      <td><code>ImageFieldInitConfig</code></td>
+      <td>Tenant-localizable display names</td>
+    </tr>
+    <tr>
+      <td><code>ImageFieldConfig</code></td>
+      <td>Combined static + init configuration</td>
+    </tr>
+    <tr>
+      <td><code>ImageInput</code></td>
+      <td>Classified input from ImageDropZone (file, URL, or error)</td>
+    </tr>
+    <tr>
+      <td><code>ImageUploadResult</code></td>
+      <td>Result of a successful upload (URL, compression info)</td>
+    </tr>
+    <tr>
+      <td><code>CropData</code></td>
+      <td>Crop/zoom/rotation state from ImagePreviewEditor</td>
+    </tr>
+    <tr>
+      <td><code>PixelCrop</code></td>
+      <td>Pixel-level crop region coordinates</td>
+    </tr>
+  </tbody>
+</table>

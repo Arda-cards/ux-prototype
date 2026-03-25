@@ -4,7 +4,7 @@ import { PanelLeftIcon } from 'lucide-react';
 import { Slot } from 'radix-ui';
 
 import { useIsMobile } from '@/types/canary/hooks/use-mobile';
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 import { Button } from './button';
 import { Input } from './input';
 import { Separator } from './separator';

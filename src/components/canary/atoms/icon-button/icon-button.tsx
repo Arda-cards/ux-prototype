@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 import { Button } from '@/components/canary/primitives/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/canary/primitives/tooltip';
 

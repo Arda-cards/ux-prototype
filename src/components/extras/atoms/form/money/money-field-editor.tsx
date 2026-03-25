@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 import { FieldLabel, type FieldLabelProps } from '../field-label';
 import type { Money } from './money-field-display';
 

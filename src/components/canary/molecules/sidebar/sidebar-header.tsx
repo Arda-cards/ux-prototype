@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 import {
   SidebarHeader as SidebarHeaderPrimitive,
   SidebarMenu,

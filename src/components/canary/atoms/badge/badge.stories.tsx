@@ -24,7 +24,7 @@ export const Playground: Story = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['default', 'secondary', 'destructive', 'outline', 'ghost', 'link'],
+      options: ['default', 'secondary', 'destructive', 'outline', 'ghost', 'link', 'error-overlay'],
     },
     count: { control: 'number' },
     max: { control: 'number' },
@@ -94,6 +94,41 @@ export const AllVariants: Story = {
       <div className="flex items-center gap-3">
         <span className="w-28 text-sm text-muted-foreground">High count</span>
         <Badge count={150} />
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="w-28 text-sm text-muted-foreground">Error overlay</span>
+        <div className="relative bg-muted size-16 rounded">
+          <Badge variant="error-overlay">!</Badge>
+        </div>
+      </div>
+    </div>
+  ),
+};
+
+/** Error overlay badge positioned over a thumbnail container. */
+export const ErrorOverlay: Story = {
+  parameters: { layout: 'centered' },
+  render: () => (
+    <div className="relative bg-muted size-16 rounded">
+      <Badge variant="error-overlay">!</Badge>
+    </div>
+  ),
+};
+
+/** Side-by-side comparison — normal thumbnail vs one with error badge. */
+export const ErrorOverlayInContext: Story = {
+  parameters: { layout: 'centered' },
+  render: () => (
+    <div className="flex gap-6 items-end">
+      <div className="flex flex-col items-center gap-2">
+        <span className="text-xs text-muted-foreground">Normal</span>
+        <div className="relative bg-muted size-16 rounded" />
+      </div>
+      <div className="flex flex-col items-center gap-2">
+        <span className="text-xs text-muted-foreground">With error</span>
+        <div className="relative bg-muted size-16 rounded">
+          <Badge variant="error-overlay">!</Badge>
+        </div>
       </div>
     </div>
   ),

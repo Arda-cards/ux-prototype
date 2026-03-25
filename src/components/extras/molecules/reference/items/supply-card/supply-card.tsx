@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Pencil, Trash2, MoreHorizontal, Star } from 'lucide-react';
 
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 import { ArdaBadge } from '@/components/extras/atoms/badge/badge';
 import type { SupplyDesignation } from '@/types/extras';
 

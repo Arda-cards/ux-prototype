@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 
 /** Design-time configuration for the extras molecule placeholder. */
 export interface ExtrasMoleculePlaceholderStaticConfig {

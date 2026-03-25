@@ -2,7 +2,7 @@
 
 import { type LucideIcon, ChevronsUpDown } from 'lucide-react';
 
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/canary/atoms/avatar/avatar';
 import {
   DropdownMenu,

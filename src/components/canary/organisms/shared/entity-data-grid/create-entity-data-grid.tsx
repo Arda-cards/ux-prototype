@@ -14,7 +14,7 @@ import {
 import { Search } from 'lucide-react';
 import type { ColDef, GridApi } from 'ag-grid-community';
 import { DataGrid, type DataGridRef } from '@/components/canary/molecules/data-grid';
-import type { PaginationData } from '@/types/canary/pagination';
+import type { PaginationData } from '@/types/canary/utilities/pagination';
 import {
   useRowAutoPublish,
   type RowAutoPublishHandle,

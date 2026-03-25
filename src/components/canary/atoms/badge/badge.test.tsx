@@ -71,4 +71,33 @@ describe('Badge', () => {
     expect(screen.getByText('7')).toBeInTheDocument();
     expect(screen.queryByText('ignored')).not.toBeInTheDocument();
   });
+
+  // --- error-overlay variant ---
+
+  it('renders error-overlay variant with correct data-variant attribute', () => {
+    render(<Badge variant="error-overlay">!</Badge>);
+    expect(screen.getByText('!')).toHaveAttribute('data-variant', 'error-overlay');
+  });
+
+  it('error-overlay variant has absolute positioning class', () => {
+    render(<Badge variant="error-overlay">!</Badge>);
+    expect(screen.getByText('!')).toHaveClass('absolute');
+  });
+
+  it('error-overlay variant uses destructive background color', () => {
+    render(<Badge variant="error-overlay">!</Badge>);
+    expect(screen.getByText('!')).toHaveClass('bg-destructive');
+  });
+
+  // --- regression: existing variants unchanged ---
+
+  it('default variant still renders with data-variant="default"', () => {
+    render(<Badge variant="default">Default</Badge>);
+    expect(screen.getByText('Default')).toHaveAttribute('data-variant', 'default');
+  });
+
+  it('secondary variant still renders with data-variant="secondary"', () => {
+    render(<Badge variant="secondary">Secondary</Badge>);
+    expect(screen.getByText('Secondary')).toHaveAttribute('data-variant', 'secondary');
+  });
 });

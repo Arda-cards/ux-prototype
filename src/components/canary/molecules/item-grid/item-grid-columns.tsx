@@ -2,6 +2,7 @@ import { createElement } from 'react';
 import type { ColDef, ICellRendererParams, ValueSetterParams } from 'ag-grid-community';
 
 import type { Item } from '@/types/extras';
+import { getInitials } from '@/types/canary/utilities';
 import { TypeaheadCellEditor, type TypeaheadOption } from './typeahead-cell-editor';
 import { SelectCellEditor } from '../../atoms/grid/select/select-cell-editor';
 import { DragHeader } from './drag-header';
@@ -18,15 +19,6 @@ function formatCurrencyValue(value: unknown): string {
 }
 
 // --- Cell renderers ---
-
-function getInitials(name: string): string {
-  return name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join('')
-    .toUpperCase();
-}
 
 const imgStyle: React.CSSProperties = {
   width: 28,

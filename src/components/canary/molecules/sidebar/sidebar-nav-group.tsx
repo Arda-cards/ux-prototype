@@ -3,7 +3,7 @@
 import { useRef, Children, isValidElement } from 'react';
 import { type LucideIcon, ChevronRight } from 'lucide-react';
 
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 import {
   Collapsible,
   CollapsibleContent,

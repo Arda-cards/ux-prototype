@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 import type { AtomMode, AtomProps } from '@/components/extras/atoms/shared/props';
 import { ArdaDateTimeCellDisplay } from './date-time-cell-display';
 import { toDateTimeInputValue } from '@/components/extras/atoms/shared/formatters';
-import { getBrowserTimezone, getTimezoneAbbreviation } from '@/types/canary/date-time';
+import { getBrowserTimezone, getTimezoneAbbreviation } from '@/types/canary/utilities/date-time';
 
 export interface DateTimeCellStaticConfig {
   timezone?: string;

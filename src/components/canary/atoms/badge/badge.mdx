@@ -55,6 +55,10 @@ The component uses a rounded-md shape, tight padding, and 10 px semibold monospa
       <td><code>destructive</code></td>
       <td>Error or destructive status indicator.</td>
     </tr>
+    <tr>
+      <td><code>error-overlay</code></td>
+      <td>Absolutely positioned overlay badge for thumbnail/image error states. Place inside a <code>relative</code> container.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -86,6 +90,22 @@ The component uses a rounded-md shape, tight padding, and 10 px semibold monospa
 
 ---
 
+## Error Overlay Variant
+
+The `error-overlay` variant is designed to be positioned absolutely over a `relative` container
+(e.g., an image thumbnail). It uses destructive colors and a small fixed size suitable for
+overlaying on grid cells or preview thumbnails.
+
+<Canvas of={BadgeStories.ErrorOverlay} />
+
+### In context
+
+Side-by-side comparison of a normal thumbnail placeholder vs one with an error badge overlay.
+
+<Canvas of={BadgeStories.ErrorOverlayInContext} />
+
+---
+
 ## Props
 
 <table>
@@ -100,7 +120,7 @@ The component uses a rounded-md shape, tight padding, and 10 px semibold monospa
   <tbody>
     <tr>
       <td><code>variant</code></td>
-      <td><code>'default' | 'secondary' | 'destructive' | 'outline'</code></td>
+      <td><code>'default' | 'secondary' | 'destructive' | 'outline' | 'error-overlay'</code></td>
       <td><code>'default'</code></td>
       <td>Visual variant from shadcn Badge.</td>
     </tr>
