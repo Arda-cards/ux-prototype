@@ -22,6 +22,12 @@ export interface ImageDisplayInitProps {
 export interface ImageDisplayRuntimeProps {
   /** URL of the image to display. Null means "no image" (shows initials, no error badge). */
   imageUrl: string | null;
+  /**
+   * Optional edit callback. When provided, the component becomes interactive:
+   * double-click or Enter triggers `onEdit`. The component renders as a focusable
+   * element with hover and focus-visible styles.
+   */
+  onEdit?: () => void;
 }
 
 /** Combined props for ImageDisplay. */
@@ -36,7 +42,7 @@ type LoadState = 'loading' | 'loaded' | 'error';
 // --- Component ---
 
 /**
- * ImageDisplay — foundational image rendering molecule.
+ * ImageDisplay &#8212; foundational image rendering molecule.
  *
  * Renders an image with three visual states:
  * - **Loaded**: `<img>` fills the container with `object-cover`.
@@ -46,11 +52,15 @@ type LoadState = 'loading' | 'loaded' | 'error';
  * When `imageUrl` is `null` the component shows an initials placeholder without
  * an error badge &#8212; this is the "no image" state, not a broken image.
  *
+ * When `onEdit` is provided, the component becomes interactive: double-click or
+ * Enter key triggers the callback. A subtle hover border and focus ring indicate
+ * interactivity.
+ *
  * The container fills its parent (`w-full h-full`) so the caller controls sizing.
  * No border is applied deliberately; `bg-muted` provides sufficient contrast even
  * for white images.
  */
-export function ImageDisplay({ imageUrl, entityTypeDisplayName }: ImageDisplayProps) {
+export function ImageDisplay({ imageUrl, entityTypeDisplayName, onEdit }: ImageDisplayProps) {
   const [loadState, setLoadState] = React.useState<LoadState>(
     imageUrl === null ? 'loaded' : 'loading',
   );
@@ -62,11 +72,25 @@ export function ImageDisplay({ imageUrl, entityTypeDisplayName }: ImageDisplayPr
 
   const initials = getInitials(entityTypeDisplayName);
 
-  return (
-    <div
-      data-slot="image-display"
-      className={cn('relative w-full h-full rounded bg-muted', 'flex items-center justify-center')}
-    >
+  const handleDoubleClick = onEdit
+    ? () => {
+        onEdit();
+      }
+    : undefined;
+
+  const handleKeyDown = onEdit
+    ? (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          onEdit();
+        }
+      }
+    : undefined;
+
+  const isInteractive = onEdit !== undefined;
+
+  const content = (
+    <>
       {/* Skeleton shimmer — visible only while loading */}
       {imageUrl !== null && loadState === 'loading' && (
         <Skeleton className="absolute inset-0 rounded-none" />
@@ -91,8 +115,6 @@ export function ImageDisplay({ imageUrl, entityTypeDisplayName }: ImageDisplayPr
         <span
           className={cn(
             'relative select-none text-muted-foreground font-semibold leading-none',
-            // Font size scales with container; 40cqw uses container query units
-            // for proportional sizing. Fallback to 30% for older browsers.
             'text-[clamp(0.75rem,40%,4rem)]',
           )}
         >
@@ -110,6 +132,36 @@ export function ImageDisplay({ imageUrl, entityTypeDisplayName }: ImageDisplayPr
           !
         </Badge>
       )}
+    </>
+  );
+
+  if (isInteractive) {
+    return (
+      <button
+        type="button"
+        data-slot="image-display"
+        className={cn(
+          'relative w-full h-full rounded bg-muted',
+          'flex items-center justify-center',
+          'cursor-pointer border-2 border-transparent',
+          'hover:border-primary/50 transition-colors',
+          'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+        )}
+        onDoubleClick={handleDoubleClick}
+        onKeyDown={handleKeyDown}
+        aria-label={`Edit ${entityTypeDisplayName} image — double-click or press Enter`}
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <div
+      data-slot="image-display"
+      className={cn('relative w-full h-full rounded bg-muted', 'flex items-center justify-center')}
+    >
+      {content}
     </div>
   );
 }

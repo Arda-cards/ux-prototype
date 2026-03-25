@@ -215,22 +215,15 @@ export const DoubleClickToEdit: Story = {
           Confirm to change the image; Cancel to keep the current one.
         </p>
 
-        {/* Clickable thumbnail — double-click or Enter to edit */}
-        <button
-          type="button"
-          onDoubleClick={() => setDialogOpen(true)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') setDialogOpen(true);
-          }}
-          className="w-32 h-32 rounded-lg overflow-hidden cursor-pointer border-2 border-transparent hover:border-primary transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          aria-label="Edit image — double-click or press Enter"
-        >
+        {/* Interactive thumbnail — double-click or Enter to edit (via onEdit prop) */}
+        <div className="w-32 h-32">
           <ImageDisplay
             imageUrl={imageUrl}
             entityTypeDisplayName="Item"
             propertyDisplayName="Product Image"
+            onEdit={() => setDialogOpen(true)}
           />
-        </button>
+        </div>
 
         <span className="text-xs text-muted-foreground font-mono break-all max-w-xs text-center">
           {imageUrl ?? '(no image)'}

@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 
 import { ImageDisplay } from './image-display';
@@ -86,5 +87,50 @@ describe('ImageDisplay', () => {
     render(<ImageDisplay {...defaultProps} imageUrl="https://example.com/image.jpg" />);
     const img = screen.getByRole('img');
     expect(img).toHaveClass('object-cover');
+  });
+
+  // --- onEdit interaction tests ---
+
+  it('renders as div (non-interactive) when onEdit is not provided', () => {
+    const { container } = render(<ImageDisplay {...defaultProps} imageUrl={null} />);
+    const root = container.querySelector('[data-slot="image-display"]');
+    expect(root?.tagName).toBe('DIV');
+  });
+
+  it('renders as button (interactive) when onEdit is provided', () => {
+    const { container } = render(
+      <ImageDisplay {...defaultProps} imageUrl={null} onEdit={vi.fn()} />,
+    );
+    const root = container.querySelector('[data-slot="image-display"]');
+    expect(root?.tagName).toBe('BUTTON');
+  });
+
+  it('calls onEdit on double-click', () => {
+    const onEdit = vi.fn();
+    const { container } = render(
+      <ImageDisplay {...defaultProps} imageUrl="https://example.com/img.jpg" onEdit={onEdit} />,
+    );
+    const btn = container.querySelector('[data-slot="image-display"]') as HTMLElement;
+    fireEvent.dblClick(btn);
+    expect(onEdit).toHaveBeenCalledOnce();
+  });
+
+  it('calls onEdit on Enter key', async () => {
+    const user = userEvent.setup();
+    const onEdit = vi.fn();
+    render(
+      <ImageDisplay {...defaultProps} imageUrl="https://example.com/img.jpg" onEdit={onEdit} />,
+    );
+    await user.tab(); // focus the button
+    await user.keyboard('{Enter}');
+    expect(onEdit).toHaveBeenCalledOnce();
+  });
+
+  it('has focus-visible ring when interactive', () => {
+    const { container } = render(
+      <ImageDisplay {...defaultProps} imageUrl={null} onEdit={vi.fn()} />,
+    );
+    const btn = container.querySelector('[data-slot="image-display"]');
+    expect(btn).toHaveClass('focus-visible:ring-2');
   });
 });

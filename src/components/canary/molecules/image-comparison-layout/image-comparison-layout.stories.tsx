@@ -1,3 +1,4 @@
+import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import {
@@ -7,6 +8,7 @@ import {
 } from '@/components/canary/__mocks__/image-story-data';
 
 import { ImageComparisonLayout } from './image-comparison-layout';
+import { ImageDisplay } from '@/components/canary/molecules/image-display/image-display';
 
 /** Placeholder representing new image content (e.g. ImagePreviewEditor). */
 function NewImagePlaceholder({ label = 'New Image Area' }: { label?: string }) {
@@ -118,6 +120,64 @@ export const ExistingImageBroken: Story = {
       </ImageComparisonLayout>
     </div>
   ),
+};
+
+/**
+ * With loaded new image &#8212; both Current and New panels show real images.
+ * This demonstrates the comparison layout with actual image content on both sides.
+ */
+export const WithLoadedNewImage: Story = {
+  render: () => (
+    <div className="max-w-2xl">
+      <ImageComparisonLayout
+        existingImageUrl={MOCK_ITEM_IMAGE}
+        entityTypeDisplayName={ITEM_IMAGE_CONFIG.entityTypeDisplayName}
+        propertyDisplayName={ITEM_IMAGE_CONFIG.propertyDisplayName}
+      >
+        <div className="w-full aspect-square max-w-64">
+          <ImageDisplay
+            imageUrl="https://picsum.photos/seed/arda-new-image/400/400"
+            entityTypeDisplayName={ITEM_IMAGE_CONFIG.entityTypeDisplayName}
+            propertyDisplayName={ITEM_IMAGE_CONFIG.propertyDisplayName}
+          />
+        </div>
+      </ImageComparisonLayout>
+    </div>
+  ),
+};
+
+/**
+ * Interactive &#8212; double-click the Current image to trigger `onEditExisting`.
+ * The New image also supports double-click via `onEdit` on ImageDisplay.
+ */
+export const InteractiveEdit: Story = {
+  render: () => {
+    const [editTarget, setEditTarget] = React.useState<string | null>(null);
+
+    return (
+      <div className="max-w-2xl flex flex-col gap-4">
+        <p className="text-sm text-muted-foreground">
+          Double-click either image to trigger its edit callback. The last action is shown below.
+        </p>
+        <ImageComparisonLayout
+          existingImageUrl={MOCK_ITEM_IMAGE}
+          entityTypeDisplayName={ITEM_IMAGE_CONFIG.entityTypeDisplayName}
+          propertyDisplayName={ITEM_IMAGE_CONFIG.propertyDisplayName}
+          onEditExisting={() => setEditTarget('Editing CURRENT image')}
+        >
+          <div className="w-full aspect-square max-w-64">
+            <ImageDisplay
+              imageUrl="https://picsum.photos/seed/arda-new-image/400/400"
+              entityTypeDisplayName={ITEM_IMAGE_CONFIG.entityTypeDisplayName}
+              propertyDisplayName={ITEM_IMAGE_CONFIG.propertyDisplayName}
+              onEdit={() => setEditTarget('Editing NEW image')}
+            />
+          </div>
+        </ImageComparisonLayout>
+        {editTarget && <p className="text-sm font-medium text-primary">{editTarget}</p>}
+      </div>
+    );
+  },
 };
 
 /** Interactive playground &#8212; adjust props via the Controls panel. */

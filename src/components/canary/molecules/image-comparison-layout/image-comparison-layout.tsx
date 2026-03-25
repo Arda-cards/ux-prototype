@@ -23,6 +23,8 @@ export interface ImageComparisonLayoutRuntimeProps {
   existingImageUrl: string | null;
   /** New image content, typically an ImagePreviewEditor. */
   children: React.ReactNode;
+  /** Optional edit callback for the existing image. When provided, the "Current" image becomes interactive (double-click / Enter to edit). */
+  onEditExisting?: () => void;
 }
 
 /** Combined props for ImageComparisonLayout. */
@@ -48,6 +50,7 @@ export function ImageComparisonLayout({
   entityTypeDisplayName,
   propertyDisplayName,
   children,
+  onEditExisting,
 }: ImageComparisonLayoutProps) {
   // Pass-through mode: no existing image to compare against
   if (existingImageUrl === null) {
@@ -70,6 +73,7 @@ export function ImageComparisonLayout({
               imageUrl={existingImageUrl}
               entityTypeDisplayName={entityTypeDisplayName}
               propertyDisplayName={propertyDisplayName}
+              {...(onEditExisting !== undefined && { onEdit: onEditExisting })}
             />
           </div>
         </div>
