@@ -1,0 +1,140 @@
+{/* image-form-field.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as Stories from './image-form-field.stories';
+
+<Meta of={Stories} />
+
+# ImageFormField
+
+Form field renderer for entity image fields. Wraps an `ImageDisplay` thumbnail inside an
+`ImageHoverPreview` trigger and surfaces hover action icons for inspecting, editing, and
+removing the image.
+
+**Molecule** &#8212; Canary | Import: `@/components/canary/molecules/form/image`
+
+---
+
+## Overview
+
+`ImageFormField` manages the full read &#8212; and remove &#8212; surface for a single image property on
+an entity form. Upload and crop are delegated to a parent dialog (opened via the Pencil action).
+
+Key behaviours:
+
+- Thumbnail renders at `w-24 h-24` by default; the container clips with `rounded-lg`.
+- Hover overlay fades in via `opacity-0 group-hover:opacity-100 transition-opacity`.
+- Eye and Trash actions are only shown when an image URL is present.
+- Remove confirmation is an `AlertDialog` (no accidental deletes).
+- Double-clicking the thumbnail is equivalent to clicking the Pencil icon.
+- `disabled` prop sets `opacity-50 pointer-events-none` on the root.
+
+---
+
+## Playground
+
+Adjust `imageUrl` and `disabled` in the Controls panel.
+
+<Canvas of={Stories.Playground} />
+
+---
+
+## Hover Affordances
+
+Three icons appear on hover. Eye and Trash require an image; Pencil is always present.
+
+<Canvas of={Stories.HoverAffordances} />
+
+---
+
+## Remove Flow
+
+Start with an image, hover the thumbnail, click the Trash icon, then confirm removal.
+`onChange(null)` is called on confirmation.
+
+<Canvas of={Stories.RemoveFlow} />
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Category</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>config</code>
+      </td>
+      <td>Init</td>
+      <td>
+        <code>ImageFieldConfig</code>
+      </td>
+      <td>Required</td>
+      <td>
+        Field configuration. Provides <code>entityTypeDisplayName</code>,
+        <code>propertyDisplayName</code>, and upload constraints used by the upload dialog.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>imageUrl</code>
+      </td>
+      <td>Runtime</td>
+      <td>
+        <code>string | null</code>
+      </td>
+      <td>Required</td>
+      <td>
+        Current image URL. <code>null</code> shows the initials placeholder and suppresses the Eye
+        and Trash icons.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>onChange</code>
+      </td>
+      <td>Runtime</td>
+      <td>
+        <code>(imageUrl: string | null) =&#62; void</code>
+      </td>
+      <td>Required</td>
+      <td>
+        Called when the image changes. Receives <code>null</code> when the user confirms removal.
+        Will receive a new URL when upload is wired in a future iteration.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>disabled</code>
+      </td>
+      <td>Runtime</td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>
+        <code>false</code>
+      </td>
+      <td>
+        When <code>true</code>, applies <code>opacity-50 pointer-events-none</code> &#8212; the
+        field is fully read-only.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { ImageFormField } from '@/components/canary/molecules/form/image';
+// or
+import type { ImageFormFieldProps } from '@/components/canary/molecules/form/image';
+```
