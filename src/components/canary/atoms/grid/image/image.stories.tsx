@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { AgGridReact } from 'ag-grid-react';
-import type { ColDef } from 'ag-grid-community';
+import { ModuleRegistry, AllCommunityModule, type ColDef } from 'ag-grid-community';
+
+ModuleRegistry.registerModules([AllCommunityModule]);
 
 import {
   MOCK_ITEMS,
