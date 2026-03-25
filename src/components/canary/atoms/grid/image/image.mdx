@@ -7,15 +7,14 @@ import * as Stories from './image.stories';
 # Image Cell
 
 AG Grid cell renderer and editor for image columns. The display atom wraps
-`ImageDisplay` inside `ImageHoverPreview` to provide a 256&#215;256 popover on hover,
-plus Eye (inspect) and Pencil (edit) action icons that appear on mouse-over.
+`ImageDisplay` inside `ImageHoverPreview` to provide a 256&#215;256 popover on hover.
+Double-click opens `ImageUploadDialog` for uploading or changing the image.
 
-**Grid Atom** &#8212; Display + Editor pair pattern. The editor is a placeholder
-that cancels immediately; `ImageUploadDialog` will be wired in a future phase.
+**Grid Atom** &#8212; Display + Editor pair pattern.
 
 ---
 
-## GridDisplay
+## Grid Display
 
 Four visual states in a single grid: loaded image, alternate image, null (no image), and broken URL.
 
@@ -32,32 +31,30 @@ the full `ImageDisplay`. Moving the pointer away closes the popover immediately.
 
 <Canvas of={Stories.HoverPreview} />
 
-### Hover Action Icons
+### Double-Click to Edit
 
-Two icon buttons appear on hover:
+Double-click an image cell to open the `ImageUploadDialog`. The dialog shows
+the current image for comparison. Confirm commits a new URL; Cancel discards.
 
-- **Eye** &#8212; opens the inspector (future phase). Suppressed when `value` is null.
-- **Pencil** &#8212; opens the image editor (future phase). Always shown on hover.
+The Name column is also editable &#8212; double-click it to verify AG Grid
+editing is active.
 
-<Canvas of={Stories.HoverActionIcons} />
+<Canvas of={Stories.DoubleClickEdit} />
 
-### Broken Image &#8212; Eye Suppressed for Null
+### Keyboard Edit
 
-The Eye icon is rendered for broken URLs (there is a URL; it just failed) but is
-suppressed entirely when `imageUrl` is `null`.
+Tab to a cell in the Image column and press **Enter** to trigger the cell editor.
 
-<Canvas of={Stories.ErrorCellNoInspector} />
+<Canvas of={Stories.KeyboardEdit} />
 
 ---
 
-## Keyboard Navigation
+## Error States
 
-### Enter to Edit
+Broken URLs show an initials placeholder with an error badge.
+Null URLs show an initials placeholder without a badge.
 
-Tab to a cell in the Image column and press **Enter** to trigger the cell editor.
-The editor cancels immediately in this phase; `ImageUploadDialog` integration is planned.
-
-<Canvas of={Stories.KeyboardEdit} />
+<Canvas of={Stories.ErrorStates} />
 
 ---
 
@@ -92,36 +89,7 @@ you can pass directly to `cellEditor` in a column definition.
       <td><code>value</code></td>
       <td><code>string | null</code></td>
       <td>Yes</td>
-      <td>Image URL from the row. Null shows an initials placeholder; Eye icon is suppressed.</td>
-    </tr>
-    <tr>
-      <td><code>data</code></td>
-      <td><code>Record&#60;string, unknown&#62;</code></td>
-      <td>Yes</td>
-      <td>Full row data supplied by AG Grid (reserved for future context actions).</td>
-    </tr>
-  </tbody>
-</table>
-
----
-
-## Props &#8212; Editor (`ImageCellEditor` / `createImageCellEditor`)
-
-<table>
-  <thead>
-    <tr>
-      <th>Prop</th>
-      <th>Type</th>
-      <th>Required</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>value</code></td>
-      <td><code>string | null</code></td>
-      <td>Yes</td>
-      <td>Current image URL. Returned unchanged by <code>getValue()</code> on cancel.</td>
+      <td>Image URL from the row. Null shows an initials placeholder.</td>
     </tr>
     <tr>
       <td><code>data</code></td>
@@ -129,14 +97,32 @@ you can pass directly to `cellEditor` in a column definition.
       <td>Yes</td>
       <td>Full row data supplied by AG Grid.</td>
     </tr>
+  </tbody>
+</table>
+
+---
+
+## Props &#8212; Editor (`createImageCellEditor`)
+
+<table>
+  <thead>
     <tr>
-      <td><code>stopEditing</code></td>
-      <td><code>(cancel?: boolean) =&#62; void</code></td>
-      <td>No</td>
-      <td>AG Grid callback to exit edit mode. Called with <code>true</code> on mount (placeholder).</td>
+      <th>Param</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>config</code></td>
+      <td><code>ImageFieldConfig</code></td>
+      <td>Curried at column-definition time. Passed to ImageUploadDialog.</td>
     </tr>
   </tbody>
 </table>
+
+The returned editor exposes `getValue(): string | null` via ref for AG Grid.
+On confirm, returns the new image URL. On cancel, returns the original value.
 
 ---
 
