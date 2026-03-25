@@ -466,7 +466,7 @@ The design system enforces a **display-only cursor policy** via a global CSS rul
 
 {/* AUTO-GENERATED:START — do not edit manually. Run: node tools/update-package-contents.js */}
 
-## Current Content as of 2026-03-06
+## Current Content as of 2026-03-25
 
 ### Components (JS/TS)
 
@@ -491,10 +491,6 @@ Each entry point ships as ESM (`.js`), CJS (`.cjs`), and TypeScript declarations
       <td>Organisms</td>
       <td><code>StableOrganismPlaceholder</code></td>
     </tr>
-    <tr>
-      <td>Utilities</td>
-      <td><code>cn</code>, <code>getBrowserTimezone</code>, <code>getTimezoneAbbreviation</code></td>
-    </tr>
   </tbody>
 </table>
 
@@ -506,12 +502,44 @@ Each entry point ships as ESM (`.js`), CJS (`.cjs`), and TypeScript declarations
   </thead>
   <tbody>
     <tr>
-      <td>Components</td>
-      <td><code>TextCellDisplay</code>, <code>NumberCellDisplay</code>, <code>BooleanCellDisplay</code>, <code>DateCellDisplay</code>, <code>SelectCellDisplay</code>, <code>MemoCellDisplay</code>, <code>MemoButtonCell</code>, <code>ColorCellDisplay</code>, <code>ActionCellRenderer</code> (cell editors: <code>createTextCellEditor</code>, <code>createSelectCellEditor</code>, <code>createMemoButtonCellEditor</code>, etc.)</td>
+      <td>Utilities and Types</td>
+      <td><code>getInitials</code>, <code>getCroppedImage</code></td>
     </tr>
     <tr>
       <td>Atoms</td>
-      <td><code>ReadOnlyField</code>, <code>readOnlyFieldVariants</code></td>
+      <td><code>Badge</code>, <code>ArdaBadge</code>, <code>Button</code>, <code>ArdaButton</code>, <code>buttonVariants</code>, <code>Drawer</code>, <code>DrawerHeader</code>, <code>DrawerTitle</code>, <code>DrawerDescription</code>, <code>DrawerBody</code>, <code>DrawerFooter</code>, <code>ArdaDrawer</code>, <code>ArdaDrawerHeader</code>, <code>ArdaDrawerTitle</code>, <code>ArdaDrawerDescription</code>, <code>ArdaDrawerBody</code>, <code>ArdaDrawerFooter</code>, <code>IconButton</code>, <code>ArdaIconButton</code>, <code>BrandLogo</code>, <code>BrandIcon</code>, <code>IconLabel</code>, <code>ReadOnlyField</code>, <code>readOnlyFieldVariants</code>, <code>TextCellDisplay</code>, <code>TextCellEditor</code>, <code>createTextCellEditor</code>, <code>NumberCellDisplay</code>, <code>NumberCellEditor</code>, <code>createNumberCellEditor</code>, <code>BooleanCellDisplay</code>, <code>BooleanCellEditor</code>, <code>createBooleanCellEditor</code>, <code>DateCellDisplay</code>, <code>DateCellEditor</code>, <code>createDateCellEditor</code>, <code>SelectCellDisplay</code>, <code>SelectCellEditor</code>, <code>createSelectCellEditor</code>, <code>MemoCellDisplay</code>, <code>MemoCellEditor</code>, <code>createMemoCellEditor</code>, <code>MemoButtonCell</code>, <code>createMemoButtonCellEditor</code>, <code>ColorCellDisplay</code>, <code>ColorCellEditor</code>, <code>createColorCellEditor</code>, <code>DEFAULT_COLOR_MAP</code>, <code>ImageCellDisplay</code>, <code>ImageCellEditor</code>, <code>createImageCellEditor</code>, <code>CopyrightAcknowledgment</code>, <code>ActionCellRenderer</code></td>
+    </tr>
+    <tr>
+      <td>Molecules</td>
+      <td><code>ImageDisplay</code>, <code>ImageDropZone</code>, <code>ImagePreviewEditor</code>, <code>ImageHoverPreview</code>, <code>ImageInspectorOverlay</code>, <code>ImageComparisonLayout</code>, <code>ImageFormField</code>, <code>DataGrid</code>, <code>GridImage</code>, <code>useColumnPersistence</code></td>
+    </tr>
+    <tr>
+      <td>Molecules — Sidebar</td>
+      <td><code>SidebarHeader</code>, <code>ArdaSidebarHeader</code>, <code>SidebarNav</code>, <code>SidebarNavItem</code>, <code>SidebarNavGroup</code>, <code>SidebarUserMenu</code></td>
+    </tr>
+    <tr>
+      <td>Molecules — ItemGrid</td>
+      <td><code>itemGridColumnDefs</code>, <code>itemGridDefaultColDef</code>, <code>createItemGridColumnDefs</code>, <code>itemGridFixtures</code></td>
+    </tr>
+    <tr>
+      <td>Organisms</td>
+      <td><code>createEntityDataGrid</code>, <code>useDirtyTracking</code>, <code>useRowAutoPublish</code>, <code>ImageUploadDialog</code>, <code>createEntityDataGridShim</code></td>
+    </tr>
+    <tr>
+      <td>Organisms — Sidebar</td>
+      <td><code>Sidebar</code>, <code>ArdaSidebar</code></td>
+    </tr>
+    <tr>
+      <td>Organisms — AppHeader</td>
+      <td><code>AppHeader</code>, <code>ArdaAppHeader</code></td>
+    </tr>
+    <tr>
+      <td>Organisms — ItemDetails</td>
+      <td><code>ItemDetails</code>, <code>ArdaItemDetails</code></td>
+    </tr>
+    <tr>
+      <td>Organisms — ItemGrid</td>
+      <td><code>ItemGrid</code></td>
     </tr>
   </tbody>
 </table>
@@ -539,10 +567,6 @@ Each entry point ships as ESM (`.js`), CJS (`.cjs`), and TypeScript declarations
       <td>Organisms</td>
       <td><code>ArdaSidebar</code>, <code>ArdaItemDrawer</code>, <code>sampleItem</code>, <code>emptyItem</code>, <code>defaultMoney</code>, <code>defaultQuantity</code>, <code>ArdaItemSupplySection</code>, <code>ArdaItemSupplyFormDialog</code>, <code>ArdaSupplierForm</code>, <code>ArdaSupplierDrawer</code>, <code>ArdaItemsDataGrid</code>, <code>ArdaSupplierDataGrid</code>, <code>createArdaEntityDataGrid</code></td>
     </tr>
-    <tr>
-      <td>Utilities</td>
-      <td><code>cn</code>, <code>getBrowserTimezone</code>, <code>getTimezoneAbbreviation</code></td>
-    </tr>
   </tbody>
 </table>
 
@@ -563,6 +587,10 @@ Each entry point ships as ESM (`.js`), CJS (`.cjs`), and TypeScript declarations
     <tr><th>Layer</th><th>Exports</th></tr>
   </thead>
   <tbody>
+    <tr>
+      <td>Components</td>
+      <td><code>cn</code></td>
+    </tr>
   </tbody>
 </table>
 
@@ -597,6 +625,10 @@ Each entry point ships as ESM (`.js`), CJS (`.cjs`), and TypeScript declarations
     <tr><th>Layer</th><th>Exports</th></tr>
   </thead>
   <tbody>
+    <tr>
+      <td>Components</td>
+      <td><code>getBrowserTimezone</code>, <code>getTimezoneAbbreviation</code></td>
+    </tr>
   </tbody>
 </table>
 
@@ -661,7 +693,7 @@ Each entry point ships as ESM (`.js`), CJS (`.cjs`), and TypeScript declarations
     </tr>
     <tr>
       <td><code>./assets/canary/images/*</code></td>
-      <td>25 files &#8212; Canary-branded equivalents</td>
+      <td>34 files &#8212; Canary-branded equivalents</td>
     </tr>
   </tbody>
 </table>
