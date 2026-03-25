@@ -44,13 +44,14 @@ export function ImageCellDisplay({ config, value }: ImageCellDisplayProps) {
     <div
       data-slot="image-cell-display"
       className={cn('flex items-center justify-center h-full py-[2px]')}
+      style={{ minHeight: 28 }}
     >
       <ImageHoverPreview
         imageUrl={value}
         entityTypeDisplayName={config.entityTypeDisplayName}
         propertyDisplayName={config.propertyDisplayName}
       >
-        <div className="h-full aspect-square rounded">
+        <div className="rounded" style={{ width: 28, height: 28 }}>
           <ImageDisplay
             imageUrl={value}
             entityTypeDisplayName={config.entityTypeDisplayName}
