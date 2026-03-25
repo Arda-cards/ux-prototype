@@ -101,7 +101,7 @@ export function ImageHoverPreview({
         <PopoverContent
           className={cn('w-64 h-64 p-2 bg-popover border-border shadow-md')}
           onOpenAutoFocus={(e) => e.preventDefault()}
-          sideOffset={8}
+          sideOffset={-4}
         >
           {imageUrl !== null && (
             <ImageDisplay

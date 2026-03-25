@@ -30,10 +30,9 @@ export type ImageCellDisplayProps = ImageCellDisplayStaticProps &
 /**
  * ImageCellDisplay &#8212; AG Grid cell renderer for image columns.
  *
- * Renders a 32&#215;32 thumbnail using ImageDisplay, wrapped in ImageHoverPreview
- * for a 256&#215;256 popover on hover. Action icons (Eye, Pencil) appear on hover:
- * - **Eye** (inspect): suppressed when value is null.
- * - **Pencil** (edit): always visible on hover.
+ * Renders a thumbnail using ImageDisplay that fills the row height (minus a
+ * 2px margin). Wrapped in ImageHoverPreview for a popover on hover.
+ * Double-click opens the cell editor (ImageUploadDialog).
  *
  * Pass in a column definition:
  * ```ts
@@ -42,13 +41,16 @@ export type ImageCellDisplayProps = ImageCellDisplayStaticProps &
  */
 export function ImageCellDisplay({ config, value }: ImageCellDisplayProps) {
   return (
-    <div data-slot="image-cell-display" className={cn('flex items-center justify-center w-8 h-8')}>
+    <div
+      data-slot="image-cell-display"
+      className={cn('flex items-center justify-center h-full py-[2px]')}
+    >
       <ImageHoverPreview
         imageUrl={value}
         entityTypeDisplayName={config.entityTypeDisplayName}
         propertyDisplayName={config.propertyDisplayName}
       >
-        <div className="w-8 h-8 rounded overflow-hidden">
+        <div className="h-full aspect-square rounded">
           <ImageDisplay
             imageUrl={value}
             entityTypeDisplayName={config.entityTypeDisplayName}
