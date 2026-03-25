@@ -1,0 +1,96 @@
+{/* image-hover-preview.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as Stories from './image-hover-preview.stories';
+
+<Meta of={Stories} />
+
+# ImageHoverPreview
+
+Lightweight hover popover that shows a larger image preview after ~500 ms. Wraps any
+trigger element &#8212; typically a thumbnail &#8212; and displays an `ImageDisplay` at ~256&#215;256 inside
+a `Popover`.
+
+**Molecule** &#8212; Canary | Import: `@/components/canary/molecules/image-hover-preview`
+
+---
+
+## Playground
+
+Adjust `imageUrl`, `entityTypeDisplayName`, and `propertyDisplayName` in the Controls panel.
+Hover the thumbnail to trigger the preview.
+
+<Canvas of={Stories.HoverToPreview} />
+
+---
+
+## Error Suppression
+
+When `imageUrl` is `null`, or when the image enters an error state, the popover is suppressed
+entirely &#8212; no preview appears on hover.
+
+<Canvas of={Stories.NoPreviewOnError} />
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Category</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>imageUrl</code></td>
+      <td>Runtime</td>
+      <td><code>string | null</code></td>
+      <td>Required</td>
+      <td>
+        URL of the image to preview. When <code>null</code> the popover is suppressed; no
+        preview shown on hover.
+      </td>
+    </tr>
+    <tr>
+      <td><code>children</code></td>
+      <td>Runtime</td>
+      <td><code>React.ReactNode</code></td>
+      <td>Required</td>
+      <td>Trigger element. Typically a thumbnail or icon button.</td>
+    </tr>
+    <tr>
+      <td><code>entityTypeDisplayName</code></td>
+      <td>Init</td>
+      <td><code>string</code></td>
+      <td>Required</td>
+      <td>
+        Display name of the entity type (e.g. &#8220;Item&#8221;). Passed to
+        <code>ImageDisplay</code> for initials in the placeholder.
+      </td>
+    </tr>
+    <tr>
+      <td><code>propertyDisplayName</code></td>
+      <td>Init</td>
+      <td><code>string</code></td>
+      <td>Required</td>
+      <td>
+        Display name of the image property (e.g. &#8220;Product Image&#8221;). Passed to
+        <code>ImageDisplay</code>.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { ImageHoverPreview } from '@/components/canary/molecules/image-hover-preview';
+// or
+import type { ImageHoverPreviewProps } from '@/components/canary/molecules/image-hover-preview';
+```

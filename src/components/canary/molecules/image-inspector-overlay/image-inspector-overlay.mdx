@@ -1,0 +1,104 @@
+{/* image-inspector-overlay.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as Stories from './image-inspector-overlay.stories';
+
+<Meta of={Stories} />
+
+# ImageInspectorOverlay
+
+Full-size image modal overlay with an optional Edit button. Built on the Dialog atom in
+controlled mode &#8212; the caller manages open/closed state via `open` and `onClose`.
+
+**Molecule** &#8212; Canary | Import: `@/components/canary/molecules/image-inspector-overlay`
+
+---
+
+## Playground
+
+Click the button to open the overlay. Use the Controls panel to adjust `imageUrl` and `open`.
+
+<Canvas of={Stories.Playground} />
+
+---
+
+## Inspector to Edit
+
+When `onEdit` is provided, an Edit button appears in the footer. Clicking it calls
+`onEdit` and then closes the overlay.
+
+<Canvas of={Stories.WithEditButton} />
+
+---
+
+## Dismiss Methods
+
+Three ways to close the overlay:
+
+<ul>
+  <li>Press <strong>Escape</strong></li>
+  <li>Click the <strong>backdrop</strong> outside the image panel</li>
+  <li>Click the <strong>X button</strong> in the top-right corner</li>
+</ul>
+
+<Canvas of={Stories.DismissMethods} />
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Category</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>imageUrl</code></td>
+      <td>Runtime</td>
+      <td><code>string</code></td>
+      <td>Required</td>
+      <td>URL of the image to display full-size.</td>
+    </tr>
+    <tr>
+      <td><code>open</code></td>
+      <td>Runtime</td>
+      <td><code>boolean</code></td>
+      <td>Required</td>
+      <td>Controlled open state. Set to <code>true</code> to show the overlay.</td>
+    </tr>
+    <tr>
+      <td><code>onClose</code></td>
+      <td>Runtime</td>
+      <td><code>() =&gt; void</code></td>
+      <td>Required</td>
+      <td>
+        Called when the overlay should close &#8212; on Escape, click-outside, or close button.
+      </td>
+    </tr>
+    <tr>
+      <td><code>onEdit</code></td>
+      <td>Runtime</td>
+      <td><code>() =&gt; void</code></td>
+      <td><code>undefined</code></td>
+      <td>
+        When provided, an Edit button is rendered. Clicking it calls <code>onEdit</code>
+        then closes the overlay. When <code>undefined</code>, no Edit button appears.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { ImageInspectorOverlay } from '@/components/canary/molecules/image-inspector-overlay';
+// or
+import type { ImageInspectorOverlayProps } from '@/components/canary/molecules/image-inspector-overlay';
+```

@@ -93,9 +93,10 @@ export function ImageDisplay({ imageUrl, entityTypeDisplayName }: ImageDisplayPr
       {(imageUrl === null || loadState === 'error') && (
         <span
           className={cn(
-            'relative select-none text-muted-foreground font-medium leading-none',
-            // Font size scales with container via clamp; Tailwind v4 supports arbitrary values
-            'text-[clamp(0.5rem,30%,3rem)]',
+            'relative select-none text-muted-foreground font-semibold leading-none',
+            // Font size scales with container; 40cqw uses container query units
+            // for proportional sizing. Fallback to 30% for older browsers.
+            'text-[clamp(0.75rem,40%,4rem)]',
           )}
         >
           {initials}

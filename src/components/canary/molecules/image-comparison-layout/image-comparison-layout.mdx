@@ -1,0 +1,121 @@
+{/* image-comparison-layout.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as Stories from './image-comparison-layout.stories';
+
+<Meta of={Stories} />
+
+# ImageComparisonLayout
+
+Responsive molecule for comparing an existing image against a new one. On desktop the two
+panels sit side-by-side; on mobile they collapse into a two-tab interface.
+
+**Molecule** &#8212; Canary | Import: `@/components/canary/molecules/image-comparison-layout`
+
+---
+
+## Overview
+
+`ImageComparisonLayout` wraps the left "Current" panel (an `ImageDisplay`) and the right "New"
+panel (caller-supplied `children`, typically an `ImagePreviewEditor`). The layout responds to
+the viewport:
+
+- **Desktop (md: and above)** &#8212; flex-row. Left panel is a fixed-width reference thumbnail
+  with a `border-r` divider. Right panel expands to fill the remaining space.
+- **Mobile (below md:)** &#8212; `Tabs` component with "Current" and "New" triggers. Defaults to
+  the "New" tab so the user immediately sees the upload area.
+
+When `existingImageUrl` is `null` the component passes through directly to `children` with no
+comparison chrome &#8212; useful for new-record forms where no existing image exists yet.
+
+---
+
+## Desktop Side-by-Side
+
+<Canvas of={Stories.DesktopSideBySide} />
+
+---
+
+## Mobile Tabs
+
+On narrow viewports the same data is presented in a tabbed interface. Use the Storybook
+viewport toolbar to switch to a mobile size, or view the `MobileTabs` story which sets
+`viewport.defaultViewport` to `mobile1`.
+
+<Canvas of={Stories.MobileTabs} />
+
+---
+
+## No Existing Image
+
+When `existingImageUrl` is `null` no comparison UI is shown &#8212; only the `children` are
+rendered. This is the pass-through mode for new-record forms.
+
+<Canvas of={Stories.NoExistingImage} />
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Category</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>existingImageUrl</code></td>
+      <td>Runtime</td>
+      <td><code>string | null</code></td>
+      <td>Required</td>
+      <td>
+        URL of the existing (current) image. When <code>null</code> the component renders
+        only <code>children</code> (pass-through mode) &#8212; no comparison chrome is shown.
+      </td>
+    </tr>
+    <tr>
+      <td><code>children</code></td>
+      <td>Runtime</td>
+      <td><code>React.ReactNode</code></td>
+      <td>Required</td>
+      <td>
+        New image content, typically an <code>ImagePreviewEditor</code>. Rendered in the
+        &#8220;New&#8221; panel on desktop and the &#8220;New&#8221; tab on mobile.
+      </td>
+    </tr>
+    <tr>
+      <td><code>entityTypeDisplayName</code></td>
+      <td>Init</td>
+      <td><code>string</code></td>
+      <td>Required</td>
+      <td>
+        Display name of the entity type (e.g. &#8220;Item&#8221;). Passed to
+        <code>ImageDisplay</code> for initials derivation and alt text.
+      </td>
+    </tr>
+    <tr>
+      <td><code>propertyDisplayName</code></td>
+      <td>Init</td>
+      <td><code>string</code></td>
+      <td>Required</td>
+      <td>
+        Display name of the image property (e.g. &#8220;Product Image&#8221;). Passed to
+        <code>ImageDisplay</code> for accessibility labels.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { ImageComparisonLayout } from '@/components/canary/molecules/image-comparison-layout';
+// or
+import type { ImageComparisonLayoutProps } from '@/components/canary/molecules/image-comparison-layout';
+```

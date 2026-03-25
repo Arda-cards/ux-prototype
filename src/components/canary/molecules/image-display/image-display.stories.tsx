@@ -1,3 +1,4 @@
+import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { MOCK_ITEM_IMAGE, MOCK_BROKEN_IMAGE } from '@/components/canary/__mocks__/image-story-data';
@@ -54,25 +55,26 @@ export const Loaded: Story = {
 };
 
 /**
- * Loading state &#8212; the skeleton shimmer is visible while the browser fetches
- * the image. This story renders with a URL but does not emit a load event,
- * which is the natural initial state.
+ * Loading state &#8212; shows the skeleton shimmer that appears while the browser
+ * fetches the image. Uses a Blob URL that never resolves to keep the skeleton
+ * permanently visible for inspection.
  */
 export const Loading: Story = {
-  render: () => (
-    <div className="w-32 h-32">
-      {/*
-        We pass a data URI that never resolves to keep the skeleton visible.
-        A real browser URL would start loading immediately; the skeleton is only
-        visible for a brief moment in the Loaded story.
-      */}
-      <ImageDisplay
-        imageUrl="data:image/gif;base64,R0lGOD"
-        entityTypeDisplayName="Item"
-        propertyDisplayName="Product Image"
-      />
-    </div>
-  ),
+  render: () => {
+    // Create a blob URL from an empty blob — the <img> will stay in "loading"
+    // state because the blob contains no valid image data, yet it won't fire
+    // an error event like an invalid data URI would.
+    const [blobUrl] = React.useState(() => URL.createObjectURL(new Blob([])));
+    return (
+      <div className="w-32 h-32">
+        <ImageDisplay
+          imageUrl={blobUrl}
+          entityTypeDisplayName="Item"
+          propertyDisplayName="Product Image"
+        />
+      </div>
+    );
+  },
 };
 
 /** Broken URL &#8212; initials placeholder with error badge. */
@@ -103,50 +105,53 @@ export const NoImage: Story = {
 
 /** All four visual states side-by-side in a 2x2 grid. */
 export const AllStates: Story = {
-  render: () => (
-    <div className="grid grid-cols-2 gap-4">
-      <div className="flex flex-col items-center gap-1">
-        <div className="w-32 h-32">
-          <ImageDisplay
-            imageUrl={MOCK_ITEM_IMAGE}
-            entityTypeDisplayName="Item"
-            propertyDisplayName="Product Image"
-          />
+  render: () => {
+    const [blobUrl] = React.useState(() => URL.createObjectURL(new Blob([])));
+    return (
+      <div className="grid grid-cols-2 gap-4">
+        <div className="flex flex-col items-center gap-1">
+          <div className="w-32 h-32">
+            <ImageDisplay
+              imageUrl={MOCK_ITEM_IMAGE}
+              entityTypeDisplayName="Item"
+              propertyDisplayName="Product Image"
+            />
+          </div>
+          <span className="text-xs text-muted-foreground">Loaded</span>
         </div>
-        <span className="text-xs text-muted-foreground">Loaded</span>
-      </div>
-      <div className="flex flex-col items-center gap-1">
-        <div className="w-32 h-32">
-          <ImageDisplay
-            imageUrl="data:image/gif;base64,R0lGOD"
-            entityTypeDisplayName="Item"
-            propertyDisplayName="Product Image"
-          />
+        <div className="flex flex-col items-center gap-1">
+          <div className="w-32 h-32">
+            <ImageDisplay
+              imageUrl={blobUrl}
+              entityTypeDisplayName="Item"
+              propertyDisplayName="Product Image"
+            />
+          </div>
+          <span className="text-xs text-muted-foreground">Loading</span>
         </div>
-        <span className="text-xs text-muted-foreground">Loading</span>
-      </div>
-      <div className="flex flex-col items-center gap-1">
-        <div className="w-32 h-32">
-          <ImageDisplay
-            imageUrl={MOCK_BROKEN_IMAGE}
-            entityTypeDisplayName="Item"
-            propertyDisplayName="Product Image"
-          />
+        <div className="flex flex-col items-center gap-1">
+          <div className="w-32 h-32">
+            <ImageDisplay
+              imageUrl={MOCK_BROKEN_IMAGE}
+              entityTypeDisplayName="Item"
+              propertyDisplayName="Product Image"
+            />
+          </div>
+          <span className="text-xs text-muted-foreground">Error</span>
         </div>
-        <span className="text-xs text-muted-foreground">Error</span>
-      </div>
-      <div className="flex flex-col items-center gap-1">
-        <div className="w-32 h-32">
-          <ImageDisplay
-            imageUrl={null}
-            entityTypeDisplayName="Item"
-            propertyDisplayName="Product Image"
-          />
+        <div className="flex flex-col items-center gap-1">
+          <div className="w-32 h-32">
+            <ImageDisplay
+              imageUrl={null}
+              entityTypeDisplayName="Item"
+              propertyDisplayName="Product Image"
+            />
+          </div>
+          <span className="text-xs text-muted-foreground">No Image</span>
         </div>
-        <span className="text-xs text-muted-foreground">No Image</span>
       </div>
-    </div>
-  ),
+    );
+  },
 };
 
 /** Same image at 32, 64, 128, and 256px to verify the component scales. */

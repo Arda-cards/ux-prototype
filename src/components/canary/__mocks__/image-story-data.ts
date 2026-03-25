@@ -3,7 +3,7 @@ import type { ImageFieldConfig } from '@/types/canary/utilities';
 // Placeholder image URLs (via picsum.photos, stable seeds)
 export const MOCK_ITEM_IMAGE = 'https://picsum.photos/seed/arda-item-1/400/400';
 export const MOCK_ITEM_IMAGE_ALT = 'https://picsum.photos/seed/arda-item-2/400/400';
-export const MOCK_BROKEN_IMAGE = 'https://picsum.photos/seed/zzz-broken/0/0';
+export const MOCK_BROKEN_IMAGE = 'https://example.com/nonexistent-image-404.jpg';
 export const MOCK_LARGE_IMAGE = 'https://picsum.photos/seed/arda-large/2048/2048';
 
 export const ITEM_IMAGE_CONFIG: ImageFieldConfig = {
