@@ -23,11 +23,13 @@ const columnDefs: ColDef<MockItem>[] = [
     headerName: 'Image',
     cellRenderer: ImageCellDisplay,
     cellRendererParams: { config: ITEM_IMAGE_CONFIG },
+    cellEditor: createImageCellEditor(ITEM_IMAGE_CONFIG),
+    editable: true,
     width: 60,
     sortable: false,
     resizable: false,
   },
-  { field: 'name', headerName: 'Name', flex: 1 },
+  { field: 'name', headerName: 'Name', editable: true, flex: 1 },
   { field: 'sku', headerName: 'SKU', width: 100 },
   { field: 'unitCost', headerName: 'Unit Cost', width: 110 },
 ];
@@ -59,7 +61,6 @@ function MiniGrid({ rows, height = 250 }: { rows: MockItem[]; height?: number })
         columnDefs={columnDefs}
         rowHeight={40}
         headerHeight={36}
-        suppressCellFocus
       />
     </div>
   );

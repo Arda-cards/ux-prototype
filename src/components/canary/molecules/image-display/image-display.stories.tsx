@@ -190,11 +190,11 @@ export const WhiteImageContrast: Story = {
 };
 
 /**
- * Click-to-edit demo &#8212; standalone thumbnail with ImageUploadDialog integration.
- * No AG Grid involved. Click the thumbnail to open the upload dialog. Confirm
+ * Double-click-to-edit demo &#8212; standalone thumbnail with ImageUploadDialog integration.
+ * No AG Grid involved. Double-click the thumbnail to open the upload dialog. Confirm
  * to update the image URL; Cancel to keep the current image.
  */
-export const ClickToEdit: Story = {
+export const DoubleClickToEdit: Story = {
   render: () => {
     const [imageUrl, setImageUrl] = React.useState<string | null>(MOCK_ITEM_IMAGE);
     const [dialogOpen, setDialogOpen] = React.useState(false);
@@ -211,14 +211,14 @@ export const ClickToEdit: Story = {
     return (
       <div className="flex flex-col items-center gap-4">
         <p className="text-sm text-muted-foreground max-w-xs text-center">
-          Click the thumbnail to open the ImageUploadDialog. Confirm to change the image; Cancel to
-          keep the current one.
+          Double-click the thumbnail to open the ImageUploadDialog. Confirm to change the image;
+          Cancel to keep the current one.
         </p>
 
         {/* Clickable thumbnail */}
         <button
           type="button"
-          onClick={() => setDialogOpen(true)}
+          onDoubleClick={() => setDialogOpen(true)}
           className="w-32 h-32 rounded-lg overflow-hidden cursor-pointer border-2 border-transparent hover:border-primary transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           aria-label="Edit image"
         >
