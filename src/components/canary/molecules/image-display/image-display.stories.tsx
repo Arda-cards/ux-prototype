@@ -272,6 +272,15 @@ export const Playground: Story = {
 // ============================================================================
 
 import { createWorkflowStories, type WorkflowScene } from '@/use-cases/framework';
+import { ImageDropZone } from '@/components/canary/molecules/image-drop-zone/image-drop-zone';
+import { ImagePreviewEditor } from '@/components/canary/molecules/image-preview-editor/image-preview-editor';
+import { ImageComparisonLayout } from '@/components/canary/molecules/image-comparison-layout/image-comparison-layout';
+import { CopyrightAcknowledgment } from '@/components/canary/atoms/copyright-acknowledgment/copyright-acknowledgment';
+import { Progress } from '@/components/canary/primitives/progress';
+import { Button } from '@/components/canary/primitives/button';
+
+const MOCK_NEW_IMAGE = 'https://picsum.photos/seed/arda-new/400/400';
+const MOCK_UPLOADED_IMAGE = 'https://picsum.photos/seed/arda-uploaded/400/400';
 
 /** Live component used by Interactive and Automated modes. */
 function ImageEditLive() {
@@ -294,43 +303,184 @@ function ImageEditLive() {
   );
 }
 
-/** Static snapshots used by Stepwise mode. */
-function ImageEditScene({ sceneIndex }: { sceneIndex: number }) {
-  // Each scene renders the component in a deterministic state.
-  // Scenes that involve dialog interaction render a descriptive placeholder
-  // since the dialog is not controllable from outside.
-  const scenes: { imageUrl: string | null; label: string }[] = [
-    { imageUrl: MOCK_ITEM_IMAGE, label: 'Existing image loaded in thumbnail.' },
-    {
-      imageUrl: MOCK_ITEM_IMAGE,
-      label: 'Dialog open \u2014 EditExisting mode (crop/rotate + side-by-side).',
-    },
-    { imageUrl: MOCK_ITEM_IMAGE, label: 'Dialog switched to EmptyImage \u2014 drop zone visible.' },
-    { imageUrl: MOCK_ITEM_IMAGE, label: 'URL entered in drop zone, Go button clicked.' },
-    { imageUrl: MOCK_ITEM_IMAGE, label: 'Crop editor active \u2014 zoom adjusted via slider.' },
-    { imageUrl: MOCK_ITEM_IMAGE, label: 'Copyright acknowledgment checked.' },
-    { imageUrl: MOCK_ITEM_IMAGE, label: 'Upload in progress \u2014 progress bar animating.' },
-    {
-      imageUrl: 'https://picsum.photos/seed/arda-uploaded/400/400',
-      label: 'New image saved and displayed.',
-    },
-  ];
-
-  const fallback = { imageUrl: MOCK_ITEM_IMAGE, label: '' };
-  const scene = scenes[sceneIndex] ?? fallback;
-
+/** Dialog-like wrapper for Stepwise scenes that show dialog content. */
+function DialogFrame({
+  title,
+  children,
+  footer,
+}: {
+  title: string;
+  children: React.ReactNode;
+  footer?: React.ReactNode;
+}) {
   return (
-    <div className="flex flex-col items-center gap-4">
-      <div className="w-32 h-32">
-        <ImageDisplay
-          imageUrl={scene.imageUrl}
-          entityTypeDisplayName="Item"
-          propertyDisplayName="Product Image"
-        />
-      </div>
-      <p className="text-sm text-muted-foreground text-center max-w-xs italic">{scene.label}</p>
+    <div className="border border-border rounded-lg p-6 bg-background max-w-2xl w-full">
+      <h2 className="text-lg font-semibold mb-4">{title}</h2>
+      {children}
+      {footer && <div className="flex justify-end gap-2 mt-4">{footer}</div>}
     </div>
   );
+}
+
+/** Static snapshots used by Stepwise mode — renders actual components per scene. */
+function ImageEditScene({ sceneIndex }: { sceneIndex: number }) {
+  const noop = () => {};
+
+  switch (sceneIndex) {
+    // Scene 1: Thumbnail with existing image
+    case 0:
+      return (
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-32 h-32">
+            <ImageDisplay
+              imageUrl={MOCK_ITEM_IMAGE}
+              entityTypeDisplayName="Item"
+              propertyDisplayName="Product Image"
+              config={ITEM_IMAGE_CONFIG}
+              onImageChange={noop}
+            />
+          </div>
+          <span className="text-xs text-muted-foreground">Double-click to edit</span>
+        </div>
+      );
+
+    // Scene 2: EditExisting — side-by-side comparison
+    case 1:
+      return (
+        <DialogFrame
+          title="Edit Product Image"
+          footer={
+            <Button variant="secondary" disabled>
+              Dismiss
+            </Button>
+          }
+        >
+          <ImageComparisonLayout
+            existingImageUrl={MOCK_ITEM_IMAGE}
+            entityTypeDisplayName="Item"
+            propertyDisplayName="Product Image"
+          >
+            <ImagePreviewEditor
+              aspectRatio={1}
+              imageData={MOCK_ITEM_IMAGE}
+              onCropChange={noop}
+              onReset={noop}
+            />
+          </ImageComparisonLayout>
+        </DialogFrame>
+      );
+
+    // Scene 3: EmptyImage — drop zone
+    case 2:
+      return (
+        <DialogFrame
+          title="Add Product Image"
+          footer={
+            <Button variant="secondary" disabled>
+              Cancel
+            </Button>
+          }
+        >
+          <ImageDropZone
+            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
+            onInput={noop}
+            onDismiss={noop}
+          />
+        </DialogFrame>
+      );
+
+    // Scene 4: ProvidedImage — crop editor with new image
+    case 3:
+      return (
+        <DialogFrame title="Edit Product Image">
+          <ImagePreviewEditor
+            aspectRatio={1}
+            imageData={MOCK_NEW_IMAGE}
+            onCropChange={noop}
+            onReset={noop}
+          />
+          <div className="mt-4">
+            <CopyrightAcknowledgment acknowledged={false} onAcknowledge={noop} />
+          </div>
+        </DialogFrame>
+      );
+
+    // Scene 5: Zoomed — crop editor with zoom applied
+    case 4:
+      return (
+        <DialogFrame title="Edit Product Image">
+          <ImagePreviewEditor
+            aspectRatio={1}
+            imageData={MOCK_NEW_IMAGE}
+            onCropChange={noop}
+            onReset={noop}
+          />
+          <div className="mt-4">
+            <CopyrightAcknowledgment acknowledged={false} onAcknowledge={noop} />
+          </div>
+        </DialogFrame>
+      );
+
+    // Scene 6: Copyright acknowledged — Confirm enabled
+    case 5:
+      return (
+        <DialogFrame
+          title="Edit Product Image"
+          footer={
+            <>
+              <Button variant="secondary">Cancel</Button>
+              <Button variant="default" className="bg-primary text-primary-foreground">
+                Confirm
+              </Button>
+            </>
+          }
+        >
+          <ImagePreviewEditor
+            aspectRatio={1}
+            imageData={MOCK_NEW_IMAGE}
+            onCropChange={noop}
+            onReset={noop}
+          />
+          <div className="mt-4">
+            <CopyrightAcknowledgment acknowledged={true} onAcknowledge={noop} />
+          </div>
+        </DialogFrame>
+      );
+
+    // Scene 7: Uploading — progress bar
+    case 6:
+      return (
+        <DialogFrame
+          title="Edit Product Image"
+          footer={
+            <Button variant="secondary" disabled>
+              Uploading&#8230;
+            </Button>
+          }
+        >
+          <div className="flex flex-col gap-4">
+            <p className="text-sm text-muted-foreground text-center">Uploading image&#8230;</p>
+            <Progress value={65} className="bg-muted" />
+          </div>
+        </DialogFrame>
+      );
+
+    // Scene 8: Done — new image in thumbnail
+    case 7:
+    default:
+      return (
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-32 h-32">
+            <ImageDisplay
+              imageUrl={MOCK_UPLOADED_IMAGE}
+              entityTypeDisplayName="Item"
+              propertyDisplayName="Product Image"
+            />
+          </div>
+          <span className="text-xs text-muted-foreground font-mono">{MOCK_UPLOADED_IMAGE}</span>
+        </div>
+      );
+  }
 }
 
 const happyPathScenes: WorkflowScene[] = [
