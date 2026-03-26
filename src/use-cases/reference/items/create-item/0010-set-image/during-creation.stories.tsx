@@ -1,6 +1,10 @@
 /**
  * REF::ITM::0003::0010.UC — Set Image During Creation (Vendored Reference)
  *
+ * NOTE: This file is excluded from tsconfig.json because it imports from
+ * canary-refactor/ which uses @frontend/ aliases that only resolve in
+ * Storybook's Vite config, not in bare tsc. See decision UD-03.
+ *
  * Vendored reference story: renders the vendored ItemFormPanel inside the
  * canary app shell via ItemsPage. Exercises clicking "Add item" to open the
  * form panel, then verifies the form is present.
