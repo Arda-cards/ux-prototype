@@ -8,8 +8,6 @@ import {
 } from '@/components/canary/__mocks__/image-story-data';
 
 import { ImageDisplay } from './image-display';
-import { ImageUploadDialog } from '@/components/canary/organisms/shared/image-upload-dialog/image-upload-dialog';
-import type { ImageUploadResult } from '@/types/canary/utilities/image-field-config';
 
 const meta = {
   title: 'Components/Canary/Molecules/ImageDisplay',
@@ -190,53 +188,65 @@ export const WhiteImageContrast: Story = {
 };
 
 /**
- * Double-click-to-edit demo &#8212; standalone thumbnail with ImageUploadDialog integration.
- * No AG Grid involved. Double-click the thumbnail to open the upload dialog. Confirm
- * to update the image URL; Cancel to keep the current image.
+ * Double-click-to-edit demo &#8212; standalone thumbnail with baked-in ImageUploadDialog.
+ * No AG Grid involved. Double-click the thumbnail (or focus and press Enter) to open
+ * the upload dialog. The dialog enters EditExisting mode because an image is present.
+ * Confirm to update the image URL; Dismiss to keep the current image.
+ *
+ * The edit flow is entirely managed inside ImageDisplay &#8212; no external dialog wiring needed.
  */
 export const DoubleClickToEdit: Story = {
   render: () => {
     const [imageUrl, setImageUrl] = React.useState<string | null>(MOCK_ITEM_IMAGE);
-    const [dialogOpen, setDialogOpen] = React.useState(false);
-
-    const handleConfirm = (result: ImageUploadResult) => {
-      setImageUrl(result.imageUrl);
-      setDialogOpen(false);
-    };
-
-    const handleCancel = () => {
-      setDialogOpen(false);
-    };
-
     return (
       <div className="flex flex-col items-center gap-4">
         <p className="text-sm text-muted-foreground max-w-xs text-center">
-          Double-click the thumbnail (or focus it and press Enter) to open the ImageUploadDialog.
-          Confirm to change the image; Cancel to keep the current one.
+          Double-click the thumbnail (or focus it and press Enter) to open the editor. With an image
+          present the dialog opens in EditExisting mode (crop/rotate + side-by-side). Accept to
+          apply changes; Dismiss to keep the current image.
         </p>
-
-        {/* Interactive thumbnail — double-click or Enter to edit (via onEdit prop) */}
         <div className="w-32 h-32">
           <ImageDisplay
             imageUrl={imageUrl}
             entityTypeDisplayName="Item"
             propertyDisplayName="Product Image"
-            onEdit={() => setDialogOpen(true)}
+            config={ITEM_IMAGE_CONFIG}
+            onImageChange={(result) => setImageUrl(result.imageUrl)}
           />
         </div>
-
         <span className="text-xs text-muted-foreground font-mono break-all max-w-xs text-center">
           {imageUrl ?? '(no image)'}
         </span>
+      </div>
+    );
+  },
+};
 
-        {/* Upload dialog */}
-        <ImageUploadDialog
-          config={ITEM_IMAGE_CONFIG}
-          existingImageUrl={imageUrl}
-          open={dialogOpen}
-          onConfirm={handleConfirm}
-          onCancel={handleCancel}
-        />
+/**
+ * Double-click-to-edit with no initial image &#8212; dialog opens in EmptyImage (upload) mode.
+ * Drop a file or paste a URL to stage an image, then confirm to set it.
+ */
+export const DoubleClickToEditNoImage: Story = {
+  render: () => {
+    const [imageUrl, setImageUrl] = React.useState<string | null>(null);
+    return (
+      <div className="flex flex-col items-center gap-4">
+        <p className="text-sm text-muted-foreground max-w-xs text-center">
+          Double-click the thumbnail (or focus it and press Enter) to open the upload surface. No
+          image is set yet &#8212; the dialog opens in EmptyImage mode.
+        </p>
+        <div className="w-32 h-32">
+          <ImageDisplay
+            imageUrl={imageUrl}
+            entityTypeDisplayName="Item"
+            propertyDisplayName="Product Image"
+            config={ITEM_IMAGE_CONFIG}
+            onImageChange={(result) => setImageUrl(result.imageUrl)}
+          />
+        </div>
+        <span className="text-xs text-muted-foreground font-mono break-all max-w-xs text-center">
+          {imageUrl ?? '(no image)'}
+        </span>
       </div>
     );
   },

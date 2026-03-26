@@ -4,10 +4,20 @@ import { describe, it, expect, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 
 import { ImageDisplay } from './image-display';
+import type { ImageFieldConfig } from '@/types/canary/utilities/image-field-config';
 
 const defaultProps = {
   entityTypeDisplayName: 'Item',
   propertyDisplayName: 'Product Image',
+};
+
+const TEST_CONFIG: ImageFieldConfig = {
+  entityTypeDisplayName: 'Item',
+  propertyDisplayName: 'Product Image',
+  aspectRatio: 1,
+  acceptedFormats: ['image/jpeg', 'image/png'],
+  maxFileSizeBytes: 5_000_000,
+  maxDimension: 2048,
 };
 
 describe('ImageDisplay', () => {
@@ -89,48 +99,90 @@ describe('ImageDisplay', () => {
     expect(img).toHaveClass('object-cover');
   });
 
-  // --- onEdit interaction tests ---
+  // --- onImageChange / config interaction tests ---
 
-  it('renders as div (non-interactive) when onEdit is not provided', () => {
+  it('renders as div (non-interactive) when onImageChange is not provided', () => {
     const { container } = render(<ImageDisplay {...defaultProps} imageUrl={null} />);
     const root = container.querySelector('[data-slot="image-display"]');
     expect(root?.tagName).toBe('DIV');
   });
 
-  it('renders as button (interactive) when onEdit is provided', () => {
+  it('renders as div (non-interactive) when config is not provided even if onImageChange is set', () => {
     const { container } = render(
-      <ImageDisplay {...defaultProps} imageUrl={null} onEdit={vi.fn()} />,
+      <ImageDisplay {...defaultProps} imageUrl={null} onImageChange={vi.fn()} />,
+    );
+    const root = container.querySelector('[data-slot="image-display"]');
+    expect(root?.tagName).toBe('DIV');
+  });
+
+  it('renders as button (interactive) when both onImageChange and config are provided', () => {
+    const { container } = render(
+      <ImageDisplay
+        {...defaultProps}
+        imageUrl={null}
+        config={TEST_CONFIG}
+        onImageChange={vi.fn()}
+      />,
     );
     const root = container.querySelector('[data-slot="image-display"]');
     expect(root?.tagName).toBe('BUTTON');
   });
 
-  it('calls onEdit on double-click', () => {
-    const onEdit = vi.fn();
+  it('opens ImageUploadDialog on double-click when interactive', () => {
     const { container } = render(
-      <ImageDisplay {...defaultProps} imageUrl="https://example.com/img.jpg" onEdit={onEdit} />,
+      <ImageDisplay
+        {...defaultProps}
+        imageUrl="https://example.com/img.jpg"
+        config={TEST_CONFIG}
+        onImageChange={vi.fn()}
+      />,
     );
     const btn = container.querySelector('[data-slot="image-display"]') as HTMLElement;
     fireEvent.dblClick(btn);
-    expect(onEdit).toHaveBeenCalledOnce();
+    // Dialog should be rendered (the Dialog component renders to the DOM)
+    expect(document.querySelector('[data-slot="image-upload-dialog"]')).toBeInTheDocument();
   });
 
-  it('calls onEdit on Enter key', async () => {
+  it('opens ImageUploadDialog on Enter key when interactive', async () => {
     const user = userEvent.setup();
-    const onEdit = vi.fn();
     render(
-      <ImageDisplay {...defaultProps} imageUrl="https://example.com/img.jpg" onEdit={onEdit} />,
+      <ImageDisplay
+        {...defaultProps}
+        imageUrl="https://example.com/img.jpg"
+        config={TEST_CONFIG}
+        onImageChange={vi.fn()}
+      />,
     );
     await user.tab(); // focus the button
     await user.keyboard('{Enter}');
-    expect(onEdit).toHaveBeenCalledOnce();
+    expect(document.querySelector('[data-slot="image-upload-dialog"]')).toBeInTheDocument();
   });
 
   it('has focus-visible ring when interactive', () => {
     const { container } = render(
-      <ImageDisplay {...defaultProps} imageUrl={null} onEdit={vi.fn()} />,
+      <ImageDisplay
+        {...defaultProps}
+        imageUrl={null}
+        config={TEST_CONFIG}
+        onImageChange={vi.fn()}
+      />,
     );
     const btn = container.querySelector('[data-slot="image-display"]');
     expect(btn).toHaveClass('focus-visible:ring-2');
+  });
+
+  it('does not render ImageUploadDialog before interaction', () => {
+    render(
+      <ImageDisplay
+        {...defaultProps}
+        imageUrl={null}
+        config={TEST_CONFIG}
+        onImageChange={vi.fn()}
+      />,
+    );
+    // Dialog should not be open on initial render (dialogOpen starts as false)
+    // The Dialog component is rendered but closed — it will not mount content
+    const dialogContent = document.querySelector('[data-slot="image-upload-dialog"]');
+    expect(dialogContent).not.toBeInTheDocument();
   });
 });

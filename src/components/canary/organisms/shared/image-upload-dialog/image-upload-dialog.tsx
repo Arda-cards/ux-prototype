@@ -394,10 +394,10 @@ export function ImageUploadDialog({
                 className="bg-secondary text-secondary-foreground"
                 onClick={onCancel}
               >
-                Cancel
+                Dismiss
               </Button>
               <Button type="button" onClick={() => void handleEditConfirm()}>
-                Confirm
+                Accept
               </Button>
             </DialogFooter>
           )}

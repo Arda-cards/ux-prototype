@@ -4,6 +4,11 @@ import { cn } from '@/types/canary/utilities/utils';
 import { Skeleton } from '@/components/canary/primitives/skeleton';
 import { Badge } from '@/components/canary/atoms/badge/badge-base';
 import { getInitials } from '@/types/canary/utilities/get-initials';
+import { ImageUploadDialog } from '@/components/canary/organisms/shared/image-upload-dialog/image-upload-dialog';
+import type {
+  ImageFieldConfig,
+  ImageUploadResult,
+} from '@/types/canary/utilities/image-field-config';
 
 // --- Interfaces ---
 
@@ -16,6 +21,11 @@ export interface ImageDisplayInitProps {
   entityTypeDisplayName: string;
   /** Display name of this image property (e.g. "Product Image"). */
   propertyDisplayName: string;
+  /**
+   * Required when `onImageChange` is provided. Configures the upload dialog
+   * (aspect ratio, accepted formats, size limits).
+   */
+  config?: ImageFieldConfig;
 }
 
 /** Runtime configuration for ImageDisplay (live data). */
@@ -23,11 +33,11 @@ export interface ImageDisplayRuntimeProps {
   /** URL of the image to display. Null means "no image" (shows initials, no error badge). */
   imageUrl: string | null;
   /**
-   * Optional edit callback. When provided, the component becomes interactive:
-   * double-click or Enter triggers `onEdit`. The component renders as a focusable
-   * element with hover and focus-visible styles.
+   * When provided together with `config`, enables the full edit flow.
+   * Double-click or Enter opens the ImageUploadDialog internally.
+   * On confirm, calls this callback with the upload result.
    */
-  onEdit?: () => void;
+  onImageChange?: (result: ImageUploadResult) => void;
 }
 
 /** Combined props for ImageDisplay. */
@@ -52,18 +62,27 @@ type LoadState = 'loading' | 'loaded' | 'error';
  * When `imageUrl` is `null` the component shows an initials placeholder without
  * an error badge &#8212; this is the "no image" state, not a broken image.
  *
- * When `onEdit` is provided, the component becomes interactive: double-click or
- * Enter key triggers the callback. A subtle hover border and focus ring indicate
- * interactivity.
+ * When both `onImageChange` and `config` are provided, the component becomes
+ * interactive: double-click or Enter opens an `ImageUploadDialog` internally.
+ * The dialog enters EditExisting mode when there is an existing image, or
+ * EmptyImage mode when `imageUrl` is null. On confirm, `onImageChange` is
+ * called with the result and the dialog closes.
  *
  * The container fills its parent (`w-full h-full`) so the caller controls sizing.
  * No border is applied deliberately; `bg-muted` provides sufficient contrast even
  * for white images.
  */
-export function ImageDisplay({ imageUrl, entityTypeDisplayName, onEdit }: ImageDisplayProps) {
+export function ImageDisplay({
+  imageUrl,
+  entityTypeDisplayName,
+  propertyDisplayName: _propertyDisplayName,
+  config,
+  onImageChange,
+}: ImageDisplayProps) {
   const [loadState, setLoadState] = React.useState<LoadState>(
     imageUrl === null ? 'loaded' : 'loading',
   );
+  const [dialogOpen, setDialogOpen] = React.useState(false);
 
   // Reset load state whenever imageUrl changes
   React.useEffect(() => {
@@ -72,22 +91,34 @@ export function ImageDisplay({ imageUrl, entityTypeDisplayName, onEdit }: ImageD
 
   const initials = getInitials(entityTypeDisplayName);
 
-  const handleDoubleClick = onEdit
+  const isInteractive = onImageChange !== undefined && config !== undefined;
+
+  const handleDoubleClick = isInteractive
     ? () => {
-        onEdit();
+        setDialogOpen(true);
       }
     : undefined;
 
-  const handleKeyDown = onEdit
+  const handleKeyDown = isInteractive
     ? (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
           e.preventDefault();
-          onEdit();
+          setDialogOpen(true);
         }
       }
     : undefined;
 
-  const isInteractive = onEdit !== undefined;
+  const handleConfirm = React.useCallback(
+    (result: ImageUploadResult) => {
+      onImageChange?.(result);
+      setDialogOpen(false);
+    },
+    [onImageChange],
+  );
+
+  const handleCancel = React.useCallback(() => {
+    setDialogOpen(false);
+  }, []);
 
   const content = (
     <>
@@ -131,6 +162,17 @@ export function ImageDisplay({ imageUrl, entityTypeDisplayName, onEdit }: ImageD
         >
           !
         </Badge>
+      )}
+
+      {/* ImageUploadDialog — rendered inside the component when edit flow is enabled */}
+      {isInteractive && (
+        <ImageUploadDialog
+          config={config}
+          existingImageUrl={imageUrl}
+          open={dialogOpen}
+          onConfirm={handleConfirm}
+          onCancel={handleCancel}
+        />
       )}
     </>
   );

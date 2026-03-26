@@ -349,11 +349,11 @@ describe('ImageUploadDialog', () => {
       expect(screen.queryByTestId('copyright-acknowledgment')).not.toBeInTheDocument();
     });
 
-    it('shows "Upload New Image", "Cancel", and "Confirm" buttons in EditExisting state', () => {
+    it('shows "Upload New Image", "Dismiss", and "Accept" buttons in EditExisting state', () => {
       renderDialog({ existingImageUrl: EXISTING_URL });
       expect(screen.getByRole('button', { name: 'Upload New Image' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Confirm' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Dismiss' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Accept' })).toBeInTheDocument();
     });
 
     it('shows dialog title as "Edit Product Image" in EditExisting state', () => {
@@ -370,10 +370,10 @@ describe('ImageUploadDialog', () => {
       });
     });
 
-    it('"Cancel" in EditExisting calls onCancel', () => {
+    it('"Dismiss" in EditExisting calls onCancel', () => {
       const onCancel = vi.fn();
       renderDialog({ existingImageUrl: EXISTING_URL, onCancel });
-      fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
       expect(onCancel).toHaveBeenCalledOnce();
     });
 
@@ -383,7 +383,7 @@ describe('ImageUploadDialog', () => {
         renderDialog({ existingImageUrl: EXISTING_URL });
 
         await act(async () => {
-          fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+          fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
           await Promise.resolve();
         });
 
@@ -409,7 +409,7 @@ describe('ImageUploadDialog', () => {
         renderDialog({ existingImageUrl: EXISTING_URL, onConfirm });
 
         await act(async () => {
-          fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+          fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
           await Promise.resolve();
         });
 
