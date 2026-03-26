@@ -1,5 +1,6 @@
 import type { Preview } from '@storybook/react-vite';
 import { withAgentation } from './addons/agentation-toggle/with-agentation';
+import { withHighlights } from './addons/hypothesis-bridge/with-highlights';
 import { withFullAppProviders } from '../src/decorators/with-full-app-providers';
 import { initialize, mswLoader } from 'msw-storybook-addon';
 import { handlers } from '@frontend/mocks/handlers';
@@ -35,7 +36,7 @@ const safeMswLoader: typeof mswLoader = async (context) => {
 };
 
 const preview: Preview = {
-  decorators: [withAgentation, withFullAppProviders],
+  decorators: [withAgentation, withHighlights, withFullAppProviders],
   loaders: [safeMswLoader],
   initialGlobals: {
     agentationEnabled: false,

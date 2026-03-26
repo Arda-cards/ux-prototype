@@ -18,6 +18,22 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.3.0] - 2026-03-25
+
+### Added
+
+- Agentation → Hypothesis bridge: the Copy feedback button now posts annotations to the
+  Hypothesis API for persistent storage and threaded discussion in the `arda-products` group
+- Hypothesis sidebar embedded in the Storybook preview iframe with per-story URL scoping
+- Highlight layer renders numbered grey badges on elements with existing Hypothesis annotations
+- Page notes fallback for annotations on elements without visible text content
+- Vite server plugin proxying Hypothesis API requests with server-side token injection
+- Agentation `onCopy` handler now posts to Hypothesis, clears localStorage, and resets
+  the overlay in addition to copying markdown to clipboard
+- Badges refresh on window focus to reflect deletions made in the Hypothesis sidebar
+- Unit tests for annotation transform, HTTP client, and highlight utilities (34 tests)
+- Workflow documentation page: Docs/Workflows/Providing Feedback
+
 ## [4.2.0] - 2026-03-25
 
 ### Added
