@@ -33,15 +33,16 @@ export type ImageDropZoneProps = ImageDropZoneStaticProps &
 // --- Component ---
 
 /**
- * ImageDropZone — unified image input surface.
+ * ImageDropZone &#8212; unified image input surface.
  *
- * Accepts images via drag-and-drop, file picker, or URL entry.
+ * Accepts images via drag-and-drop, file picker, clipboard paste, or URL entry.
  * Validates MIME types for files and HTTPS for URLs before calling `onInput`.
  */
 export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDropZoneProps) {
   const [urlValue, setUrlValue] = React.useState('');
   const [error, setError] = React.useState<string | null>(null);
 
+  // --- File drop handler ---
   const onDrop = React.useCallback(
     (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
       setError(null);
@@ -86,24 +87,76 @@ export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDrop
     multiple: false,
   });
 
-  const handleUrlKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+  // --- Clipboard paste handler ---
+  const handlePaste = React.useCallback(
+    (e: React.ClipboardEvent) => {
       setError(null);
-      const trimmed = urlValue.trim();
-      if (!trimmed.startsWith('https://')) {
-        const msg = 'URL must start with https://';
-        setError(msg);
-        onInput({ type: 'error', message: msg });
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item?.type.startsWith('image/')) {
+          const file = item.getAsFile();
+          if (file) {
+            if (!acceptedFormats.includes(file.type as ImageMimeType)) {
+              const formats = acceptedFormats.join(', ');
+              setError(`Invalid file type. Accepted formats: ${formats}`);
+              onInput({
+                type: 'error',
+                message: `Invalid file type. Accepted formats: ${formats}`,
+              });
+              return;
+            }
+            onInput({ type: 'file', file });
+            return;
+          }
+        }
+      }
+
+      // Check for pasted text that might be a URL
+      const text = e.clipboardData?.getData('text/plain')?.trim();
+      if (text && text.startsWith('https://')) {
+        setUrlValue(text);
+        onInput({ type: 'url', url: text });
         return;
       }
-      onInput({ type: 'url', url: trimmed });
+
+      // No image found in clipboard
+      if (text) {
+        setError('No image found in clipboard. Try pasting an image or an HTTPS URL.');
+      }
+    },
+    [acceptedFormats, onInput],
+  );
+
+  // --- URL submission ---
+  const handleUrlSubmit = React.useCallback(() => {
+    setError(null);
+    const trimmed = urlValue.trim();
+    if (!trimmed) return;
+    if (!trimmed.startsWith('https://')) {
+      const msg = 'URL must start with https://';
+      setError(msg);
+      onInput({ type: 'error', message: msg });
+      return;
+    }
+    onInput({ type: 'url', url: trimmed });
+  }, [urlValue, onInput]);
+
+  const handleUrlKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleUrlSubmit();
     }
   };
+
+  const isUrlValid = urlValue.trim().startsWith('https://');
 
   return (
     <div
       data-slot="image-drop-zone"
       {...getRootProps()}
+      onPaste={handlePaste}
       className={cn(
         'border-2 border-dashed rounded-lg p-6 transition-colors',
         isDragActive ? 'border-primary bg-accent' : 'border-border bg-background',
@@ -125,14 +178,26 @@ export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDrop
           Upload from computer
         </Button>
 
-        <div className="w-full">
+        <div className="w-full flex gap-2">
           <Input
             type="text"
             placeholder="Or paste an image URL"
             value={urlValue}
-            onChange={(e) => setUrlValue(e.target.value)}
+            onChange={(e) => {
+              setUrlValue(e.target.value);
+              setError(null);
+            }}
             onKeyDown={handleUrlKeyDown}
+            className="flex-1"
           />
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleUrlSubmit}
+            disabled={!isUrlValid}
+          >
+            Go
+          </Button>
         </div>
 
         {error && (

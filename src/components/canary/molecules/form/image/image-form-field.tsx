@@ -99,7 +99,7 @@ export function ImageFormField({
       {/* Image area: interactive thumbnail + hover action overlay */}
       <div className="relative group w-24 h-24">
         {/* Interactive ImageDisplay — double-click/Enter opens upload dialog */}
-        <div className="w-full h-full rounded-lg overflow-hidden">
+        <div className="w-full h-full rounded-lg">
           <ImageDisplay
             imageUrl={imageUrl}
             entityTypeDisplayName={entityTypeDisplayName}
