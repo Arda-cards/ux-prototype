@@ -7,9 +7,11 @@ import type { ImageFieldConfig } from '@/types/canary/utilities/image-field-conf
 
 // --- Mocks ---
 
-vi.mock('@/components/canary/__mocks__/image-story-data', () => ({
-  mockUpload: vi.fn().mockResolvedValue('https://cdn.example.com/images/mock-uploaded.jpg'),
-  mockReachabilityCheck: vi.fn().mockResolvedValue(true),
+vi.mock('@/types/canary/utilities/image-upload-handlers', () => ({
+  defaultUploadHandler: vi
+    .fn()
+    .mockResolvedValue('https://cdn.example.com/images/mock-uploaded.jpg'),
+  defaultReachabilityCheck: vi.fn().mockResolvedValue(true),
 }));
 
 vi.mock('@/components/canary/molecules/image-preview-editor/image-preview-editor', () => ({
@@ -251,8 +253,9 @@ describe('ImageUploadDialog', () => {
   it('calls onConfirm with result on confirm (mock the upload)', async () => {
     vi.useFakeTimers();
     try {
-      const { mockUpload } = await import('@/components/canary/__mocks__/image-story-data');
-      (mockUpload as ReturnType<typeof vi.fn>).mockResolvedValue(
+      const { defaultUploadHandler } =
+        await import('@/types/canary/utilities/image-upload-handlers');
+      (defaultUploadHandler as ReturnType<typeof vi.fn>).mockResolvedValue(
         'https://cdn.example.com/images/mock-uploaded.jpg',
       );
       const onConfirm = vi.fn();
@@ -410,8 +413,9 @@ describe('ImageUploadDialog', () => {
     it('"Confirm" in EditExisting calls onConfirm after upload completes', async () => {
       vi.useFakeTimers();
       try {
-        const { mockUpload } = await import('@/components/canary/__mocks__/image-story-data');
-        (mockUpload as ReturnType<typeof vi.fn>).mockResolvedValue(
+        const { defaultUploadHandler } =
+          await import('@/types/canary/utilities/image-upload-handlers');
+        (defaultUploadHandler as ReturnType<typeof vi.fn>).mockResolvedValue(
           'https://cdn.example.com/images/mock-uploaded.jpg',
         );
         const onConfirm = vi.fn();

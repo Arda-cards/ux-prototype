@@ -14,8 +14,9 @@ const meta = {
     docs: {
       description: {
         component:
-          'Form field renderer for entity image fields. Wraps ImageDisplay in an ' +
-          'ImageHoverPreview trigger with hover action icons (inspect, edit, remove).',
+          'Form field renderer for entity image fields. Renders an interactive ImageDisplay ' +
+          'thumbnail (double-click or Enter to edit). Hover reveals Eye (inspect) and Trash ' +
+          '(remove) action icons via a pointer-events-none overlay that does not block double-click.',
       },
     },
   },
@@ -52,7 +53,8 @@ export const WithImage: Story = {
 
 /**
  * WithoutImage &#8212; no image set (imageUrl is null).
- * Hover shows only the Pencil action icon (Eye and Trash are suppressed).
+ * Hover shows no action icons (Eye and Trash are suppressed when no image).
+ * Double-click the thumbnail to open the upload dialog.
  */
 export const WithoutImage: Story = {
   args: {
@@ -75,13 +77,12 @@ export const HoverAffordances: Story = {
             <strong>Eye</strong> &#8212; open full-size inspector (requires image)
           </li>
           <li>
-            <strong>Pencil</strong> &#8212; open upload/edit dialog
-          </li>
-          <li>
             <strong>Trash</strong> &#8212; remove image with confirmation (requires image)
           </li>
         </ul>
-        <p className="text-xs">Double-click the thumbnail also triggers edit.</p>
+        <p className="text-xs">
+          Double-click (or press Enter) the thumbnail to open the edit dialog.
+        </p>
       </div>
     </div>
   ),
@@ -133,18 +134,28 @@ export const RemoveFlow: Story = {
 
 /**
  * EditFlow &#8212; interactive story with image.
- * Hover + click Pencil (or double-click) &#8212; the action logs to the Actions panel.
+ * Double-click (or press Enter) to open the ImageUploadDialog. The updated image URL
+ * is passed to `onChange`.
  */
 export const EditFlow: Story = {
-  render: (args) => (
-    <div className="flex flex-col items-center gap-4">
-      <ImageFormField {...args} />
-      <p className="text-xs text-muted-foreground">
-        Hover the thumbnail and click the Pencil icon, or double-click the thumbnail. Check the
-        Actions panel for the console log.
-      </p>
-    </div>
-  ),
+  render: (args) => {
+    const [imageUrl, setImageUrl] = React.useState<string | null>(MOCK_ITEM_IMAGE);
+    return (
+      <div className="flex flex-col items-center gap-4">
+        <ImageFormField
+          {...args}
+          imageUrl={imageUrl}
+          onChange={(url) => {
+            setImageUrl(url);
+            args.onChange(url);
+          }}
+        />
+        <p className="text-xs text-muted-foreground">
+          Double-click the thumbnail to open the upload dialog. The thumbnail updates on confirm.
+        </p>
+      </div>
+    );
+  },
   args: {
     imageUrl: MOCK_ITEM_IMAGE,
   },
@@ -160,8 +171,3 @@ export const Playground: Story = {
     disabled: false,
   },
 };
-
-/**
- * WithImage &#8212; field with a current image.
- * Hover the thumbnail to reveal three action icons: Eye, Pencil, Trash.
- */

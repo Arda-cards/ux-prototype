@@ -3,7 +3,13 @@ import { fn } from 'storybook/test';
 import { useState } from 'react';
 
 import { ImageUploadDialog } from './image-upload-dialog';
-import { ITEM_IMAGE_CONFIG, MOCK_ITEM_IMAGE } from '@/components/canary/__mocks__/image-story-data';
+import { ImageDisplay } from '@/components/canary/molecules/image-display/image-display';
+import {
+  ITEM_IMAGE_CONFIG,
+  MOCK_ITEM_IMAGE,
+  mockUpload,
+  mockReachabilityCheck,
+} from '@/components/canary/__mocks__/image-story-data';
 import type { ImageUploadResult } from '@/types/canary/utilities/image-field-config';
 
 const meta: Meta<typeof ImageUploadDialog> = {
@@ -45,6 +51,8 @@ const meta: Meta<typeof ImageUploadDialog> = {
     config: ITEM_IMAGE_CONFIG,
     onConfirm: fn(),
     onCancel: fn(),
+    onUpload: mockUpload,
+    onCheckReachability: mockReachabilityCheck,
   },
 };
 
@@ -308,6 +316,48 @@ export const Playground: Story = {
 };
 
 /**
- * EmptyImage state &#8212; dialog opens with no image staged.
- * Shows the ImageDropZone for file or URL input.
+ * FullFlow &#8212; end-to-end baked-in flow using ImageDisplay.
+ *
+ * ImageDisplay with `onImageChange` + `config` handles the entire edit lifecycle
+ * internally: double-click the thumbnail to open ImageUploadDialog, confirm to
+ * update the thumbnail. No external state management required from the parent.
+ *
+ * This story demonstrates that ImageUploadDialog is correctly wired inside
+ * ImageDisplay and that `onUpload` / `onCheckReachability` propagate correctly.
  */
+export const FullFlow: Story = {
+  render: (args) => {
+    const [imageUrl, setImageUrl] = useState<string | null>(MOCK_ITEM_IMAGE);
+    return (
+      <div className="flex flex-col items-center gap-6 p-8">
+        <p className="text-sm text-muted-foreground text-center max-w-xs">
+          Double-click the thumbnail (or press Enter when focused) to open the upload dialog.
+          Confirm to update the displayed image.
+        </p>
+        <div className="w-32 h-32">
+          <ImageDisplay
+            imageUrl={imageUrl}
+            entityTypeDisplayName={ITEM_IMAGE_CONFIG.entityTypeDisplayName}
+            propertyDisplayName={ITEM_IMAGE_CONFIG.propertyDisplayName}
+            config={ITEM_IMAGE_CONFIG}
+            onImageChange={(result) => {
+              args.onConfirm(result);
+              setImageUrl(result.imageUrl);
+            }}
+          />
+        </div>
+        {imageUrl !== null && (
+          <p className="text-xs text-muted-foreground break-all max-w-xs text-center">
+            Current URL: {imageUrl}
+          </p>
+        )}
+        <button className="text-xs text-destructive underline" onClick={() => setImageUrl(null)}>
+          Clear image
+        </button>
+      </div>
+    );
+  },
+  args: {
+    existingImageUrl: MOCK_ITEM_IMAGE,
+  },
+};

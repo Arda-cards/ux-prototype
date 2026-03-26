@@ -6,7 +6,18 @@ import { TypeaheadCellEditor, type TypeaheadOption } from './typeahead-cell-edit
 import { SelectCellEditor } from '../../atoms/grid/select/select-cell-editor';
 import { DragHeader } from './drag-header';
 import { ImageCellDisplay } from '../../atoms/grid/image';
-import { ITEM_IMAGE_CONFIG } from '@/components/canary/__mocks__/image-story-data';
+import type { ImageFieldConfig } from '@/types/canary/utilities/image-field-config';
+
+// --- Local image config (no mock dependency) ---
+
+const ITEM_IMAGE_CONFIG: ImageFieldConfig = {
+  aspectRatio: 1,
+  acceptedFormats: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'],
+  maxFileSizeBytes: 10 * 1024 * 1024,
+  maxDimension: 2048,
+  entityTypeDisplayName: 'Item',
+  propertyDisplayName: 'Product Image',
+};
 
 // --- Shared formatters ---
 

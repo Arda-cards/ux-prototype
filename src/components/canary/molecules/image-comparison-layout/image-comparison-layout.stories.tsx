@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useState } from 'react';
 
 import {
   MOCK_ITEM_IMAGE,
@@ -36,25 +37,33 @@ export default meta;
 type Story = StoryObj<typeof ImageComparisonLayout>;
 /** Desktop side-by-side with baked-in Accept/Dismiss/Upload New buttons. */
 export const DesktopSideBySide: Story = {
-  render: () => (
-    <div className="max-w-2xl">
-      <ImageComparisonLayout
-        existingImageUrl={MOCK_ITEM_IMAGE}
-        entityTypeDisplayName={ITEM_IMAGE_CONFIG.entityTypeDisplayName}
-        propertyDisplayName={ITEM_IMAGE_CONFIG.propertyDisplayName}
-        onAccept={() => alert('Accept: apply edits')}
-        onDismiss={() => alert('Dismiss: discard changes')}
-        onUploadNew={() => alert('Upload New: switch to upload surface')}
-      >
-        <ImagePreviewEditor
-          aspectRatio={ITEM_IMAGE_CONFIG.aspectRatio}
-          imageData={MOCK_ITEM_IMAGE}
-          onCropChange={() => {}}
-          onReset={() => {}}
-        />
-      </ImageComparisonLayout>
-    </div>
-  ),
+  render: () => {
+    const [lastAction, setLastAction] = useState<string | null>(null);
+    return (
+      <div className="max-w-2xl flex flex-col gap-4">
+        <ImageComparisonLayout
+          existingImageUrl={MOCK_ITEM_IMAGE}
+          entityTypeDisplayName={ITEM_IMAGE_CONFIG.entityTypeDisplayName}
+          propertyDisplayName={ITEM_IMAGE_CONFIG.propertyDisplayName}
+          onAccept={() => setLastAction('Accept: apply edits')}
+          onDismiss={() => setLastAction('Dismiss: discard changes')}
+          onUploadNew={() => setLastAction('Upload New: switch to upload surface')}
+        >
+          <ImagePreviewEditor
+            aspectRatio={ITEM_IMAGE_CONFIG.aspectRatio}
+            imageData={MOCK_ITEM_IMAGE}
+            onCropChange={() => {}}
+            onReset={() => {}}
+          />
+        </ImageComparisonLayout>
+        {lastAction !== null && (
+          <p className="text-sm text-muted-foreground text-center">
+            Last action: <span className="font-medium text-foreground">{lastAction}</span>
+          </p>
+        )}
+      </div>
+    );
+  },
 };
 
 /**

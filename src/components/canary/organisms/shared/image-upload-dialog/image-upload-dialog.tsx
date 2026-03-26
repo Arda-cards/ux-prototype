@@ -24,7 +24,10 @@ import { ImageDropZone } from '@/components/canary/molecules/image-drop-zone/ima
 import { ImagePreviewEditor } from '@/components/canary/molecules/image-preview-editor/image-preview-editor';
 import { ImageComparisonLayout } from '@/components/canary/molecules/image-comparison-layout/image-comparison-layout';
 import { CopyrightAcknowledgment } from '@/components/canary/atoms/copyright-acknowledgment/copyright-acknowledgment';
-import { mockUpload, mockReachabilityCheck } from '@/components/canary/__mocks__/image-story-data';
+import {
+  defaultUploadHandler,
+  defaultReachabilityCheck,
+} from '@/types/canary/utilities/image-upload-handlers';
 import { getCroppedImage } from '@/types/canary/utilities/get-cropped-image';
 import type {
   ImageFieldConfig,
@@ -48,6 +51,16 @@ export interface ImageUploadDialogRuntimeProps {
   onConfirm: (result: ImageUploadResult) => void;
   open: boolean;
   onCancel: () => void;
+  /**
+   * Upload handler &#8212; receives the image blob, returns the CDN URL.
+   * Defaults to `defaultUploadHandler` (Storybook/dev stub).
+   */
+  onUpload?: (file: Blob) => Promise<string>;
+  /**
+   * URL reachability check &#8212; returns true if the URL is reachable.
+   * Defaults to `defaultReachabilityCheck`.
+   */
+  onCheckReachability?: (url: string) => Promise<boolean>;
 }
 
 /** Combined props for ImageUploadDialog. */
@@ -148,6 +161,8 @@ export function ImageUploadDialog({
   onConfirm,
   open,
   onCancel,
+  onUpload = defaultUploadHandler,
+  onCheckReachability = defaultReachabilityCheck,
 }: ImageUploadDialogProps) {
   const [phase, dispatch] = React.useReducer(dialogReducer, { name: 'EmptyImage' });
   const [copyrightAcked, setCopyrightAcked] = React.useState(false);
@@ -183,7 +198,7 @@ export function ImageUploadDialog({
       if (progress >= 100) {
         clearInterval(intervalId);
         const blob = typeof imageData === 'string' ? new Blob([]) : imageData;
-        mockUpload(blob).then((imageUrl) => {
+        onUpload(blob).then((imageUrl) => {
           onConfirm({
             imageUrl,
             wasCompressed: false,
@@ -197,24 +212,27 @@ export function ImageUploadDialog({
     return () => clearInterval(intervalId);
   }, [phase.name]); // Intentionally deps on phase.name only — fires once on entering Uploading
 
-  const handleInput = React.useCallback((input: ImageInput) => {
-    if (input.type === 'file') {
-      dispatch({ type: 'INPUT_FILE', file: input.file });
-      setCopyrightAcked(false);
-    } else if (input.type === 'url') {
-      // Mock reachability check; transition optimistically
-      mockReachabilityCheck(input.url).then((reachable) => {
-        if (reachable) {
-          dispatch({ type: 'INPUT_URL', url: input.url });
-          setCopyrightAcked(false);
-        } else {
-          dispatch({ type: 'INPUT_ERROR', message: 'URL could not be reached' });
-        }
-      });
-    } else {
-      dispatch({ type: 'INPUT_ERROR', message: input.message });
-    }
-  }, []);
+  const handleInput = React.useCallback(
+    (input: ImageInput) => {
+      if (input.type === 'file') {
+        dispatch({ type: 'INPUT_FILE', file: input.file });
+        setCopyrightAcked(false);
+      } else if (input.type === 'url') {
+        // Reachability check; transition optimistically
+        onCheckReachability(input.url).then((reachable) => {
+          if (reachable) {
+            dispatch({ type: 'INPUT_URL', url: input.url });
+            setCopyrightAcked(false);
+          } else {
+            dispatch({ type: 'INPUT_ERROR', message: 'URL could not be reached' });
+          }
+        });
+      } else {
+        dispatch({ type: 'INPUT_ERROR', message: input.message });
+      }
+    },
+    [onCheckReachability],
+  );
 
   const handleCancelClick = React.useCallback(() => {
     if (phase.name === 'ProvidedImage') {

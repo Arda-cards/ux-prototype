@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { Eye, Trash2 } from 'lucide-react';
 
 import { cn } from '@/types/canary/utilities/utils';
 import { ImageDisplay } from '@/components/canary/molecules/image-display/image-display';
-import { ImageHoverPreview } from '@/components/canary/molecules/image-hover-preview/image-hover-preview';
+import { ImageInspectorOverlay } from '@/components/canary/molecules/image-inspector-overlay/image-inspector-overlay';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,9 +13,11 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/canary/primitives/alert-dialog';
-import type { ImageFieldConfig } from '@/types/canary/utilities/image-field-config';
+import type {
+  ImageFieldConfig,
+  ImageUploadResult,
+} from '@/types/canary/utilities/image-field-config';
 
 // --- Interfaces ---
 
@@ -24,7 +26,7 @@ export interface ImageFormFieldStaticProps {}
 
 /** Init configuration for ImageFormField (entity/property labels, field rules). */
 export interface ImageFormFieldInitProps {
-  /** Field configuration — contains display names and upload constraints. */
+  /** Field configuration &#8212; contains display names and upload constraints. */
   config: ImageFieldConfig;
 }
 
@@ -48,15 +50,18 @@ export type ImageFormFieldProps = ImageFormFieldStaticProps &
 /**
  * ImageFormField &#8212; form field renderer for entity image fields.
  *
- * Renders an `ImageDisplay` thumbnail wrapped in an `ImageHoverPreview`. On hover a set of
- * action icons appears over the thumbnail:
+ * Renders an interactive `ImageDisplay` thumbnail (double-click or Enter opens
+ * the upload dialog). On hover, two action icons appear over the thumbnail without
+ * blocking the double-click edit flow:
  *
  * - **Eye** &#8212; opens the ImageInspectorOverlay (suppressed when `imageUrl` is null).
- * - **Pencil** &#8212; triggers the edit/upload action (always visible).
  * - **Trash** &#8212; opens a remove confirmation `AlertDialog` (hidden when `imageUrl` is null).
  *
- * On confirmed remove, `onChange(null)` is called. Double-clicking the image area also
- * triggers the edit action.
+ * The hover overlay uses `pointer-events-none` on its container and `pointer-events-auto`
+ * only on the icon buttons, so double-clicks on the image area pass through to the
+ * underlying `ImageDisplay` button.
+ *
+ * On confirmed remove, `onChange(null)` is called.
  *
  * Disabled state: `opacity-50 pointer-events-none`.
  */
@@ -68,13 +73,19 @@ export function ImageFormField({
 }: ImageFormFieldProps) {
   const { entityTypeDisplayName, propertyDisplayName } = config;
 
-  const handleEdit = React.useCallback(() => {
-    // Future: open upload dialog via parent callback
-    // TODO: wire to ImageUploadDialog in Run 4
-  }, []);
+  const [inspectorOpen, setInspectorOpen] = React.useState(false);
+  const [removeDialogOpen, setRemoveDialogOpen] = React.useState(false);
+
+  const handleImageChange = React.useCallback(
+    (result: ImageUploadResult) => {
+      onChange(result.imageUrl);
+    },
+    [onChange],
+  );
 
   const handleRemoveConfirm = React.useCallback(() => {
     onChange(null);
+    setRemoveDialogOpen(false);
   }, [onChange]);
 
   return (
@@ -85,114 +96,99 @@ export function ImageFormField({
         disabled && 'opacity-50 pointer-events-none',
       )}
     >
-      {/* Image area: thumbnail + hover preview + action overlay */}
-      <ImageHoverPreview
-        imageUrl={imageUrl}
-        entityTypeDisplayName={entityTypeDisplayName}
-        propertyDisplayName={propertyDisplayName}
-      >
-        <div
-          className={cn(
-            'relative group rounded-lg w-24 h-24 overflow-hidden cursor-pointer',
-            'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
-          )}
-          onDoubleClick={handleEdit}
-          tabIndex={0}
-          role="button"
-          aria-label={`Edit ${propertyDisplayName}`}
-        >
-          {/* Thumbnail */}
+      {/* Image area: interactive thumbnail + hover action overlay */}
+      <div className="relative group w-24 h-24">
+        {/* Interactive ImageDisplay — double-click/Enter opens upload dialog */}
+        <div className="w-full h-full rounded-lg overflow-hidden">
           <ImageDisplay
             imageUrl={imageUrl}
             entityTypeDisplayName={entityTypeDisplayName}
             propertyDisplayName={propertyDisplayName}
+            config={config}
+            onImageChange={handleImageChange}
           />
+        </div>
 
-          {/* Action icons overlay */}
-          <div
-            className={cn(
-              'absolute inset-0 flex items-center justify-center gap-1',
-              'opacity-0 group-hover:opacity-100 transition-opacity',
-              'bg-black/30 rounded-lg',
-            )}
-          >
-            {/* Eye icon — suppressed when no image */}
-            {imageUrl !== null && (
-              <button
-                type="button"
-                aria-label="Inspect image"
-                className={cn(
-                  'text-white hover:text-white/80 bg-black/40 rounded-full p-1',
-                  'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
-                )}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  // Future: open ImageInspectorOverlay
-                  // TODO: wire to ImageInspectorOverlay in Run 4
-                }}
-              >
-                <Eye className="w-4 h-4" aria-hidden="true" />
-              </button>
-            )}
-
-            {/* Pencil icon — always visible */}
+        {/* Hover action overlay — pointer-events-none on container so double-click passes through */}
+        <div
+          className={cn(
+            'absolute inset-0 flex items-center justify-center gap-1',
+            'opacity-0 group-hover:opacity-100 transition-opacity',
+            'bg-black/30 rounded-lg',
+            'pointer-events-none',
+          )}
+        >
+          {/* Eye icon — opens inspector (suppressed when no image) */}
+          {imageUrl !== null && (
             <button
               type="button"
-              aria-label="Edit image"
+              aria-label="Inspect image"
               className={cn(
+                'pointer-events-auto',
                 'text-white hover:text-white/80 bg-black/40 rounded-full p-1',
                 'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
               )}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleEdit();
-              }}
+              onClick={() => setInspectorOpen(true)}
             >
-              <Pencil className="w-4 h-4" aria-hidden="true" />
+              <Eye className="w-4 h-4" aria-hidden="true" />
             </button>
+          )}
 
-            {/* Trash icon — hidden when no image */}
-            {imageUrl !== null && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <button
-                    type="button"
-                    aria-label="Remove image"
-                    className={cn(
-                      'text-white hover:text-white/80 bg-black/40 rounded-full p-1',
-                      'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
-                    )}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Trash2 className="w-4 h-4" aria-hidden="true" />
-                  </button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Remove {propertyDisplayName}?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will remove the current {propertyDisplayName.toLowerCase()} from this{' '}
-                      {entityTypeDisplayName.toLowerCase()}. You can add a new image at any time.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      onClick={handleRemoveConfirm}
-                    >
-                      Remove
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
-          </div>
+          {/* Trash icon — opens remove confirmation (hidden when no image) */}
+          {imageUrl !== null && (
+            <button
+              type="button"
+              aria-label="Remove image"
+              className={cn(
+                'pointer-events-auto',
+                'text-white hover:text-white/80 bg-black/40 rounded-full p-1',
+                'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+              )}
+              onClick={() => setRemoveDialogOpen(true)}
+            >
+              <Trash2 className="w-4 h-4" aria-hidden="true" />
+            </button>
+          )}
         </div>
-      </ImageHoverPreview>
+      </div>
 
       {/* Label */}
       <span className="text-sm text-muted-foreground">{propertyDisplayName}</span>
+
+      {/* ImageInspectorOverlay — controlled by eye icon button */}
+      {imageUrl !== null && (
+        <ImageInspectorOverlay
+          imageUrl={imageUrl}
+          open={inspectorOpen}
+          onClose={() => setInspectorOpen(false)}
+          onEdit={() => {
+            setInspectorOpen(false);
+            // Edit is handled by the ImageDisplay double-click — nothing more needed here
+          }}
+        />
+      )}
+
+      {/* Remove AlertDialog — controlled by trash icon button */}
+      <AlertDialog open={removeDialogOpen} onOpenChange={setRemoveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove {propertyDisplayName}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will remove the current {propertyDisplayName.toLowerCase()} from this{' '}
+              {entityTypeDisplayName.toLowerCase()}. You can add a new image at any time.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setRemoveDialogOpen(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleRemoveConfirm}
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

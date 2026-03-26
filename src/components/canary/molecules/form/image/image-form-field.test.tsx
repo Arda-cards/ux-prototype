@@ -57,8 +57,9 @@ describe('ImageFormField', () => {
     fireEvent.mouseEnter(root);
 
     expect(screen.getByRole('button', { name: 'Inspect image' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Edit image' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Remove image' })).toBeInTheDocument();
+    // No Pencil/Edit icon — edit is via double-click on ImageDisplay
+    expect(screen.queryByRole('button', { name: 'Edit image' })).not.toBeInTheDocument();
   });
 
   it('hides action icons when not hovered (icons in DOM but opacity-0 by default)', () => {
@@ -81,13 +82,13 @@ describe('ImageFormField', () => {
     expect(screen.queryByRole('button', { name: 'Remove image' })).not.toBeInTheDocument();
   });
 
-  it('pencil click fires edit action without error', async () => {
-    const user = userEvent.setup();
+  it('interactive ImageDisplay button is present for double-click edit', () => {
     renderField();
-
-    // Edit action is a TODO stub — verify button is clickable without throwing
-    await user.click(screen.getByRole('button', { name: 'Edit image' }));
-    expect(screen.getByRole('button', { name: 'Edit image' })).toBeInTheDocument();
+    // ImageDisplay renders as a <button> when onImageChange + config are provided
+    const editButton = screen.getByRole('button', {
+      name: /double-click or press Enter/i,
+    });
+    expect(editButton).toBeInTheDocument();
   });
 
   it('trash click opens remove confirmation (AlertDialog content visible)', async () => {

@@ -1,4 +1,5 @@
-import { XIcon } from 'lucide-react';
+import * as React from 'react';
+import { Eye, XIcon } from 'lucide-react';
 import { Dialog as DialogPrimitive } from 'radix-ui';
 
 import { cn } from '@/types/canary/utilities/utils';
@@ -17,10 +18,14 @@ export interface ImageInspectorOverlayInitProps {}
 export interface ImageInspectorOverlayRuntimeProps {
   /** URL of the image to display full-size. */
   imageUrl: string;
-  /** Whether the overlay is open. */
-  open: boolean;
+  /**
+   * Whether the overlay is open (controlled mode).
+   * When omitted the component manages its own open state (uncontrolled mode)
+   * and a trigger button is rendered to open the overlay.
+   */
+  open?: boolean;
   /** Callback when the overlay should close (Escape, click-outside, close button). */
-  onClose: () => void;
+  onClose?: () => void;
   /** Optional callback for the Edit button. When undefined, no Edit button is rendered. */
   onEdit?: () => void;
 }
@@ -33,26 +38,58 @@ export type ImageInspectorOverlayProps = ImageInspectorOverlayStaticProps &
 /**
  * ImageInspectorOverlay &#8212; full-size image modal overlay with optional Edit action.
  *
- * Uses the Dialog atom in controlled mode. Displays the image at up to full viewport
- * height (`max-h-[90vh]`) with `object-contain`. When `onEdit` is provided, an Edit
- * button is shown in the footer; clicking it calls `onEdit` and closes the overlay.
+ * Supports two usage modes:
+ *
+ * - **Controlled**: pass `open` + `onClose` from the parent. The parent manages visibility.
+ * - **Uncontrolled**: omit `open` and `onClose`. The component renders a trigger button
+ *   and manages its own open state internally.
+ *
+ * Displays the image at up to full viewport height (`max-h-[90vh]`) with `object-contain`.
+ * When `onEdit` is provided, an Edit button is shown in the footer; clicking it calls
+ * `onEdit` and closes the overlay.
  *
  * Standard Dialog dismiss methods apply: Escape key, click-outside, and the close button.
  */
 export function ImageInspectorOverlay({
   imageUrl,
-  open,
-  onClose,
+  open: controlledOpen,
+  onClose: controlledOnClose,
   onEdit,
 }: ImageInspectorOverlayProps) {
+  const isControlled = controlledOpen !== undefined;
+  const [internalOpen, setInternalOpen] = React.useState(false);
+
+  const open = isControlled ? controlledOpen : internalOpen;
+  const handleClose = React.useCallback(() => {
+    if (isControlled) {
+      controlledOnClose?.();
+    } else {
+      setInternalOpen(false);
+    }
+  }, [isControlled, controlledOnClose]);
+
   const handleEdit = () => {
     onEdit?.();
-    onClose();
+    handleClose();
   };
 
   return (
     <div data-slot="image-inspector-overlay">
-      <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      {/* Uncontrolled mode: render a trigger button */}
+      {!isControlled && (
+        <button
+          type="button"
+          aria-label="Inspect image"
+          onClick={() => setInternalOpen(true)}
+          className={cn(
+            'text-muted-foreground hover:text-foreground transition-colors',
+            'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none rounded-sm',
+          )}
+        >
+          <Eye className="size-4" aria-hidden="true" />
+        </button>
+      )}
+      <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
         <DialogPortal>
           {/* Custom backdrop with bg-background/80 */}
           <DialogPrimitive.Overlay
