@@ -385,7 +385,7 @@ function ImageEditScene({ sceneIndex }: { sceneIndex: number }) {
         </DialogFrame>
       );
 
-    // Scene 4: ProvidedImage — crop editor with new image
+    // Scene 4: ProvidedImage — crop editor with new image, zoom/rotate available
     case 3:
       return (
         <DialogFrame title="Edit Product Image">
@@ -401,24 +401,8 @@ function ImageEditScene({ sceneIndex }: { sceneIndex: number }) {
         </DialogFrame>
       );
 
-    // Scene 5: Zoomed — crop editor with zoom applied
+    // Scene 5: Copyright acknowledged — Confirm enabled
     case 4:
-      return (
-        <DialogFrame title="Edit Product Image">
-          <ImagePreviewEditor
-            aspectRatio={1}
-            imageData={MOCK_NEW_IMAGE}
-            onCropChange={noop}
-            onReset={noop}
-          />
-          <div className="mt-4">
-            <CopyrightAcknowledgment acknowledged={false} onAcknowledge={noop} />
-          </div>
-        </DialogFrame>
-      );
-
-    // Scene 6: Copyright acknowledged — Confirm enabled
-    case 5:
       return (
         <DialogFrame
           title="Edit Product Image"
@@ -443,8 +427,8 @@ function ImageEditScene({ sceneIndex }: { sceneIndex: number }) {
         </DialogFrame>
       );
 
-    // Scene 7: Uploading — progress bar
-    case 6:
+    // Scene 6: Uploading — progress bar
+    case 5:
       return (
         <DialogFrame
           title="Edit Product Image"
@@ -461,8 +445,8 @@ function ImageEditScene({ sceneIndex }: { sceneIndex: number }) {
         </DialogFrame>
       );
 
-    // Scene 8: Done — new image in thumbnail
-    case 7:
+    // Scene 7: Done — new image in thumbnail
+    case 6:
     default:
       return (
         <div className="flex flex-col items-center gap-2">
@@ -481,49 +465,43 @@ function ImageEditScene({ sceneIndex }: { sceneIndex: number }) {
 
 const happyPathScenes: WorkflowScene[] = [
   {
-    title: 'Scene 1 of 8 \u2014 Existing Image',
+    title: 'Scene 1 of 7 \u2014 Existing Image',
     description:
       'The thumbnail shows the current product image. The component is in interactive mode (onImageChange + config provided), so double-clicking or pressing Enter opens the upload dialog.',
     interaction: 'Double-click the thumbnail to open the editor.',
   },
   {
-    title: 'Scene 2 of 8 \u2014 EditExisting Mode',
+    title: 'Scene 2 of 7 \u2014 EditExisting Mode',
     description:
-      'The dialog opens in EditExisting mode showing a side-by-side comparison: the current image on the left, and an ImagePreviewEditor with crop/zoom/rotate controls on the right.',
+      'The dialog opens in EditExisting mode showing a side-by-side comparison: the current image on the left, and an ImagePreviewEditor with crop/zoom/rotate controls on the right. Three action buttons are available: Accept (keep current), Upload New Image, and Dismiss.',
     interaction: 'Click "Upload New Image" to replace the image with a new one.',
   },
   {
-    title: 'Scene 3 of 8 \u2014 Drop Zone',
+    title: 'Scene 3 of 7 \u2014 Drop Zone',
     description:
       'The dialog switches to EmptyImage mode, showing the ImageDropZone. The user can drag-and-drop a file, paste from clipboard, or enter a URL.',
     interaction: 'Type an image URL in the text field and click "Go".',
   },
   {
-    title: 'Scene 4 of 8 \u2014 URL Submitted',
+    title: 'Scene 4 of 7 \u2014 Crop and Adjust',
     description:
-      'The URL passes validation (starts with https://) and the reachability check. The dialog transitions to ProvidedImage, showing the crop editor with the new image.',
-    interaction: 'Adjust the zoom slider to crop the image.',
+      'The URL passes validation and the reachability check. The dialog transitions to ProvidedImage, showing the crop editor with the new image. The user can zoom with the slider and rotate with the toolbar buttons. The copyright checkbox must be checked before confirming.',
+    interaction: 'Adjust zoom/rotation as desired, then check the copyright acknowledgment.',
   },
   {
-    title: 'Scene 5 of 8 \u2014 Zoom Adjusted',
-    description:
-      'The zoom slider has been moved to the right, enlarging the image within the crop area. The user can also rotate using the toolbar buttons.',
-    interaction: 'Check the copyright acknowledgment checkbox.',
-  },
-  {
-    title: 'Scene 6 of 8 \u2014 Copyright Acknowledged',
+    title: 'Scene 5 of 7 \u2014 Copyright Acknowledged',
     description:
       'The copyright checkbox is checked, enabling the "Confirm" button. This gate ensures the user asserts they have rights to use the image.',
     interaction: 'Click "Confirm" to start the upload.',
   },
   {
-    title: 'Scene 7 of 8 \u2014 Uploading',
+    title: 'Scene 6 of 7 \u2014 Uploading',
     description:
       'The dialog shows a progress bar while the image is being uploaded. The footer shows a disabled "Uploading\u2026" button. The dialog cannot be dismissed during upload.',
     interaction: 'Wait for the upload to complete.',
   },
   {
-    title: 'Scene 8 of 8 \u2014 Image Updated',
+    title: 'Scene 7 of 7 \u2014 Image Updated',
     description:
       'The upload is complete. The dialog has closed and the thumbnail now shows the new image. The URL below the thumbnail has changed to the uploaded image URL.',
     interaction: 'The workflow is complete. Double-click again to start a new edit.',
@@ -562,16 +540,12 @@ const {
     goToScene(2);
     await delay();
 
-    // Step 3 → 4: Enter URL and click Go
+    // Step 3 → 4: Enter URL, click Go, then adjust zoom
     const urlInput = within(document.body).getByPlaceholderText(/paste an image url/i);
     await userEvent.click(urlInput);
     await userEvent.type(urlInput, 'https://picsum.photos/seed/arda-new/400/400', { delay: 20 });
     const goBtn = within(document.body).getByRole('button', { name: 'Go' });
     await userEvent.click(goBtn);
-    goToScene(3);
-    await delay();
-
-    // Step 4 → 5: Adjust zoom
     await waitFor(
       () => {
         const slider = document.querySelector('[role="slider"]');
@@ -586,22 +560,22 @@ const {
         await userEvent.keyboard('{ArrowRight}');
       }
     }
+    goToScene(3);
+    await delay();
+
+    // Step 4 → 5: Check copyright
+    const checkbox = within(document.body).getByRole('checkbox', { name: /copyright/i });
+    await userEvent.click(checkbox);
     goToScene(4);
     await delay();
 
-    // Step 5 → 6: Check copyright
-    const checkbox = within(document.body).getByRole('checkbox', { name: /copyright/i });
-    await userEvent.click(checkbox);
+    // Step 5 → 6: Click Confirm
+    const confirmBtn = within(document.body).getByRole('button', { name: /confirm/i });
+    await userEvent.click(confirmBtn);
     goToScene(5);
     await delay();
 
-    // Step 6 → 7: Click Confirm
-    const confirmBtn = within(document.body).getByRole('button', { name: /confirm/i });
-    await userEvent.click(confirmBtn);
-    goToScene(6);
-    await delay();
-
-    // Step 7 → 8: Wait for upload to complete
+    // Step 6 → 7: Wait for upload to complete
     await waitFor(
       () => {
         const dialog = document.querySelector('[role="dialog"]');
@@ -609,7 +583,7 @@ const {
       },
       { timeout: 10000 },
     );
-    goToScene(7);
+    goToScene(6);
     await delay();
 
     // Final assertion
