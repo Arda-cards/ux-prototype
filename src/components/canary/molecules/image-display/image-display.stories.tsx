@@ -267,154 +267,227 @@ export const Playground: Story = {
   ),
 };
 
-// --- Helper ---
-const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
+// ============================================================================
+// Happy Path Workflow — Interactive / Stepwise / Automated
+// ============================================================================
 
-/**
- * Animated Happy Path &#8212; walks through the full edit-upload workflow:
- *
- * 1. Start with a pre-existing image
- * 2. Double-click to open the upload dialog (EditExisting mode)
- * 3. Click "Upload New Image" to switch to the drop zone
- * 4. Enter a URL and click Go
- * 5. Adjust zoom on the crop editor
- * 6. Check copyright acknowledgment
- * 7. Click Confirm &#8594; upload progress &#8594; new image displayed
- *
- * Each step pauses briefly so the viewer can follow along.
- */
-export const AnimatedHappyPath: Story = {
-  render: () => {
-    const [imageUrl, setImageUrl] = React.useState<string | null>(MOCK_ITEM_IMAGE);
-    return (
-      <div className="flex flex-col items-center gap-4" data-testid="happy-path-root">
-        <p className="text-sm text-muted-foreground max-w-xs text-center">
-          Watch the full edit-upload workflow animate automatically.
-        </p>
-        <div className="w-32 h-32">
-          <ImageDisplay
-            imageUrl={imageUrl}
-            entityTypeDisplayName="Item"
-            propertyDisplayName="Product Image"
-            config={ITEM_IMAGE_CONFIG}
-            onImageChange={(result) => setImageUrl(result.imageUrl)}
-          />
-        </div>
-        <span className="text-xs text-muted-foreground font-mono break-all max-w-xs text-center">
-          {imageUrl ?? '(no image)'}
-        </span>
+import {
+  createWorkflowStories,
+  type WorkflowScene,
+} from '@/use-cases/framework';
+
+/** Live component used by Interactive and Automated modes. */
+function ImageEditLive() {
+  const [imageUrl, setImageUrl] = React.useState<string | null>(MOCK_ITEM_IMAGE);
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <div className="w-32 h-32">
+        <ImageDisplay
+          imageUrl={imageUrl}
+          entityTypeDisplayName="Item"
+          propertyDisplayName="Product Image"
+          config={ITEM_IMAGE_CONFIG}
+          onImageChange={(result) => setImageUrl(result.imageUrl)}
+        />
       </div>
+      <span className="text-xs text-muted-foreground font-mono break-all max-w-xs text-center">
+        {imageUrl ?? '(no image)'}
+      </span>
+    </div>
+  );
+}
+
+/** Static snapshots used by Stepwise mode. */
+function ImageEditScene({ sceneIndex }: { sceneIndex: number }) {
+  // Each scene renders the component in a deterministic state.
+  // Scenes that involve dialog interaction render a descriptive placeholder
+  // since the dialog is not controllable from outside.
+  const scenes: { imageUrl: string | null; label: string }[] = [
+    { imageUrl: MOCK_ITEM_IMAGE, label: 'Existing image loaded in thumbnail.' },
+    { imageUrl: MOCK_ITEM_IMAGE, label: 'Dialog open \u2014 EditExisting mode (crop/rotate + side-by-side).' },
+    { imageUrl: MOCK_ITEM_IMAGE, label: 'Dialog switched to EmptyImage \u2014 drop zone visible.' },
+    { imageUrl: MOCK_ITEM_IMAGE, label: 'URL entered in drop zone, Go button clicked.' },
+    { imageUrl: MOCK_ITEM_IMAGE, label: 'Crop editor active \u2014 zoom adjusted via slider.' },
+    { imageUrl: MOCK_ITEM_IMAGE, label: 'Copyright acknowledgment checked.' },
+    { imageUrl: MOCK_ITEM_IMAGE, label: 'Upload in progress \u2014 progress bar animating.' },
+    { imageUrl: 'https://picsum.photos/seed/arda-uploaded/400/400', label: 'New image saved and displayed.' },
+  ];
+
+  const scene = scenes[sceneIndex] ?? scenes[0];
+
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <div className="w-32 h-32">
+        <ImageDisplay
+          imageUrl={scene.imageUrl}
+          entityTypeDisplayName="Item"
+          propertyDisplayName="Product Image"
+        />
+      </div>
+      <p className="text-sm text-muted-foreground text-center max-w-xs italic">
+        {scene.label}
+      </p>
+    </div>
+  );
+}
+
+const happyPathScenes: WorkflowScene[] = [
+  {
+    title: 'Scene 1 of 8 \u2014 Existing Image',
+    description:
+      'The thumbnail shows the current product image. The component is in interactive mode (onImageChange + config provided), so double-clicking or pressing Enter opens the upload dialog.',
+    interaction: 'Double-click the thumbnail to open the editor.',
+  },
+  {
+    title: 'Scene 2 of 8 \u2014 EditExisting Mode',
+    description:
+      'The dialog opens in EditExisting mode showing a side-by-side comparison: the current image on the left, and an ImagePreviewEditor with crop/zoom/rotate controls on the right.',
+    interaction: 'Click "Upload New Image" to replace the image with a new one.',
+  },
+  {
+    title: 'Scene 3 of 8 \u2014 Drop Zone',
+    description:
+      'The dialog switches to EmptyImage mode, showing the ImageDropZone. The user can drag-and-drop a file, paste from clipboard, or enter a URL.',
+    interaction: 'Type an image URL in the text field and click "Go".',
+  },
+  {
+    title: 'Scene 4 of 8 \u2014 URL Submitted',
+    description:
+      'The URL passes validation (starts with https://) and the reachability check. The dialog transitions to ProvidedImage, showing the crop editor with the new image.',
+    interaction: 'Adjust the zoom slider to crop the image.',
+  },
+  {
+    title: 'Scene 5 of 8 \u2014 Zoom Adjusted',
+    description:
+      'The zoom slider has been moved to the right, enlarging the image within the crop area. The user can also rotate using the toolbar buttons.',
+    interaction: 'Check the copyright acknowledgment checkbox.',
+  },
+  {
+    title: 'Scene 6 of 8 \u2014 Copyright Acknowledged',
+    description:
+      'The copyright checkbox is checked, enabling the "Confirm" button. This gate ensures the user asserts they have rights to use the image.',
+    interaction: 'Click "Confirm" to start the upload.',
+  },
+  {
+    title: 'Scene 7 of 8 \u2014 Uploading',
+    description:
+      'The dialog shows a progress bar while the image is being uploaded. The footer shows a disabled "Uploading\u2026" button. The dialog cannot be dismissed during upload.',
+    interaction: 'Wait for the upload to complete.',
+  },
+  {
+    title: 'Scene 8 of 8 \u2014 Image Updated',
+    description:
+      'The upload is complete. The dialog has closed and the thumbnail now shows the new image. The URL below the thumbnail has changed to the uploaded image URL.',
+    interaction: 'The workflow is complete. Double-click again to start a new edit.',
+  },
+];
+
+const {
+  Interactive: HappyPathInteractive,
+  Stepwise: HappyPathStepwise,
+  Automated: HappyPathAutomated,
+} = createWorkflowStories({
+  scenes: happyPathScenes,
+  renderScene: (i) => <ImageEditScene sceneIndex={i} />,
+  renderLive: () => <ImageEditLive />,
+  delayMs: 1500,
+  play: async ({ canvas, goToScene, delay }) => {
+    goToScene(0);
+    await delay();
+
+    // Step 1 → 2: Double-click to open dialog
+    const button = canvas.getByRole('button', { name: /edit.*image/i });
+    await userEvent.dblClick(button);
+    await waitFor(
+      () => {
+        const dialog = document.querySelector('[role="dialog"]');
+        expect(dialog).toBeTruthy();
+      },
+      { timeout: 5000 },
     );
-  },
-  play: async ({ canvasElement, step }) => {
-    const canvas = within(canvasElement);
-    const STEP_DELAY = 1500;
+    goToScene(1);
+    await delay();
 
-    // Step 1: Wait for the image to load
-    await step('Image loads in the thumbnail', async () => {
-      await waitFor(
-        () => {
-          const img = canvasElement.querySelector('[data-slot="image-display"] img');
-          expect(img).toBeTruthy();
-        },
-        { timeout: 5000 },
-      );
-      await delay(STEP_DELAY);
-    });
+    // Step 2 → 3: Click "Upload New Image"
+    const uploadNewBtn = within(document.body).getByRole('button', { name: /upload new/i });
+    await userEvent.click(uploadNewBtn);
+    goToScene(2);
+    await delay();
 
-    // Step 2: Double-click to open the upload dialog
-    await step('Double-click thumbnail to open editor', async () => {
-      const button = canvas.getByRole('button', { name: /edit.*image/i });
-      await userEvent.dblClick(button);
-      await delay(500);
-      // Dialog should be open in EditExisting mode
-      await waitFor(
-        () => {
-          const dialog = canvasElement.ownerDocument.querySelector('[role="dialog"]');
-          expect(dialog).toBeTruthy();
-        },
-        { timeout: 3000 },
-      );
-      await delay(STEP_DELAY);
-    });
+    // Step 3 → 4: Enter URL and click Go
+    const urlInput = within(document.body).getByPlaceholderText(/paste an image url/i);
+    await userEvent.click(urlInput);
+    await userEvent.type(urlInput, 'https://picsum.photos/seed/arda-new/400/400', { delay: 20 });
+    const goBtn = within(document.body).getByRole('button', { name: 'Go' });
+    await userEvent.click(goBtn);
+    goToScene(3);
+    await delay();
 
-    // Step 3: Click "Upload New Image" to go to drop zone
-    await step('Click "Upload New Image" to switch to drop zone', async () => {
-      const doc = canvasElement.ownerDocument;
-      const uploadNewBtn = within(doc.body).getByRole('button', { name: /upload new/i });
-      await userEvent.click(uploadNewBtn);
-      await delay(STEP_DELAY);
-    });
-
-    // Step 4: Enter a URL and click Go
-    await step('Enter an image URL and click Go', async () => {
-      const doc = canvasElement.ownerDocument;
-      const urlInput = within(doc.body).getByPlaceholderText(/paste an image url/i);
-      await userEvent.click(urlInput);
-      await userEvent.type(urlInput, 'https://picsum.photos/seed/arda-new/400/400', {
-        delay: 20,
-      });
-      await delay(800);
-
-      const goBtn = within(doc.body).getByRole('button', { name: 'Go' });
-      await userEvent.click(goBtn);
-      await delay(STEP_DELAY);
-    });
-
-    // Step 5: Interact with the crop editor — adjust zoom
-    await step('Adjust zoom on the crop editor', async () => {
-      const doc = canvasElement.ownerDocument;
-      await waitFor(
-        () => {
-          const slider = doc.querySelector('[role="slider"]');
-          expect(slider).toBeTruthy();
-        },
-        { timeout: 5000 },
-      );
-      // Click the slider area to adjust zoom
-      const slider = doc.querySelector('[role="slider"]') as HTMLElement;
-      if (slider) {
-        // Press ArrowRight a few times to zoom in
-        slider.focus();
-        for (let i = 0; i < 5; i++) {
-          await userEvent.keyboard('{ArrowRight}');
-          await delay(150);
-        }
+    // Step 4 → 5: Adjust zoom
+    await waitFor(
+      () => {
+        const slider = document.querySelector('[role="slider"]');
+        expect(slider).toBeTruthy();
+      },
+      { timeout: 5000 },
+    );
+    const slider = document.querySelector('[role="slider"]') as HTMLElement;
+    if (slider) {
+      slider.focus();
+      for (let i = 0; i < 5; i++) {
+        await userEvent.keyboard('{ArrowRight}');
       }
-      await delay(STEP_DELAY);
-    });
+    }
+    goToScene(4);
+    await delay();
 
-    // Step 6: Check copyright acknowledgment
-    await step('Check copyright acknowledgment', async () => {
-      const doc = canvasElement.ownerDocument;
-      const checkbox = within(doc.body).getByRole('checkbox', { name: /copyright/i });
-      await userEvent.click(checkbox);
-      await delay(STEP_DELAY);
-    });
+    // Step 5 → 6: Check copyright
+    const checkbox = within(document.body).getByRole('checkbox', { name: /copyright/i });
+    await userEvent.click(checkbox);
+    goToScene(5);
+    await delay();
 
-    // Step 7: Click Confirm — triggers upload progress
-    await step('Click Confirm and wait for upload to complete', async () => {
-      const doc = canvasElement.ownerDocument;
-      const confirmBtn = within(doc.body).getByRole('button', { name: /confirm/i });
-      await userEvent.click(confirmBtn);
-      // Wait for upload to complete and dialog to close (~2s)
-      await waitFor(
-        () => {
-          const dialog = doc.querySelector('[role="dialog"]');
-          expect(dialog).toBeFalsy();
-        },
-        { timeout: 10000 },
-      );
-      await delay(STEP_DELAY);
-    });
+    // Step 6 → 7: Click Confirm
+    const confirmBtn = within(document.body).getByRole('button', { name: /confirm/i });
+    await userEvent.click(confirmBtn);
+    goToScene(6);
+    await delay();
 
-    // Step 8: Verify the new image URL is displayed (mock handler returns arda-uploaded)
-    await step('New image is displayed', async () => {
-      await waitFor(() => {
-        expect(canvas.getByText(/arda-uploaded/i)).toBeInTheDocument();
-      });
+    // Step 7 → 8: Wait for upload to complete
+    await waitFor(
+      () => {
+        const dialog = document.querySelector('[role="dialog"]');
+        expect(dialog).toBeFalsy();
+      },
+      { timeout: 10000 },
+    );
+    goToScene(7);
+    await delay();
+
+    // Final assertion
+    await waitFor(() => {
+      expect(canvas.getByText(/arda-uploaded/i)).toBeInTheDocument();
     });
   },
+});
+
+// Re-export under the ImageDisplay stories — Storybook requires the meta
+// to be the default export in a single file. We export these as named stories
+// under the main ImageDisplay meta instead.
+export const EditFlowInteractive: Story = {
+  ...HappyPathInteractive,
+  name: 'Edit Flow (Interactive)',
 };
+
+export const EditFlowStepwise: Story = {
+  ...HappyPathStepwise,
+  name: 'Edit Flow (Stepwise)',
+};
+
+export const EditFlowAutomated: Story = {
+  ...HappyPathAutomated,
+  name: 'Edit Flow (Automated)',
+};
+
 
 /** Image successfully loaded. */
