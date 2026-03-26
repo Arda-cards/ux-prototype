@@ -18,6 +18,15 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.4.1] - 2026-03-26
+
+### Fixed
+
+- Hypothesis bridge not working on GitHub Pages: the bridge relied on a Vite
+  dev server proxy (`/hypothesis-proxy`) that only exists in local development.
+  In production builds, the client now calls the Hypothesis API directly via
+  CORS with a build-time injected API token.
+
 ## [4.4.0] - 2026-03-26
 
 ### Added
