@@ -388,7 +388,17 @@ function ImageEditScene({ sceneIndex }: { sceneIndex: number }) {
     // Scene 4: ProvidedImage — crop editor with new image, zoom/rotate available
     case 3:
       return (
-        <DialogFrame title="Edit Product Image">
+        <DialogFrame
+          title="Edit Product Image"
+          footer={
+            <>
+              <Button variant="secondary">Cancel</Button>
+              <Button variant="default" className="bg-primary text-primary-foreground" disabled>
+                Confirm
+              </Button>
+            </>
+          }
+        >
           <ImagePreviewEditor
             aspectRatio={1}
             imageData={MOCK_NEW_IMAGE}
