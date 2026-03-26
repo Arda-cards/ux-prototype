@@ -152,10 +152,36 @@ export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDrop
 
   const isUrlValid = urlValue.trim().startsWith('https://');
 
+  // Merge react-dropzone's drop handler with our URL-drop handler.
+  // When dragging an image from another browser window, dataTransfer.files is
+  // empty but dataTransfer contains the image URL as text/uri-list or text/plain.
+  const rootProps = getRootProps();
+  const dropzoneOnDrop = rootProps.onDrop;
+  const handleDrop = React.useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      // Let react-dropzone process file drops first
+      dropzoneOnDrop?.(e as unknown as React.DragEvent<HTMLElement>);
+
+      // If no files in the drop event, check for a URL
+      if (e.dataTransfer?.files.length === 0) {
+        const url = e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text/plain');
+        const trimmed = url?.trim();
+        if (trimmed && trimmed.startsWith('https://')) {
+          e.preventDefault();
+          setError(null);
+          setUrlValue(trimmed);
+          onInput({ type: 'url', url: trimmed });
+        }
+      }
+    },
+    [dropzoneOnDrop, onInput],
+  );
+
   return (
     <div
       data-slot="image-drop-zone"
-      {...getRootProps()}
+      {...rootProps}
+      onDrop={handleDrop}
       onPaste={handlePaste}
       className={cn(
         'border-2 border-dashed rounded-lg p-6 transition-colors',
