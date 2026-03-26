@@ -710,9 +710,7 @@ function GenericStepwiseViewer({
 
   return (
     <div style={{ maxWidth, margin: '0 auto' }}>
-      <div style={{ pointerEvents: 'none', opacity: 0.95 }}>
-        {renderScene(sceneIndex)}
-      </div>
+      <div style={{ pointerEvents: 'none', opacity: 0.95 }}>{renderScene(sceneIndex)}</div>
       <div style={{ marginTop: 16 }}>
         <GuidePanel guide={scene} />
       </div>
@@ -754,11 +752,7 @@ function GenericAutomatedViewer({
   const scene = scenes[sceneIndex] as WorkflowScene;
 
   return (
-    <div
-      ref={containerRef}
-      data-testid="automated-viewer"
-      style={{ maxWidth, margin: '0 auto' }}
-    >
+    <div ref={containerRef} data-testid="automated-viewer" style={{ maxWidth, margin: '0 auto' }}>
       {renderLive()}
       <div style={{ marginTop: 16 }}>
         <GuidePanel guide={scene} />
@@ -781,21 +775,25 @@ function GenericAutomatedViewer({
  * - **Automated**: renders the live component with a `play` function that
  *   drives the interaction and updates the annotation panel via custom events.
  */
-export function createWorkflowStories(
-  config: WorkflowConfig,
-): { Interactive: StoryObj; Stepwise: StoryObj; Automated: StoryObj } {
+export function createWorkflowStories(config: WorkflowConfig): {
+  Interactive: StoryObj;
+  Stepwise: StoryObj;
+  Automated: StoryObj;
+} {
   const { maxWidth } = config;
 
   const Interactive: StoryObj = {
-    render: () => config.renderLive(),
+    render: () => <>{config.renderLive()}</>,
   };
+
+  const stepwiseMaxWidth = maxWidth ?? 560;
 
   const Stepwise: StoryObj = {
     render: () => (
       <GenericStepwiseViewer
         scenes={config.scenes}
         renderScene={config.renderScene}
-        maxWidth={maxWidth}
+        maxWidth={stepwiseMaxWidth}
       />
     ),
   };
@@ -807,7 +805,7 @@ export function createWorkflowStories(
       <GenericAutomatedViewer
         scenes={config.scenes}
         renderLive={config.renderLive}
-        maxWidth={maxWidth}
+        maxWidth={stepwiseMaxWidth}
       />
     ),
     play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
@@ -860,12 +858,7 @@ function AutomatedViewer<T extends object>({
   scenes: Scene<T>[];
   Wizard: React.ComponentType<WizardProps<T>>;
 }) {
-  return (
-    <GenericAutomatedViewer
-      scenes={scenes}
-      renderLive={() => <Wizard />}
-    />
-  );
+  return <GenericAutomatedViewer scenes={scenes} renderLive={() => <Wizard />} />;
 }
 
 /* ================================================================

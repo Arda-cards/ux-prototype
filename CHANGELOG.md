@@ -18,6 +18,29 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.2.0] - 2026-03-25
+
+### Added
+
+- Generalized use-case story framework: `createWorkflowStories` factory accepts generic
+  `renderScene`/`renderLive` callbacks, enabling any multi-step workflow (dialog flows,
+  component interactions) to produce Interactive/Stepwise/Automated story variants
+- ImageDisplay edit-flow stories: Interactive, Stepwise (8-scene walkthrough), and Automated
+  (play-function-driven animation through the full edit-upload workflow)
+- Entity Data Grid Shim MDX documentation
+
+### Fixed
+
+- ImageDropZone: `handlePaste` no longer intercepts text paste events targeting the URL input;
+  lets native paste + onChange handle URL text normally
+- ImageDropZone: `handleDrop` parses `text/uri-list` per RFC 2483 and auto-submits valid HTTPS
+  URLs from browser drag-and-drop
+- ImageDropZone: Go button changed from `secondary` to `primary` variant for clear visual
+  distinction between enabled and disabled states
+- ImageDropZone MDX updated with clipboard paste, URL drag-from-browser, and Go button
+  documentation
+- Entity Data Grid Kitchen Sink story title flattened to prevent folder icon in sidebar
+
 ## [4.1.0] - 2026-03-24
 
 ### Added

@@ -271,10 +271,7 @@ export const Playground: Story = {
 // Happy Path Workflow — Interactive / Stepwise / Automated
 // ============================================================================
 
-import {
-  createWorkflowStories,
-  type WorkflowScene,
-} from '@/use-cases/framework';
+import { createWorkflowStories, type WorkflowScene } from '@/use-cases/framework';
 
 /** Live component used by Interactive and Automated modes. */
 function ImageEditLive() {
@@ -304,16 +301,23 @@ function ImageEditScene({ sceneIndex }: { sceneIndex: number }) {
   // since the dialog is not controllable from outside.
   const scenes: { imageUrl: string | null; label: string }[] = [
     { imageUrl: MOCK_ITEM_IMAGE, label: 'Existing image loaded in thumbnail.' },
-    { imageUrl: MOCK_ITEM_IMAGE, label: 'Dialog open \u2014 EditExisting mode (crop/rotate + side-by-side).' },
+    {
+      imageUrl: MOCK_ITEM_IMAGE,
+      label: 'Dialog open \u2014 EditExisting mode (crop/rotate + side-by-side).',
+    },
     { imageUrl: MOCK_ITEM_IMAGE, label: 'Dialog switched to EmptyImage \u2014 drop zone visible.' },
     { imageUrl: MOCK_ITEM_IMAGE, label: 'URL entered in drop zone, Go button clicked.' },
     { imageUrl: MOCK_ITEM_IMAGE, label: 'Crop editor active \u2014 zoom adjusted via slider.' },
     { imageUrl: MOCK_ITEM_IMAGE, label: 'Copyright acknowledgment checked.' },
     { imageUrl: MOCK_ITEM_IMAGE, label: 'Upload in progress \u2014 progress bar animating.' },
-    { imageUrl: 'https://picsum.photos/seed/arda-uploaded/400/400', label: 'New image saved and displayed.' },
+    {
+      imageUrl: 'https://picsum.photos/seed/arda-uploaded/400/400',
+      label: 'New image saved and displayed.',
+    },
   ];
 
-  const scene = scenes[sceneIndex] ?? scenes[0];
+  const fallback = { imageUrl: MOCK_ITEM_IMAGE, label: '' };
+  const scene = scenes[sceneIndex] ?? fallback;
 
   return (
     <div className="flex flex-col items-center gap-4">
@@ -324,9 +328,7 @@ function ImageEditScene({ sceneIndex }: { sceneIndex: number }) {
           propertyDisplayName="Product Image"
         />
       </div>
-      <p className="text-sm text-muted-foreground text-center max-w-xs italic">
-        {scene.label}
-      </p>
+      <p className="text-sm text-muted-foreground text-center max-w-xs italic">{scene.label}</p>
     </div>
   );
 }
@@ -488,6 +490,5 @@ export const EditFlowAutomated: Story = {
   ...HappyPathAutomated,
   name: 'Edit Flow (Automated)',
 };
-
 
 /** Image successfully loaded. */
