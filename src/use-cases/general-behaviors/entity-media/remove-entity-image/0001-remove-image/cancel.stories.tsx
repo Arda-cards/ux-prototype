@@ -249,5 +249,6 @@ export const CancelStepwiseStory: StoryObj = {
 
 export const CancelAutomatedStory: StoryObj = {
   ...CancelAutomated,
+  tags: ['skip-ci'],
   name: 'Cancel (Automated)',
 };

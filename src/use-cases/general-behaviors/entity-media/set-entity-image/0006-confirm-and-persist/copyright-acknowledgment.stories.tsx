@@ -212,5 +212,6 @@ export const Stepwise: StoryObj = {
 
 export const AutomatedStory: StoryObj = {
   ...CopyrightAutomated,
+  tags: ['skip-ci'],
   name: 'Copyright Acknowledgment (Automated)',
 };

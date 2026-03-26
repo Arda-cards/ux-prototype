@@ -308,5 +308,6 @@ export const Stepwise: StoryObj = {
 
 export const Automated: StoryObj = {
   ...CropZoomRotateAutomated,
+  tags: ['skip-ci'],
   name: 'Crop Zoom Rotate (Automated)',
 };

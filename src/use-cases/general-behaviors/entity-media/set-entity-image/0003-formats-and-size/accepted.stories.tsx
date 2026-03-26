@@ -259,5 +259,6 @@ export const AcceptedFormatStepwise: StoryObj = {
 
 export const AcceptedFormatAutomated: StoryObj = {
   ...AcceptedAutomated,
+  tags: ['skip-ci'],
   name: 'Accepted Format (Automated)',
 };

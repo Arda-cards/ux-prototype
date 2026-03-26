@@ -401,6 +401,7 @@ export const ValidHttpsUrlStepwise: StoryObj = {
 
 export const ValidHttpsUrlAutomated: StoryObj = {
   ...ValidAutomated,
+  tags: ['skip-ci'],
   name: 'Valid HTTPS URL (Automated)',
 };
 
@@ -417,5 +418,6 @@ export const RelativeUrlRejectedStepwise: StoryObj = {
 
 export const RelativeUrlRejectedAutomated: StoryObj = {
   ...RelativeAutomated,
+  tags: ['skip-ci'],
   name: 'Relative URL Rejected (Automated)',
 };

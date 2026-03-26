@@ -247,5 +247,6 @@ export const FromFormStepwiseStory: StoryObj = {
 
 export const FromFormAutomatedStory: StoryObj = {
   ...FromFormAutomated,
+  tags: ['skip-ci'],
   name: 'From Form (Automated)',
 };

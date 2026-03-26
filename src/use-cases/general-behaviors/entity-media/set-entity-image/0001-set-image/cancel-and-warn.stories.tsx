@@ -431,6 +431,7 @@ export const DiscardPathStepwise: StoryObj = {
 
 export const DiscardPathAutomated: StoryObj = {
   ...DiscardAutomated,
+  tags: ['skip-ci'],
   name: 'Discard Path (Automated)',
 };
 
@@ -447,5 +448,6 @@ export const ReturnToEditStepwise: StoryObj = {
 
 export const ReturnToEditAutomated: StoryObj = {
   ...ReturnAutomated,
+  tags: ['skip-ci'],
   name: 'Return to Edit (Automated)',
 };

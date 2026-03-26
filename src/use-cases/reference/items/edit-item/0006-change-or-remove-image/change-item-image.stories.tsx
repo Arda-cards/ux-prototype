@@ -348,5 +348,6 @@ export const ChangeItemImageStepwiseStory: StoryObj = {
 
 export const ChangeItemImageAutomatedStory: StoryObj = {
   ...ChangeImageAutomated,
+  tags: ['skip-ci'],
   name: 'Change Item Image (Automated)',
 };

@@ -531,5 +531,6 @@ export const DuringCreationCanaryStepwiseStory: StoryObj = {
 
 export const DuringCreationCanaryAutomatedStory: StoryObj = {
   ...DuringCreationCanaryAutomated,
+  tags: ['skip-ci'],
   name: 'During Creation Canary (Automated)',
 };

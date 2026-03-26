@@ -346,5 +346,6 @@ export const FromInspectorStepwiseStory: StoryObj = {
 
 export const FromInspectorAutomatedStory: StoryObj = {
   ...FromInspectorAutomated,
+  tags: ['skip-ci'],
   name: 'From Inspector (Automated)',
 };

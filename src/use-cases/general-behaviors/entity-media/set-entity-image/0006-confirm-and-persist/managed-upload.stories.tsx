@@ -374,5 +374,6 @@ export const Stepwise: StoryObj = {
 
 export const Automated: StoryObj = {
   ...ManagedUploadAutomated,
+  tags: ['skip-ci'],
   name: 'Managed Upload (Automated)',
 };

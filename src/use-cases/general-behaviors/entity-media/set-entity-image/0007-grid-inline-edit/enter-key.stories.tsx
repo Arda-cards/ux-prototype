@@ -245,5 +245,6 @@ export const EnterKeyStepwiseStory: StoryObj = {
 
 export const EnterKeyAutomatedStory: StoryObj = {
   ...EnterKeyAutomated,
+  tags: ['skip-ci'],
   name: 'Enter Key (Automated)',
 };

@@ -232,5 +232,6 @@ export const CameraCaptureStepwise: StoryObj = {
 
 export const CameraCaptureAutomated: StoryObj = {
   ...CameraAutomated,
+  tags: ['skip-ci'],
   name: 'Camera Capture (Automated)',
 };

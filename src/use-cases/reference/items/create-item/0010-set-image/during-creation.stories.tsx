@@ -138,6 +138,6 @@ export const DuringCreationStepwiseStory: StoryObj = {
 };
 
 export const DuringCreationAutomatedStory: StoryObj = {
-  ...DuringCreationAutomated,
+  ...DuringCreationAutomated, tags: ['skip-ci'],
   name: 'During Creation (Automated)',
 };

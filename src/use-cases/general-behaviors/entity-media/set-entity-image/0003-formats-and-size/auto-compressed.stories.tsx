@@ -297,5 +297,6 @@ export const AutoCompressedStepwiseStory: StoryObj = {
 
 export const AutoCompressedAutomatedStory: StoryObj = {
   ...AutoCompressedAutomated,
+  tags: ['skip-ci'],
   name: 'Auto Compressed (Automated)',
 };

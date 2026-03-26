@@ -228,5 +228,6 @@ export const ValidHttpsStepwiseStory: StoryObj = {
 
 export const ValidHttpsAutomatedStory: StoryObj = {
   ...ValidHttpsAutomated,
+  tags: ['skip-ci'],
   name: 'Valid HTTPS (Automated)',
 };

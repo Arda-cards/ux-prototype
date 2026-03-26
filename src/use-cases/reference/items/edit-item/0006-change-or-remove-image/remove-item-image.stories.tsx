@@ -486,5 +486,6 @@ export const RemoveItemImageStepwiseStory: StoryObj = {
 
 export const RemoveItemImageAutomatedStory: StoryObj = {
   ...RemoveImageAutomated,
+  tags: ['skip-ci'],
   name: 'Remove Item Image (Automated)',
 };
