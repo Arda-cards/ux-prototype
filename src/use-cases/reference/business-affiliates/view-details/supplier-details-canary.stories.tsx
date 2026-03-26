@@ -241,7 +241,7 @@ const meta: Meta<typeof SupplierDetailsCanaryPage> = {
   title:
     'Use Cases/Reference/Business Affiliates/BA-0002 View Details/Supplier Details (Canary)',
   component: SupplierDetailsCanaryPage,
-  tags: ['skip-ci'],
+ 
   parameters: {
     layout: 'fullscreen',
   },

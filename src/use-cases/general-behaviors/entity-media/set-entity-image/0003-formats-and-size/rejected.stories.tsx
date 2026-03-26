@@ -247,6 +247,6 @@ export const RejectedFormatStepwise: StoryObj = {
 
 export const RejectedFormatAutomated: StoryObj = {
   ...RejectedAutomated,
-  tags: ['skip-ci'],
+
   name: 'Rejected Format (Automated)',
 };

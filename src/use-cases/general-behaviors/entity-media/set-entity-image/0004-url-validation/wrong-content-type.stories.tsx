@@ -290,6 +290,6 @@ export const WrongContentTypeStepwiseStory: StoryObj = {
 
 export const WrongContentTypeAutomatedStory: StoryObj = {
   ...WrongContentTypeAutomated,
-  tags: ['skip-ci'],
+
   name: 'Wrong Content Type (Automated)',
 };

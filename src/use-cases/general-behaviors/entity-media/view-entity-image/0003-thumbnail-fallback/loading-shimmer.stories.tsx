@@ -118,22 +118,22 @@ const {
   renderScene: (i) => <LoadingShimmerScene sceneIndex={i} />,
   renderLive: () => <LoadingShimmerLive />,
   delayMs: 1500,
-  play: async ({ canvas, goToScene, delay }) => {
+  play: async ({ goToScene, delay }) => {
     goToScene(0);
     await delay();
 
     // Skeleton shimmer is visible
-    const skeleton = canvas.baseElement.querySelector('[data-slot="skeleton"]');
+    const skeleton = document.querySelector('[data-slot="skeleton"]');
     expect(skeleton).not.toBeNull();
     expect(skeleton).toBeVisible();
 
     // ImageDisplay container is present
-    const display = canvas.baseElement.querySelector('[data-slot="image-display"]');
+    const display = document.querySelector('[data-slot="image-display"]');
     expect(display).not.toBeNull();
     expect(display).toBeVisible();
 
     // No error badge during loading
-    const badge = canvas.baseElement.querySelector('[aria-label="Image failed to load"]');
+    const badge = document.querySelector('[aria-label="Image failed to load"]');
     expect(badge).toBeNull();
 
     goToScene(1);

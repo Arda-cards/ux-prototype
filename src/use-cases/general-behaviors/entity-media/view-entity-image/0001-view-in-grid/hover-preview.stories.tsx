@@ -277,21 +277,21 @@ const {
   renderScene: (i) => <HoverPreviewScene sceneIndex={i} />,
   renderLive: () => <HoverPreviewLive />,
   delayMs: 1500,
-  play: async ({ canvas, goToScene, delay }) => {
+  play: async ({ goToScene, delay }) => {
     goToScene(0);
     await delay();
 
     // Wait for AG Grid to render image cells
     await waitFor(
       () => {
-        const cells = canvas.baseElement.querySelectorAll('[data-slot="image-cell-display"]');
+        const cells = document.querySelectorAll('[data-slot="image-cell-display"]');
         expect(cells.length).toBeGreaterThan(0);
       },
       { timeout: 10000 },
     );
 
     // Hover over the first image cell
-    const firstCell = canvas.baseElement.querySelector('[data-slot="image-cell-display"]');
+    const firstCell = document.querySelector('[data-slot="image-cell-display"]');
     if (!firstCell) throw new Error('No image cell found');
     await userEvent.hover(firstCell as HTMLElement);
 
@@ -312,7 +312,7 @@ const {
     await delay();
 
     // Unhover the trigger cell
-    const triggerCell = canvas.baseElement.querySelector(
+    const triggerCell = document.querySelector(
       '[data-slot="image-hover-preview"]',
     ) as HTMLElement | null;
     if (triggerCell) {

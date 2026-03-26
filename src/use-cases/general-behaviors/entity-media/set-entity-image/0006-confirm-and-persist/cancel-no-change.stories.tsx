@@ -399,7 +399,7 @@ export const DirectCancelPathStepwise: StoryObj = {
 
 export const DirectCancelPathAutomated: StoryObj = {
   ...DirectCancelAutomated,
-  tags: ['skip-ci'],
+
   name: 'Direct Cancel (Automated)',
 };
 
@@ -416,6 +416,6 @@ export const WarnOnDiscardPathStepwise: StoryObj = {
 
 export const WarnOnDiscardPathAutomated: StoryObj = {
   ...WarnOnDiscardAutomated,
-  tags: ['skip-ci'],
+
   name: 'Warn on Discard (Automated)',
 };

@@ -337,6 +337,6 @@ export const Stepwise: StoryObj = {
 
 export const Automated: StoryObj = {
   ...ExternalUrlAutomated,
-  tags: ['skip-ci'],
+
   name: 'External URL (Automated)',
 };

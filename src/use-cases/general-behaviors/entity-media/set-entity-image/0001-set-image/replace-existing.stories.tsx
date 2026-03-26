@@ -413,6 +413,6 @@ export const ReplaceExistingStepwise: StoryObj = {
 
 export const ReplaceExistingAutomated: StoryObj = {
   ...ReplaceAutomated,
-  tags: ['skip-ci'],
+
   name: 'Replace Existing (Automated)',
 };

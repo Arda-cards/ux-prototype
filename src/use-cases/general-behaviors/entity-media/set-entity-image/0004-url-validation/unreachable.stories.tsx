@@ -278,6 +278,6 @@ export const UnreachableStepwiseStory: StoryObj = {
 
 export const UnreachableAutomatedStory: StoryObj = {
   ...UnreachableAutomated,
-  tags: ['skip-ci'],
+
   name: 'Unreachable URL (Automated)',
 };

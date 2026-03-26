@@ -197,14 +197,14 @@ const {
   renderScene: (i) => <GridThumbnailsScene sceneIndex={i} />,
   renderLive: () => <GridThumbnailsLive />,
   delayMs: 1500,
-  play: async ({ canvas, goToScene, delay }) => {
+  play: async ({ goToScene, delay }) => {
     goToScene(0);
     await delay();
 
     // Wait for AG Grid to mount and render cell content
     await waitFor(
       () => {
-        const cells = canvas.baseElement.querySelectorAll('[data-slot="image-cell-display"]');
+        const cells = document.querySelectorAll('[data-slot="image-cell-display"]');
         expect(cells.length).toBeGreaterThan(0);
       },
       { timeout: 10000 },
@@ -214,7 +214,7 @@ const {
     await delay();
 
     // Verify all 4 image cells are visible
-    const cells = canvas.baseElement.querySelectorAll('[data-slot="image-cell-display"]');
+    const cells = document.querySelectorAll('[data-slot="image-cell-display"]');
     expect(cells.length).toBe(4);
     for (const cell of Array.from(cells)) {
       expect(cell).toBeVisible();

@@ -237,6 +237,6 @@ export const RejectedSchemeStepwiseStory: StoryObj = {
 
 export const RejectedSchemeAutomatedStory: StoryObj = {
   ...RejectedSchemeAutomated,
-  tags: ['skip-ci'],
+
   name: 'Rejected Scheme (Automated)',
 };

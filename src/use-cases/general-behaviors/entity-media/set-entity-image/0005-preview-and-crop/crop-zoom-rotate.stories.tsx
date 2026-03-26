@@ -239,12 +239,12 @@ const {
 
     // Wait for the editor to render
     await waitFor(() => {
-      const editorRoot = canvas.getByRole('slider', { name: /zoom/i });
+      const editorRoot = canvas.getByRole('slider', { name: 'Zoom' });
       expect(editorRoot).toBeVisible();
     });
 
     // Zoom in — move slider right 5 steps
-    const zoomSlider = canvas.getByRole('slider', { name: /zoom/i });
+    const zoomSlider = canvas.getByRole('slider', { name: 'Zoom' });
     zoomSlider.focus();
     for (let i = 0; i < 5; i++) {
       await userEvent.keyboard('{ArrowRight}');
@@ -308,6 +308,6 @@ export const Stepwise: StoryObj = {
 
 export const Automated: StoryObj = {
   ...CropZoomRotateAutomated,
-  tags: ['skip-ci'],
+
   name: 'Crop Zoom Rotate (Automated)',
 };

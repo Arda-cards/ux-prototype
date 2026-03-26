@@ -423,7 +423,7 @@ const {
 
     await waitFor(
       () => {
-        expect(screen.getByRole('dialog', { name: /create new item/i })).toBeVisible();
+        expect(screen.getByRole('dialog', { name: /add new item/i })).toBeVisible();
       },
       { timeout: 5000 },
     );
@@ -431,7 +431,7 @@ const {
 
     // Scene 3: Fill item title
     goToScene(2);
-    const dialog = within(screen.getByRole('dialog', { name: /create new item/i }));
+    const dialog = within(screen.getByRole('dialog', { name: /add new item/i }));
     const titleInput = dialog.getByLabelText(/item title/i);
     await userEvent.type(titleInput, 'Nitrile Exam Gloves (Medium)');
     expect(titleInput).toHaveValue('Nitrile Exam Gloves (Medium)');
@@ -495,7 +495,7 @@ const {
 
     // Scene 8: Click Publish to complete creation
     goToScene(7);
-    const formDialog = screen.getByRole('dialog', { name: /create new item/i });
+    const formDialog = screen.getByRole('dialog', { name: /add new item/i });
     const publishButton = within(formDialog).getByRole('button', { name: /publish/i });
     await userEvent.click(publishButton);
 
@@ -531,6 +531,6 @@ export const DuringCreationCanaryStepwiseStory: StoryObj = {
 
 export const DuringCreationCanaryAutomatedStory: StoryObj = {
   ...DuringCreationCanaryAutomated,
-  tags: ['skip-ci'],
+
   name: 'During Creation Canary (Automated)',
 };

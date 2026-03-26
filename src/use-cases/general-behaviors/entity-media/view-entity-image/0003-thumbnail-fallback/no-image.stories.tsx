@@ -119,15 +119,15 @@ const {
     expect(initials).toBeVisible();
 
     // No error badge
-    const badge = canvas.baseElement.querySelector('[aria-label="Image failed to load"]');
+    const badge = document.querySelector('[aria-label="Image failed to load"]');
     expect(badge).toBeNull();
 
     // No img element
-    const img = canvas.baseElement.querySelector('img');
+    const img = document.querySelector('img');
     expect(img).toBeNull();
 
     // No skeleton shimmer
-    const skeleton = canvas.baseElement.querySelector('[data-slot="skeleton"]');
+    const skeleton = document.querySelector('[data-slot="skeleton"]');
     expect(skeleton).toBeNull();
 
     goToScene(1);

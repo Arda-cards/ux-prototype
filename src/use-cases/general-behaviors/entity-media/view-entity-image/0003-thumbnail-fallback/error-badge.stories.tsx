@@ -115,21 +115,21 @@ const {
   renderScene: (i) => <ErrorBadgeScene sceneIndex={i} />,
   renderLive: () => <ErrorBadgeLive />,
   delayMs: 1500,
-  play: async ({ canvas, goToScene, delay }) => {
+  play: async ({ goToScene, delay }) => {
     goToScene(0);
     await delay();
 
     // Wait for the error badge to appear after the broken image fails to load
     await waitFor(
       () => {
-        const badge = canvas.getByRole('img', { name: /image failed to load/i });
+        const badge = document.querySelector('[aria-label="Image failed to load"]') as HTMLElement;
         expect(badge).toBeVisible();
       },
       { timeout: 10000 },
     );
 
     // Broken img is not visible
-    const img = canvas.baseElement.querySelector('img[src]');
+    const img = document.querySelector('img[src]');
     if (img) {
       expect(img).not.toBeVisible();
     }

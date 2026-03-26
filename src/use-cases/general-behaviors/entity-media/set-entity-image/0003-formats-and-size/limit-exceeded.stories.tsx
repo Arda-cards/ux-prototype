@@ -267,6 +267,6 @@ export const LimitExceededFormatStepwise: StoryObj = {
 
 export const LimitExceededFormatAutomated: StoryObj = {
   ...LimitExceededAutomated,
-  tags: ['skip-ci'],
+
   name: 'Limit Exceeded (Automated)',
 };

@@ -401,7 +401,7 @@ const {
 
     // Scene 4: Hover image to reveal action overlay
     goToScene(3);
-    const imageArea = drawer.getByRole('button', { name: /edit product image/i });
+    const imageArea = drawer.getByRole('button', { name: /edit item image/i });
     await userEvent.hover(imageArea);
     await storyStepDelay(800);
     await delay();
@@ -486,6 +486,6 @@ export const RemoveItemImageStepwiseStory: StoryObj = {
 
 export const RemoveItemImageAutomatedStory: StoryObj = {
   ...RemoveImageAutomated,
-  tags: ['skip-ci'],
+
   name: 'Remove Item Image (Automated)',
 };

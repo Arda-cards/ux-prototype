@@ -306,6 +306,6 @@ export const DoubleClickStepwiseStory: StoryObj = {
 
 export const DoubleClickAutomatedStory: StoryObj = {
   ...DoubleClickAutomated,
-  tags: ['skip-ci'],
+
   name: 'Double Click (Automated)',
 };
