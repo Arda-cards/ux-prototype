@@ -473,20 +473,19 @@ const {
   },
 });
 
-// Re-export under the ImageDisplay stories — Storybook requires the meta
-// to be the default export in a single file. We export these as named stories
-// under the main ImageDisplay meta instead.
-export const EditFlowInteractive: Story = {
+// Re-export under the ImageDisplay stories. These use StoryObj (not Story)
+// because the workflow viewers don't receive ImageDisplayProps args.
+export const EditFlowInteractive: StoryObj = {
   ...HappyPathInteractive,
   name: 'Edit Flow (Interactive)',
 };
 
-export const EditFlowStepwise: Story = {
+export const EditFlowStepwise: StoryObj = {
   ...HappyPathStepwise,
   name: 'Edit Flow (Stepwise)',
 };
 
-export const EditFlowAutomated: Story = {
+export const EditFlowAutomated: StoryObj = {
   ...HappyPathAutomated,
   name: 'Edit Flow (Automated)',
 };
