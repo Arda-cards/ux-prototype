@@ -18,6 +18,28 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.4.0] - 2026-03-25
+
+### Added
+
+- Use case stories for Item Image Upload project: 50 story files + 17 description
+  MDX files across 13 scenarios in 5 use cases (GEN-MEDIA-0001 Set Entity Image,
+  GEN-MEDIA-0002 Remove Entity Image, GEN-MEDIA-0003 View Entity Image,
+  REF-ITM-0003::0010 Set Image During Creation, REF-ITM-0004::0006 Change or
+  Remove Item Image)
+- All stories use `createWorkflowStories` framework providing Interactive,
+  Stepwise (scene-by-scene), and Automated (timed playback) variants for
+  stakeholder review
+- Use-case-specific mock data module with File/Blob/URL mocks for input method
+  simulation
+- Hierarchical sidebar ordering for Entity Media section with scenario-level
+  grouping
+
+### Changed
+
+- Storybook sidebar top-level order: Docs, Visual Elements, Components,
+  Use Cases, Canary Refactor, Dev Witness, Archive
+
 ## [4.3.0] - 2026-03-25
 
 ### Added
