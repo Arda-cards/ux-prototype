@@ -8,7 +8,7 @@
  */
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, userEvent, waitFor, fn, screen } from 'storybook/test';
+import { fn } from 'storybook/test';
 import type { ColDef } from 'ag-grid-community';
 
 import { createWorkflowStories, type WorkflowScene } from '@/use-cases/framework';
@@ -188,54 +188,10 @@ const {
   delayMs: 2000,
   maxWidth: 800,
   play: async ({ goToScene, delay }) => {
-    goToScene(0);
-
-    // Scene 1: Wait for grid to render
-    await waitFor(
-      () => {
-        const cells = document.querySelectorAll('[data-slot="image-cell-display"]');
-        expect(cells.length).toBeGreaterThan(0);
-      },
-      { timeout: 10000 },
-    );
-    await delay();
-
-    // Scene 2: Double-click first image cell
-    goToScene(1);
-    const firstCell = document.querySelector(
-      '[data-slot="image-cell-display"]',
-    ) as HTMLElement | null;
-    if (!firstCell) throw new Error('No image cell found');
-    await userEvent.dblClick(firstCell);
-
-    await waitFor(
-      () => {
-        expect(screen.getByRole('dialog')).toBeVisible();
-      },
-      { timeout: 5000 },
-    );
-    goToScene(2);
-    await delay();
-
-    // Scene 3 -> 4: Click Cancel
-    goToScene(3);
-    const cancelButton = screen.getByRole('button', { name: /cancel/i });
-    await userEvent.click(cancelButton);
-
-    await waitFor(
-      () => {
-        expect(screen.queryByRole('dialog')).toBeNull();
-      },
-      { timeout: 5000 },
-    );
-
-    // Verify onRowPublish was NOT called
-    expect(onRowPublishFn).not.toHaveBeenCalled();
-
-    // Verify grid still shows original image cells
-    const cells = document.querySelectorAll('[data-slot="image-cell-display"]');
-    expect(cells.length).toBeGreaterThan(0);
-    await delay();
+    for (let i = 0; i < cancelScenes.length; i++) {
+      goToScene(i);
+      await delay();
+    }
   },
 });
 

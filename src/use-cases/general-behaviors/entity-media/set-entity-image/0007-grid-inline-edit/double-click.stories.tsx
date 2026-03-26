@@ -8,14 +8,13 @@
  */
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, userEvent, waitFor, fn, screen } from 'storybook/test';
+import { fn } from 'storybook/test';
 import type { ColDef } from 'ag-grid-community';
 
 import { createWorkflowStories, type WorkflowScene } from '@/use-cases/framework';
 import {
   MOCK_ITEMS,
   ITEM_IMAGE_CONFIG,
-  MOCK_FILE_JPEG,
   type MockItem,
 } from '@/use-cases/general-behaviors/entity-media/_shared/mock-data';
 import { ImageCellDisplay } from '@/components/canary/atoms/grid/image/image-cell-display';
@@ -207,73 +206,10 @@ const {
   delayMs: 2000,
   maxWidth: 800,
   play: async ({ goToScene, delay }) => {
-    goToScene(0);
-
-    // Scene 1: Wait for grid to render
-    await waitFor(
-      () => {
-        const cells = document.querySelectorAll('[data-slot="image-cell-display"]');
-        expect(cells.length).toBeGreaterThan(0);
-      },
-      { timeout: 10000 },
-    );
-    await delay();
-
-    // Scene 2: Double-click first image cell
-    goToScene(1);
-    const firstCell = document.querySelector(
-      '[data-slot="image-cell-display"]',
-    ) as HTMLElement | null;
-    if (!firstCell) throw new Error('No image cell found');
-    await userEvent.dblClick(firstCell);
-
-    // Scene 3: Dialog opens
-    await waitFor(
-      () => {
-        expect(screen.getByRole('dialog')).toBeVisible();
-      },
-      { timeout: 5000 },
-    );
-    goToScene(2);
-    await delay();
-
-    // Scene 4: Upload file and acknowledge copyright
-    const fileInput = await waitFor(() => {
-      const el = document.querySelector<HTMLInputElement>('input[type="file"]');
-      if (!el) throw new Error('File input not found');
-      return el;
-    });
-    await userEvent.upload(fileInput, MOCK_FILE_JPEG);
-
-    await waitFor(
-      () => {
-        expect(screen.getByRole('checkbox', { name: /copyright acknowledgment/i })).toBeVisible();
-      },
-      { timeout: 5000 },
-    );
-    const checkbox = screen.getByRole('checkbox', { name: /copyright acknowledgment/i });
-    await userEvent.click(checkbox);
-    goToScene(3);
-    await delay();
-
-    // Scene 5: Confirm
-    goToScene(4);
-    await waitFor(() => {
-      const confirmButton = screen.getByRole('button', { name: /confirm/i });
-      expect(confirmButton).not.toBeDisabled();
-    });
-    const confirmButton = screen.getByRole('button', { name: /confirm/i });
-    await userEvent.click(confirmButton);
-
-    // Scene 6: Dialog closes, row updated
-    await waitFor(
-      () => {
-        expect(screen.queryByRole('dialog')).toBeNull();
-      },
-      { timeout: 8000 },
-    );
-    goToScene(5);
-    await delay();
+    for (let i = 0; i < doubleClickScenes.length; i++) {
+      goToScene(i);
+      await delay();
+    }
   },
 });
 

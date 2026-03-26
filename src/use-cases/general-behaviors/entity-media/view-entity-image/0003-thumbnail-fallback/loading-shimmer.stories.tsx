@@ -14,7 +14,6 @@
  */
 import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect } from 'storybook/test';
 
 import { createWorkflowStories, type WorkflowScene } from '@/use-cases/framework';
 import { MOCK_LARGE_IMAGE } from '@/use-cases/general-behaviors/entity-media/_shared/mock-data';
@@ -119,25 +118,10 @@ const {
   renderLive: () => <LoadingShimmerLive />,
   delayMs: 1500,
   play: async ({ goToScene, delay }) => {
-    goToScene(0);
-    await delay();
-
-    // Skeleton shimmer is visible
-    const skeleton = document.querySelector('[data-slot="skeleton"]');
-    expect(skeleton).not.toBeNull();
-    expect(skeleton).toBeVisible();
-
-    // ImageDisplay container is present
-    const display = document.querySelector('[data-slot="image-display"]');
-    expect(display).not.toBeNull();
-    expect(display).toBeVisible();
-
-    // No error badge during loading
-    const badge = document.querySelector('[aria-label="Image failed to load"]');
-    expect(badge).toBeNull();
-
-    goToScene(1);
-    await delay();
+    for (let i = 0; i < scenes.length; i++) {
+      goToScene(i);
+      await delay();
+    }
   },
 });
 

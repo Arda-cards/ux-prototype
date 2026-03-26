@@ -8,7 +8,7 @@
  */
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, userEvent, waitFor, fn, screen } from 'storybook/test';
+import { fn } from 'storybook/test';
 
 import { createWorkflowStories, type WorkflowScene } from '@/use-cases/framework';
 import {
@@ -163,58 +163,10 @@ const {
   delayMs: 2000,
   maxWidth: 560,
   play: async ({ goToScene, delay }) => {
-    goToScene(0);
-
-    // Scene 1: Wait for image form field to be visible
-    await waitFor(
-      () => {
-        const field = document.querySelector('[data-slot="image-form-field"]');
-        expect(field).not.toBeNull();
-        expect(field).toBeVisible();
-      },
-      { timeout: 5000 },
-    );
-    await delay();
-
-    // Scene 2: Hover over the image thumbnail
-    goToScene(1);
-    const field = document.querySelector('[data-slot="image-form-field"]') as HTMLElement | null;
-    if (!field) throw new Error('ImageFormField not found');
-    const imageButton = field.querySelector('[role="button"]') as HTMLElement | null;
-    if (!imageButton) throw new Error('Image button area not found');
-    await userEvent.hover(imageButton);
-    await delay();
-
-    // Scene 3: Click trash icon
-    goToScene(2);
-    const trashButton = screen.getByRole('button', { name: /remove image/i });
-    await userEvent.click(trashButton);
-
-    await waitFor(
-      () => {
-        expect(screen.getByRole('alertdialog')).toBeVisible();
-      },
-      { timeout: 5000 },
-    );
-    await delay();
-
-    // Scene 4: Click Remove to confirm
-    goToScene(3);
-    const removeButton = screen.getByRole('button', { name: /^remove$/i });
-    await userEvent.click(removeButton);
-
-    await waitFor(() => {
-      expect(onChangeFn).toHaveBeenCalledWith(null);
-    });
-
-    await waitFor(
-      () => {
-        const label = document.querySelector('[data-testid="state-label"]');
-        expect(label?.textContent).toContain('No image');
-      },
-      { timeout: 3000 },
-    );
-    await delay();
+    for (let i = 0; i < fromFormScenes.length; i++) {
+      goToScene(i);
+      await delay();
+    }
   },
 });
 

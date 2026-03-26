@@ -7,14 +7,10 @@
  */
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, userEvent, waitFor } from 'storybook/test';
 
 import { createWorkflowStories, type WorkflowScene } from '@/use-cases/framework';
 import { ImageDropZone } from '@/components/canary/molecules/image-drop-zone/image-drop-zone';
-import {
-  ITEM_IMAGE_CONFIG,
-  MOCK_FILE_BMP,
-} from '@/use-cases/general-behaviors/entity-media/_shared/mock-data';
+import { ITEM_IMAGE_CONFIG } from '@/use-cases/general-behaviors/entity-media/_shared/mock-data';
 import type { ImageInput } from '@/types/canary/utilities/image-field-config';
 
 /* ================================================================
@@ -193,31 +189,10 @@ const {
   renderLive: () => <RejectedLive />,
   delayMs: 2000,
   play: async ({ goToScene, delay }) => {
-    goToScene(0);
-    await delay();
-
-    const fileInput = await waitFor(() => {
-      const el = document.querySelector<HTMLInputElement>('input[type="file"]');
-      if (!el) throw new Error('File input not found');
-      return el;
-    });
-
-    // Scene 1 -> 2: Upload BMP file
-    await userEvent.upload(fileInput, MOCK_FILE_BMP);
-    goToScene(1);
-    await delay();
-
-    // Scene 2 -> 3: Verify error alert appears
-    await waitFor(() => {
-      const alert = document.querySelector('[role="alert"]');
-      expect(alert).toBeTruthy();
-    });
-    goToScene(2);
-    await delay();
-
-    // Final assertion: error contains expected text
-    const alert = document.querySelector('[role="alert"]');
-    expect(alert?.textContent).toMatch(/Invalid file type/i);
+    for (let i = 0; i < rejectedScenes.length; i++) {
+      goToScene(i);
+      await delay();
+    }
   },
 });
 

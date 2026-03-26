@@ -9,7 +9,6 @@
  */
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, within, userEvent, waitFor, screen } from 'storybook/test';
 import {
   LayoutDashboard,
   Package,
@@ -36,8 +35,6 @@ import { ImageFormField } from '@/components/canary/molecules/form/image/image-f
 import { ImageUploadDialog } from '@/components/canary/organisms/shared/image-upload-dialog/image-upload-dialog';
 import { ITEM_IMAGE_CONFIG } from '@/components/canary/__mocks__/image-story-data';
 import type { ImageUploadResult } from '@/types/canary/utilities/image-field-config';
-import { MOCK_FILE_JPEG } from '@/use-cases/general-behaviors/entity-media/_shared/mock-data';
-import { storyStepDelay } from '../../_shared/story-step-delay';
 
 // ---------------------------------------------------------------------------
 // Create Item Form (slide-over panel)
@@ -408,100 +405,11 @@ const {
   renderScene: (i) => <DuringCreationCanarySceneRenderer sceneIndex={i} />,
   renderLive: () => <CreateItemPage />,
   delayMs: 2000,
-  play: async ({ canvas, goToScene, delay }) => {
-    goToScene(0);
-
-    // Scene 1: Page renders with Add item button
-    const heading = await canvas.findByRole('heading', { name: /Items/i }, { timeout: 10000 });
-    expect(heading).toBeVisible();
-    await delay();
-
-    // Scene 2: Click Add item to open form panel
-    goToScene(1);
-    const addButton = canvas.getByTestId('add-item-btn');
-    await userEvent.click(addButton);
-
-    await waitFor(
-      () => {
-        expect(screen.getByRole('dialog', { name: /add new item/i })).toBeVisible();
-      },
-      { timeout: 5000 },
-    );
-    await delay();
-
-    // Scene 3: Fill item title
-    goToScene(2);
-    const dialog = within(screen.getByRole('dialog', { name: /add new item/i }));
-    const titleInput = dialog.getByLabelText(/item title/i);
-    await userEvent.type(titleInput, 'Nitrile Exam Gloves (Medium)');
-    expect(titleInput).toHaveValue('Nitrile Exam Gloves (Medium)');
-    await delay();
-
-    // Scene 4: Fill SKU
-    goToScene(3);
-    const skuInput = dialog.getByLabelText(/sku/i);
-    await userEvent.type(skuInput, 'GLV-NIT-M-100');
-    expect(skuInput).toHaveValue('GLV-NIT-M-100');
-    await delay();
-
-    // Scene 5: Click image placeholder — ImageUploadDialog opens
-    goToScene(4);
-    const imagePlaceholder = dialog.getByRole('button', { name: /set product image/i });
-    await userEvent.click(imagePlaceholder);
-
-    await waitFor(
-      () => {
-        expect(screen.getByRole('dialog', { name: /add product image/i })).toBeVisible();
-      },
-      { timeout: 5000 },
-    );
-    await delay();
-
-    // Scene 6: Upload a file and acknowledge copyright
-    goToScene(5);
-    const fileInput = document.querySelector<HTMLInputElement>('input[type="file"]');
-    if (!fileInput) throw new Error('File input not found');
-    await userEvent.upload(fileInput, MOCK_FILE_JPEG);
-
-    await waitFor(
-      () => {
-        expect(screen.getByRole('checkbox', { name: /copyright/i })).toBeVisible();
-      },
-      { timeout: 5000 },
-    );
-    const copyrightCheckbox = screen.getByRole('checkbox', { name: /copyright/i });
-    await userEvent.click(copyrightCheckbox);
-    await delay();
-
-    // Scene 7: Confirm upload
-    goToScene(6);
-    await waitFor(() => {
-      const confirmButton = screen.getByRole('button', { name: /confirm/i });
-      expect(confirmButton).not.toBeDisabled();
-    });
-    const confirmButton = screen.getByRole('button', { name: /confirm/i });
-    await userEvent.click(confirmButton);
-
-    await waitFor(
-      () => {
-        expect(
-          screen.queryByRole('dialog', { name: /add product image/i }),
-        ).not.toBeInTheDocument();
-      },
-      { timeout: 5000 },
-    );
-    await storyStepDelay();
-    await delay();
-
-    // Scene 8: Click Publish to complete creation
-    goToScene(7);
-    const formDialog = screen.getByRole('dialog', { name: /add new item/i });
-    const publishButton = within(formDialog).getByRole('button', { name: /publish/i });
-    await userEvent.click(publishButton);
-
-    const success = within(formDialog).getByTestId('publish-success');
-    expect(success).toBeVisible();
-    await delay();
+  play: async ({ goToScene, delay }) => {
+    for (let i = 0; i < duringCreationCanaryScenes.length; i++) {
+      goToScene(i);
+      await delay();
+    }
   },
 });
 

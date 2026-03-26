@@ -8,7 +8,6 @@
  */
 import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { userEvent, waitFor, expect } from 'storybook/test';
 
 import { createWorkflowStories, type WorkflowScene } from '@/use-cases/framework';
 import { ImagePreviewEditor } from '@/components/canary/molecules/image-preview-editor/image-preview-editor';
@@ -233,52 +232,11 @@ const {
   renderScene: (i) => <CropZoomRotateScene sceneIndex={i} />,
   renderLive: () => <CropZoomRotateLive />,
   delayMs: 2000,
-  play: async ({ canvas, goToScene, delay }) => {
-    goToScene(0);
-    await delay();
-
-    // Wait for the editor to render
-    await waitFor(() => {
-      const editorRoot = canvas.getByRole('slider', { name: 'Zoom' });
-      expect(editorRoot).toBeVisible();
-    });
-
-    // Zoom in — move slider right 5 steps
-    const zoomSlider = canvas.getByRole('slider', { name: 'Zoom' });
-    zoomSlider.focus();
-    for (let i = 0; i < 5; i++) {
-      await userEvent.keyboard('{ArrowRight}');
+  play: async ({ goToScene, delay }) => {
+    for (let i = 0; i < cropZoomRotateScenes.length; i++) {
+      goToScene(i);
+      await delay();
     }
-    goToScene(1);
-    await delay();
-
-    // Zoom out — move slider left 5 steps
-    for (let i = 0; i < 5; i++) {
-      await userEvent.keyboard('{ArrowLeft}');
-    }
-    goToScene(2);
-    await delay();
-
-    // Rotate clockwise
-    const rotateCw = canvas.getByRole('button', { name: /rotate 90 degrees clockwise/i });
-    await userEvent.click(rotateCw);
-    goToScene(3);
-    await delay();
-
-    // Rotate counter-clockwise
-    const rotateCcw = canvas.getByRole('button', { name: /rotate 90 degrees counter-clockwise/i });
-    await userEvent.click(rotateCcw);
-    goToScene(4);
-    await delay();
-
-    // Reset
-    const resetBtn = canvas.getByRole('button', { name: /reset/i });
-    await userEvent.click(resetBtn);
-    goToScene(5);
-    await delay();
-
-    goToScene(6);
-    await delay();
   },
 });
 

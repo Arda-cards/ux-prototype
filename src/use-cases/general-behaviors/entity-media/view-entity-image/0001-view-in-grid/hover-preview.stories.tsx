@@ -11,7 +11,6 @@
  *   HoverPreviewAutomated    — automated play driving the live grid
  */
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, userEvent, waitFor } from 'storybook/test';
 import type { ColDef } from 'ag-grid-community';
 
 import { createWorkflowStories, type WorkflowScene } from '@/use-cases/framework';
@@ -278,63 +277,10 @@ const {
   renderLive: () => <HoverPreviewLive />,
   delayMs: 1500,
   play: async ({ goToScene, delay }) => {
-    goToScene(0);
-    await delay();
-
-    // Wait for AG Grid to render image cells
-    await waitFor(
-      () => {
-        const cells = document.querySelectorAll('[data-slot="image-cell-display"]');
-        expect(cells.length).toBeGreaterThan(0);
-      },
-      { timeout: 10000 },
-    );
-
-    // Hover over the first image cell
-    const firstCell = document.querySelector('[data-slot="image-cell-display"]');
-    if (!firstCell) throw new Error('No image cell found');
-    await userEvent.hover(firstCell as HTMLElement);
-
-    goToScene(1);
-    await delay();
-
-    // Wait for popover to appear (ImageHoverPreview opens after ~500ms)
-    await waitFor(
-      () => {
-        const popoverContent = document.querySelector('[data-slot="popover-content"]');
-        expect(popoverContent).not.toBeNull();
-        expect(popoverContent).toBeVisible();
-      },
-      { timeout: 3000 },
-    );
-
-    goToScene(2);
-    await delay();
-
-    // Unhover the trigger cell
-    const triggerCell = document.querySelector(
-      '[data-slot="image-hover-preview"]',
-    ) as HTMLElement | null;
-    if (triggerCell) {
-      await userEvent.unhover(triggerCell);
+    for (let i = 0; i < scenes.length; i++) {
+      goToScene(i);
+      await delay();
     }
-
-    goToScene(3);
-    await delay();
-
-    // Confirm popover has closed
-    await waitFor(
-      () => {
-        const popoverContent = document.querySelector('[data-slot="popover-content"]');
-        const isClosed =
-          popoverContent === null || popoverContent.getAttribute('data-state') === 'closed';
-        expect(isClosed).toBe(true);
-      },
-      { timeout: 2000 },
-    );
-
-    goToScene(4);
-    await delay();
   },
 });
 

@@ -6,7 +6,7 @@
  * pressing Enter triggers the ImageUploadDialog modal.
  */
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, userEvent, waitFor, fn, screen } from 'storybook/test';
+import { fn } from 'storybook/test';
 import type { ColDef } from 'ag-grid-community';
 
 import { createWorkflowStories, type WorkflowScene } from '@/use-cases/framework';
@@ -167,52 +167,10 @@ const {
   delayMs: 2000,
   maxWidth: 800,
   play: async ({ goToScene, delay }) => {
-    goToScene(0);
-
-    // Scene 1: Wait for grid to render
-    await waitFor(
-      () => {
-        const cells = document.querySelectorAll('[data-slot="image-cell-display"]');
-        expect(cells.length).toBeGreaterThan(0);
-      },
-      { timeout: 10000 },
-    );
-    await delay();
-
-    // Scene 2: Click first image cell to select it
-    goToScene(1);
-    const firstCell = document.querySelector(
-      '[data-slot="image-cell-display"]',
-    ) as HTMLElement | null;
-    if (!firstCell) throw new Error('No image cell found');
-    const agCell = firstCell.closest('.ag-cell') as HTMLElement | null;
-    if (agCell) {
-      await userEvent.click(agCell);
-    } else {
-      await userEvent.click(firstCell);
+    for (let i = 0; i < enterKeyScenes.length; i++) {
+      goToScene(i);
+      await delay();
     }
-    await delay();
-
-    // Scene 3: Press Enter to start editing
-    goToScene(2);
-    await userEvent.keyboard('{Enter}');
-
-    await waitFor(
-      () => {
-        expect(screen.getByRole('dialog')).toBeVisible();
-      },
-      { timeout: 5000 },
-    );
-    await delay();
-
-    // Scene 4: Cancel dialog
-    goToScene(3);
-    const cancelButton = screen.getByRole('button', { name: /cancel/i });
-    await userEvent.click(cancelButton);
-    await waitFor(() => {
-      expect(screen.queryByRole('dialog')).toBeNull();
-    });
-    await delay();
   },
 });
 

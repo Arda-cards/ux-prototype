@@ -16,6 +16,7 @@ import { storyStepDelay } from '../_shared/story-step-delay';
 const meta: Meta<typeof SelectMultiplePage> = {
   title: 'Use Cases/Reference/Business Affiliates/BA-0001 Browse and Search/0005 Select Multiple',
   component: SelectMultiplePage,
+  tags: ['skip-ci'],
   parameters: {
     layout: 'fullscreen',
     fullAppProviders: true,

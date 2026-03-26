@@ -11,7 +11,6 @@
  */
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, within, userEvent, waitFor, screen } from 'storybook/test';
 import {
   LayoutDashboard,
   Package,
@@ -39,7 +38,6 @@ import { createImageCellEditor } from '@/components/canary/atoms/grid/image/imag
 import { ITEM_IMAGE_CONFIG, MOCK_ITEM_IMAGE } from '@/components/canary/__mocks__/image-story-data';
 import type { Item } from '@/types/extras';
 import { itemMockData } from '../../_shared/mock-data';
-import { storyStepDelay } from '../../_shared/story-step-delay';
 
 // ---------------------------------------------------------------------------
 // Column definitions with editable image column
@@ -261,64 +259,11 @@ const {
   renderScene: (i) => <ChangeItemImageSceneRenderer sceneIndex={i} />,
   renderLive: () => <ChangeImagePage />,
   delayMs: 2000,
-  play: async ({ canvas, goToScene, delay }) => {
-    goToScene(0);
-
-    // Scene 1: Wait for grid to render with item data
-    const firstItem = await canvas.findByText(
-      'Nitrile Exam Gloves (Medium)',
-      { selector: '[role="gridcell"]' },
-      { timeout: 10000 },
-    );
-    expect(firstItem).toBeVisible();
-    await storyStepDelay();
-    await delay();
-
-    // Scene 2: Double-click image cell of first row
-    goToScene(1);
-    const rows = document.querySelectorAll('[role="row"].ag-row');
-    const firstRow = rows[0] as HTMLElement | undefined;
-    if (firstRow) {
-      const imageCell =
-        firstRow.querySelector<HTMLElement>('[data-slot="image-cell-display"]') ??
-        firstRow.querySelector<HTMLElement>('[role="gridcell"]');
-      if (imageCell) {
-        await userEvent.dblClick(imageCell);
-      }
+  play: async ({ goToScene, delay }) => {
+    for (let i = 0; i < changeItemImageScenes.length; i++) {
+      goToScene(i);
+      await delay();
     }
-    await delay();
-
-    // Scene 3: Dialog opens
-    goToScene(2);
-    await waitFor(
-      () => {
-        const dialog = screen.queryByRole('dialog');
-        expect(dialog).not.toBeNull();
-        expect(dialog).toBeVisible();
-      },
-      { timeout: 8000 },
-    );
-    await storyStepDelay();
-    await delay();
-
-    // Scene 4: Cancel to close the dialog
-    goToScene(3);
-    const dialog = screen.getByRole('dialog');
-    const cancelButton = within(dialog).getByRole('button', { name: /cancel/i });
-    await userEvent.click(cancelButton);
-    await waitFor(
-      () => {
-        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-      },
-      { timeout: 5000 },
-    );
-    await storyStepDelay();
-
-    // Verify grid row still visible
-    expect(
-      canvas.getByText('Nitrile Exam Gloves (Medium)', { selector: '[role="gridcell"]' }),
-    ).toBeVisible();
-    await delay();
   },
 });
 

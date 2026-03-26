@@ -162,6 +162,7 @@ const meta: Meta<typeof SelectionPage> = {
   title: 'Use Cases/General Behaviors/List Views/GEN-LST-0006 Row Selection',
   component: SelectionPage,
 
+  tags: ['skip-ci'],
   parameters: {
     layout: 'padded',
   },

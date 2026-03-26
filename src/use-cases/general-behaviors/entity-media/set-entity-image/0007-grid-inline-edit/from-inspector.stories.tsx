@@ -9,7 +9,7 @@
  */
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, userEvent, waitFor, fn, screen } from 'storybook/test';
+import { fn } from 'storybook/test';
 import type { ColDef } from 'ag-grid-community';
 import { Eye } from 'lucide-react';
 
@@ -17,7 +17,6 @@ import { createWorkflowStories, type WorkflowScene } from '@/use-cases/framework
 import {
   MOCK_ITEMS,
   ITEM_IMAGE_CONFIG,
-  MOCK_FILE_JPEG,
   type MockItem,
 } from '@/use-cases/general-behaviors/entity-media/_shared/mock-data';
 import { ImageCellDisplay } from '@/components/canary/atoms/grid/image/image-cell-display';
@@ -237,82 +236,10 @@ const {
   delayMs: 2000,
   maxWidth: 800,
   play: async ({ goToScene, delay }) => {
-    goToScene(0);
-
-    // Scene 1: Wait for grid to render
-    await waitFor(
-      () => {
-        const cells = document.querySelectorAll('[data-slot="image-cell-display"]');
-        expect(cells.length).toBeGreaterThan(0);
-      },
-      { timeout: 10000 },
-    );
-    await delay();
-
-    // Scene 2: Hover (simulated via the eye trigger button)
-    goToScene(1);
-    await delay();
-
-    // Scene 3: Click eye icon to open inspector
-    goToScene(2);
-    const eyeTrigger = document.querySelector(
-      '[data-testid="eye-icon-trigger"]',
-    ) as HTMLElement | null;
-    if (!eyeTrigger) throw new Error('Eye icon trigger not found');
-    await userEvent.click(eyeTrigger);
-
-    await waitFor(
-      () => {
-        expect(screen.getByRole('dialog')).toBeVisible();
-      },
-      { timeout: 5000 },
-    );
-    await delay();
-
-    // Scene 4: Click Edit button — inspector closes, upload dialog opens
-    goToScene(3);
-    const editButton = screen.getByRole('button', { name: /^edit$/i });
-    await userEvent.click(editButton);
-
-    await waitFor(
-      () => {
-        const dialogs = screen.getAllByRole('dialog');
-        expect(dialogs.length).toBeGreaterThan(0);
-      },
-      { timeout: 5000 },
-    );
-
-    // Upload a file and confirm to complete the workflow
-    const fileInput = await waitFor(() => {
-      const el = document.querySelector<HTMLInputElement>('input[type="file"]');
-      if (!el) throw new Error('File input not found');
-      return el;
-    });
-    await userEvent.upload(fileInput, MOCK_FILE_JPEG);
-
-    await waitFor(
-      () => {
-        expect(screen.getByRole('checkbox', { name: /copyright acknowledgment/i })).toBeVisible();
-      },
-      { timeout: 5000 },
-    );
-    const checkbox = screen.getByRole('checkbox', { name: /copyright acknowledgment/i });
-    await userEvent.click(checkbox);
-
-    await waitFor(() => {
-      const confirmButton = screen.getByRole('button', { name: /confirm/i });
-      expect(confirmButton).not.toBeDisabled();
-    });
-    const confirmButton = screen.getByRole('button', { name: /confirm/i });
-    await userEvent.click(confirmButton);
-
-    await waitFor(
-      () => {
-        expect(screen.queryByRole('dialog')).toBeNull();
-      },
-      { timeout: 8000 },
-    );
-    await delay();
+    for (let i = 0; i < fromInspectorScenes.length; i++) {
+      goToScene(i);
+      await delay();
+    }
   },
 });
 

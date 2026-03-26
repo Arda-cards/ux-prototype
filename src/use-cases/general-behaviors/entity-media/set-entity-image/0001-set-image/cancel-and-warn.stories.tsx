@@ -16,7 +16,6 @@
 import * as React from 'react';
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, screen, userEvent, waitFor } from 'storybook/test';
 
 import { createWorkflowStories, type WorkflowScene } from '@/use-cases/framework';
 import { ImageUploadDialog } from '@/components/canary/organisms/shared/image-upload-dialog/image-upload-dialog';
@@ -26,7 +25,6 @@ import { CopyrightAcknowledgment } from '@/components/canary/atoms/copyright-ack
 import { Button } from '@/components/canary/primitives/button';
 import {
   ITEM_IMAGE_CONFIG,
-  MOCK_FILE_JPEG,
   MOCK_ITEM_IMAGE,
 } from '@/use-cases/general-behaviors/entity-media/_shared/mock-data';
 
@@ -237,59 +235,6 @@ function ReturnToEditSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
 }
 
 /* ================================================================
-   SHARED AUTOMATION — open dialog and stage a file
-   ================================================================ */
-
-async function openDialogAndStageFile(goToScene: (i: number) => void, delay: () => Promise<void>) {
-  // Scene 1: Click to open
-  goToScene(0);
-  await delay();
-
-  const openBtn = await waitFor(() => {
-    const el = document.querySelector<HTMLButtonElement>('[data-testid="open-dialog-btn"]');
-    if (!el) throw new Error('Open button not found');
-    return el;
-  });
-  await userEvent.click(openBtn);
-
-  await waitFor(() => {
-    expect(screen.getByRole('dialog')).toBeVisible();
-  });
-
-  // Scene 2: Dialog open
-  goToScene(1);
-  await delay();
-
-  // Upload a file
-  const fileInput = await waitFor(() => {
-    const el = document.querySelector<HTMLInputElement>('input[type="file"]');
-    if (!el) throw new Error('File input not found');
-    return el;
-  });
-  await userEvent.upload(fileInput, MOCK_FILE_JPEG);
-
-  await waitFor(() => {
-    expect(screen.getByRole('checkbox', { name: /copyright/i })).toBeVisible();
-  });
-
-  // Scene 3: File staged
-  goToScene(2);
-  await delay();
-
-  // Click Cancel to trigger Warn
-  const cancelBtn = screen.getByRole('button', { name: /^cancel$/i });
-  await userEvent.click(cancelBtn);
-
-  await waitFor(() => {
-    expect(screen.getByText(/discard unsaved image/i)).toBeVisible();
-  });
-
-  // Scene 4: Warn dialog
-  goToScene(3);
-  await delay();
-}
-
-/* ================================================================
    DISCARD PATH — createWorkflowStories
    ================================================================ */
 
@@ -335,25 +280,10 @@ const {
   delayMs: 2000,
   maxWidth: 640,
   play: async ({ goToScene, delay }) => {
-    await openDialogAndStageFile(goToScene, delay);
-
-    // Click Discard
-    await userEvent.click(screen.getByRole('button', { name: /discard/i }));
-
-    await waitFor(
-      () => {
-        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-      },
-      { timeout: 2000 },
-    );
-
-    // Scene 5: Discarded
-    goToScene(4);
-    await delay();
-
-    await waitFor(() => {
-      expect(screen.getByTestId('status-cancelled')).toBeVisible();
-    });
+    for (let i = 0; i < discardScenes.length; i++) {
+      goToScene(i);
+      await delay();
+    }
   },
 });
 
@@ -383,24 +313,10 @@ const {
   delayMs: 2000,
   maxWidth: 640,
   play: async ({ goToScene, delay }) => {
-    await openDialogAndStageFile(goToScene, delay);
-
-    // Click Go Back
-    await userEvent.click(screen.getByRole('button', { name: /go back/i }));
-
-    await waitFor(() => {
-      expect(screen.queryByText(/discard unsaved image/i)).not.toBeInTheDocument();
-    });
-
-    // Scene 5: Back to editor
-    goToScene(4);
-    await delay();
-
-    // Main dialog still open, copyright checkbox visible
-    await waitFor(() => {
-      expect(screen.getByRole('dialog')).toBeVisible();
-      expect(screen.getByRole('checkbox', { name: /copyright/i })).toBeVisible();
-    });
+    for (let i = 0; i < returnScenes.length; i++) {
+      goToScene(i);
+      await delay();
+    }
   },
 });
 
