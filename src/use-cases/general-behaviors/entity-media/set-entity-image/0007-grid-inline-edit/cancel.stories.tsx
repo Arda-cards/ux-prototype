@@ -11,6 +11,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, fn, screen } from 'storybook/test';
 import type { ColDef } from 'ag-grid-community';
 
+import { createWorkflowStories, type WorkflowScene } from '@/use-cases/framework';
 import {
   MOCK_ITEMS,
   ITEM_IMAGE_CONFIG,
@@ -19,7 +20,6 @@ import {
 import { ImageCellDisplay } from '@/components/canary/atoms/grid/image/image-cell-display';
 import { createImageCellEditor } from '@/components/canary/atoms/grid/image/image-cell-editor';
 import { createEntityDataGrid } from '@/components/canary/organisms/shared/entity-data-grid/create-entity-data-grid';
-import { storyStepDelay } from '@/use-cases/reference/items/_shared/story-step-delay';
 
 // ---------------------------------------------------------------------------
 // Story-local column definitions — image column is editable
@@ -56,21 +56,21 @@ const { Component: InlineEditGrid } = createEntityDataGrid<MockItem>({
 });
 
 // ---------------------------------------------------------------------------
-// Page wrapper
+// Live component wrapper
 // ---------------------------------------------------------------------------
 
 interface CancelPageProps {
   onRowPublish: (rowId: string, changes: Record<string, unknown>) => Promise<void>;
 }
 
-function CancelPage({ onRowPublish }: CancelPageProps) {
+function CancelLive({ onRowPublish }: CancelPageProps) {
   const [rows, setRows] = useState<MockItem[]>(MOCK_ITEMS.slice(0, 3));
   const [publishCount, setPublishCount] = useState(0);
 
   return (
     <div className="p-6 max-w-3xl">
       <h1 className="text-xl font-semibold tracking-tight mb-1">
-        GEN-MEDIA-0001 — Grid Inline Edit: Cancel
+        GEN-MEDIA-0001 &#8212; Grid Inline Edit: Cancel
       </h1>
       <p className="text-sm text-muted-foreground mb-4">
         Double-click an image cell to open the dialog. Click Cancel to discard without saving. The
@@ -89,22 +89,163 @@ function CancelPage({ onRowPublish }: CancelPageProps) {
       />
       {publishCount > 0 && (
         <p className="mt-3 text-sm text-destructive" data-testid="publish-count">
-          onRowPublish was called {publishCount} time{publishCount > 1 ? 's' : ''} — unexpected on
-          cancel path!
+          onRowPublish was called {publishCount} time{publishCount > 1 ? 's' : ''} &#8212;
+          unexpected on cancel path!
         </p>
       )}
     </div>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Meta
-// ---------------------------------------------------------------------------
+/* ================================================================
+   STATIC SCENE RENDERER — used by Stepwise mode
+   ================================================================ */
 
-const meta: Meta<typeof CancelPage> = {
+function ScenePanel({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="border border-border rounded-lg p-6 bg-background max-w-2xl w-full">
+      <h2 className="text-lg font-semibold mb-2">{title}</h2>
+      <p className="text-sm text-muted-foreground">{description}</p>
+    </div>
+  );
+}
+
+function CancelSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
+  switch (sceneIndex) {
+    case 0:
+      return (
+        <ScenePanel
+          title="Grid renders with image cells"
+          description="The grid is visible with 3 rows. Each row has an image cell in the first column. The grid is in view mode — no cell is editing yet."
+        />
+      );
+    case 1:
+      return (
+        <ScenePanel
+          title="Double-click opens the dialog"
+          description="The user double-clicks the first image cell. The ImageUploadDialog appears in EmptyImage state showing the drop zone."
+        />
+      );
+    case 2:
+      return (
+        <ScenePanel
+          title="Dialog open — Cancel button visible"
+          description="The ImageUploadDialog is open. The user has decided not to change the image and clicks the Cancel button."
+        />
+      );
+    case 3:
+    default:
+      return (
+        <ScenePanel
+          title="Dialog closed — row unchanged"
+          description="After cancelling, the dialog has closed. The grid row still shows the original image cell content. onRowPublish was NOT called, confirming no data was changed."
+        />
+      );
+  }
+}
+
+/* ================================================================
+   SCENES + WORKFLOW FACTORY
+   ================================================================ */
+
+const cancelScenes: WorkflowScene[] = [
+  {
+    title: 'Scene 1 of 4 \u2014 Grid Visible',
+    description:
+      'The grid renders with 3 rows and an editable image column. The rows show their original image thumbnails.',
+    interaction: 'Double-click the image cell in the first row.',
+  },
+  {
+    title: 'Scene 2 of 4 \u2014 Dialog Opens',
+    description:
+      'Double-clicking the image cell opens the ImageUploadDialog in EmptyImage state. A Cancel button is visible in the dialog footer.',
+    interaction: 'Click Cancel to dismiss the dialog without making changes.',
+  },
+  {
+    title: 'Scene 3 of 4 \u2014 Cancel Clicked',
+    description:
+      'The user clicks Cancel. The dialog begins to close. No upload has occurred and no row data has been modified.',
+    interaction: 'Wait for the dialog to close.',
+  },
+  {
+    title: 'Scene 4 of 4 \u2014 Row Unchanged',
+    description:
+      'The dialog has closed. The grid row still shows the original image. onRowPublish was NOT called — the cancel path correctly discards any pending edit.',
+    interaction: 'The workflow is complete. Double-click again to start a new edit.',
+  },
+];
+
+const onRowPublishFn = fn();
+
+const {
+  Interactive: CancelInteractive,
+  Stepwise: CancelStepwise,
+  Automated: CancelAutomated,
+} = createWorkflowStories({
+  scenes: cancelScenes,
+  renderScene: (i) => <CancelSceneRenderer sceneIndex={i} />,
+  renderLive: () => <CancelLive onRowPublish={onRowPublishFn} />,
+  delayMs: 2000,
+  maxWidth: 800,
+  play: async ({ goToScene, delay }) => {
+    goToScene(0);
+
+    // Scene 1: Wait for grid to render
+    await waitFor(
+      () => {
+        const cells = document.querySelectorAll('[data-slot="image-cell-display"]');
+        expect(cells.length).toBeGreaterThan(0);
+      },
+      { timeout: 10000 },
+    );
+    await delay();
+
+    // Scene 2: Double-click first image cell
+    goToScene(1);
+    const firstCell = document.querySelector(
+      '[data-slot="image-cell-display"]',
+    ) as HTMLElement | null;
+    if (!firstCell) throw new Error('No image cell found');
+    await userEvent.dblClick(firstCell);
+
+    await waitFor(
+      () => {
+        expect(screen.getByRole('dialog')).toBeVisible();
+      },
+      { timeout: 5000 },
+    );
+    goToScene(2);
+    await delay();
+
+    // Scene 3 -> 4: Click Cancel
+    goToScene(3);
+    const cancelButton = screen.getByRole('button', { name: /cancel/i });
+    await userEvent.click(cancelButton);
+
+    await waitFor(
+      () => {
+        expect(screen.queryByRole('dialog')).toBeNull();
+      },
+      { timeout: 5000 },
+    );
+
+    // Verify onRowPublish was NOT called
+    expect(onRowPublishFn).not.toHaveBeenCalled();
+
+    // Verify grid still shows original image cells
+    const cells = document.querySelectorAll('[data-slot="image-cell-display"]');
+    expect(cells.length).toBeGreaterThan(0);
+    await delay();
+  },
+});
+
+/* ================================================================
+   META + EXPORTS
+   ================================================================ */
+
+const meta: Meta = {
   title:
     'Use Cases/General Behaviors/Entity Media/GEN-MEDIA-0001 Set Entity Image/0007 Grid Inline Edit/Cancel',
-  component: CancelPage,
   parameters: {
     layout: 'fullscreen',
   },
@@ -114,78 +255,18 @@ const meta: Meta<typeof CancelPage> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof CancelPage>;
 
-// ---------------------------------------------------------------------------
-// Stories
-// ---------------------------------------------------------------------------
+export const CancelInteractiveStory: StoryObj = {
+  ...CancelInteractive,
+  name: 'Cancel (Interactive)',
+};
 
-/** Default — grid with editable image column. Double-click a cell then click Cancel. */
-export const Default: Story = {};
+export const CancelStepwiseStory: StoryObj = {
+  ...CancelStepwise,
+  name: 'Cancel (Stepwise)',
+};
 
-/**
- * Automated — double-clicks the first image cell, verifies the dialog opens,
- * clicks Cancel, verifies the dialog closes, and confirms onRowPublish was
- * NOT called (the row is unchanged).
- */
-export const Automated: Story = {
-  play: async ({ args, step }) => {
-    await step('Grid renders image cells', async () => {
-      await waitFor(
-        () => {
-          const cells = document.querySelectorAll('[data-slot="image-cell-display"]');
-          expect(cells.length).toBeGreaterThan(0);
-        },
-        { timeout: 10000 },
-      );
-    });
-
-    await storyStepDelay(500);
-
-    await step('Double-click first image cell to open dialog', async () => {
-      const firstCell = document.querySelector(
-        '[data-slot="image-cell-display"]',
-      ) as HTMLElement | null;
-      if (!firstCell) throw new Error('No image cell found');
-      await userEvent.dblClick(firstCell);
-    });
-
-    await step('ImageUploadDialog opens', async () => {
-      await waitFor(
-        () => {
-          const dialog = screen.getByRole('dialog');
-          expect(dialog).toBeVisible();
-        },
-        { timeout: 5000 },
-      );
-    });
-
-    await storyStepDelay(500);
-
-    await step('Click Cancel to dismiss the dialog', async () => {
-      const cancelButton = screen.getByRole('button', { name: /cancel/i });
-      await userEvent.click(cancelButton);
-    });
-
-    await step('Dialog closes after cancel', async () => {
-      await waitFor(
-        () => {
-          const dialog = screen.queryByRole('dialog');
-          expect(dialog).toBeNull();
-        },
-        { timeout: 5000 },
-      );
-    });
-
-    await step('onRowPublish was NOT called — row is unchanged', async () => {
-      expect(args.onRowPublish).not.toHaveBeenCalled();
-    });
-
-    await storyStepDelay();
-
-    await step('Grid still shows original image cells', async () => {
-      const cells = document.querySelectorAll('[data-slot="image-cell-display"]');
-      expect(cells.length).toBeGreaterThan(0);
-    });
-  },
+export const CancelAutomatedStory: StoryObj = {
+  ...CancelAutomated,
+  name: 'Cancel (Automated)',
 };

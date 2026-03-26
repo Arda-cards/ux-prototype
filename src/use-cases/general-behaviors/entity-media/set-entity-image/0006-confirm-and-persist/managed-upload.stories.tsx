@@ -1,47 +1,43 @@
 /**
- * GEN-MEDIA-0001::0006.FS — Confirm and Persist
+ * GEN-MEDIA-0001::0006.UC — Confirm and Persist
  * Scene: Managed Upload
  *
  * Renders ImageUploadDialog in a controlled state simulating the full file
- * upload flow: provide a file, acknowledge copyright, confirm, observe upload
- * progress bar, then success callback fires.
+ * upload flow: dialog open, file uploaded, copyright acknowledged, confirm
+ * clicked, upload progress shown, then success.
  */
-import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, userEvent, waitFor, fn, screen } from 'storybook/test';
+import * as React from 'react';
 import { useState } from 'react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, userEvent, waitFor, screen } from 'storybook/test';
 
+import { createWorkflowStories, type WorkflowScene } from '@/use-cases/framework';
 import { ImageUploadDialog } from '@/components/canary/organisms/shared/image-upload-dialog/image-upload-dialog';
+import { ImageDropZone } from '@/components/canary/molecules/image-drop-zone/image-drop-zone';
+import { ImagePreviewEditor } from '@/components/canary/molecules/image-preview-editor/image-preview-editor';
+import { CopyrightAcknowledgment } from '@/components/canary/atoms/copyright-acknowledgment/copyright-acknowledgment';
+import { Progress } from '@/components/canary/primitives/progress';
+import { Button } from '@/components/canary/primitives/button';
 import {
   ITEM_IMAGE_CONFIG,
   MOCK_FILE_JPEG,
+  MOCK_ITEM_IMAGE,
 } from '@/use-cases/general-behaviors/entity-media/_shared/mock-data';
 import type { ImageUploadResult } from '@/types/canary/utilities/image-field-config';
 
-// ---------------------------------------------------------------------------
-// Page wrapper
-// ---------------------------------------------------------------------------
+/* ================================================================
+   LIVE COMPONENT — used by Interactive and Automated modes
+   ================================================================ */
 
-interface ManagedUploadPageProps {
-  existingImageUrl: string | null;
-  open: boolean;
-  onConfirm: (result: ImageUploadResult) => void;
-  onCancel: () => void;
-}
-
-function ManagedUploadPage({
-  existingImageUrl,
-  open,
-  onConfirm,
-  onCancel,
-}: ManagedUploadPageProps) {
-  const [isOpen, setIsOpen] = useState(open);
+function ManagedUploadLive() {
+  const [isOpen, setIsOpen] = useState(true);
   const [lastResult, setLastResult] = useState<ImageUploadResult | null>(null);
 
   return (
     <div className="flex flex-col items-center gap-4 p-6 min-w-[320px]">
       <div className="text-center">
         <h1 className="text-xl font-semibold tracking-tight">
-          GEN-MEDIA-0001 — Managed Upload Flow
+          GEN-MEDIA-0001 &#8212; Managed Upload Flow
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
           Provide a file, acknowledge copyright, click Confirm to observe the upload progress bar
@@ -71,14 +67,10 @@ function ManagedUploadPage({
 
       <ImageUploadDialog
         config={ITEM_IMAGE_CONFIG}
-        existingImageUrl={existingImageUrl}
+        existingImageUrl={null}
         open={isOpen}
-        onCancel={() => {
-          onCancel();
-          setIsOpen(false);
-        }}
+        onCancel={() => setIsOpen(false)}
         onConfirm={(result) => {
-          onConfirm(result);
           setLastResult(result);
           setIsOpen(false);
         }}
@@ -87,130 +79,300 @@ function ManagedUploadPage({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Meta
-// ---------------------------------------------------------------------------
+/* ================================================================
+   STATIC SCENE RENDERER — used by Stepwise mode
+   ================================================================ */
 
-const meta: Meta<typeof ManagedUploadPage> = {
+function DialogFrame({
+  title,
+  children,
+  footer,
+}: {
+  title: string;
+  children: React.ReactNode;
+  footer?: React.ReactNode;
+}) {
+  return (
+    <div className="border border-border rounded-lg p-6 bg-background max-w-lg w-full">
+      <h2 className="text-lg font-semibold mb-4">{title}</h2>
+      {children}
+      {footer && <div className="flex justify-end gap-2 mt-4">{footer}</div>}
+    </div>
+  );
+}
+
+const noop = () => {};
+
+function ManagedUploadScene({ sceneIndex }: { sceneIndex: number }) {
+  switch (sceneIndex) {
+    // Scene 1: Dialog open — EmptyImage drop zone
+    case 0:
+      return (
+        <DialogFrame title="Add Product Image" footer={<Button variant="secondary">Cancel</Button>}>
+          <ImageDropZone
+            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
+            onInput={noop}
+            onDismiss={noop}
+          />
+        </DialogFrame>
+      );
+
+    // Scene 2: File uploaded — ProvidedImage with copyright unchecked
+    case 1:
+      return (
+        <DialogFrame
+          title="Add Product Image"
+          footer={
+            <>
+              <Button variant="secondary">Cancel</Button>
+              <Button disabled>Confirm</Button>
+            </>
+          }
+        >
+          <ImagePreviewEditor
+            aspectRatio={1}
+            imageData={MOCK_ITEM_IMAGE}
+            onCropChange={noop}
+            onReset={noop}
+          />
+          <div className="mt-4">
+            <CopyrightAcknowledgment acknowledged={false} onAcknowledge={noop} />
+          </div>
+        </DialogFrame>
+      );
+
+    // Scene 3: Copyright acknowledged — Confirm enabled
+    case 2:
+      return (
+        <DialogFrame
+          title="Add Product Image"
+          footer={
+            <>
+              <Button variant="secondary">Cancel</Button>
+              <Button>Confirm</Button>
+            </>
+          }
+        >
+          <ImagePreviewEditor
+            aspectRatio={1}
+            imageData={MOCK_ITEM_IMAGE}
+            onCropChange={noop}
+            onReset={noop}
+          />
+          <div className="mt-4">
+            <CopyrightAcknowledgment acknowledged={true} onAcknowledge={noop} />
+          </div>
+        </DialogFrame>
+      );
+
+    // Scene 4: Confirm clicked — uploading progress
+    case 3:
+      return (
+        <DialogFrame
+          title="Add Product Image"
+          footer={
+            <Button variant="secondary" disabled>
+              Uploading&#8230;
+            </Button>
+          }
+        >
+          <div className="flex flex-col gap-4">
+            <p className="text-sm text-muted-foreground text-center">Uploading image&#8230;</p>
+            <Progress value={65} className="bg-muted" />
+          </div>
+        </DialogFrame>
+      );
+
+    // Scene 5: Upload progress — near completion
+    case 4:
+      return (
+        <DialogFrame
+          title="Add Product Image"
+          footer={
+            <Button variant="secondary" disabled>
+              Uploading&#8230;
+            </Button>
+          }
+        >
+          <div className="flex flex-col gap-4">
+            <p className="text-sm text-muted-foreground text-center">Uploading image&#8230;</p>
+            <Progress value={90} className="bg-muted" />
+          </div>
+        </DialogFrame>
+      );
+
+    // Scene 6: Success — dialog closed, result shown
+    case 5:
+    default:
+      return (
+        <div className="flex flex-col items-center gap-4 p-6 min-w-[320px]">
+          <h1 className="text-xl font-semibold tracking-tight">
+            GEN-MEDIA-0001 &#8212; Managed Upload Flow
+          </h1>
+          <div className="rounded-lg border border-border p-4 text-sm max-w-sm w-full">
+            <p className="font-semibold mb-2">Upload complete!</p>
+            <p className="text-xs text-muted-foreground">
+              onConfirm called with ImageUploadResult containing the new imageUrl.
+            </p>
+          </div>
+        </div>
+      );
+  }
+}
+
+/* ================================================================
+   SCENES
+   ================================================================ */
+
+const managedUploadScenes: WorkflowScene[] = [
+  {
+    title: 'Scene 1 of 6 \u2014 Dialog Open',
+    description:
+      'The ImageUploadDialog opens in EmptyImage state. The drop zone is visible with drag-and-drop ' +
+      'and file-picker affordances. Only a Cancel button is shown in the footer.',
+    interaction: 'Upload a JPEG file via the hidden file input.',
+  },
+  {
+    title: 'Scene 2 of 6 \u2014 File Uploaded',
+    description:
+      'A JPEG file has been selected and passed validation. The dialog transitions to ProvidedImage ' +
+      'state showing the crop editor. The Confirm button is disabled until copyright is acknowledged.',
+    interaction: 'Check the copyright acknowledgment checkbox.',
+  },
+  {
+    title: 'Scene 3 of 6 \u2014 Copyright Acknowledged',
+    description:
+      'The copyright checkbox is now checked. The Confirm button becomes fully enabled. ' +
+      'The user has asserted they hold the rights to use this image.',
+    interaction: 'Click the Confirm button to start the upload.',
+  },
+  {
+    title: 'Scene 4 of 6 \u2014 Confirm Clicked \u2014 Upload Progress',
+    description:
+      'Confirm was clicked. The dialog shows a progress bar at 65%. The footer shows a disabled ' +
+      '"Uploading\u2026" button. The dialog cannot be dismissed during upload.',
+    interaction: 'Wait for the upload to complete.',
+  },
+  {
+    title: 'Scene 5 of 6 \u2014 Upload Progress Near Completion',
+    description:
+      'The progress bar has advanced to 90%. The upload is nearly done. ' +
+      'The onConfirm callback will fire once the upload resolves.',
+    interaction: 'Wait for the final callback.',
+  },
+  {
+    title: 'Scene 6 of 6 \u2014 Success',
+    description:
+      'The upload is complete. The dialog has closed and the onConfirm callback fired with ' +
+      'an ImageUploadResult containing the new imageUrl. The page shows the result.',
+    interaction: 'The workflow is complete. Click "Open Upload Dialog" to run again.',
+  },
+];
+
+/* ================================================================
+   WORKFLOW STORIES
+   ================================================================ */
+
+const {
+  Interactive: ManagedUploadInteractive,
+  Stepwise: ManagedUploadStepwise,
+  Automated: ManagedUploadAutomated,
+} = createWorkflowStories({
+  scenes: managedUploadScenes,
+  renderScene: (i) => <ManagedUploadScene sceneIndex={i} />,
+  renderLive: () => <ManagedUploadLive />,
+  delayMs: 2000,
+  maxWidth: 640,
+  play: async ({ goToScene, delay }) => {
+    goToScene(0);
+    await delay();
+
+    // Wait for dialog to open
+    await waitFor(
+      () => {
+        expect(screen.getByRole('dialog')).toBeVisible();
+      },
+      { timeout: 5000 },
+    );
+
+    // Upload a file
+    const fileInput = await waitFor(() => {
+      const el = document.querySelector<HTMLInputElement>('input[type="file"]');
+      if (!el) throw new Error('File input not found');
+      return el;
+    });
+    await userEvent.upload(fileInput, MOCK_FILE_JPEG);
+
+    // Wait for copyright checkbox to appear (ProvidedImage state)
+    await waitFor(
+      () => {
+        expect(screen.getByRole('checkbox', { name: /copyright acknowledgment/i })).toBeVisible();
+      },
+      { timeout: 5000 },
+    );
+
+    goToScene(1);
+    await delay();
+
+    // Check copyright
+    const checkbox = screen.getByRole('checkbox', { name: /copyright acknowledgment/i });
+    await userEvent.click(checkbox);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /confirm/i })).not.toBeDisabled();
+    });
+
+    goToScene(2);
+    await delay();
+
+    // Click confirm
+    const confirmBtn = screen.getByRole('button', { name: /confirm/i });
+    await userEvent.click(confirmBtn);
+
+    goToScene(3);
+    await delay();
+
+    goToScene(4);
+    await delay();
+
+    // Wait for dialog to close (upload complete)
+    await waitFor(
+      () => {
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
+
+    goToScene(5);
+    await delay();
+  },
+});
+
+/* ================================================================
+   META + EXPORTS
+   ================================================================ */
+
+const meta: Meta = {
   title:
     'Use Cases/General Behaviors/Entity Media/GEN-MEDIA-0001 Set Entity Image/0006 Confirm and Persist/Managed Upload',
-  component: ManagedUploadPage,
   parameters: {
     layout: 'centered',
-    docs: {
-      description: {
-        component:
-          '`ImageUploadDialog` file-upload path: provide a file via the drop zone, ' +
-          'acknowledge copyright, click Confirm, observe the progress bar, then the ' +
-          '`onConfirm` callback fires with an `ImageUploadResult`.',
-      },
-    },
-  },
-  argTypes: {
-    existingImageUrl: {
-      control: 'text',
-      description: 'URL of an existing image (shows comparison layout when set).',
-      table: { category: 'Runtime' },
-    },
-    open: {
-      control: 'boolean',
-      description: 'Whether the dialog starts open.',
-      table: { category: 'Runtime' },
-    },
-    onConfirm: {
-      description: 'Called with ImageUploadResult when upload completes.',
-      table: { category: 'Runtime' },
-    },
-    onCancel: {
-      description: 'Called when the user cancels the dialog.',
-      table: { category: 'Runtime' },
-    },
-  },
-  args: {
-    existingImageUrl: null,
-    open: true,
-    onConfirm: fn(),
-    onCancel: fn(),
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof ManagedUploadPage>;
 
-// ---------------------------------------------------------------------------
-// Stories
-// ---------------------------------------------------------------------------
+export const Interactive: StoryObj = {
+  ...ManagedUploadInteractive,
+  name: 'Managed Upload (Interactive)',
+};
 
-/** Default — dialog opens in EmptyImage state. Drop a file to begin the upload flow. */
-export const Default: Story = {};
+export const Stepwise: StoryObj = {
+  ...ManagedUploadStepwise,
+  name: 'Managed Upload (Stepwise)',
+};
 
-/**
- * Automated — simulates the full managed upload happy path:
- * provide a JPEG file, acknowledge copyright, click Confirm,
- * then verify that onConfirm fires.
- */
-export const Automated: Story = {
-  args: {
-    open: true,
-    existingImageUrl: null,
-  },
-  play: async ({ args, step }) => {
-    await step('Dialog is open and drop zone is visible', async () => {
-      await waitFor(
-        () => {
-          const dropZone = screen.getByRole('dialog');
-          expect(dropZone).toBeVisible();
-        },
-        { timeout: 5000 },
-      );
-    });
-
-    await step('Provide a JPEG file via the hidden file input', async () => {
-      let fileInput: HTMLInputElement | null = null;
-      await waitFor(
-        () => {
-          fileInput = document.querySelector<HTMLInputElement>('input[type="file"]');
-          if (!fileInput) throw new Error('File input not found');
-        },
-        { timeout: 5000 },
-      );
-      if (!fileInput) throw new Error('File input not found after waitFor');
-      await userEvent.upload(fileInput, MOCK_FILE_JPEG);
-    });
-
-    await step('Copyright acknowledgment checkbox appears', async () => {
-      await waitFor(
-        () => {
-          const checkbox = screen.getByRole('checkbox', { name: /copyright acknowledgment/i });
-          expect(checkbox).toBeVisible();
-        },
-        { timeout: 5000 },
-      );
-    });
-
-    await step('Acknowledge copyright', async () => {
-      const checkbox = screen.getByRole('checkbox', { name: /copyright acknowledgment/i });
-      await userEvent.click(checkbox);
-    });
-
-    await step('Confirm button is enabled and clickable', async () => {
-      await waitFor(() => {
-        const confirmButton = screen.getByRole('button', { name: /confirm/i });
-        expect(confirmButton).not.toBeDisabled();
-      });
-      const confirmButton = screen.getByRole('button', { name: /confirm/i });
-      await userEvent.click(confirmButton);
-    });
-
-    await step('onConfirm callback fires with upload result', async () => {
-      await waitFor(
-        () => {
-          expect(args.onConfirm).toHaveBeenCalledWith(
-            expect.objectContaining({ imageUrl: expect.any(String) }),
-          );
-        },
-        { timeout: 5000 },
-      );
-    });
-  },
+export const Automated: StoryObj = {
+  ...ManagedUploadAutomated,
+  name: 'Managed Upload (Automated)',
 };

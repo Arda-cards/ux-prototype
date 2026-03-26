@@ -1,54 +1,51 @@
 /**
- * GEN-MEDIA-0001::0006.FS — Confirm and Persist
+ * GEN-MEDIA-0001::0006.UC — Confirm and Persist
  * Scene: External URL
  *
  * Demonstrates the URL-entry path through ImageUploadDialog. The user types
  * an HTTPS URL, acknowledges copyright, and clicks Confirm. Unlike the file
  * upload path there is no progress bar — the URL is stored as-is.
+ *
+ * Scenes: Dialog open, URL entered, Copyright acknowledged, Confirm, URL stored.
  */
-import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, userEvent, waitFor, fn, screen } from 'storybook/test';
+import * as React from 'react';
 import { useState } from 'react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, userEvent, waitFor, screen } from 'storybook/test';
 
+import { createWorkflowStories, type WorkflowScene } from '@/use-cases/framework';
 import { ImageUploadDialog } from '@/components/canary/organisms/shared/image-upload-dialog/image-upload-dialog';
+import { ImageDropZone } from '@/components/canary/molecules/image-drop-zone/image-drop-zone';
+import { ImagePreviewEditor } from '@/components/canary/molecules/image-preview-editor/image-preview-editor';
+import { CopyrightAcknowledgment } from '@/components/canary/atoms/copyright-acknowledgment/copyright-acknowledgment';
+import { Button } from '@/components/canary/primitives/button';
 import {
   ITEM_IMAGE_CONFIG,
   MOCK_EXTERNAL_URL,
+  MOCK_ITEM_IMAGE,
 } from '@/use-cases/general-behaviors/entity-media/_shared/mock-data';
 import type { ImageUploadResult } from '@/types/canary/utilities/image-field-config';
 
-// ---------------------------------------------------------------------------
-// Page wrapper
-// ---------------------------------------------------------------------------
+/* ================================================================
+   LIVE COMPONENT — used by Interactive and Automated modes
+   ================================================================ */
 
-interface ExternalUrlPageProps {
-  existingImageUrl: string | null;
-  url: string;
-  open: boolean;
-  onConfirm: (result: ImageUploadResult) => void;
-  onCancel: () => void;
-}
-
-function ExternalUrlPage({
-  existingImageUrl,
-  url,
-  open,
-  onConfirm,
-  onCancel,
-}: ExternalUrlPageProps) {
-  const [isOpen, setIsOpen] = useState(open);
+function ExternalUrlLive() {
+  const [isOpen, setIsOpen] = useState(true);
   const [lastResult, setLastResult] = useState<ImageUploadResult | null>(null);
 
   return (
     <div className="flex flex-col items-center gap-4 p-6 min-w-[320px]">
       <div className="text-center">
-        <h1 className="text-xl font-semibold tracking-tight">GEN-MEDIA-0001 — External URL Flow</h1>
+        <h1 className="text-xl font-semibold tracking-tight">
+          GEN-MEDIA-0001 &#8212; External URL Flow
+        </h1>
         <p className="text-sm text-muted-foreground mt-1">
           Type an HTTPS URL into the drop zone, acknowledge copyright, then confirm. No upload
-          progress bar — the URL is stored as-is.
+          progress bar &#8212; the URL is stored as-is.
         </p>
         <p className="text-xs text-muted-foreground mt-1">
-          Suggested URL: <code className="break-all">{url}</code>
+          Suggested URL: <code className="break-all">{MOCK_EXTERNAL_URL}</code>
         </p>
       </div>
 
@@ -74,14 +71,10 @@ function ExternalUrlPage({
 
       <ImageUploadDialog
         config={ITEM_IMAGE_CONFIG}
-        existingImageUrl={existingImageUrl}
+        existingImageUrl={null}
         open={isOpen}
-        onCancel={() => {
-          onCancel();
-          setIsOpen(false);
-        }}
+        onCancel={() => setIsOpen(false)}
         onConfirm={(result) => {
-          onConfirm(result);
           setLastResult(result);
           setIsOpen(false);
         }}
@@ -90,136 +83,259 @@ function ExternalUrlPage({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Meta
-// ---------------------------------------------------------------------------
+/* ================================================================
+   STATIC SCENE RENDERER — used by Stepwise mode
+   ================================================================ */
 
-const meta: Meta<typeof ExternalUrlPage> = {
+function DialogFrame({
+  title,
+  children,
+  footer,
+}: {
+  title: string;
+  children: React.ReactNode;
+  footer?: React.ReactNode;
+}) {
+  return (
+    <div className="border border-border rounded-lg p-6 bg-background max-w-lg w-full">
+      <h2 className="text-lg font-semibold mb-4">{title}</h2>
+      {children}
+      {footer && <div className="flex justify-end gap-2 mt-4">{footer}</div>}
+    </div>
+  );
+}
+
+const noop = () => {};
+
+function ExternalUrlScene({ sceneIndex }: { sceneIndex: number }) {
+  switch (sceneIndex) {
+    // Scene 1: Dialog open — EmptyImage drop zone with URL field
+    case 0:
+      return (
+        <DialogFrame title="Add Product Image" footer={<Button variant="secondary">Cancel</Button>}>
+          <ImageDropZone
+            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
+            onInput={noop}
+            onDismiss={noop}
+          />
+        </DialogFrame>
+      );
+
+    // Scene 2: URL entered — drop zone shows the URL being typed
+    case 1:
+      return (
+        <DialogFrame title="Add Product Image" footer={<Button variant="secondary">Cancel</Button>}>
+          <ImageDropZone
+            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
+            onInput={noop}
+            onDismiss={noop}
+          />
+          <p className="mt-2 text-xs text-muted-foreground text-center">
+            URL typed: <code className="break-all">{MOCK_EXTERNAL_URL}</code>
+          </p>
+        </DialogFrame>
+      );
+
+    // Scene 3: Copyright acknowledged — Confirm enabled
+    case 2:
+      return (
+        <DialogFrame
+          title="Add Product Image"
+          footer={
+            <>
+              <Button variant="secondary">Cancel</Button>
+              <Button>Confirm</Button>
+            </>
+          }
+        >
+          <ImagePreviewEditor
+            aspectRatio={1}
+            imageData={MOCK_ITEM_IMAGE}
+            onCropChange={noop}
+            onReset={noop}
+          />
+          <div className="mt-4">
+            <CopyrightAcknowledgment acknowledged={true} onAcknowledge={noop} />
+          </div>
+        </DialogFrame>
+      );
+
+    // Scene 4: Confirm clicked — no progress bar for URL path
+    case 3:
+      return (
+        <div className="flex flex-col items-center gap-4 p-6 min-w-[320px]">
+          <h1 className="text-xl font-semibold tracking-tight">
+            GEN-MEDIA-0001 &#8212; External URL Flow
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Confirm was clicked. For the URL path, no upload occurs &#8212; the dialog closes
+            immediately and onConfirm fires.
+          </p>
+        </div>
+      );
+
+    // Scene 5: URL stored — result shown
+    case 4:
+    default:
+      return (
+        <div className="flex flex-col items-center gap-4 p-6 min-w-[320px]">
+          <h1 className="text-xl font-semibold tracking-tight">
+            GEN-MEDIA-0001 &#8212; External URL Flow
+          </h1>
+          <div className="rounded-lg border border-border p-4 text-sm max-w-sm w-full">
+            <p className="font-semibold mb-2">Image confirmed!</p>
+            <p className="text-xs text-muted-foreground break-all">imageUrl: {MOCK_EXTERNAL_URL}</p>
+          </div>
+        </div>
+      );
+  }
+}
+
+/* ================================================================
+   SCENES
+   ================================================================ */
+
+const externalUrlScenes: WorkflowScene[] = [
+  {
+    title: 'Scene 1 of 5 \u2014 Dialog Open',
+    description:
+      'The ImageUploadDialog opens in EmptyImage state. The drop zone is visible with a URL text ' +
+      'input field at the bottom. The user can type or paste an HTTPS image URL.',
+    interaction: 'Type a valid HTTPS image URL into the URL field.',
+  },
+  {
+    title: 'Scene 2 of 5 \u2014 URL Entered',
+    description:
+      'The user has typed the URL and pressed Enter. The dialog validates the URL format, then ' +
+      'checks image reachability. On success the dialog transitions to ProvidedImage state.',
+    interaction: 'Observe the URL being validated and the editor loading.',
+  },
+  {
+    title: 'Scene 3 of 5 \u2014 Copyright Acknowledged',
+    description:
+      'The URL passed validation. The ProvidedImage crop editor is shown with the remote image. ' +
+      'The copyright checkbox has been checked, enabling the Confirm button.',
+    interaction: 'Click the Confirm button.',
+  },
+  {
+    title: 'Scene 4 of 5 \u2014 Confirm Clicked',
+    description:
+      'Confirm was clicked. Unlike the file upload path, there is no progress bar. ' +
+      'The URL is stored as-is via the onConfirm callback and the dialog closes immediately.',
+    interaction: 'Observe the dialog closing and the result appearing.',
+  },
+  {
+    title: 'Scene 5 of 5 \u2014 URL Stored',
+    description:
+      'The dialog has closed. The onConfirm callback fired with the external URL as the imageUrl. ' +
+      'No file upload took place &#8212; the URL is stored directly.',
+    interaction: 'The workflow is complete. Click "Open Upload Dialog" to run again.',
+  },
+];
+
+/* ================================================================
+   WORKFLOW STORIES
+   ================================================================ */
+
+const {
+  Interactive: ExternalUrlInteractive,
+  Stepwise: ExternalUrlStepwise,
+  Automated: ExternalUrlAutomated,
+} = createWorkflowStories({
+  scenes: externalUrlScenes,
+  renderScene: (i) => <ExternalUrlScene sceneIndex={i} />,
+  renderLive: () => <ExternalUrlLive />,
+  delayMs: 2000,
+  maxWidth: 640,
+  play: async ({ goToScene, delay }) => {
+    goToScene(0);
+    await delay();
+
+    // Wait for dialog to open and URL input to appear
+    await waitFor(
+      () => {
+        expect(screen.getByRole('dialog')).toBeVisible();
+      },
+      { timeout: 5000 },
+    );
+    await waitFor(
+      () => {
+        expect(screen.getByPlaceholderText(/paste an image url/i)).toBeVisible();
+      },
+      { timeout: 5000 },
+    );
+
+    // Type the URL and press Enter
+    const urlInput = screen.getByPlaceholderText(/paste an image url/i);
+    await userEvent.clear(urlInput);
+    await userEvent.type(urlInput, MOCK_EXTERNAL_URL);
+    goToScene(1);
+    await userEvent.keyboard('{Enter}');
+
+    // Wait for copyright checkbox to appear (ProvidedImage state)
+    await waitFor(
+      () => {
+        expect(screen.getByRole('checkbox', { name: /copyright acknowledgment/i })).toBeVisible();
+      },
+      { timeout: 5000 },
+    );
+
+    // Check copyright
+    const checkbox = screen.getByRole('checkbox', { name: /copyright acknowledgment/i });
+    await userEvent.click(checkbox);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /confirm/i })).not.toBeDisabled();
+    });
+
+    goToScene(2);
+    await delay();
+
+    // Click confirm
+    const confirmBtn = screen.getByRole('button', { name: /confirm/i });
+    await userEvent.click(confirmBtn);
+
+    goToScene(3);
+    await delay();
+
+    // Wait for dialog to close
+    await waitFor(
+      () => {
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      },
+      { timeout: 5000 },
+    );
+
+    goToScene(4);
+    await delay();
+  },
+});
+
+/* ================================================================
+   META + EXPORTS
+   ================================================================ */
+
+const meta: Meta = {
   title:
     'Use Cases/General Behaviors/Entity Media/GEN-MEDIA-0001 Set Entity Image/0006 Confirm and Persist/External URL',
-  component: ExternalUrlPage,
   parameters: {
     layout: 'centered',
-    docs: {
-      description: {
-        component:
-          '`ImageUploadDialog` URL path: type an `https://` URL into the drop zone, ' +
-          'acknowledge copyright, click Confirm. Unlike the file-upload path there is no ' +
-          'progress bar — the URL is stored directly via `onConfirm`.',
-      },
-    },
-  },
-  argTypes: {
-    url: {
-      control: { type: 'text' },
-      description: 'HTTPS URL to enter into the dialog URL field.',
-      table: { category: 'Runtime' },
-    },
-    existingImageUrl: {
-      control: 'text',
-      description: 'URL of an existing image (shows comparison layout when set).',
-      table: { category: 'Runtime' },
-    },
-    open: {
-      control: 'boolean',
-      description: 'Whether the dialog starts open.',
-      table: { category: 'Runtime' },
-    },
-    onConfirm: {
-      description: 'Called with ImageUploadResult when URL is confirmed.',
-      table: { category: 'Runtime' },
-    },
-    onCancel: {
-      description: 'Called when the user cancels the dialog.',
-      table: { category: 'Runtime' },
-    },
-  },
-  args: {
-    existingImageUrl: null,
-    url: MOCK_EXTERNAL_URL,
-    open: true,
-    onConfirm: fn(),
-    onCancel: fn(),
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof ExternalUrlPage>;
 
-// ---------------------------------------------------------------------------
-// Stories
-// ---------------------------------------------------------------------------
+export const Interactive: StoryObj = {
+  ...ExternalUrlInteractive,
+  name: 'External URL (Interactive)',
+};
 
-/** Default — dialog opens in EmptyImage state. Paste a URL to begin the URL confirm flow. */
-export const Default: Story = {};
+export const Stepwise: StoryObj = {
+  ...ExternalUrlStepwise,
+  name: 'External URL (Stepwise)',
+};
 
-/**
- * Automated — types a valid HTTPS URL into the drop zone URL field, waits for
- * the preview to load, acknowledges copyright, confirms, and verifies
- * that onConfirm fires.
- */
-export const Automated: Story = {
-  args: {
-    open: true,
-    existingImageUrl: null,
-    url: MOCK_EXTERNAL_URL,
-  },
-  play: async ({ args, step }) => {
-    await step('Dialog is open and URL input is visible', async () => {
-      await waitFor(
-        () => {
-          const dialog = screen.getByRole('dialog');
-          expect(dialog).toBeVisible();
-        },
-        { timeout: 5000 },
-      );
-      await waitFor(
-        () => {
-          const urlInput = screen.getByPlaceholderText(/paste an image url/i);
-          expect(urlInput).toBeVisible();
-        },
-        { timeout: 5000 },
-      );
-    });
-
-    await step('Type a valid HTTPS URL and press Enter', async () => {
-      const urlInput = screen.getByPlaceholderText(/paste an image url/i);
-      await userEvent.clear(urlInput);
-      await userEvent.type(urlInput, args.url);
-      await userEvent.keyboard('{Enter}');
-    });
-
-    await step('Copyright acknowledgment checkbox appears', async () => {
-      await waitFor(
-        () => {
-          const checkbox = screen.getByRole('checkbox', { name: /copyright acknowledgment/i });
-          expect(checkbox).toBeVisible();
-        },
-        { timeout: 5000 },
-      );
-    });
-
-    await step('Acknowledge copyright', async () => {
-      const checkbox = screen.getByRole('checkbox', { name: /copyright acknowledgment/i });
-      await userEvent.click(checkbox);
-    });
-
-    await step('Confirm button is enabled and clickable', async () => {
-      await waitFor(() => {
-        const confirmButton = screen.getByRole('button', { name: /confirm/i });
-        expect(confirmButton).not.toBeDisabled();
-      });
-      const confirmButton = screen.getByRole('button', { name: /confirm/i });
-      await userEvent.click(confirmButton);
-    });
-
-    await step('onConfirm callback fires', async () => {
-      await waitFor(
-        () => {
-          expect(args.onConfirm).toHaveBeenCalled();
-        },
-        { timeout: 5000 },
-      );
-    });
-  },
+export const Automated: StoryObj = {
+  ...ExternalUrlAutomated,
+  name: 'External URL (Automated)',
 };

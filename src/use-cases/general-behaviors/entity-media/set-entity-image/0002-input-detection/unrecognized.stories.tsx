@@ -5,45 +5,39 @@
  * The user pastes arbitrary text that is neither an image URL nor parseable
  * HTML with an image tag. The drop zone shows an inline error and offers the
  * user a chance to retry with different input.
+ *
+ * Two workflows:
+ *   PlainText  — typing random text, pressing Enter shows inline error
+ *   PartialUrl — domain-only URL (no https://) is also rejected
  */
-import type { Meta, StoryObj } from '@storybook/react-vite';
-import { fn, expect, within, waitFor, userEvent } from 'storybook/test';
 import { useState } from 'react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, waitFor, userEvent } from 'storybook/test';
 
+import { createWorkflowStories, type WorkflowScene } from '@/use-cases/framework';
 import { ImageDropZone } from '@/components/canary/molecules/image-drop-zone/image-drop-zone';
 import { ITEM_IMAGE_CONFIG } from '@/use-cases/general-behaviors/entity-media/_shared/mock-data';
 import type { ImageInput } from '@/types/canary/utilities/image-field-config';
 
 // ---------------------------------------------------------------------------
-// Sample non-image text inputs
+// Sample inputs
 // ---------------------------------------------------------------------------
 
 const SAMPLE_PLAIN_TEXT = 'Meeting notes from Monday: review action items and follow up with team.';
-const SAMPLE_BARCODE = '4006381333931';
 const SAMPLE_PARTIAL_URL = 'example.com/photo.jpg';
 
 // ---------------------------------------------------------------------------
-// Page wrapper
+// Live component — used by Interactive and Automated modes
 // ---------------------------------------------------------------------------
 
-interface UnrecognizedPageProps {
-  acceptedFormats: typeof ITEM_IMAGE_CONFIG.acceptedFormats;
-  onInput: (input: ImageInput) => void;
-  onDismiss: () => void;
-}
-
-function UnrecognizedPage(args: UnrecognizedPageProps) {
-  const [lastInput, setLastInput] = useState<ImageInput | null>(null);
+function UnrecognizedLive() {
   const [inputHistory, setInputHistory] = useState<ImageInput[]>([]);
 
   const handleInput = (input: ImageInput) => {
-    setLastInput(input);
     setInputHistory((prev) => [input, ...prev].slice(0, 3));
-    args.onInput(input);
   };
 
   const retryReset = () => {
-    setLastInput(null);
     setInputHistory([]);
   };
 
@@ -58,7 +52,11 @@ function UnrecognizedPage(args: UnrecognizedPageProps) {
         error and keeps the field editable for retry.
       </p>
 
-      <ImageDropZone {...args} onInput={handleInput} />
+      <ImageDropZone
+        acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
+        onInput={handleInput}
+        onDismiss={() => {}}
+      />
 
       <div className="rounded-lg border border-dashed border-border p-3 space-y-2">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -66,7 +64,6 @@ function UnrecognizedPage(args: UnrecognizedPageProps) {
         </p>
         <ul className="text-xs font-mono text-muted-foreground space-y-1">
           <li>&ldquo;{SAMPLE_PLAIN_TEXT.slice(0, 48)}...&rdquo;</li>
-          <li>&ldquo;{SAMPLE_BARCODE}&rdquo;</li>
           <li>&ldquo;{SAMPLE_PARTIAL_URL}&rdquo;</li>
         </ul>
         {inputHistory.length > 0 && (
@@ -98,108 +95,283 @@ function UnrecognizedPage(args: UnrecognizedPageProps) {
           ))}
         </div>
       )}
-
-      {lastInput?.type === 'error' && (
-        <p className="text-xs text-muted-foreground">
-          The field remains editable — correct the URL and press Enter to retry.
-        </p>
-      )}
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
+// Static scene renderer
+// ---------------------------------------------------------------------------
+
+function UnrecognizedScene({ sceneIndex, typedText }: { sceneIndex: number; typedText: string }) {
+  const noop = () => {};
+
+  switch (sceneIndex) {
+    // Scene 1: Drop zone idle
+    case 0:
+      return (
+        <div className="p-6 max-w-lg space-y-4">
+          <h1 className="text-xl font-semibold tracking-tight">
+            GEN-MEDIA-0001 — Input Detection: Unrecognized Text
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            The drop zone URL field is idle, waiting for input. The user is about to type text that
+            is not a valid image URL.
+          </p>
+          <ImageDropZone
+            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
+            onInput={noop}
+            onDismiss={noop}
+          />
+        </div>
+      );
+
+    // Scene 2: Text typed into URL field
+    case 1:
+      return (
+        <div className="p-6 max-w-lg space-y-4">
+          <h1 className="text-xl font-semibold tracking-tight">
+            GEN-MEDIA-0001 — Input Detection: Unrecognized Text
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            The user has typed non-URL text into the URL field:{' '}
+            <code>
+              &ldquo;{typedText.slice(0, 40)}
+              {typedText.length > 40 ? '...' : ''}&rdquo;
+            </code>
+          </p>
+          <ImageDropZone
+            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
+            onInput={noop}
+            onDismiss={noop}
+          />
+        </div>
+      );
+
+    // Scene 3: Error message shown
+    case 2:
+      return (
+        <div className="p-6 max-w-lg space-y-4">
+          <h1 className="text-xl font-semibold tracking-tight">
+            GEN-MEDIA-0001 — Input Detection: Unrecognized Text
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            After pressing Enter, the drop zone shows an inline error. The field remains editable.
+          </p>
+          <ImageDropZone
+            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
+            onInput={noop}
+            onDismiss={noop}
+          />
+          <div className="rounded border border-destructive p-3" role="alert">
+            <p className="text-xs text-destructive font-medium">URL must start with https://</p>
+          </div>
+        </div>
+      );
+
+    // Scene 4: Retry — field editable, user corrects input
+    case 3:
+    default:
+      return (
+        <div className="p-6 max-w-lg space-y-4">
+          <h1 className="text-xl font-semibold tracking-tight">
+            GEN-MEDIA-0001 — Input Detection: Unrecognized Text
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            The URL field stays editable after the error. The user can clear the text and type a
+            valid <code>https://</code> URL to retry.
+          </p>
+          <ImageDropZone
+            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
+            onInput={noop}
+            onDismiss={noop}
+          />
+          <p className="text-xs text-muted-foreground">
+            The field remains editable — correct the URL and press Enter to retry.
+          </p>
+        </div>
+      );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// PLAIN TEXT workflow
+// ---------------------------------------------------------------------------
+
+const plainTextScenes: WorkflowScene[] = [
+  {
+    title: 'Scene 1 of 4 \u2014 Drop Zone Idle',
+    description:
+      'The ImageDropZone URL field is idle. The user is about to type arbitrary text that is not an image URL.',
+    interaction: 'Click the URL field and type some non-URL text.',
+  },
+  {
+    title: 'Scene 2 of 4 \u2014 Text Typed',
+    description:
+      'The user has typed plain text ("Meeting notes from Monday...") into the URL field. The drop zone has not yet validated the input.',
+    interaction: 'Press Enter to submit the text and trigger validation.',
+  },
+  {
+    title: 'Scene 3 of 4 \u2014 Error Message',
+    description:
+      'Pressing Enter triggers validation. The text does not start with "https://" so the drop zone shows an inline error: "URL must start with https://". The onInput callback is called with { type: "error" }.',
+    interaction: 'Read the error message. The field stays editable for correction.',
+  },
+  {
+    title: 'Scene 4 of 4 \u2014 Retry',
+    description:
+      'The URL field remains editable and focused after the error. The user can clear the text, type a valid HTTPS URL, and press Enter again to retry without reopening the dialog.',
+    interaction: 'The workflow is complete. Clear the field and enter a valid https:// URL.',
+  },
+];
+
+const {
+  Interactive: PlainTextInteractiveStory,
+  Stepwise: PlainTextStepwiseStory,
+  Automated: PlainTextAutomatedStory,
+} = createWorkflowStories({
+  scenes: plainTextScenes,
+  renderScene: (i) => <UnrecognizedScene sceneIndex={i} typedText={SAMPLE_PLAIN_TEXT} />,
+  renderLive: () => <UnrecognizedLive />,
+  delayMs: 2000,
+  play: async ({ canvas, goToScene, delay }) => {
+    goToScene(0);
+    await delay();
+
+    await waitFor(() => {
+      expect(canvas.getByPlaceholderText(/paste an image url/i)).toBeVisible();
+    });
+
+    const input = canvas.getByPlaceholderText(/paste an image url/i);
+    await userEvent.click(input);
+    goToScene(1);
+    await delay();
+
+    await userEvent.type(input, 'just some random text, not a URL');
+    await userEvent.keyboard('{Enter}');
+
+    await waitFor(() => {
+      expect(canvas.getByRole('alert')).toBeVisible();
+    });
+    goToScene(2);
+    await delay();
+
+    const alert = canvas.getByRole('alert');
+    expect(alert.textContent).toBeTruthy();
+    goToScene(3);
+    await delay();
+  },
+});
+
+// ---------------------------------------------------------------------------
+// PARTIAL URL workflow
+// ---------------------------------------------------------------------------
+
+const partialUrlScenes: WorkflowScene[] = [
+  {
+    title: 'Scene 1 of 4 \u2014 Drop Zone Idle',
+    description:
+      'The ImageDropZone URL field is idle. The user has a partial URL (missing the https:// scheme) that they plan to paste.',
+    interaction: 'Click the URL field and type a domain-only URL.',
+  },
+  {
+    title: 'Scene 2 of 4 \u2014 Partial URL Typed',
+    description:
+      'The user has typed "example.com/photo.jpg" — a valid domain and path but missing the scheme prefix. This is a common mistake when copying from a browser address bar that hides the scheme.',
+    interaction: 'Press Enter to submit.',
+  },
+  {
+    title: 'Scene 3 of 4 \u2014 Error Message',
+    description:
+      'Validation fails because the string does not start with "https://". The inline error appears. The field stays editable so the user can prepend "https://" and retry.',
+    interaction: 'Read the error. Add "https://" prefix and retry.',
+  },
+  {
+    title: 'Scene 4 of 4 \u2014 Retry',
+    description:
+      'The field remains editable. The user can correct the URL by adding the https:// prefix and pressing Enter again.',
+    interaction: 'The workflow is complete. Prepend https:// to the URL and retry.',
+  },
+];
+
+const {
+  Interactive: PartialUrlInteractiveStory,
+  Stepwise: PartialUrlStepwiseStory,
+  Automated: PartialUrlAutomatedStory,
+} = createWorkflowStories({
+  scenes: partialUrlScenes,
+  renderScene: (i) => <UnrecognizedScene sceneIndex={i} typedText={SAMPLE_PARTIAL_URL} />,
+  renderLive: () => <UnrecognizedLive />,
+  delayMs: 2000,
+  play: async ({ canvas, goToScene, delay }) => {
+    goToScene(0);
+    await delay();
+
+    await waitFor(() => {
+      expect(canvas.getByPlaceholderText(/paste an image url/i)).toBeVisible();
+    });
+
+    const input = canvas.getByPlaceholderText(/paste an image url/i);
+    await userEvent.click(input);
+    goToScene(1);
+    await delay();
+
+    await userEvent.type(input, SAMPLE_PARTIAL_URL);
+    await userEvent.keyboard('{Enter}');
+
+    await waitFor(() => {
+      expect(canvas.getByRole('alert')).toBeVisible();
+    });
+    goToScene(2);
+    await delay();
+
+    goToScene(3);
+    await delay();
+  },
+});
+
+// ---------------------------------------------------------------------------
 // Meta
 // ---------------------------------------------------------------------------
 
-const meta: Meta<typeof UnrecognizedPage> = {
+const meta: Meta = {
   title:
     'Use Cases/General Behaviors/Entity Media/GEN-MEDIA-0001 Set Entity Image/0002 Input Detection/Unrecognized Text',
-  component: UnrecognizedPage,
   parameters: {
     layout: 'centered',
-    docs: {
-      description: {
-        component:
-          'When the user enters text that is not an `https://` URL, the drop zone ' +
-          'emits `{ type: "error" }` and renders an inline alert. ' +
-          'The field stays editable so the user can correct the input and retry.',
-      },
-    },
-  },
-  args: {
-    acceptedFormats: ITEM_IMAGE_CONFIG.acceptedFormats,
-    onInput: fn(),
-    onDismiss: fn(),
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof UnrecognizedPage>;
 
-// ---------------------------------------------------------------------------
-// Stories
-// ---------------------------------------------------------------------------
-
-/**
- * Plain text entry — typing ordinary text and pressing Enter triggers the
- * validation error ("URL must start with https://").
- */
-export const PlainText: Story = {
-  play: async ({ canvasElement, step }) => {
-    const canvas = within(canvasElement);
-
-    await step('URL field is visible', async () => {
-      await waitFor(() => {
-        expect(canvas.getByPlaceholderText(/paste an image url/i)).toBeVisible();
-      });
-    });
-
-    await step('Type non-URL plain text', async () => {
-      const input = canvas.getByPlaceholderText(/paste an image url/i);
-      await userEvent.click(input);
-      await userEvent.type(input, 'just some random text, not a URL');
-    });
-
-    await step('Press Enter triggers inline error', async () => {
-      await userEvent.keyboard('{Enter}');
-      await waitFor(() => {
-        expect(canvas.getByRole('alert')).toBeVisible();
-      });
-    });
-
-    await step('Error message is shown', async () => {
-      const alert = canvas.getByRole('alert');
-      expect(alert.textContent).toBeTruthy();
-    });
-  },
+// Plain text path
+export const PlainTextInteractive: StoryObj = {
+  ...PlainTextInteractiveStory,
+  name: 'Plain Text (Interactive)',
 };
 
-/**
- * Partial URL (missing scheme) — "example.com/image.jpg" fails because it
- * does not start with "https://".
- */
-export const PartialUrl: Story = {
-  play: async ({ canvasElement, step }) => {
-    const canvas = within(canvasElement);
-
-    await step('Type partial URL without scheme', async () => {
-      await waitFor(() => {
-        expect(canvas.getByPlaceholderText(/paste an image url/i)).toBeVisible();
-      });
-      const input = canvas.getByPlaceholderText(/paste an image url/i);
-      await userEvent.click(input);
-      await userEvent.type(input, SAMPLE_PARTIAL_URL);
-      await userEvent.keyboard('{Enter}');
-    });
-
-    await step('Inline error appears', async () => {
-      await waitFor(() => {
-        expect(canvas.getByRole('alert')).toBeVisible();
-      });
-    });
-  },
+export const PlainTextStepwise: StoryObj = {
+  ...PlainTextStepwiseStory,
+  name: 'Plain Text (Stepwise)',
 };
 
-/** Idle state — empty field, no error shown. */
-export const Idle: Story = {};
+export const PlainTextAutomated: StoryObj = {
+  ...PlainTextAutomatedStory,
+  name: 'Plain Text (Automated)',
+};
+
+// Partial URL path
+export const PartialUrlInteractive: StoryObj = {
+  ...PartialUrlInteractiveStory,
+  name: 'Partial URL (Interactive)',
+};
+
+export const PartialUrlStepwise: StoryObj = {
+  ...PartialUrlStepwiseStory,
+  name: 'Partial URL (Stepwise)',
+};
+
+export const PartialUrlAutomated: StoryObj = {
+  ...PartialUrlAutomatedStory,
+  name: 'Partial URL (Automated)',
+};

@@ -7,10 +7,11 @@
  * content-type check that an upstream consumer would perform after receiving
  * `{ type: 'url', url }` from the drop zone.
  */
-import type { Meta, StoryObj } from '@storybook/react-vite';
-import { fn, expect, within, userEvent, waitFor } from 'storybook/test';
 import { useState } from 'react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, userEvent, waitFor } from 'storybook/test';
 
+import { createWorkflowStories, type WorkflowScene } from '@/use-cases/framework';
 import { ImageDropZone } from '@/components/canary/molecules/image-drop-zone/image-drop-zone';
 import {
   ITEM_IMAGE_CONFIG,
@@ -18,15 +19,13 @@ import {
 } from '@/use-cases/general-behaviors/entity-media/_shared/mock-data';
 import type { ImageInput } from '@/types/canary/utilities/image-field-config';
 
-// ---------------------------------------------------------------------------
-// Content-type check simulation
-// ---------------------------------------------------------------------------
+/* ================================================================
+   CONTENT-TYPE CHECK SIMULATION
+   ================================================================ */
 
 /** Simulates a consumer-side content-type check that fails for non-image URLs. */
 async function simulateContentTypeCheck(url: string): Promise<'image' | 'non-image'> {
-  // Simulate async network delay
   await new Promise<void>((resolve) => setTimeout(resolve, 400));
-  // In the story context, treat the non-image mock URL as always non-image
   if (
     url === MOCK_EXTERNAL_URL_NON_IMAGE ||
     url.endsWith('.html') ||
@@ -42,30 +41,17 @@ async function simulateContentTypeCheck(url: string): Promise<'image' | 'non-ima
 const WRONG_CONTENT_TYPE_ERROR =
   "The link doesn't point to a supported image type. Try a direct link to a JPEG, PNG, WebP, or HEIC image.";
 
-// ---------------------------------------------------------------------------
-// Page wrapper
-// ---------------------------------------------------------------------------
+/* ================================================================
+   LIVE COMPONENT — used by Interactive and Automated modes
+   ================================================================ */
 
-interface WrongContentTypePageProps {
-  acceptedFormats: typeof ITEM_IMAGE_CONFIG.acceptedFormats;
-  urlToTest: string;
-  onInput: (input: ImageInput) => void;
-  onDismiss: () => void;
-}
-
-function WrongContentTypePage({
-  urlToTest,
-  onInput,
-  onDismiss,
-  acceptedFormats,
-}: WrongContentTypePageProps) {
+function WrongContentTypeLive() {
   const [status, setStatus] = useState<'idle' | 'checking' | 'error' | 'ok'>('idle');
   const [lastInput, setLastInput] = useState<ImageInput | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleInput = async (input: ImageInput) => {
     setLastInput(input);
-    onInput(input);
 
     if (input.type === 'url') {
       setStatus('checking');
@@ -92,14 +78,14 @@ function WrongContentTypePage({
       </p>
 
       <ImageDropZone
-        acceptedFormats={acceptedFormats}
+        acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
         onInput={handleInput}
-        onDismiss={onDismiss}
+        onDismiss={() => {}}
       />
 
       {status === 'checking' && (
         <div className="rounded-lg border border-border p-4 text-sm text-muted-foreground">
-          Checking content type…
+          Checking content type&hellip;
         </div>
       )}
 
@@ -130,110 +116,179 @@ function WrongContentTypePage({
           <li>https://example.com/document.pdf</li>
           <li>https://example.com/data.txt</li>
         </ul>
-        <p className="text-xs text-muted-foreground pt-1">
-          Current test URL: <code className="break-all">{urlToTest}</code>
-        </p>
       </div>
     </div>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Meta
-// ---------------------------------------------------------------------------
+/* ================================================================
+   STATIC SCENE RENDERER — used by Stepwise mode
+   ================================================================ */
 
-const meta: Meta<typeof WrongContentTypePage> = {
+const noop = () => {};
+
+function WrongContentTypeSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
+  switch (sceneIndex) {
+    // Scene 1: Drop zone idle
+    case 0:
+      return (
+        <div className="p-6 max-w-lg space-y-4">
+          <h1 className="text-xl font-semibold tracking-tight">
+            GEN-MEDIA-0001 — URL Validation: Wrong Content Type
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            The drop zone is idle. Enter a non-image URL (e.g. .html, .pdf) to trigger content-type
+            rejection.
+          </p>
+          <ImageDropZone
+            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
+            onInput={noop}
+            onDismiss={noop}
+          />
+        </div>
+      );
+
+    // Scene 2: Non-image URL typed — content-type check in progress
+    case 1:
+      return (
+        <div className="p-6 max-w-lg space-y-4">
+          <h1 className="text-xl font-semibold tracking-tight">
+            GEN-MEDIA-0001 — URL Validation: Wrong Content Type
+          </h1>
+          <ImageDropZone
+            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
+            onInput={noop}
+            onDismiss={noop}
+          />
+          <div className="rounded-lg border border-border p-4 text-sm text-muted-foreground">
+            Checking content type&hellip;
+          </div>
+          <p className="text-xs text-muted-foreground font-mono">
+            Verifying: {MOCK_EXTERNAL_URL_NON_IMAGE}
+          </p>
+        </div>
+      );
+
+    // Scene 3: Content-type check fails — error shown
+    case 2:
+    default:
+      return (
+        <div className="p-6 max-w-lg space-y-4">
+          <h1 className="text-xl font-semibold tracking-tight">
+            GEN-MEDIA-0001 — URL Validation: Wrong Content Type
+          </h1>
+          <ImageDropZone
+            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
+            onInput={noop}
+            onDismiss={noop}
+          />
+          <div
+            role="status"
+            aria-label="content-type-error"
+            className="rounded-lg border border-destructive bg-destructive/5 p-4"
+          >
+            <p className="text-sm font-semibold text-destructive mb-1">Unsupported content type</p>
+            <p className="text-sm text-destructive">{WRONG_CONTENT_TYPE_ERROR}</p>
+          </div>
+        </div>
+      );
+  }
+}
+
+/* ================================================================
+   SCENES
+   ================================================================ */
+
+const wrongContentTypeScenes: WorkflowScene[] = [
+  {
+    title: 'Scene 1 of 3 \u2014 Drop Zone Idle',
+    description:
+      'The ImageDropZone awaits a URL. An HTTPS URL pointing to a non-image resource (HTML page, PDF, text file) will pass the scheme check but fail the content-type check.',
+    interaction: `Type "${MOCK_EXTERNAL_URL_NON_IMAGE}" into the URL field and press Enter.`,
+  },
+  {
+    title: 'Scene 2 of 3 \u2014 Non-Image URL — Content-Type Check in Progress',
+    description:
+      'The HTTPS URL passed scheme validation and the drop zone emitted `{ type: "url", url }`. The consumer is now performing a simulated content-type check (400 ms delay to mimic a network probe).',
+    interaction: 'Wait for the content-type check to complete.',
+  },
+  {
+    title: 'Scene 3 of 3 \u2014 Content-Type Check Failed',
+    description:
+      'The URL returns a non-image content type (text/html). The error message "The link doesn\'t point to a supported image type. Try a direct link to a JPEG, PNG, WebP, or HEIC image." guides the user to use a direct image link.',
+    interaction: 'The workflow is complete. The user must provide a direct link to an image file.',
+  },
+];
+
+/* ================================================================
+   WORKFLOW STORIES
+   ================================================================ */
+
+const {
+  Interactive: WrongContentTypeInteractive,
+  Stepwise: WrongContentTypeStepwise,
+  Automated: WrongContentTypeAutomated,
+} = createWorkflowStories({
+  scenes: wrongContentTypeScenes,
+  renderScene: (i) => <WrongContentTypeSceneRenderer sceneIndex={i} />,
+  renderLive: () => <WrongContentTypeLive />,
+  delayMs: 2000,
+  play: async ({ canvas, goToScene, delay }) => {
+    goToScene(0);
+    await delay();
+
+    // Find the URL input field
+    const urlInput = canvas.getByPlaceholderText(/paste an image url/i);
+    await waitFor(() => {
+      expect(urlInput).toBeVisible();
+    });
+
+    // Scene 1 -> 2: Type the non-image URL and press Enter
+    await userEvent.clear(urlInput);
+    await userEvent.type(urlInput, MOCK_EXTERNAL_URL_NON_IMAGE, { delay: 20 });
+    await userEvent.keyboard('{Enter}');
+    goToScene(1);
+    await delay();
+
+    // Scene 2 -> 3: Wait for content-type error panel
+    await waitFor(
+      () => {
+        const errorPanel = document.querySelector('[aria-label="content-type-error"]');
+        expect(errorPanel).not.toBeNull();
+        expect(errorPanel?.textContent).toContain("doesn't point to a supported image type");
+      },
+      { timeout: 3000 },
+    );
+    goToScene(2);
+    await delay();
+  },
+});
+
+/* ================================================================
+   META + EXPORTS
+   ================================================================ */
+
+const meta: Meta = {
   title:
     'Use Cases/General Behaviors/Entity Media/GEN-MEDIA-0001 Set Entity Image/0004 URL Validation/Wrong Content Type',
-  component: WrongContentTypePage,
   parameters: {
     layout: 'centered',
-    docs: {
-      description: {
-        component:
-          'An HTTPS URL that resolves to a non-image content type (e.g. `text/html`) ' +
-          'passes the scheme check but fails the content-type check performed by the consumer. ' +
-          'The error message instructs the user to use a direct link to a JPEG, PNG, WebP, or HEIC image.',
-      },
-    },
-  },
-  argTypes: {
-    urlToTest: {
-      control: { type: 'text' },
-      description: 'HTTPS URL expected to return a non-image content type.',
-    },
-    acceptedFormats: {
-      control: { type: 'check' },
-      options: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'],
-      description: 'Accepted MIME types for file uploads.',
-    },
-  },
-  args: {
-    urlToTest: MOCK_EXTERNAL_URL_NON_IMAGE,
-    acceptedFormats: ITEM_IMAGE_CONFIG.acceptedFormats,
-    onInput: fn(),
-    onDismiss: fn(),
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof WrongContentTypePage>;
 
-// ---------------------------------------------------------------------------
-// Stories
-// ---------------------------------------------------------------------------
-
-/**
- * Automated check: types the non-image URL, presses Enter, waits for the
- * content-type simulation to complete, and confirms the error panel appears.
- */
-export const NonImageContentType: Story = {
-  play: async ({ canvasElement, args, step }) => {
-    const canvas = within(canvasElement);
-
-    await step('URL input field is visible', async () => {
-      await waitFor(() => {
-        expect(canvas.getByPlaceholderText(/paste an image url/i)).toBeVisible();
-      });
-    });
-
-    await step('Type the non-image URL and press Enter', async () => {
-      const input = canvas.getByPlaceholderText(/paste an image url/i);
-      await userEvent.clear(input);
-      await userEvent.type(input, args.urlToTest);
-      await userEvent.keyboard('{Enter}');
-    });
-
-    await step('Drop zone accepts the https:// scheme — no inline error', async () => {
-      await waitFor(() => {
-        const inlineAlert = canvasElement.querySelector('[role="alert"]');
-        expect(inlineAlert).toBeNull();
-      });
-    });
-
-    await step('onInput called with type "url"', async () => {
-      await waitFor(() => {
-        expect(args.onInput).toHaveBeenCalledWith(
-          expect.objectContaining({ type: 'url', url: args.urlToTest }),
-        );
-      });
-    });
-
-    await step('Content-type error panel is displayed', async () => {
-      await waitFor(
-        () => {
-          const errorPanel = canvasElement.querySelector('[aria-label="content-type-error"]');
-          expect(errorPanel).not.toBeNull();
-          expect(errorPanel?.textContent).toContain("doesn't point to a supported image type");
-        },
-        { timeout: 3000 },
-      );
-    });
-  },
+export const WrongContentTypeInteractiveStory: StoryObj = {
+  ...WrongContentTypeInteractive,
+  name: 'Wrong Content Type (Interactive)',
 };
 
-/**
- * Playground — use Controls to enter any URL and observe the content-type
- * check simulation. URLs ending in .html, .htm, .pdf, or .txt trigger the error.
- */
-export const Playground: Story = {};
+export const WrongContentTypeStepwiseStory: StoryObj = {
+  ...WrongContentTypeStepwise,
+  name: 'Wrong Content Type (Stepwise)',
+};
+
+export const WrongContentTypeAutomatedStory: StoryObj = {
+  ...WrongContentTypeAutomated,
+  name: 'Wrong Content Type (Automated)',
+};

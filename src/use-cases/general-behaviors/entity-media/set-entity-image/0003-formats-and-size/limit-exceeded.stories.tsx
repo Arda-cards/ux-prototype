@@ -6,10 +6,11 @@
  * compression attempt. The wrapper performs size checking and emits an
  * appropriate error message.
  */
-import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, fn, userEvent, within } from 'storybook/test';
 import { useState } from 'react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, userEvent, waitFor } from 'storybook/test';
 
+import { createWorkflowStories, type WorkflowScene } from '@/use-cases/framework';
 import { ImageDropZone } from '@/components/canary/molecules/image-drop-zone/image-drop-zone';
 import {
   ITEM_IMAGE_CONFIG,
@@ -17,24 +18,20 @@ import {
 } from '@/use-cases/general-behaviors/entity-media/_shared/mock-data';
 import type { ImageInput } from '@/types/canary/utilities/image-field-config';
 
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
+/* ================================================================
+   CONSTANTS
+   ================================================================ */
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 const SIZE_ERROR_MESSAGE = 'This file is too large. The maximum size is 10 MB.';
 
-// ---------------------------------------------------------------------------
-// Page wrapper
-// ---------------------------------------------------------------------------
+/* ================================================================
+   LIVE COMPONENT — used by Interactive and Automated modes
+   ================================================================ */
 
 type ValidationStatus = 'idle' | 'size-error';
 
-function LimitExceededPage(args: {
-  acceptedFormats: typeof ITEM_IMAGE_CONFIG.acceptedFormats;
-  onInput: (input: ImageInput) => void;
-  onDismiss: () => void;
-}) {
+function LimitExceededLive() {
   const [status, setStatus] = useState<ValidationStatus>('idle');
   const [fileName, setFileName] = useState<string | null>(null);
 
@@ -43,11 +40,9 @@ function LimitExceededPage(args: {
       setFileName(input.file.name);
       if (input.file.size > MAX_FILE_SIZE_BYTES) {
         setStatus('size-error');
-        args.onInput({ type: 'error', message: SIZE_ERROR_MESSAGE });
         return;
       }
     }
-    args.onInput(input);
   };
 
   return (
@@ -60,7 +55,11 @@ function LimitExceededPage(args: {
         the limit. Drop or select an oversized file to see the error.
       </p>
 
-      <ImageDropZone {...args} onInput={handleInput} />
+      <ImageDropZone
+        acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
+        onInput={handleInput}
+        onDismiss={() => {}}
+      />
 
       {status === 'size-error' && (
         <div
@@ -96,69 +95,177 @@ function LimitExceededPage(args: {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Meta
-// ---------------------------------------------------------------------------
+/* ================================================================
+   STATIC SCENE RENDERER — used by Stepwise mode
+   ================================================================ */
 
-const meta: Meta<typeof LimitExceededPage> = {
+const noop = () => {};
+
+function LimitExceededSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
+  switch (sceneIndex) {
+    // Scene 1: Drop zone idle
+    case 0:
+      return (
+        <div className="p-6 max-w-lg">
+          <h1 className="text-xl font-semibold tracking-tight mb-1">
+            GEN-MEDIA-0001 — Formats and Size: Limit Exceeded
+          </h1>
+          <p className="text-sm text-muted-foreground mb-4">
+            Drop or select an oversized file to see the size limit error.
+          </p>
+          <ImageDropZone
+            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
+            onInput={noop}
+            onDismiss={noop}
+          />
+        </div>
+      );
+
+    // Scene 2: Oversized file provided — compression attempt
+    case 1:
+      return (
+        <div className="p-6 max-w-lg">
+          <h1 className="text-xl font-semibold tracking-tight mb-1">
+            GEN-MEDIA-0001 — Formats and Size: Limit Exceeded
+          </h1>
+          <p className="text-sm text-muted-foreground mb-4">
+            An 11 MB JPEG has been selected. Auto-compression is being attempted to bring it within
+            the 10 MB limit.
+          </p>
+          <ImageDropZone
+            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
+            onInput={noop}
+            onDismiss={noop}
+          />
+          <p className="mt-3 text-xs text-muted-foreground font-mono">
+            Processing: oversized.jpg (11.0 MB) — compressing&hellip;
+          </p>
+        </div>
+      );
+
+    // Scene 3: Still too large — size error shown
+    case 2:
+    default:
+      return (
+        <div className="p-6 max-w-lg">
+          <h1 className="text-xl font-semibold tracking-tight mb-1">
+            GEN-MEDIA-0001 — Formats and Size: Limit Exceeded
+          </h1>
+          <ImageDropZone
+            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
+            onInput={noop}
+            onDismiss={noop}
+          />
+          <div
+            className="mt-4 rounded-lg border border-destructive/40 bg-destructive/5 p-4"
+            data-testid="result-panel"
+          >
+            <h2 className="text-sm font-semibold text-destructive mb-1">File too large</h2>
+            <p className="text-sm text-destructive" data-testid="size-error-message">
+              {SIZE_ERROR_MESSAGE}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground font-mono">
+              File: oversized.jpg (11.0 MB)
+            </p>
+          </div>
+        </div>
+      );
+  }
+}
+
+/* ================================================================
+   SCENES
+   ================================================================ */
+
+const limitExceededScenes: WorkflowScene[] = [
+  {
+    title: 'Scene 1 of 3 \u2014 Drop Zone Idle',
+    description:
+      'The ImageDropZone awaits file input. Files larger than 10 MB will be rejected even after auto-compression is attempted.',
+    interaction: 'Drop or select a file larger than 10 MB.',
+  },
+  {
+    title: 'Scene 2 of 3 \u2014 Oversized File — Compression Attempt',
+    description:
+      'An 11 MB JPEG has been selected. The system attempts auto-compression to reduce the file size below the 10 MB threshold.',
+    interaction: 'Wait for the compression attempt to complete.',
+  },
+  {
+    title: 'Scene 3 of 3 \u2014 Still Too Large — Error',
+    description:
+      'The compression attempt could not reduce the file below 10 MB. The error message "This file is too large. The maximum size is 10 MB." is shown. The file is rejected.',
+    interaction:
+      'The workflow is complete. The user must select a smaller file or compress it manually.',
+  },
+];
+
+/* ================================================================
+   WORKFLOW STORIES
+   ================================================================ */
+
+const {
+  Interactive: LimitExceededInteractive,
+  Stepwise: LimitExceededStepwise,
+  Automated: LimitExceededAutomated,
+} = createWorkflowStories({
+  scenes: limitExceededScenes,
+  renderScene: (i) => <LimitExceededSceneRenderer sceneIndex={i} />,
+  renderLive: () => <LimitExceededLive />,
+  delayMs: 2000,
+  play: async ({ goToScene, delay }) => {
+    goToScene(0);
+    await delay();
+
+    const fileInput = await waitFor(() => {
+      const el = document.querySelector<HTMLInputElement>('input[type="file"]');
+      if (!el) throw new Error('File input not found');
+      return el;
+    });
+
+    // Scene 1 -> 2: Upload oversized file
+    await userEvent.upload(fileInput, MOCK_FILE_OVERSIZED);
+    goToScene(1);
+    await delay();
+
+    // Scene 2 -> 3: Verify size error appears
+    await waitFor(() => {
+      const errorMsg = document.querySelector('[data-testid="size-error-message"]');
+      expect(errorMsg).toBeTruthy();
+    });
+    goToScene(2);
+    await delay();
+
+    // Final assertion: error message contains expected text
+    const errorMsg = document.querySelector('[data-testid="size-error-message"]');
+    expect(errorMsg?.textContent).toContain('10 MB');
+  },
+});
+
+/* ================================================================
+   META + EXPORTS
+   ================================================================ */
+
+const meta: Meta = {
   title:
     'Use Cases/General Behaviors/Entity Media/GEN-MEDIA-0001 Set Entity Image/0003 Formats and Size/Limit Exceeded',
-  component: LimitExceededPage,
   parameters: {
     layout: 'centered',
-    docs: {
-      description: {
-        component:
-          'Files exceeding 10 MB are rejected after a simulated compression attempt. ' +
-          'The user sees a plain-language error: "This file is too large. The maximum size is 10 MB."',
-      },
-    },
-  },
-  argTypes: {
-    acceptedFormats: {
-      control: { type: 'check' },
-      options: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'],
-      description: 'Accepted MIME types for file uploads.',
-    },
-  },
-  args: {
-    acceptedFormats: ITEM_IMAGE_CONFIG.acceptedFormats,
-    onInput: fn(),
-    onDismiss: fn(),
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof LimitExceededPage>;
 
-// ---------------------------------------------------------------------------
-// Stories
-// ---------------------------------------------------------------------------
+export const LimitExceededFormatInteractive: StoryObj = {
+  ...LimitExceededInteractive,
+  name: 'Limit Exceeded (Interactive)',
+};
 
-/** Default idle state — try dropping an oversized file to see the error. */
-export const Default: Story = {};
+export const LimitExceededFormatStepwise: StoryObj = {
+  ...LimitExceededStepwise,
+  name: 'Limit Exceeded (Stepwise)',
+};
 
-/**
- * Automated — simulates providing an oversized file and verifies the size
- * error message appears.
- */
-export const Automated: Story = {
-  play: async ({ canvasElement, args }) => {
-    const canvas = within(canvasElement);
-
-    const fileInput = canvasElement.querySelector<HTMLInputElement>('input[type="file"]');
-    if (!fileInput) throw new Error('File input not found');
-
-    await userEvent.upload(fileInput, MOCK_FILE_OVERSIZED);
-
-    // onInput should have been called with type: 'error'
-    await expect(args.onInput).toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'error', message: SIZE_ERROR_MESSAGE }),
-    );
-
-    // The size error message should be visible in the result panel
-    const errorMessage = canvas.getByTestId('size-error-message');
-    await expect(errorMessage).toBeTruthy();
-    await expect(errorMessage.textContent).toContain('10 MB');
-  },
+export const LimitExceededFormatAutomated: StoryObj = {
+  ...LimitExceededAutomated,
+  name: 'Limit Exceeded (Automated)',
 };

@@ -29,6 +29,7 @@ import {
   ImageIcon,
 } from 'lucide-react';
 
+import { createWorkflowStories, type WorkflowScene } from '@/use-cases/framework';
 import { SidebarInset, SidebarTrigger } from '@/components/canary/primitives/sidebar';
 import { Sidebar } from '@/components/canary/organisms/sidebar/sidebar';
 import { SidebarHeader } from '@/components/canary/molecules/sidebar/sidebar-header';
@@ -77,7 +78,6 @@ const ITEM_DETAIL_TABS = [
 // ---------------------------------------------------------------------------
 
 function RemoveImagePage() {
-  // Patch items so item 0 has a known image for the removal demo
   const patchedItems = itemMockData.map((item, idx) =>
     idx === 0 ? { ...item, imageUrl: MOCK_ITEM_IMAGE } : item,
   );
@@ -88,7 +88,6 @@ function RemoveImagePage() {
 
   const handleItemClick = (item: Item) => {
     setSelectedItem(item);
-    // Use the patched imageUrl for item 0
     const patched = patchedItems.find((p) => p.entityId === item.entityId);
     setImageUrl(patched?.imageUrl ?? null);
   };
@@ -244,157 +243,248 @@ function RemoveImagePage() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Story meta
-// ---------------------------------------------------------------------------
+/* ================================================================
+   STATIC SCENE RENDERER — used by Stepwise mode
+   ================================================================ */
 
-const meta: Meta<typeof RemoveImagePage> = {
+function ScenePanel({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="border border-border rounded-lg p-6 bg-background max-w-2xl w-full">
+      <h2 className="text-lg font-semibold mb-2">{title}</h2>
+      <p className="text-sm text-muted-foreground">{description}</p>
+    </div>
+  );
+}
+
+function RemoveItemImageSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
+  switch (sceneIndex) {
+    case 0:
+      return (
+        <ScenePanel
+          title="Grid visible with item data"
+          description="The full app shell renders with the Items grid. The first row (Nitrile Exam Gloves) has a product image. Click the row to open the details drawer."
+        />
+      );
+    case 1:
+      return (
+        <ScenePanel
+          title="Row clicked — details drawer opens"
+          description="Clicking the first row opens the ItemDetails drawer for that item. The drawer shows item details fields and tabs at the top."
+        />
+      );
+    case 2:
+      return (
+        <ScenePanel
+          title="Image tab selected"
+          description="The user clicks the 'Image' tab in the drawer. The Image tab content renders with the ImageFormField showing the current product image thumbnail."
+        />
+      );
+    case 3:
+      return (
+        <ScenePanel
+          title="Hover image — trash icon visible"
+          description="The user hovers over the image area. The action overlay becomes visible revealing the Remove image (trash) icon."
+        />
+      );
+    case 4:
+      return (
+        <ScenePanel
+          title="Trash clicked — confirmation dialog"
+          description="Clicking the trash icon opens an AlertDialog asking 'Remove image?' with Cancel and Remove buttons."
+        />
+      );
+    case 5:
+    default:
+      return (
+        <ScenePanel
+          title="Confirmed — placeholder appears"
+          description="The user clicked Remove. The AlertDialog has closed. The ImageFormField now shows the placeholder state (No image set) in the Image tab."
+        />
+      );
+  }
+}
+
+/* ================================================================
+   SCENES + WORKFLOW FACTORY
+   ================================================================ */
+
+const removeItemImageScenes: WorkflowScene[] = [
+  {
+    title: 'Scene 1 of 6 \u2014 Grid Visible',
+    description:
+      'The full app shell renders with the Items grid. The first row has a product image. The grid is in view mode.',
+    interaction: 'Click the first row (Nitrile Exam Gloves) to open the item details drawer.',
+  },
+  {
+    title: 'Scene 2 of 6 \u2014 Details Drawer Opens',
+    description:
+      'Clicking the row opens the ItemDetails drawer. The drawer shows the item name, fields, and tab navigation. The default tab is "Item details".',
+    interaction: 'Click the "Image" tab in the drawer.',
+  },
+  {
+    title: 'Scene 3 of 6 \u2014 Image Tab',
+    description:
+      'The Image tab content renders with the ImageFormField showing the current product image thumbnail.',
+    interaction: 'Hover over the image thumbnail to reveal the action overlay.',
+  },
+  {
+    title: 'Scene 4 of 6 \u2014 Hover Reveals Action Icons',
+    description:
+      'Hovering over the image reveals the action overlay. The Remove image (trash) icon becomes visible.',
+    interaction: 'Click the trash icon to open the removal confirmation dialog.',
+  },
+  {
+    title: 'Scene 5 of 6 \u2014 Confirmation Dialog',
+    description:
+      'An AlertDialog opens asking "Remove image?" with Cancel and Remove buttons. Clicking Remove will permanently remove the image from the item.',
+    interaction: 'Click "Remove" to confirm.',
+  },
+  {
+    title: 'Scene 6 of 6 \u2014 Image Removed',
+    description:
+      'The AlertDialog has closed. The ImageFormField now shows the placeholder state — "No image set". A remove log entry appears in the page.',
+    interaction: 'The workflow is complete. The product image has been removed from the item.',
+  },
+];
+
+const {
+  Interactive: RemoveImageInteractive,
+  Stepwise: RemoveImageStepwise,
+  Automated: RemoveImageAutomated,
+} = createWorkflowStories({
+  scenes: removeItemImageScenes,
+  renderScene: (i) => <RemoveItemImageSceneRenderer sceneIndex={i} />,
+  renderLive: () => <RemoveImagePage />,
+  delayMs: 2000,
+  play: async ({ canvas, goToScene, delay }) => {
+    goToScene(0);
+
+    // Scene 1: Wait for grid to render
+    const firstItem = await canvas.findByText(
+      'Nitrile Exam Gloves (Medium)',
+      { selector: '[role="gridcell"]' },
+      { timeout: 10000 },
+    );
+    expect(firstItem).toBeVisible();
+    await storyStepDelay();
+    await delay();
+
+    // Scene 2: Click first row to open item details drawer
+    goToScene(1);
+    await userEvent.click(firstItem);
+
+    await waitFor(
+      () => {
+        expect(screen.getByRole('dialog')).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
+    await storyStepDelay();
+    await delay();
+
+    // Scene 3: Click the Image tab
+    goToScene(2);
+    const drawer = within(screen.getByRole('dialog'));
+    const imageTab = drawer.getByRole('tab', { name: /image/i });
+    await userEvent.click(imageTab);
+
+    await waitFor(
+      () => {
+        const imageTabContent = drawer.queryByTestId('image-tab-content');
+        expect(imageTabContent).not.toBeNull();
+        expect(imageTabContent).toBeVisible();
+      },
+      { timeout: 5000 },
+    );
+    await storyStepDelay();
+    await delay();
+
+    // Scene 4: Hover image to reveal action overlay
+    goToScene(3);
+    const imageArea = drawer.getByRole('button', { name: /edit product image/i });
+    await userEvent.hover(imageArea);
+    await storyStepDelay(800);
+    await delay();
+
+    // Scene 5: Click the Remove image (trash) button
+    goToScene(4);
+    const removeButton = screen.getByRole('button', { name: /remove image/i });
+    await userEvent.click(removeButton);
+
+    await waitFor(
+      () => {
+        const alertDialog = screen.queryByRole('alertdialog');
+        expect(alertDialog).not.toBeNull();
+        expect(alertDialog).toBeVisible();
+      },
+      { timeout: 5000 },
+    );
+    await storyStepDelay();
+    await delay();
+
+    // Scene 6: Confirm image removal
+    goToScene(5);
+    const alertDialog = screen.getByRole('alertdialog');
+    const confirmButton = within(alertDialog).getByRole('button', { name: /remove/i });
+    await userEvent.click(confirmButton);
+
+    await waitFor(
+      () => {
+        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+      },
+      { timeout: 5000 },
+    );
+
+    await storyStepDelay();
+
+    // Verify placeholder appears
+    const updatedDrawer = within(screen.getByRole('dialog'));
+    await waitFor(
+      () => {
+        const placeholder = updatedDrawer.queryByTestId('image-placeholder-text');
+        expect(placeholder).not.toBeNull();
+        expect(placeholder).toBeVisible();
+      },
+      { timeout: 5000 },
+    );
+
+    // Verify remove log entry appears
+    await waitFor(
+      () => {
+        const logEl = canvas.queryByTestId('remove-log');
+        expect(logEl).not.toBeNull();
+      },
+      { timeout: 5000 },
+    );
+    await delay();
+  },
+});
+
+/* ================================================================
+   META + EXPORTS
+   ================================================================ */
+
+const meta: Meta = {
   title:
     'Use Cases/Reference/Items/ITM-0004 Edit Item/0006 Change or Remove Image/Remove Item Image',
-  component: RemoveImagePage,
   parameters: {
     layout: 'fullscreen',
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof RemoveImagePage>;
 
-/**
- * Default — click a row, open the detail panel, switch to the Image tab,
- * hover the ImageFormField, click the trash icon, confirm removal in the
- * AlertDialog, verify the placeholder appears.
- *
- * Play function steps:
- *   1. Wait for grid to render.
- *   2. Click first row (patched with MOCK_ITEM_IMAGE) — details drawer opens.
- *   3. Click the "Image" tab in the drawer.
- *   4. Hover the image area to reveal action overlay.
- *   5. Click the trash (Remove image) button.
- *   6. AlertDialog appears — click "Remove" to confirm.
- *   7. AlertDialog closes; "No image set" placeholder appears.
- *   8. Remove log entry appears in the page.
- */
-export const Default: Story = {
-  play: async ({ canvasElement, step }) => {
-    const canvas = within(canvasElement);
+export const RemoveItemImageInteractiveStory: StoryObj = {
+  ...RemoveImageInteractive,
+  name: 'Remove Item Image (Interactive)',
+};
 
-    await step('Grid renders with item data', async () => {
-      const firstItem = await canvas.findByText(
-        'Nitrile Exam Gloves (Medium)',
-        { selector: '[role="gridcell"]' },
-        { timeout: 10000 },
-      );
-      expect(firstItem).toBeVisible();
-    });
+export const RemoveItemImageStepwiseStory: StoryObj = {
+  ...RemoveImageStepwise,
+  name: 'Remove Item Image (Stepwise)',
+};
 
-    await storyStepDelay();
-
-    await step('Click first row to open item details drawer', async () => {
-      const firstItem = canvas.getByText('Nitrile Exam Gloves (Medium)', {
-        selector: '[role="gridcell"]',
-      });
-      await userEvent.click(firstItem);
-    });
-
-    await step('Details drawer opens', async () => {
-      // ItemDetails uses Radix Drawer which renders via portal — use screen
-      await waitFor(
-        () => {
-          expect(screen.getByRole('dialog')).toBeVisible();
-        },
-        { timeout: 10000 },
-      );
-    });
-
-    await storyStepDelay();
-
-    await step('Click the Image tab in the drawer', async () => {
-      const drawer = within(screen.getByRole('dialog'));
-      const imageTab = drawer.getByRole('tab', { name: /image/i });
-      await userEvent.click(imageTab);
-    });
-
-    await step('Image tab content renders with ImageFormField', async () => {
-      const drawer = within(screen.getByRole('dialog'));
-      await waitFor(
-        () => {
-          const imageTabContent = drawer.queryByTestId('image-tab-content');
-          expect(imageTabContent).not.toBeNull();
-          expect(imageTabContent).toBeVisible();
-        },
-        { timeout: 5000 },
-      );
-    });
-
-    await storyStepDelay();
-
-    await step('Hover image to reveal action overlay', async () => {
-      const drawer = within(screen.getByRole('dialog'));
-      const imageArea = drawer.getByRole('button', { name: /edit product image/i });
-      await userEvent.hover(imageArea);
-    });
-
-    await storyStepDelay(800);
-
-    await step('Click the Remove image (trash) button', async () => {
-      // After hovering the group, the trash button becomes visible via CSS group-hover
-      const removeButton = screen.getByRole('button', { name: /remove image/i });
-      await userEvent.click(removeButton);
-    });
-
-    await step('AlertDialog opens with removal confirmation', async () => {
-      await waitFor(
-        () => {
-          const alertDialog = screen.queryByRole('alertdialog');
-          expect(alertDialog).not.toBeNull();
-          expect(alertDialog).toBeVisible();
-        },
-        { timeout: 5000 },
-      );
-    });
-
-    await storyStepDelay();
-
-    await step('Confirm image removal', async () => {
-      const alertDialog = screen.getByRole('alertdialog');
-      const confirmButton = within(alertDialog).getByRole('button', { name: /remove/i });
-      await userEvent.click(confirmButton);
-    });
-
-    await step('AlertDialog closes after confirmation', async () => {
-      await waitFor(
-        () => {
-          expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
-        },
-        { timeout: 5000 },
-      );
-    });
-
-    await storyStepDelay();
-
-    await step('Placeholder text appears — image removed', async () => {
-      const drawer = within(screen.getByRole('dialog'));
-      await waitFor(
-        () => {
-          const placeholder = drawer.queryByTestId('image-placeholder-text');
-          expect(placeholder).not.toBeNull();
-          expect(placeholder).toBeVisible();
-        },
-        { timeout: 5000 },
-      );
-    });
-
-    await storyStepDelay();
-
-    await step('Remove log entry appears in page', async () => {
-      await waitFor(
-        () => {
-          const logEl = canvas.queryByTestId('remove-log');
-          expect(logEl).not.toBeNull();
-        },
-        { timeout: 5000 },
-      );
-    });
-  },
+export const RemoveItemImageAutomatedStory: StoryObj = {
+  ...RemoveImageAutomated,
+  name: 'Remove Item Image (Automated)',
 };

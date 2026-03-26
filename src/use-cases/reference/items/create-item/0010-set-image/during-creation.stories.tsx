@@ -8,45 +8,91 @@
  * Maps to: REF::ITM::0003 Create Item / 0010 Set Image During Creation
  */
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, within, userEvent } from 'storybook/test';
+import { expect, userEvent } from 'storybook/test';
+
+import { createWorkflowStories, type WorkflowScene } from '@/use-cases/framework';
 import ItemsPage from '@/canary-refactor/components/ItemsPage';
 import '@/styles/vendored/globals.css';
 
-const meta: Meta<typeof ItemsPage> = {
-  title: 'Use Cases/Reference/Items/ITM-0003 Create Item/0010 Set Image/During Creation',
-  component: ItemsPage,
-  tags: ['app-route:/items'],
-  parameters: {
-    layout: 'fullscreen',
-    appRoute: '/items',
-    appComponent: 'app/items/page.tsx',
+/* ================================================================
+   STATIC SCENE RENDERER — used by Stepwise mode
+   ================================================================ */
+
+function ScenePanel({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="border border-border rounded-lg p-6 bg-background max-w-2xl w-full">
+      <h2 className="text-lg font-semibold mb-2">{title}</h2>
+      <p className="text-sm text-muted-foreground">{description}</p>
+    </div>
+  );
+}
+
+function DuringCreationSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
+  switch (sceneIndex) {
+    case 0:
+      return (
+        <ScenePanel
+          title="Items page loads"
+          description="The Items page renders via the vendored ItemsPage component. The page heading and item list are visible. An 'Add item' button appears in the toolbar."
+        />
+      );
+    case 1:
+    default:
+      return (
+        <ScenePanel
+          title="Add Item form panel opens"
+          description="Clicking 'Add item' opens the Create Item form panel (slide-over or modal). The form heading 'Add new item' is visible. The form includes fields for the item title, SKU, and an image upload affordance."
+        />
+      );
+  }
+}
+
+/* ================================================================
+   LIVE COMPONENT — uses vendored ItemsPage
+   ================================================================ */
+
+function DuringCreationLive() {
+  return <ItemsPage pathname="/items" params={{}} />;
+}
+
+/* ================================================================
+   SCENES + WORKFLOW FACTORY
+   ================================================================ */
+
+const duringCreationScenes: WorkflowScene[] = [
+  {
+    title: 'Scene 1 of 2 \u2014 Items Page Loads',
+    description:
+      'The Items page renders via the vendored ItemsPage component. The page heading is visible and the item list is populated. An "Add item" button is available in the toolbar.',
+    interaction: 'Click the "Add item" button to open the creation form panel.',
   },
-  args: {
-    pathname: '/items',
-    params: {},
+  {
+    title: 'Scene 2 of 2 \u2014 Form Panel Opens',
+    description:
+      'The Create Item form panel opens (slide-over or modal). The heading "Add new item" is visible. The form includes an image field that allows setting a product image during creation.',
+    interaction:
+      'The image field is visible. The workflow is complete for this use case scope. Use the Canary story for the full image-upload flow.',
   },
-};
+];
 
-export default meta;
-type Story = StoryObj<typeof ItemsPage>;
+const {
+  Interactive: DuringCreationInteractive,
+  Stepwise: DuringCreationStepwise,
+  Automated: DuringCreationAutomated,
+} = createWorkflowStories({
+  scenes: duringCreationScenes,
+  renderScene: (i) => <DuringCreationSceneRenderer sceneIndex={i} />,
+  renderLive: () => <DuringCreationLive />,
+  delayMs: 2000,
+  play: async ({ canvas, goToScene, delay }) => {
+    goToScene(0);
 
-/**
- * Default — opens the Add Item form panel and verifies the ImageFormField
- * (or equivalent image field) is accessible from within the creation flow.
- *
- * Play function:
- *   1. Wait for the Items page to render.
- *   2. Click the "Add item" button.
- *   3. Verify the form panel opens (heading "Add new item" visible).
- */
-export const Default: Story = {
-  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
-    const canvas = within(canvasElement);
-
-    // Wait for items page to load
+    // Scene 1: Wait for items page to load
     await canvas.findByRole('heading', { name: /Items/i }, { timeout: 10000 });
+    await delay();
 
-    // Click the "Add item" button to open the form panel
+    // Scene 2: Click "Add item" to open the form panel
+    goToScene(1);
     const addButton = await canvas.findByRole('button', { name: /add item/i });
     await userEvent.click(addButton);
 
@@ -57,5 +103,37 @@ export const Default: Story = {
       { timeout: 5000 },
     );
     await expect(formHeading).toBeVisible();
+    await delay();
   },
+});
+
+/* ================================================================
+   META + EXPORTS
+   ================================================================ */
+
+const meta: Meta = {
+  title: 'Use Cases/Reference/Items/ITM-0003 Create Item/0010 Set Image/During Creation',
+  tags: ['app-route:/items'],
+  parameters: {
+    layout: 'fullscreen',
+    appRoute: '/items',
+    appComponent: 'app/items/page.tsx',
+  },
+};
+
+export default meta;
+
+export const DuringCreationInteractiveStory: StoryObj = {
+  ...DuringCreationInteractive,
+  name: 'During Creation (Interactive)',
+};
+
+export const DuringCreationStepwiseStory: StoryObj = {
+  ...DuringCreationStepwise,
+  name: 'During Creation (Stepwise)',
+};
+
+export const DuringCreationAutomatedStory: StoryObj = {
+  ...DuringCreationAutomated,
+  name: 'During Creation (Automated)',
 };

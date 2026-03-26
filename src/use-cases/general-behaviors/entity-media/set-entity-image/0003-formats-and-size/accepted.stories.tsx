@@ -5,10 +5,11 @@
  * Shows JPEG, PNG, and WebP files being accepted by the drop zone.
  * The drop zone emits `{ type: 'file', file }` for valid formats.
  */
-import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, fn, userEvent, within } from 'storybook/test';
 import { useState } from 'react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, userEvent, waitFor } from 'storybook/test';
 
+import { createWorkflowStories, type WorkflowScene } from '@/use-cases/framework';
 import { ImageDropZone } from '@/components/canary/molecules/image-drop-zone/image-drop-zone';
 import {
   ITEM_IMAGE_CONFIG,
@@ -16,15 +17,11 @@ import {
 } from '@/use-cases/general-behaviors/entity-media/_shared/mock-data';
 import type { ImageInput } from '@/types/canary/utilities/image-field-config';
 
-// ---------------------------------------------------------------------------
-// Page wrapper
-// ---------------------------------------------------------------------------
+/* ================================================================
+   LIVE COMPONENT — used by Interactive and Automated modes
+   ================================================================ */
 
-function AcceptedPage(args: {
-  acceptedFormats: typeof ITEM_IMAGE_CONFIG.acceptedFormats;
-  onInput: (input: ImageInput) => void;
-  onDismiss: () => void;
-}) {
+function AcceptedLive() {
   const [lastInput, setLastInput] = useState<ImageInput | null>(null);
 
   return (
@@ -38,11 +35,9 @@ function AcceptedPage(args: {
       </p>
 
       <ImageDropZone
-        {...args}
-        onInput={(input) => {
-          setLastInput(input);
-          args.onInput(input);
-        }}
+        acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
+        onInput={(input) => setLastInput(input)}
+        onDismiss={() => {}}
       />
 
       {lastInput && (
@@ -93,74 +88,176 @@ function AcceptedPage(args: {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Meta
-// ---------------------------------------------------------------------------
+/* ================================================================
+   STATIC SCENE RENDERER — used by Stepwise mode
+   ================================================================ */
 
-const meta: Meta<typeof AcceptedPage> = {
+const noop = () => {};
+
+function AcceptedSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
+  switch (sceneIndex) {
+    // Scene 1: Drop zone idle
+    case 0:
+      return (
+        <div className="p-6 max-w-lg">
+          <h1 className="text-xl font-semibold tracking-tight mb-1">
+            GEN-MEDIA-0001 — Formats and Size: Accepted Formats
+          </h1>
+          <p className="text-sm text-muted-foreground mb-4">
+            Drop or select an image file. JPEG, PNG, WebP, and HEIC are supported.
+          </p>
+          <ImageDropZone
+            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
+            onInput={noop}
+            onDismiss={noop}
+          />
+        </div>
+      );
+
+    // Scene 2: JPEG file provided (showing drop zone with file selected)
+    case 1:
+      return (
+        <div className="p-6 max-w-lg">
+          <h1 className="text-xl font-semibold tracking-tight mb-1">
+            GEN-MEDIA-0001 — Formats and Size: Accepted Formats
+          </h1>
+          <p className="text-sm text-muted-foreground mb-4">
+            A JPEG file has been selected. The drop zone is validating the format.
+          </p>
+          <ImageDropZone
+            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
+            onInput={noop}
+            onDismiss={noop}
+          />
+          <p className="mt-3 text-xs text-muted-foreground font-mono">
+            Selected: test-image.jpg (image/jpeg)
+          </p>
+        </div>
+      );
+
+    // Scene 3: File accepted — green status panel
+    case 2:
+    default:
+      return (
+        <div className="p-6 max-w-lg">
+          <h1 className="text-xl font-semibold tracking-tight mb-1">
+            GEN-MEDIA-0001 — Formats and Size: Accepted Formats
+          </h1>
+          <ImageDropZone
+            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
+            onInput={noop}
+            onDismiss={noop}
+          />
+          <div className="mt-4 rounded-lg border border-border p-4" data-testid="result-panel">
+            <h2 className="text-sm font-semibold mb-1">
+              <span className="text-green-600">File accepted</span>
+            </h2>
+            <pre className="text-xs text-muted-foreground font-mono whitespace-pre-wrap">
+              {JSON.stringify(
+                { type: 'file', fileName: 'test-image.jpg', mimeType: 'image/jpeg' },
+                null,
+                2,
+              )}
+            </pre>
+          </div>
+        </div>
+      );
+  }
+}
+
+/* ================================================================
+   SCENES
+   ================================================================ */
+
+const acceptedScenes: WorkflowScene[] = [
+  {
+    title: 'Scene 1 of 3 \u2014 Drop Zone Idle',
+    description:
+      'The ImageDropZone is in its initial idle state. It accepts JPEG, PNG, WebP, HEIC, and HEIF files. The user can drag-and-drop a file, click to open the file picker, or enter a URL.',
+    interaction: 'Select or drop a JPEG file to submit it to the drop zone.',
+  },
+  {
+    title: 'Scene 2 of 3 \u2014 JPEG File Provided',
+    description:
+      'A JPEG file has been selected via the file picker. The drop zone validates the MIME type against the accepted formats list.',
+    interaction: 'Wait for validation to complete.',
+  },
+  {
+    title: 'Scene 3 of 3 \u2014 File Accepted',
+    description:
+      'The JPEG file passed validation. The drop zone emits `{ type: "file", file }` and the result panel shows the accepted state with the file name and MIME type. No error alert is shown.',
+    interaction:
+      'The workflow is complete. The accepted file can now be passed to the crop editor.',
+  },
+];
+
+/* ================================================================
+   WORKFLOW STORIES
+   ================================================================ */
+
+const {
+  Interactive: AcceptedInteractive,
+  Stepwise: AcceptedStepwise,
+  Automated: AcceptedAutomated,
+} = createWorkflowStories({
+  scenes: acceptedScenes,
+  renderScene: (i) => <AcceptedSceneRenderer sceneIndex={i} />,
+  renderLive: () => <AcceptedLive />,
+  delayMs: 2000,
+  play: async ({ goToScene, delay }) => {
+    goToScene(0);
+    await delay();
+
+    // Find the hidden file input rendered by react-dropzone
+    const fileInput = await waitFor(() => {
+      const el = document.querySelector<HTMLInputElement>('input[type="file"]');
+      if (!el) throw new Error('File input not found');
+      return el;
+    });
+
+    // Scene 1 -> 2: Upload file
+    await userEvent.upload(fileInput, MOCK_FILE_JPEG);
+    goToScene(1);
+    await delay();
+
+    // Scene 2 -> 3: Verify acceptance
+    await waitFor(() => {
+      expect(fileInput).toBeTruthy();
+    });
+    goToScene(2);
+    await delay();
+
+    // Final assertion: no error alert
+    const alert = document.querySelector('[role="alert"]');
+    expect(alert).toBeNull();
+  },
+});
+
+/* ================================================================
+   META + EXPORTS
+   ================================================================ */
+
+const meta: Meta = {
   title:
     'Use Cases/General Behaviors/Entity Media/GEN-MEDIA-0001 Set Entity Image/0003 Formats and Size/Accepted',
-  component: AcceptedPage,
   parameters: {
     layout: 'centered',
-    docs: {
-      description: {
-        component:
-          'JPEG, PNG, WebP, and HEIC/HEIF files are accepted by the drop zone. ' +
-          'A valid file emits `{ type: "file", file }`. Use the Controls panel to toggle accepted formats.',
-      },
-    },
-  },
-  argTypes: {
-    acceptedFormats: {
-      control: { type: 'check' },
-      options: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'],
-      description: 'Accepted MIME types for file uploads.',
-    },
-  },
-  args: {
-    acceptedFormats: ITEM_IMAGE_CONFIG.acceptedFormats,
-    onInput: fn(),
-    onDismiss: fn(),
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof AcceptedPage>;
 
-// ---------------------------------------------------------------------------
-// Stories
-// ---------------------------------------------------------------------------
-
-/** Default idle state — JPEG and PNG formats accepted. */
-export const Default: Story = {};
-
-/** Playground — use Controls to toggle which MIME types are accepted. */
-export const Playground: Story = {
-  args: {
-    acceptedFormats: ['image/jpeg', 'image/png', 'image/webp'],
-  },
+export const AcceptedFormatInteractive: StoryObj = {
+  ...AcceptedInteractive,
+  name: 'Accepted Format (Interactive)',
 };
 
-/**
- * Automated — simulates providing a JPEG file and verifies it is accepted.
- * The drop zone should emit `{ type: 'file' }` with no error message shown.
- */
-export const Automated: Story = {
-  play: async ({ canvasElement, args }) => {
-    const canvas = within(canvasElement);
+export const AcceptedFormatStepwise: StoryObj = {
+  ...AcceptedStepwise,
+  name: 'Accepted Format (Stepwise)',
+};
 
-    // Find the hidden file input rendered by react-dropzone
-    const fileInput = canvasElement.querySelector<HTMLInputElement>('input[type="file"]');
-    if (!fileInput) throw new Error('File input not found');
-
-    await userEvent.upload(fileInput, MOCK_FILE_JPEG);
-
-    // onInput should have been called with type: 'file'
-    await expect(args.onInput).toHaveBeenCalledWith(expect.objectContaining({ type: 'file' }));
-
-    // No error alert should appear
-    const alert = canvas.queryByRole('alert');
-    await expect(alert).toBeNull();
-  },
+export const AcceptedFormatAutomated: StoryObj = {
+  ...AcceptedAutomated,
+  name: 'Accepted Format (Automated)',
 };

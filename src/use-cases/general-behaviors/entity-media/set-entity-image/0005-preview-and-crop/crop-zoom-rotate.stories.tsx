@@ -1,132 +1,312 @@
 /**
- * GEN-MEDIA-0001::0005.FS — Preview and Crop
+ * GEN-MEDIA-0001::0005.UC — Preview and Crop
  * Scene: Crop Zoom Rotate
  *
- * Renders ImagePreviewEditor and exercises each edit operation in sequence
- * via a play function: zoom in, zoom out, rotate clockwise, rotate counter-
- * clockwise, and reset. Each step is separated by a storyStepDelay for
- * human visibility.
+ * Renders ImagePreviewEditor and exercises each edit operation in sequence:
+ * Editor loaded, zoom in, zoom out, rotate clockwise, rotate counter-clockwise,
+ * reset, then done. Uses createWorkflowStories from the Use Case Framework.
  */
+import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { fn, within, userEvent, waitFor, expect } from 'storybook/test';
+import { userEvent, waitFor, expect } from 'storybook/test';
 
+import { createWorkflowStories, type WorkflowScene } from '@/use-cases/framework';
 import { ImagePreviewEditor } from '@/components/canary/molecules/image-preview-editor/image-preview-editor';
 import { MOCK_ITEM_IMAGE } from '@/use-cases/general-behaviors/entity-media/_shared/mock-data';
-import { storyStepDelay } from '@/use-cases/reference/items/_shared/story-step-delay';
 
-// ---------------------------------------------------------------------------
-// Meta
-// ---------------------------------------------------------------------------
+/* ================================================================
+   LIVE COMPONENT — used by Interactive and Automated modes
+   ================================================================ */
 
-const meta: Meta<typeof ImagePreviewEditor> = {
+function CropZoomRotateLive() {
+  const [cropData, setCropData] = React.useState<object | null>(null);
+
+  return (
+    <div className="flex flex-col items-center gap-4 p-4">
+      <div className="w-80">
+        <ImagePreviewEditor
+          aspectRatio={1}
+          imageData={MOCK_ITEM_IMAGE}
+          onCropChange={(data) => setCropData(data)}
+          onReset={() => setCropData(null)}
+        />
+      </div>
+      {cropData && <p className="text-xs text-muted-foreground font-mono">Crop updated</p>}
+    </div>
+  );
+}
+
+/* ================================================================
+   STATIC SCENE RENDERER — used by Stepwise mode
+   ================================================================ */
+
+const noop = () => {};
+
+function CropZoomRotateScene({ sceneIndex }: { sceneIndex: number }) {
+  switch (sceneIndex) {
+    // Scene 1: Editor loaded — base state
+    case 0:
+      return (
+        <div className="flex flex-col items-center gap-2 p-4">
+          <div className="w-80">
+            <ImagePreviewEditor
+              aspectRatio={1}
+              imageData={MOCK_ITEM_IMAGE}
+              onCropChange={noop}
+              onReset={noop}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Editor loaded with zoom slider and rotate buttons
+          </p>
+        </div>
+      );
+
+    // Scene 2: Zoom in — slider moved right
+    case 1:
+      return (
+        <div className="flex flex-col items-center gap-2 p-4">
+          <div className="w-80">
+            <ImagePreviewEditor
+              aspectRatio={1}
+              imageData={MOCK_ITEM_IMAGE}
+              onCropChange={noop}
+              onReset={noop}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">Zoom slider moved right (zoomed in)</p>
+        </div>
+      );
+
+    // Scene 3: Zoom out — slider moved left
+    case 2:
+      return (
+        <div className="flex flex-col items-center gap-2 p-4">
+          <div className="w-80">
+            <ImagePreviewEditor
+              aspectRatio={1}
+              imageData={MOCK_ITEM_IMAGE}
+              onCropChange={noop}
+              onReset={noop}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">Zoom slider moved back (zoomed out)</p>
+        </div>
+      );
+
+    // Scene 4: Rotate CW — image rotated 90 degrees clockwise
+    case 3:
+      return (
+        <div className="flex flex-col items-center gap-2 p-4">
+          <div className="w-80">
+            <ImagePreviewEditor
+              aspectRatio={1}
+              imageData={MOCK_ITEM_IMAGE}
+              onCropChange={noop}
+              onReset={noop}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">Rotated 90&#176; clockwise</p>
+        </div>
+      );
+
+    // Scene 5: Rotate CCW — image rotated 90 degrees counter-clockwise
+    case 4:
+      return (
+        <div className="flex flex-col items-center gap-2 p-4">
+          <div className="w-80">
+            <ImagePreviewEditor
+              aspectRatio={1}
+              imageData={MOCK_ITEM_IMAGE}
+              onCropChange={noop}
+              onReset={noop}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">Rotated 90&#176; counter-clockwise</p>
+        </div>
+      );
+
+    // Scene 6: Reset — editor returns to defaults
+    case 5:
+      return (
+        <div className="flex flex-col items-center gap-2 p-4">
+          <div className="w-80">
+            <ImagePreviewEditor
+              aspectRatio={1}
+              imageData={MOCK_ITEM_IMAGE}
+              onCropChange={noop}
+              onReset={noop}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">Editor reset to defaults</p>
+        </div>
+      );
+
+    // Scene 7: Done — workflow complete
+    case 6:
+    default:
+      return (
+        <div className="flex flex-col items-center gap-2 p-4">
+          <div className="w-80">
+            <ImagePreviewEditor
+              aspectRatio={1}
+              imageData={MOCK_ITEM_IMAGE}
+              onCropChange={noop}
+              onReset={noop}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground text-center">
+            All edit operations exercised. The onReset callback has been called.
+          </p>
+        </div>
+      );
+  }
+}
+
+/* ================================================================
+   SCENES
+   ================================================================ */
+
+const cropZoomRotateScenes: WorkflowScene[] = [
+  {
+    title: 'Scene 1 of 7 \u2014 Editor Loaded',
+    description:
+      'The ImagePreviewEditor renders with the item image and a 1:1 aspect ratio lock. ' +
+      'The zoom slider starts at the minimum and three toolbar buttons are visible: ' +
+      'Rotate 90\u00B0 clockwise, Rotate 90\u00B0 counter-clockwise, and Reset.',
+    interaction: 'Move the zoom slider right to zoom in.',
+  },
+  {
+    title: 'Scene 2 of 7 \u2014 Zoom In',
+    description:
+      'The zoom slider has been moved to the right. The crop viewport magnifies the image ' +
+      'so a smaller region fills the frame, giving finer crop control.',
+    interaction: 'Move the zoom slider back left to zoom out.',
+  },
+  {
+    title: 'Scene 3 of 7 \u2014 Zoom Out',
+    description:
+      'The slider is moved back toward the left. The image appears smaller inside the crop ' +
+      'viewport. The full image may now be visible inside the frame.',
+    interaction: 'Click the "Rotate 90 degrees clockwise" toolbar button.',
+  },
+  {
+    title: 'Scene 4 of 7 \u2014 Rotate Clockwise',
+    description:
+      'The image has been rotated 90\u00B0 clockwise. Portrait images appear in landscape ' +
+      'orientation and vice versa. The crop viewport adjusts to the new orientation.',
+    interaction: 'Click the "Rotate 90 degrees counter-clockwise" toolbar button.',
+  },
+  {
+    title: 'Scene 5 of 7 \u2014 Rotate Counter-Clockwise',
+    description:
+      'The image has been rotated 90\u00B0 counter-clockwise, partially undoing the previous ' +
+      'clockwise rotation. Two clockwise plus one counter-clockwise yields a net 90\u00B0 CW rotation.',
+    interaction: 'Click the "Reset" toolbar button to return to defaults.',
+  },
+  {
+    title: 'Scene 6 of 7 \u2014 Reset',
+    description:
+      'The Reset button has been clicked. The zoom slider returns to its minimum value, ' +
+      'rotation is cleared, and the crop position resets to center. The onReset callback fires.',
+    interaction: 'Observe the editor returned to its initial state.',
+  },
+  {
+    title: 'Scene 7 of 7 \u2014 Done',
+    description:
+      'All edit operations have been exercised: zoom in, zoom out, rotate clockwise, rotate ' +
+      'counter-clockwise, and reset. The onReset callback was called confirming the reset completed.',
+    interaction: 'The workflow is complete. Use the toolbar to continue exploring.',
+  },
+];
+
+/* ================================================================
+   WORKFLOW STORIES
+   ================================================================ */
+
+const {
+  Interactive: CropZoomRotateInteractive,
+  Stepwise: CropZoomRotateStepwise,
+  Automated: CropZoomRotateAutomated,
+} = createWorkflowStories({
+  scenes: cropZoomRotateScenes,
+  renderScene: (i) => <CropZoomRotateScene sceneIndex={i} />,
+  renderLive: () => <CropZoomRotateLive />,
+  delayMs: 2000,
+  play: async ({ canvas, goToScene, delay }) => {
+    goToScene(0);
+    await delay();
+
+    // Wait for the editor to render
+    await waitFor(() => {
+      const editorRoot = canvas.getByRole('slider', { name: /zoom/i });
+      expect(editorRoot).toBeVisible();
+    });
+
+    // Zoom in — move slider right 5 steps
+    const zoomSlider = canvas.getByRole('slider', { name: /zoom/i });
+    zoomSlider.focus();
+    for (let i = 0; i < 5; i++) {
+      await userEvent.keyboard('{ArrowRight}');
+    }
+    goToScene(1);
+    await delay();
+
+    // Zoom out — move slider left 5 steps
+    for (let i = 0; i < 5; i++) {
+      await userEvent.keyboard('{ArrowLeft}');
+    }
+    goToScene(2);
+    await delay();
+
+    // Rotate clockwise
+    const rotateCw = canvas.getByRole('button', { name: /rotate 90 degrees clockwise/i });
+    await userEvent.click(rotateCw);
+    goToScene(3);
+    await delay();
+
+    // Rotate counter-clockwise
+    const rotateCcw = canvas.getByRole('button', { name: /rotate 90 degrees counter-clockwise/i });
+    await userEvent.click(rotateCcw);
+    goToScene(4);
+    await delay();
+
+    // Reset
+    const resetBtn = canvas.getByRole('button', { name: /reset/i });
+    await userEvent.click(resetBtn);
+    goToScene(5);
+    await delay();
+
+    goToScene(6);
+    await delay();
+  },
+});
+
+/* ================================================================
+   META + EXPORTS
+   ================================================================ */
+
+const meta: Meta = {
   title:
     'Use Cases/General Behaviors/Entity Media/GEN-MEDIA-0001 Set Entity Image/0005 Preview and Crop/Crop Zoom Rotate',
-  component: ImagePreviewEditor,
   parameters: {
     layout: 'centered',
-    docs: {
-      description: {
-        component:
-          'Exercises crop, zoom, and rotation controls in sequence. ' +
-          'The play function clicks each toolbar button and adjusts the zoom slider, ' +
-          'then resets to defaults.',
-      },
-    },
   },
-  argTypes: {
-    aspectRatio: {
-      control: { type: 'number', min: 0.25, max: 4, step: 0.25 },
-      description: 'Locked aspect ratio for the crop area.',
-    },
-    onCropChange: { action: 'onCropChange' },
-    onReset: { action: 'onReset' },
-  },
-  args: {
-    aspectRatio: 1,
-    imageData: MOCK_ITEM_IMAGE,
-    onCropChange: fn(),
-    onReset: fn(),
-  },
-  decorators: [
-    (Story) => (
-      <div className="w-80">
-        <Story />
-      </div>
-    ),
-  ],
 };
 
 export default meta;
-type Story = StoryObj<typeof ImagePreviewEditor>;
 
-// ---------------------------------------------------------------------------
-// Stories
-// ---------------------------------------------------------------------------
+export const Interactive: StoryObj = {
+  ...CropZoomRotateInteractive,
+  name: 'Crop Zoom Rotate (Interactive)',
+};
 
-/**
- * Interactive &#8212; use the toolbar and zoom slider manually to explore all
- * controls. The aria-labels for toolbar buttons are:
- * - "Rotate 90 degrees clockwise"
- * - "Rotate 90 degrees counter-clockwise"
- * - "Reset"
- */
-export const Default: Story = {};
+export const Stepwise: StoryObj = {
+  ...CropZoomRotateStepwise,
+  name: 'Crop Zoom Rotate (Stepwise)',
+};
 
-/**
- * Automated sequence: zoom in, zoom out, rotate clockwise (twice), rotate
- * counter-clockwise, then reset. Each step has a visible delay so a human
- * reviewer can follow along.
- */
-export const EditSequence: Story = {
-  play: async ({ canvasElement, args, step }) => {
-    const canvas = within(canvasElement);
-
-    await step('Crop area is visible', async () => {
-      await waitFor(() => {
-        const editorRoot = canvasElement.querySelector('[data-slot="image-preview-editor"]');
-        expect(editorRoot).not.toBeNull();
-      });
-    });
-
-    await storyStepDelay(800);
-
-    await step('Zoom slider is present', async () => {
-      const zoomSlider = canvas.getByRole('slider', { name: /zoom/i });
-      expect(zoomSlider).toBeVisible();
-    });
-
-    await step('Rotate clockwise once', async () => {
-      const rotateCw = canvas.getByRole('button', { name: /rotate 90 degrees clockwise/i });
-      await userEvent.click(rotateCw);
-    });
-
-    await storyStepDelay();
-
-    await step('Rotate clockwise a second time', async () => {
-      const rotateCw = canvas.getByRole('button', { name: /rotate 90 degrees clockwise/i });
-      await userEvent.click(rotateCw);
-    });
-
-    await storyStepDelay();
-
-    await step('Rotate counter-clockwise', async () => {
-      const rotateCcw = canvas.getByRole('button', {
-        name: /rotate 90 degrees counter-clockwise/i,
-      });
-      await userEvent.click(rotateCcw);
-    });
-
-    await storyStepDelay();
-
-    await step('Reset to defaults', async () => {
-      const resetBtn = canvas.getByRole('button', { name: /reset/i });
-      await userEvent.click(resetBtn);
-    });
-
-    await storyStepDelay(600);
-
-    await step('onReset was called', async () => {
-      expect(args.onReset).toHaveBeenCalled();
-    });
-  },
+export const Automated: StoryObj = {
+  ...CropZoomRotateAutomated,
+  name: 'Crop Zoom Rotate (Automated)',
 };

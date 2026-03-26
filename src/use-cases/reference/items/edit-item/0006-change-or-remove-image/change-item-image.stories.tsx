@@ -26,6 +26,7 @@ import { ModuleRegistry, AllCommunityModule, type ColDef } from 'ag-grid-communi
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
+import { createWorkflowStories, type WorkflowScene } from '@/use-cases/framework';
 import { SidebarInset, SidebarTrigger } from '@/components/canary/primitives/sidebar';
 import { Sidebar } from '@/components/canary/organisms/sidebar/sidebar';
 import { SidebarHeader } from '@/components/canary/molecules/sidebar/sidebar-header';
@@ -110,7 +111,6 @@ function EditableImageGrid({ items, onImageChange }: EditableImageGridProps) {
 // ---------------------------------------------------------------------------
 
 function ChangeImagePage() {
-  // Patch items so the first two have known image URLs (ensures EditExisting phase)
   const patchedItems = itemMockData.map((item, idx) => {
     if (idx === 0) return { ...item, imageUrl: MOCK_ITEM_IMAGE };
     return item;
@@ -174,97 +174,179 @@ function ChangeImagePage() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Story meta
-// ---------------------------------------------------------------------------
+/* ================================================================
+   STATIC SCENE RENDERER — used by Stepwise mode
+   ================================================================ */
 
-const meta: Meta<typeof ChangeImagePage> = {
+function ScenePanel({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="border border-border rounded-lg p-6 bg-background max-w-2xl w-full">
+      <h2 className="text-lg font-semibold mb-2">{title}</h2>
+      <p className="text-sm text-muted-foreground">{description}</p>
+    </div>
+  );
+}
+
+function ChangeItemImageSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
+  switch (sceneIndex) {
+    case 0:
+      return (
+        <ScenePanel
+          title="Grid visible with item data"
+          description="The full app shell renders with the Items grid. The first row (Nitrile Exam Gloves) has an existing product image thumbnail in the image column."
+        />
+      );
+    case 1:
+      return (
+        <ScenePanel
+          title="Double-click image cell of first row"
+          description="The user double-clicks the image cell in the first row. AG Grid detects the gesture and activates the ImageCellEditor, mounting the ImageUploadDialog."
+        />
+      );
+    case 2:
+      return (
+        <ScenePanel
+          title="Dialog opens in EditExisting (comparison) mode"
+          description="Because the item already has an image, the ImageUploadDialog opens in EditExisting mode. The current image is shown alongside options to Accept (keep), Upload New, or Dismiss."
+        />
+      );
+    case 3:
+    default:
+      return (
+        <ScenePanel
+          title="Cancel clicked — grid row still visible"
+          description="The user clicked Cancel. The dialog has closed. The grid row still shows the original image cell. No image was changed."
+        />
+      );
+  }
+}
+
+/* ================================================================
+   SCENES + WORKFLOW FACTORY
+   ================================================================ */
+
+const changeItemImageScenes: WorkflowScene[] = [
+  {
+    title: 'Scene 1 of 4 \u2014 Grid Visible',
+    description:
+      'The full app shell renders with the Items grid. The first row has a product image. The grid is in view-only mode.',
+    interaction: 'Double-click the image cell in the first row to open the editor.',
+  },
+  {
+    title: 'Scene 2 of 4 \u2014 Double-Click Image Cell',
+    description:
+      'The user double-clicks the image cell of the first row (which has an existing image). AG Grid activates the ImageCellEditor.',
+    interaction: 'Wait for the dialog to open in EditExisting mode.',
+  },
+  {
+    title: 'Scene 3 of 4 \u2014 Dialog in EditExisting Mode',
+    description:
+      'The ImageUploadDialog opens in EditExisting mode. The current image is shown with options to Accept (keep current), Upload New Image, or Dismiss.',
+    interaction: 'Click Cancel to close the dialog without making changes.',
+  },
+  {
+    title: 'Scene 4 of 4 \u2014 Dialog Closed',
+    description:
+      'The dialog has closed. The grid row is still showing the original image. No changes were made.',
+    interaction: 'The workflow is complete. Double-click again to replace the image.',
+  },
+];
+
+const {
+  Interactive: ChangeImageInteractive,
+  Stepwise: ChangeImageStepwise,
+  Automated: ChangeImageAutomated,
+} = createWorkflowStories({
+  scenes: changeItemImageScenes,
+  renderScene: (i) => <ChangeItemImageSceneRenderer sceneIndex={i} />,
+  renderLive: () => <ChangeImagePage />,
+  delayMs: 2000,
+  play: async ({ canvas, goToScene, delay }) => {
+    goToScene(0);
+
+    // Scene 1: Wait for grid to render with item data
+    const firstItem = await canvas.findByText(
+      'Nitrile Exam Gloves (Medium)',
+      { selector: '[role="gridcell"]' },
+      { timeout: 10000 },
+    );
+    expect(firstItem).toBeVisible();
+    await storyStepDelay();
+    await delay();
+
+    // Scene 2: Double-click image cell of first row
+    goToScene(1);
+    const rows = document.querySelectorAll('[role="row"].ag-row');
+    const firstRow = rows[0] as HTMLElement | undefined;
+    if (firstRow) {
+      const imageCell =
+        firstRow.querySelector<HTMLElement>('[data-slot="image-cell-display"]') ??
+        firstRow.querySelector<HTMLElement>('[role="gridcell"]');
+      if (imageCell) {
+        await userEvent.dblClick(imageCell);
+      }
+    }
+    await delay();
+
+    // Scene 3: Dialog opens
+    goToScene(2);
+    await waitFor(
+      () => {
+        const dialog = screen.queryByRole('dialog');
+        expect(dialog).not.toBeNull();
+        expect(dialog).toBeVisible();
+      },
+      { timeout: 8000 },
+    );
+    await storyStepDelay();
+    await delay();
+
+    // Scene 4: Cancel to close the dialog
+    goToScene(3);
+    const dialog = screen.getByRole('dialog');
+    const cancelButton = within(dialog).getByRole('button', { name: /cancel/i });
+    await userEvent.click(cancelButton);
+    await waitFor(
+      () => {
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      },
+      { timeout: 5000 },
+    );
+    await storyStepDelay();
+
+    // Verify grid row still visible
+    expect(
+      canvas.getByText('Nitrile Exam Gloves (Medium)', { selector: '[role="gridcell"]' }),
+    ).toBeVisible();
+    await delay();
+  },
+});
+
+/* ================================================================
+   META + EXPORTS
+   ================================================================ */
+
+const meta: Meta = {
   title:
     'Use Cases/Reference/Items/ITM-0004 Edit Item/0006 Change or Remove Image/Change Item Image',
-  component: ChangeImagePage,
   parameters: {
     layout: 'fullscreen',
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof ChangeImagePage>;
 
-/**
- * Default — double-click the image cell of an item with an existing image,
- * observe ImageUploadDialog opening in EditExisting (comparison) mode,
- * then cancel to close.
- *
- * Play function steps:
- *   1. Wait for grid to render with item data.
- *   2. Double-click the image cell of the first row (patched with MOCK_ITEM_IMAGE).
- *   3. ImageUploadDialog opens — verify the dialog is visible.
- *   4. Cancel the dialog.
- *   5. Grid row is still visible.
- */
-export const Default: Story = {
-  play: async ({ canvasElement, step }) => {
-    const canvas = within(canvasElement);
+export const ChangeItemImageInteractiveStory: StoryObj = {
+  ...ChangeImageInteractive,
+  name: 'Change Item Image (Interactive)',
+};
 
-    await step('Grid renders with item data', async () => {
-      const firstItem = await canvas.findByText(
-        'Nitrile Exam Gloves (Medium)',
-        { selector: '[role="gridcell"]' },
-        { timeout: 10000 },
-      );
-      expect(firstItem).toBeVisible();
-    });
+export const ChangeItemImageStepwiseStory: StoryObj = {
+  ...ChangeImageStepwise,
+  name: 'Change Item Image (Stepwise)',
+};
 
-    await storyStepDelay();
-
-    await step('Double-click image cell of first row to open ImageUploadDialog', async () => {
-      // AG Grid image cells are the first gridcell in each row
-      // Image column is width 60px — find via data-slot or first gridcell
-      const rows = canvasElement.querySelectorAll('[role="row"].ag-row');
-      const firstRow = rows[0] as HTMLElement | undefined;
-      if (firstRow) {
-        // Try data-slot first, fall back to first gridcell
-        const imageCell =
-          firstRow.querySelector<HTMLElement>('[data-slot="image-cell-display"]') ??
-          firstRow.querySelector<HTMLElement>('[role="gridcell"]');
-        if (imageCell) {
-          await userEvent.dblClick(imageCell);
-        }
-      }
-    });
-
-    await step('ImageUploadDialog opens via portal', async () => {
-      await waitFor(
-        () => {
-          // Dialog renders via Radix Dialog portal — use screen
-          const dialog = screen.queryByRole('dialog');
-          expect(dialog).not.toBeNull();
-          expect(dialog).toBeVisible();
-        },
-        { timeout: 8000 },
-      );
-    });
-
-    await storyStepDelay();
-
-    await step('Cancel to close the dialog', async () => {
-      const dialog = screen.getByRole('dialog');
-      const cancelButton = within(dialog).getByRole('button', { name: /cancel/i });
-      await userEvent.click(cancelButton);
-      await waitFor(
-        () => {
-          expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-        },
-        { timeout: 5000 },
-      );
-    });
-
-    await storyStepDelay();
-
-    await step('Grid row still visible after dialog closed', async () => {
-      expect(
-        canvas.getByText('Nitrile Exam Gloves (Medium)', { selector: '[role="gridcell"]' }),
-      ).toBeVisible();
-    });
-  },
+export const ChangeItemImageAutomatedStory: StoryObj = {
+  ...ChangeImageAutomated,
+  name: 'Change Item Image (Automated)',
 };

@@ -4,11 +4,17 @@
  *
  * Same grid setup as Grid Thumbnails. The play function hovers over an image
  * cell and verifies that the ImageHoverPreview popover appears.
+ *
+ * Three story variants via createWorkflowStories:
+ *   HoverPreviewInteractive  — live grid for manual exploration
+ *   HoverPreviewStepwise     — static snapshots with scene annotations
+ *   HoverPreviewAutomated    — automated play driving the live grid
  */
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, within, userEvent, waitFor } from 'storybook/test';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import type { ColDef } from 'ag-grid-community';
 
+import { createWorkflowStories, type WorkflowScene } from '@/use-cases/framework';
 import {
   MOCK_ITEMS,
   ITEM_IMAGE_CONFIG,
@@ -16,7 +22,6 @@ import {
 } from '@/use-cases/general-behaviors/entity-media/_shared/mock-data';
 import { ImageCellDisplay } from '@/components/canary/atoms/grid/image/image-cell-display';
 import { createEntityDataGrid } from '@/components/canary/organisms/shared/entity-data-grid/create-entity-data-grid';
-import { storyStepDelay } from '@/use-cases/reference/items/_shared/story-step-delay';
 
 // ---------------------------------------------------------------------------
 // Column definitions
@@ -51,10 +56,10 @@ const { Component: ItemThumbnailGrid } = createEntityDataGrid<MockItem>({
 });
 
 // ---------------------------------------------------------------------------
-// Page wrapper
+// Live component — used by Interactive and Automated modes
 // ---------------------------------------------------------------------------
 
-function HoverPreviewPage() {
+function HoverPreviewLive() {
   return (
     <div className="p-6 max-w-3xl">
       <h1 className="text-xl font-semibold tracking-tight mb-1">GEN-MEDIA-0003 — Hover Preview</h1>
@@ -68,91 +73,300 @@ function HoverPreviewPage() {
 }
 
 // ---------------------------------------------------------------------------
+// Static scene renderer — used by Stepwise mode
+// ---------------------------------------------------------------------------
+
+function HoverPreviewScene({ sceneIndex }: { sceneIndex: number }) {
+  switch (sceneIndex) {
+    // Scene 0: Grid visible
+    case 0:
+      return (
+        <div className="p-6 max-w-3xl">
+          <h1 className="text-xl font-semibold tracking-tight mb-1">
+            GEN-MEDIA-0003 — Hover Preview
+          </h1>
+          <p className="text-sm text-muted-foreground mb-4">
+            The grid is rendered. Hover over an image cell to trigger the preview popover.
+          </p>
+          <div className="border border-border rounded overflow-hidden">
+            <div className="grid grid-cols-4 bg-muted text-xs font-semibold px-3 py-2 border-b border-border">
+              <span>Image</span>
+              <span className="col-span-2">Name</span>
+              <span>SKU</span>
+            </div>
+            {['Hex Bolt M10x30', 'Flat Washer 3/8"', 'Spring Pin 4x20'].map((name) => (
+              <div
+                key={name}
+                className="grid grid-cols-4 items-center px-3 py-2 border-b border-border last:border-0 text-sm"
+              >
+                <div className="w-8 h-8 rounded bg-muted border border-border" />
+                <span className="col-span-2">{name}</span>
+                <span className="font-mono text-xs text-muted-foreground">&#8212;</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+    // Scene 1: Hover over cell
+    case 1:
+      return (
+        <div className="p-6 max-w-3xl">
+          <h1 className="text-xl font-semibold tracking-tight mb-1">
+            GEN-MEDIA-0003 — Hover Preview
+          </h1>
+          <p className="text-sm text-muted-foreground mb-4">
+            Mouse is hovering over the first image cell. The hover delay (~500ms) is counting down.
+          </p>
+          <div className="border border-border rounded overflow-hidden">
+            <div className="grid grid-cols-4 bg-muted text-xs font-semibold px-3 py-2 border-b border-border">
+              <span>Image</span>
+              <span className="col-span-2">Name</span>
+              <span>SKU</span>
+            </div>
+            <div className="grid grid-cols-4 items-center px-3 py-2 border-b border-border text-sm bg-accent/30">
+              <div className="w-8 h-8 rounded bg-primary/20 border-2 border-primary" />
+              <span className="col-span-2 font-medium">Hex Bolt M10x30</span>
+              <span className="font-mono text-xs text-muted-foreground">HB-M10-030</span>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            Hovering&#8230; popover opens after ~500ms.
+          </p>
+        </div>
+      );
+
+    // Scene 2: Popover appears
+    case 2:
+      return (
+        <div className="p-6 max-w-3xl relative">
+          <h1 className="text-xl font-semibold tracking-tight mb-1">
+            GEN-MEDIA-0003 — Hover Preview
+          </h1>
+          <p className="text-sm text-muted-foreground mb-4">
+            The ImageHoverPreview popover is visible, showing the full-size preview image.
+          </p>
+          <div className="border border-border rounded overflow-hidden mb-4">
+            <div className="grid grid-cols-4 bg-muted text-xs font-semibold px-3 py-2 border-b border-border">
+              <span>Image</span>
+              <span className="col-span-2">Name</span>
+              <span>SKU</span>
+            </div>
+            <div className="grid grid-cols-4 items-center px-3 py-2 text-sm bg-accent/30">
+              <div className="w-8 h-8 rounded bg-primary/20 border-2 border-primary" />
+              <span className="col-span-2 font-medium">Hex Bolt M10x30</span>
+              <span className="font-mono text-xs text-muted-foreground">HB-M10-030</span>
+            </div>
+          </div>
+          <div className="border border-border rounded-lg p-3 bg-popover shadow-lg max-w-48">
+            <div className="w-full aspect-square bg-muted rounded flex items-center justify-center text-muted-foreground text-sm">
+              Full-size preview
+            </div>
+          </div>
+        </div>
+      );
+
+    // Scene 3: Unhover
+    case 3:
+      return (
+        <div className="p-6 max-w-3xl">
+          <h1 className="text-xl font-semibold tracking-tight mb-1">
+            GEN-MEDIA-0003 — Hover Preview
+          </h1>
+          <p className="text-sm text-muted-foreground mb-4">
+            Mouse moved away from the image cell. Popover is closing.
+          </p>
+          <div className="border border-border rounded overflow-hidden">
+            <div className="grid grid-cols-4 bg-muted text-xs font-semibold px-3 py-2 border-b border-border">
+              <span>Image</span>
+              <span className="col-span-2">Name</span>
+              <span>SKU</span>
+            </div>
+            <div className="grid grid-cols-4 items-center px-3 py-2 border-b border-border text-sm">
+              <div className="w-8 h-8 rounded bg-muted border border-border" />
+              <span className="col-span-2">Hex Bolt M10x30</span>
+              <span className="font-mono text-xs text-muted-foreground">HB-M10-030</span>
+            </div>
+          </div>
+        </div>
+      );
+
+    // Scene 4: Popover gone
+    case 4:
+    default:
+      return (
+        <div className="p-6 max-w-3xl">
+          <h1 className="text-xl font-semibold tracking-tight mb-1">
+            GEN-MEDIA-0003 — Hover Preview
+          </h1>
+          <p className="text-sm text-muted-foreground mb-4">
+            Popover has closed. The grid is back to its default state.
+          </p>
+          <div className="border border-border rounded overflow-hidden">
+            <div className="grid grid-cols-4 bg-muted text-xs font-semibold px-3 py-2 border-b border-border">
+              <span>Image</span>
+              <span className="col-span-2">Name</span>
+              <span>SKU</span>
+            </div>
+            {['Hex Bolt M10x30', 'Flat Washer 3/8"', 'Spring Pin 4x20'].map((name) => (
+              <div
+                key={name}
+                className="grid grid-cols-4 items-center px-3 py-2 border-b border-border last:border-0 text-sm"
+              >
+                <div className="w-8 h-8 rounded bg-muted border border-border" />
+                <span className="col-span-2">{name}</span>
+                <span className="font-mono text-xs text-muted-foreground">&#8212;</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            &#10003; Popover dismissed on unhover.
+          </p>
+        </div>
+      );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Scenes
+// ---------------------------------------------------------------------------
+
+const scenes: WorkflowScene[] = [
+  {
+    title: 'Scene 1 of 5 \u2014 Grid Visible',
+    description:
+      'The grid is rendered with three rows (rows 1\u20132 have valid images, row 3 has no image). All image cells are visible.',
+    interaction: 'Hover over the first image cell thumbnail to trigger the preview.',
+  },
+  {
+    title: 'Scene 2 of 5 \u2014 Hover Over Cell',
+    description:
+      'The mouse is hovering over the first image cell. ImageHoverPreview uses a ~500ms delay before the popover opens, so the preview is not yet visible.',
+    interaction: 'Wait ~500ms for the popover to appear.',
+  },
+  {
+    title: 'Scene 3 of 5 \u2014 Popover Appears',
+    description:
+      'The ImageHoverPreview popover is now visible. It renders in a Radix portal outside the canvas element, showing the full-size image preview.',
+    interaction: 'Move the mouse away from the cell to close the popover.',
+  },
+  {
+    title: 'Scene 4 of 5 \u2014 Unhover',
+    description:
+      'The mouse has left the image cell area. The popover begins closing immediately on mouse-leave.',
+    interaction: 'Wait for the popover to fully dismiss.',
+  },
+  {
+    title: 'Scene 5 of 5 \u2014 Popover Gone',
+    description:
+      'The popover has closed. The grid is back to its default state. The data-state becomes "closed" or the popover element is removed from the DOM.',
+    interaction: 'The workflow is complete. Hover again to repeat.',
+  },
+];
+
+// ---------------------------------------------------------------------------
+// createWorkflowStories
+// ---------------------------------------------------------------------------
+
+const {
+  Interactive: HoverPreviewInteractiveStory,
+  Stepwise: HoverPreviewStepwiseStory,
+  Automated: HoverPreviewAutomatedStory,
+} = createWorkflowStories({
+  scenes,
+  renderScene: (i) => <HoverPreviewScene sceneIndex={i} />,
+  renderLive: () => <HoverPreviewLive />,
+  delayMs: 1500,
+  play: async ({ canvas, goToScene, delay }) => {
+    goToScene(0);
+    await delay();
+
+    // Wait for AG Grid to render image cells
+    await waitFor(
+      () => {
+        const cells = canvas.baseElement.querySelectorAll('[data-slot="image-cell-display"]');
+        expect(cells.length).toBeGreaterThan(0);
+      },
+      { timeout: 10000 },
+    );
+
+    // Hover over the first image cell
+    const firstCell = canvas.baseElement.querySelector('[data-slot="image-cell-display"]');
+    if (!firstCell) throw new Error('No image cell found');
+    await userEvent.hover(firstCell as HTMLElement);
+
+    goToScene(1);
+    await delay();
+
+    // Wait for popover to appear (ImageHoverPreview opens after ~500ms)
+    await waitFor(
+      () => {
+        const popoverContent = document.querySelector('[data-slot="popover-content"]');
+        expect(popoverContent).not.toBeNull();
+        expect(popoverContent).toBeVisible();
+      },
+      { timeout: 3000 },
+    );
+
+    goToScene(2);
+    await delay();
+
+    // Unhover the trigger cell
+    const triggerCell = canvas.baseElement.querySelector(
+      '[data-slot="image-hover-preview"]',
+    ) as HTMLElement | null;
+    if (triggerCell) {
+      await userEvent.unhover(triggerCell);
+    }
+
+    goToScene(3);
+    await delay();
+
+    // Confirm popover has closed
+    await waitFor(
+      () => {
+        const popoverContent = document.querySelector('[data-slot="popover-content"]');
+        const isClosed =
+          popoverContent === null || popoverContent.getAttribute('data-state') === 'closed';
+        expect(isClosed).toBe(true);
+      },
+      { timeout: 2000 },
+    );
+
+    goToScene(4);
+    await delay();
+  },
+});
+
+// ---------------------------------------------------------------------------
 // Meta
 // ---------------------------------------------------------------------------
 
-const meta: Meta<typeof HoverPreviewPage> = {
+const meta: Meta = {
   title:
     'Use Cases/General Behaviors/Entity Media/GEN-MEDIA-0003 View Entity Image/0001 View in Grid/Hover Preview',
-  component: HoverPreviewPage,
   parameters: {
     layout: 'fullscreen',
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof HoverPreviewPage>;
 
 // ---------------------------------------------------------------------------
-// Stories
+// Exports
 // ---------------------------------------------------------------------------
 
-export const Default: Story = {
-  play: async ({ canvasElement, step }) => {
-    const canvas = within(canvasElement);
+export const HoverPreviewInteractive: StoryObj = {
+  ...HoverPreviewInteractiveStory,
+  name: 'Hover Preview (Interactive)',
+};
 
-    await step('Grid renders image cells', async () => {
-      await waitFor(
-        () => {
-          const cells = canvasElement.querySelectorAll('[data-slot="image-cell-display"]');
-          expect(cells.length).toBeGreaterThan(0);
-        },
-        { timeout: 10000 },
-      );
-    });
+export const HoverPreviewStepwise: StoryObj = {
+  ...HoverPreviewStepwiseStory,
+  name: 'Hover Preview (Stepwise)',
+};
 
-    await storyStepDelay(500);
-
-    await step('Hover over first image cell to trigger preview popover', async () => {
-      const firstCell = canvasElement.querySelector('[data-slot="image-cell-display"]');
-      if (!firstCell) throw new Error('No image cell found');
-
-      // Hover over the cell — ImageHoverPreview uses a delay before showing
-      await userEvent.hover(firstCell as HTMLElement);
-    });
-
-    // Wait for hover delay (ImageHoverPreview opens after ~500ms)
-    await storyStepDelay(800);
-
-    await step('ImageHoverPreview popover is visible', async () => {
-      await waitFor(
-        () => {
-          // PopoverContent renders with data-slot="popover-content" (Radix portal, outside canvasElement)
-          const popoverContent = document.querySelector('[data-slot="popover-content"]');
-          expect(popoverContent).not.toBeNull();
-          expect(popoverContent).toBeVisible();
-        },
-        { timeout: 3000 },
-      );
-    });
-
-    await storyStepDelay();
-
-    await step('Moving mouse away closes the popover', async () => {
-      const triggerCell = canvasElement.querySelector(
-        '[data-slot="image-hover-preview"]',
-      ) as HTMLElement | null;
-      if (triggerCell) {
-        await userEvent.unhover(triggerCell);
-      }
-      await waitFor(
-        () => {
-          const popoverContent = document.querySelector('[data-slot="popover-content"]');
-          // Popover should be closed (null or hidden via data-state="closed")
-          const isClosed =
-            popoverContent === null || popoverContent.getAttribute('data-state') === 'closed';
-          expect(isClosed).toBe(true);
-        },
-        { timeout: 2000 },
-      );
-    });
-
-    await storyStepDelay();
-
-    await step('Heading is visible', async () => {
-      expect(
-        canvas.getByRole('heading', { name: 'GEN-MEDIA-0003 \u2014 Hover Preview' }),
-      ).toBeVisible();
-    });
-  },
+export const HoverPreviewAutomated: StoryObj = {
+  ...HoverPreviewAutomatedStory,
+  name: 'Hover Preview (Automated)',
 };

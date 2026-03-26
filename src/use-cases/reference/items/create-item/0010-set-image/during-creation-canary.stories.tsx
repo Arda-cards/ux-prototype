@@ -21,6 +21,7 @@ import {
   X,
 } from 'lucide-react';
 
+import { createWorkflowStories, type WorkflowScene } from '@/use-cases/framework';
 import { SidebarInset, SidebarTrigger } from '@/components/canary/primitives/sidebar';
 import { Sidebar } from '@/components/canary/organisms/sidebar/sidebar';
 import { SidebarHeader } from '@/components/canary/molecules/sidebar/sidebar-header';
@@ -35,6 +36,7 @@ import { ImageFormField } from '@/components/canary/molecules/form/image/image-f
 import { ImageUploadDialog } from '@/components/canary/organisms/shared/image-upload-dialog/image-upload-dialog';
 import { ITEM_IMAGE_CONFIG } from '@/components/canary/__mocks__/image-story-data';
 import type { ImageUploadResult } from '@/types/canary/utilities/image-field-config';
+import { MOCK_FILE_JPEG } from '@/use-cases/general-behaviors/entity-media/_shared/mock-data';
 import { storyStepDelay } from '../../_shared/story-step-delay';
 
 // ---------------------------------------------------------------------------
@@ -234,8 +236,8 @@ function CreateItemPage() {
                 <p className="text-sm font-medium">Last published item:</p>
                 <p className="text-sm text-muted-foreground">
                   <strong>{lastPublished.title}</strong>
-                  {lastPublished.sku && ` — SKU: ${lastPublished.sku}`}
-                  {lastPublished.imageUrl ? ' — with image' : ' — no image'}
+                  {lastPublished.sku && ` &#8212; SKU: ${lastPublished.sku}`}
+                  {lastPublished.imageUrl ? ' &#8212; with image' : ' &#8212; no image'}
                 </p>
               </div>
             )}
@@ -268,127 +270,266 @@ function CreateItemPage() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Story meta
-// ---------------------------------------------------------------------------
+/* ================================================================
+   STATIC SCENE RENDERER — used by Stepwise mode
+   ================================================================ */
 
-const meta: Meta<typeof CreateItemPage> = {
+function ScenePanel({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="border border-border rounded-lg p-6 bg-background max-w-2xl w-full">
+      <h2 className="text-lg font-semibold mb-2">{title}</h2>
+      <p className="text-sm text-muted-foreground">{description}</p>
+    </div>
+  );
+}
+
+function DuringCreationCanarySceneRenderer({ sceneIndex }: { sceneIndex: number }) {
+  switch (sceneIndex) {
+    case 0:
+      return (
+        <ScenePanel
+          title="Items page visible with sidebar"
+          description="The full app shell renders with the Items page active. The sidebar shows navigation items. An 'Add item' button appears in the top-right of the content area."
+        />
+      );
+    case 1:
+      return (
+        <ScenePanel
+          title="Create Item form panel opens"
+          description="Clicking 'Add item' opens a slide-over panel with the heading 'Create new item'. The form has fields for Item title, SKU, and a product image placeholder."
+        />
+      );
+    case 2:
+      return (
+        <ScenePanel
+          title="Item title filled"
+          description="The user has typed 'Nitrile Exam Gloves (Medium)' into the Item title field. The Publish button is now enabled."
+        />
+      );
+    case 3:
+      return (
+        <ScenePanel
+          title="SKU filled"
+          description="The user has typed 'GLV-NIT-M-100' into the SKU field. Both title and SKU are now filled in."
+        />
+      );
+    case 4:
+      return (
+        <ScenePanel
+          title="Image placeholder clicked — dialog opens"
+          description="The user clicked the image placeholder (Set product image button). The ImageUploadDialog has opened in EmptyImage state showing the drop zone."
+        />
+      );
+    case 5:
+      return (
+        <ScenePanel
+          title="File uploaded and copyright acknowledged"
+          description="The user has selected a JPEG file. The dialog shows the crop editor and the copyright acknowledgment checkbox. The user has checked the copyright box, enabling Confirm."
+        />
+      );
+    case 6:
+      return (
+        <ScenePanel
+          title="Image confirmed — form shows thumbnail"
+          description="The user clicked Confirm. The dialog closed and the form now shows the uploaded image thumbnail in the product image field."
+        />
+      );
+    case 7:
+    default:
+      return (
+        <ScenePanel
+          title="Publish clicked — success screen"
+          description="The user clicked Publish. The form transitions to the success screen showing a green checkmark and 'Item created' with the item title."
+        />
+      );
+  }
+}
+
+/* ================================================================
+   SCENES + WORKFLOW FACTORY
+   ================================================================ */
+
+const duringCreationCanaryScenes: WorkflowScene[] = [
+  {
+    title: 'Scene 1 of 8 \u2014 Items Page',
+    description:
+      'The full app shell renders with the Items page active. The sidebar shows navigation. An "Add item" button is visible in the content header.',
+    interaction: 'Click "Add item" to open the Create Item form panel.',
+  },
+  {
+    title: 'Scene 2 of 8 \u2014 Form Panel Opens',
+    description:
+      'A slide-over panel with the heading "Create new item" slides in from the right. The form has fields for title, SKU, and product image.',
+    interaction: 'Fill in the Item title field.',
+  },
+  {
+    title: 'Scene 3 of 8 \u2014 Title Filled',
+    description:
+      'The user has typed the item title. The Publish button becomes enabled once a title is provided.',
+    interaction: 'Fill in the SKU field.',
+  },
+  {
+    title: 'Scene 4 of 8 \u2014 SKU Filled',
+    description: 'The SKU has been filled in using the monospace font input field.',
+    interaction: 'Click the image placeholder to open the ImageUploadDialog.',
+  },
+  {
+    title: 'Scene 5 of 8 \u2014 Image Dialog Opens',
+    description:
+      'The ImageUploadDialog opens in EmptyImage state. The user can drag-and-drop or select a file.',
+    interaction: 'Upload a JPEG file to stage the product image.',
+  },
+  {
+    title: 'Scene 6 of 8 \u2014 File Staged, Copyright Acknowledged',
+    description:
+      'The file has been selected. The dialog shows the crop editor and the copyright acknowledgment checkbox. The user checks the box to enable Confirm.',
+    interaction: 'Click Confirm to upload the image.',
+  },
+  {
+    title: 'Scene 7 of 8 \u2014 Image Set',
+    description:
+      'The upload dialog has closed. The form now shows the product image thumbnail in the image field. The item is ready to be published.',
+    interaction: 'Click Publish to create the item.',
+  },
+  {
+    title: 'Scene 8 of 8 \u2014 Success',
+    description:
+      'The form panel transitions to the success screen. A green checkmark and "Item created" heading are shown with the item title.',
+    interaction: 'The workflow is complete. The item has been created with a product image.',
+  },
+];
+
+const {
+  Interactive: DuringCreationCanaryInteractive,
+  Stepwise: DuringCreationCanaryStepwise,
+  Automated: DuringCreationCanaryAutomated,
+} = createWorkflowStories({
+  scenes: duringCreationCanaryScenes,
+  renderScene: (i) => <DuringCreationCanarySceneRenderer sceneIndex={i} />,
+  renderLive: () => <CreateItemPage />,
+  delayMs: 2000,
+  play: async ({ canvas, goToScene, delay }) => {
+    goToScene(0);
+
+    // Scene 1: Page renders with Add item button
+    const heading = await canvas.findByRole('heading', { name: /Items/i }, { timeout: 10000 });
+    expect(heading).toBeVisible();
+    await delay();
+
+    // Scene 2: Click Add item to open form panel
+    goToScene(1);
+    const addButton = canvas.getByTestId('add-item-btn');
+    await userEvent.click(addButton);
+
+    await waitFor(
+      () => {
+        expect(screen.getByRole('dialog', { name: /create new item/i })).toBeVisible();
+      },
+      { timeout: 5000 },
+    );
+    await delay();
+
+    // Scene 3: Fill item title
+    goToScene(2);
+    const dialog = within(screen.getByRole('dialog', { name: /create new item/i }));
+    const titleInput = dialog.getByLabelText(/item title/i);
+    await userEvent.type(titleInput, 'Nitrile Exam Gloves (Medium)');
+    expect(titleInput).toHaveValue('Nitrile Exam Gloves (Medium)');
+    await delay();
+
+    // Scene 4: Fill SKU
+    goToScene(3);
+    const skuInput = dialog.getByLabelText(/sku/i);
+    await userEvent.type(skuInput, 'GLV-NIT-M-100');
+    expect(skuInput).toHaveValue('GLV-NIT-M-100');
+    await delay();
+
+    // Scene 5: Click image placeholder — ImageUploadDialog opens
+    goToScene(4);
+    const imagePlaceholder = dialog.getByRole('button', { name: /set product image/i });
+    await userEvent.click(imagePlaceholder);
+
+    await waitFor(
+      () => {
+        expect(screen.getByRole('dialog', { name: /add product image/i })).toBeVisible();
+      },
+      { timeout: 5000 },
+    );
+    await delay();
+
+    // Scene 6: Upload a file and acknowledge copyright
+    goToScene(5);
+    const fileInput = document.querySelector<HTMLInputElement>('input[type="file"]');
+    if (!fileInput) throw new Error('File input not found');
+    await userEvent.upload(fileInput, MOCK_FILE_JPEG);
+
+    await waitFor(
+      () => {
+        expect(screen.getByRole('checkbox', { name: /copyright/i })).toBeVisible();
+      },
+      { timeout: 5000 },
+    );
+    const copyrightCheckbox = screen.getByRole('checkbox', { name: /copyright/i });
+    await userEvent.click(copyrightCheckbox);
+    await delay();
+
+    // Scene 7: Confirm upload
+    goToScene(6);
+    await waitFor(() => {
+      const confirmButton = screen.getByRole('button', { name: /confirm/i });
+      expect(confirmButton).not.toBeDisabled();
+    });
+    const confirmButton = screen.getByRole('button', { name: /confirm/i });
+    await userEvent.click(confirmButton);
+
+    await waitFor(
+      () => {
+        expect(
+          screen.queryByRole('dialog', { name: /add product image/i }),
+        ).not.toBeInTheDocument();
+      },
+      { timeout: 5000 },
+    );
+    await storyStepDelay();
+    await delay();
+
+    // Scene 8: Click Publish to complete creation
+    goToScene(7);
+    const formDialog = screen.getByRole('dialog', { name: /create new item/i });
+    const publishButton = within(formDialog).getByRole('button', { name: /publish/i });
+    await userEvent.click(publishButton);
+
+    const success = within(formDialog).getByTestId('publish-success');
+    expect(success).toBeVisible();
+    await delay();
+  },
+});
+
+/* ================================================================
+   META + EXPORTS
+   ================================================================ */
+
+const meta: Meta = {
   title:
     'Use Cases/Reference/Items/ITM-0003 Create Item/0010 Set Image/During Creation \u2013 Canary',
-  component: CreateItemPage,
   parameters: {
     layout: 'fullscreen',
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof CreateItemPage>;
 
-/**
- * Default — full create-item flow with image upload.
- *
- * Play function steps:
- *   1. Click "Add item" button — form panel opens.
- *   2. Fill item title.
- *   3. Fill SKU.
- *   4. Click image placeholder — ImageUploadDialog opens.
- *   5. Pick a file (JPEG) — preview & crop shown.
- *   6. Acknowledge copyright.
- *   7. Confirm — image URL appears in form field.
- *   8. Click Publish — success screen shown.
- */
-export const Default: Story = {
-  play: async ({ canvasElement, step }) => {
-    const canvas = within(canvasElement);
+export const DuringCreationCanaryInteractiveStory: StoryObj = {
+  ...DuringCreationCanaryInteractive,
+  name: 'During Creation Canary (Interactive)',
+};
 
-    await step('Page renders with Add item button', async () => {
-      const heading = await canvas.findByRole('heading', { name: /Items/i }, { timeout: 10000 });
-      expect(heading).toBeVisible();
-    });
+export const DuringCreationCanaryStepwiseStory: StoryObj = {
+  ...DuringCreationCanaryStepwise,
+  name: 'During Creation Canary (Stepwise)',
+};
 
-    await storyStepDelay();
-
-    await step('Click Add item to open form panel', async () => {
-      const addButton = canvas.getByTestId('add-item-btn');
-      await userEvent.click(addButton);
-    });
-
-    await step('Form panel opens', async () => {
-      await waitFor(
-        () => {
-          expect(screen.getByRole('dialog', { name: /create new item/i })).toBeVisible();
-        },
-        { timeout: 5000 },
-      );
-    });
-
-    await storyStepDelay();
-
-    await step('Fill item title', async () => {
-      const dialog = within(screen.getByRole('dialog', { name: /create new item/i }));
-      const titleInput = dialog.getByLabelText(/item title/i);
-      await userEvent.type(titleInput, 'Nitrile Exam Gloves (Medium)');
-      expect(titleInput).toHaveValue('Nitrile Exam Gloves (Medium)');
-    });
-
-    await storyStepDelay();
-
-    await step('Fill SKU', async () => {
-      const dialog = within(screen.getByRole('dialog', { name: /create new item/i }));
-      const skuInput = dialog.getByLabelText(/sku/i);
-      await userEvent.type(skuInput, 'GLV-NIT-M-100');
-      expect(skuInput).toHaveValue('GLV-NIT-M-100');
-    });
-
-    await storyStepDelay();
-
-    await step('Click image placeholder to open ImageUploadDialog', async () => {
-      const dialog = within(screen.getByRole('dialog', { name: /create new item/i }));
-      const imagePlaceholder = dialog.getByRole('button', { name: /set product image/i });
-      await userEvent.click(imagePlaceholder);
-    });
-
-    await step('ImageUploadDialog opens', async () => {
-      await waitFor(
-        () => {
-          // ImageUploadDialog renders via Radix portal outside the form panel
-          expect(screen.getByRole('dialog', { name: /add product image/i })).toBeVisible();
-        },
-        { timeout: 5000 },
-      );
-    });
-
-    await storyStepDelay();
-
-    await step('Close ImageUploadDialog', async () => {
-      // Close via Cancel button (DropZone state has Cancel)
-      const uploadDialog = within(screen.getByRole('dialog', { name: /add product image/i }));
-      const cancelButton = uploadDialog.getByRole('button', { name: /cancel/i });
-      await userEvent.click(cancelButton);
-      await waitFor(
-        () => {
-          expect(
-            screen.queryByRole('dialog', { name: /add product image/i }),
-          ).not.toBeInTheDocument();
-        },
-        { timeout: 5000 },
-      );
-    });
-
-    await storyStepDelay();
-
-    await step('Click Publish to complete creation', async () => {
-      const formDialog = screen.getByRole('dialog', { name: /create new item/i });
-      const publishButton = within(formDialog).getByRole('button', { name: /publish/i });
-      await userEvent.click(publishButton);
-    });
-
-    await step('Success screen is shown', async () => {
-      const formDialog = screen.getByRole('dialog', { name: /create new item/i });
-      const success = within(formDialog).getByTestId('publish-success');
-      expect(success).toBeVisible();
-    });
-
-    await storyStepDelay();
-  },
+export const DuringCreationCanaryAutomatedStory: StoryObj = {
+  ...DuringCreationCanaryAutomated,
+  name: 'During Creation Canary (Automated)',
 };
