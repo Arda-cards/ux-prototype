@@ -162,15 +162,15 @@ export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDrop
       // Let react-dropzone process file drops first
       dropzoneOnDrop?.(e as unknown as React.DragEvent<HTMLElement>);
 
-      // If no files in the drop event, check for a URL
+      // If no files in the drop event, check for a URL and fill the text field.
+      // Don't auto-submit — let the user review the URL and click "Go".
       if (e.dataTransfer?.files.length === 0) {
         const url = e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text/plain');
         const trimmed = url?.trim();
-        if (trimmed && trimmed.startsWith('https://')) {
+        if (trimmed) {
           e.preventDefault();
           setError(null);
           setUrlValue(trimmed);
-          onInput({ type: 'url', url: trimmed });
         }
       }
     },
