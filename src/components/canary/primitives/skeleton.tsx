@@ -1,4 +1,4 @@
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 
 function Skeleton({ className, ...props }: React.ComponentProps<'div'>) {
   return (

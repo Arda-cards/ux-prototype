@@ -27,26 +27,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof meta>;
-
-export const Playground: Story = {
-  argTypes: {
-    className: { control: 'text' },
-  },
-  args: {
-    className: 'w-72',
-  },
-  render: (args) => (
-    <InputGroup {...args}>
-      <InputGroupAddon align="inline-start">
-        <InputGroupText>
-          <DollarSign />
-        </InputGroupText>
-      </InputGroupAddon>
-      <InputGroupInput placeholder="0.00" type="number" />
-    </InputGroup>
-  ),
-};
-
 export const Default: Story = {
   render: () => (
     <div className="w-72">
@@ -151,5 +131,24 @@ export const AllVariants: Story = {
         </InputGroup>
       </div>
     </div>
+  ),
+};
+
+export const Playground: Story = {
+  argTypes: {
+    className: { control: 'text' },
+  },
+  args: {
+    className: 'w-72',
+  },
+  render: (args) => (
+    <InputGroup {...args}>
+      <InputGroupAddon align="inline-start">
+        <InputGroupText>
+          <DollarSign />
+        </InputGroupText>
+      </InputGroupAddon>
+      <InputGroupInput placeholder="0.00" type="number" />
+    </InputGroup>
   ),
 };

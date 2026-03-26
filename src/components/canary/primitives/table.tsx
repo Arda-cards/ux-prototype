@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 
 function Table({ className, ...props }: React.ComponentProps<'table'>) {
   return (

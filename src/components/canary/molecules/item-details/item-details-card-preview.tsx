@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useCallback, useMemo } from 'react';
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 
 // --- Interfaces ---

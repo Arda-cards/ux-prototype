@@ -25,23 +25,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof SidebarNavGroup>;
-
-/**
- * Interactive Controls playground — click the group header to expand/collapse.
- * `label` and `defaultExpanded` can be adjusted in the Controls panel.
- */
-export const Playground: Story = {
-  render: () => (
-    <SidebarNav>
-      <SidebarNavGroup label="Inventory" icon={Boxes} defaultExpanded>
-        <SidebarNavItem icon={Package} label="Items" />
-        <SidebarNavItem icon={ShoppingCart} label="Orders" badge={2} />
-      </SidebarNavGroup>
-    </SidebarNav>
-  ),
-};
-
-/** Collapsed by default — click to expand. */
 export const Default: Story = {
   render: () => (
     <SidebarNav>
@@ -84,3 +67,20 @@ export const AutoExpandActive: Story = {
     </SidebarNav>
   ),
 };
+
+/**
+ * Interactive Controls playground — click the group header to expand/collapse.
+ * `label` and `defaultExpanded` can be adjusted in the Controls panel.
+ */
+export const Playground: Story = {
+  render: () => (
+    <SidebarNav>
+      <SidebarNavGroup label="Inventory" icon={Boxes} defaultExpanded>
+        <SidebarNavItem icon={Package} label="Items" />
+        <SidebarNavItem icon={ShoppingCart} label="Orders" badge={2} />
+      </SidebarNavGroup>
+    </SidebarNav>
+  ),
+};
+
+/** Collapsed by default — click to expand. */

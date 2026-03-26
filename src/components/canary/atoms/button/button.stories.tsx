@@ -16,31 +16,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof meta>;
-
-export const Playground: Story = {
-  argTypes: {
-    variant: {
-      control: 'select',
-      options: ['primary', 'secondary', 'ghost', 'destructive', 'outline'],
-    },
-    size: {
-      control: 'select',
-      options: ['sm', 'md', 'lg', 'icon', 'icon-sm'],
-    },
-    loading: { control: 'boolean' },
-    disabled: { control: 'boolean' },
-    children: { control: 'text' },
-    asChild: { table: { disable: true } },
-  },
-  args: {
-    variant: 'primary',
-    size: 'md',
-    loading: false,
-    disabled: false,
-    children: 'Click me',
-  },
-};
-
 export const Primary: Story = {
   args: { children: 'Add item' },
 };
@@ -183,4 +158,28 @@ export const AllSizes: Story = {
       </div>
     </div>
   ),
+};
+
+export const Playground: Story = {
+  argTypes: {
+    variant: {
+      control: 'select',
+      options: ['primary', 'secondary', 'ghost', 'destructive', 'outline'],
+    },
+    size: {
+      control: 'select',
+      options: ['sm', 'md', 'lg', 'icon', 'icon-sm'],
+    },
+    loading: { control: 'boolean' },
+    disabled: { control: 'boolean' },
+    children: { control: 'text' },
+    asChild: { table: { disable: true } },
+  },
+  args: {
+    variant: 'primary',
+    size: 'md',
+    loading: false,
+    disabled: false,
+    children: 'Click me',
+  },
 };

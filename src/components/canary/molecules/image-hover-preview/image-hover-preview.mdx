@@ -1,0 +1,132 @@
+{/* image-hover-preview.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as Stories from './image-hover-preview.stories';
+
+<Meta of={Stories} />
+
+# ImageHoverPreview
+
+Lightweight hover popover that shows a larger image preview after ~500 ms. Wraps any
+trigger element &#8212; typically a thumbnail &#8212; and displays an `ImageDisplay` at ~256&#215;256 inside
+a `Popover`.
+
+**Molecule** &#8212; Canary | Import: `@/components/canary/molecules/image-hover-preview`
+
+---
+
+## Playground
+
+Adjust `imageUrl`, `entityTypeDisplayName`, and `propertyDisplayName` in the Controls panel.
+Hover the thumbnail to trigger the preview.
+
+<Canvas of={Stories.HoverToPreview} />
+
+---
+
+## Baked-In Behaviors
+
+### Hover Delay
+
+The popover does not open immediately on `mouseenter`. Instead, a 500ms `setTimeout` is started. If the pointer leaves the trigger before the timer fires, `clearTimeout` cancels it and the popover never opens. This prevents popover flicker when the user moves the pointer across multiple cells or thumbnails in rapid succession.
+
+On `mouseleave`, the popover is closed immediately with no delay. The cancel/open timer is always cleared on leave regardless of whether it has fired.
+
+### Popover Dimensions and Position
+
+The popover content is sized to 256&#215;256 pixels (`w-64 h-64`). It is positioned with `sideOffset={-4}`, which causes it to overlap the trigger element by 4 pixels. This small overlap eliminates the gap between the trigger boundary and the popover edge &#8212; without it, moving the pointer toward the popover would cross a gap and trigger a `mouseleave` event, closing the popover before the user could read it.
+
+### Null Suppression
+
+When `imageUrl` is `null`, the hover timer is never started and the `Popover` controlled state remains `false`. No preview appears regardless of how long the pointer hovers. This applies both to the initial null state and to any runtime transition from a non-null URL to null &#8212; the timer is cleared when `imageUrl` changes to null.
+
+### Not a Modal
+
+`ImageHoverPreview` uses a `Popover`, not a `Dialog`. There is no focus trap, no backdrop overlay, and no keyboard-dismissible modal. The popover is purely a visual affordance triggered by pointer proximity.
+
+### Focus Prevention
+
+The popover's `onOpenAutoFocus` callback calls `e.preventDefault()`. This prevents the Radix `Popover.Content` from stealing keyboard focus when it opens, which would be disruptive in a grid or form context where the user may be navigating with Tab or arrow keys.
+
+### Timer Cleanup
+
+The hover timer is cleared in three situations:
+
+1. `mouseleave` fires on the trigger element.
+2. The component unmounts (cleanup in `useEffect`).
+3. `imageUrl` changes to null while a timer is pending.
+
+This prevents a stale timer from opening the popover after the component has unmounted or after the URL has been removed.
+
+---
+
+## Error Suppression
+
+When `imageUrl` is `null`, or when the image enters an error state, the popover is suppressed
+entirely &#8212; no preview appears on hover.
+
+<Canvas of={Stories.NoPreviewOnError} />
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Category</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>imageUrl</code></td>
+      <td>Runtime</td>
+      <td><code>string | null</code></td>
+      <td>Required</td>
+      <td>
+        URL of the image to preview. When <code>null</code> the popover is suppressed; no
+        preview shown on hover.
+      </td>
+    </tr>
+    <tr>
+      <td><code>children</code></td>
+      <td>Runtime</td>
+      <td><code>React.ReactNode</code></td>
+      <td>Required</td>
+      <td>Trigger element. Typically a thumbnail or icon button.</td>
+    </tr>
+    <tr>
+      <td><code>entityTypeDisplayName</code></td>
+      <td>Init</td>
+      <td><code>string</code></td>
+      <td>Required</td>
+      <td>
+        Display name of the entity type (e.g. &#8220;Item&#8221;). Passed to
+        <code>ImageDisplay</code> for initials in the placeholder.
+      </td>
+    </tr>
+    <tr>
+      <td><code>propertyDisplayName</code></td>
+      <td>Init</td>
+      <td><code>string</code></td>
+      <td>Required</td>
+      <td>
+        Display name of the image property (e.g. &#8220;Product Image&#8221;). Passed to
+        <code>ImageDisplay</code>.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { ImageHoverPreview } from '@/components/canary/molecules/image-hover-preview';
+// or
+import type { ImageHoverPreviewProps } from '@/components/canary/molecules/image-hover-preview';
+```

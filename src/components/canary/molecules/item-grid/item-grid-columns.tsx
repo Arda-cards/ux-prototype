@@ -5,6 +5,19 @@ import type { Item } from '@/types/extras';
 import { TypeaheadCellEditor, type TypeaheadOption } from './typeahead-cell-editor';
 import { SelectCellEditor } from '../../atoms/grid/select/select-cell-editor';
 import { DragHeader } from './drag-header';
+import { ImageCellDisplay } from '../../atoms/grid/image';
+import type { ImageFieldConfig } from '@/types/canary/utilities/image-field-config';
+
+// --- Local image config (no mock dependency) ---
+
+const ITEM_IMAGE_CONFIG: ImageFieldConfig = {
+  aspectRatio: 1,
+  acceptedFormats: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'],
+  maxFileSizeBytes: 10 * 1024 * 1024,
+  maxDimension: 2048,
+  entityTypeDisplayName: 'Item',
+  propertyDisplayName: 'Product Image',
+};
 
 // --- Shared formatters ---
 
@@ -18,69 +31,6 @@ function formatCurrencyValue(value: unknown): string {
 }
 
 // --- Cell renderers ---
-
-function getInitials(name: string): string {
-  return name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join('')
-    .toUpperCase();
-}
-
-const imgStyle: React.CSSProperties = {
-  width: 28,
-  height: 28,
-  borderRadius: 4,
-  objectFit: 'cover',
-  backgroundColor: 'var(--secondary)',
-};
-
-const fallbackStyle: React.CSSProperties = {
-  width: 28,
-  height: 28,
-  borderRadius: 4,
-  backgroundColor: 'var(--secondary)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  color: 'var(--muted-foreground)',
-  fontSize: 11,
-  fontWeight: 500,
-  letterSpacing: '0.04em',
-};
-
-const cellWrapStyle: React.CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  height: '100%',
-};
-
-function ImageCellRenderer(params: ICellRendererParams<Item>) {
-  if (!params.data) return null;
-  const { imageUrl, name } = params.data;
-
-  const inner = imageUrl
-    ? createElement('img', {
-        src: imageUrl,
-        alt: name,
-        style: imgStyle,
-        onError: (e: React.SyntheticEvent<HTMLImageElement>) => {
-          const target = e.currentTarget;
-          const fallback = document.createElement('div');
-          Object.assign(fallback.style, fallbackStyle);
-          fallback.textContent = getInitials(name);
-          target.replaceWith(fallback);
-        },
-      })
-    : createElement(
-        'div',
-        { style: fallbackStyle, role: 'img', 'aria-label': `${name} thumbnail` },
-        getInitials(name),
-      );
-
-  return createElement('div', { style: cellWrapStyle }, inner);
-}
 
 function NotesCellRenderer(params: ICellRendererParams<Item>) {
   const hasNotes = !!params.data?.notes;
@@ -312,7 +262,8 @@ export function createItemGridColumnDefs(
       sortable: false,
       resizable: false,
       editable: false,
-      cellRenderer: ImageCellRenderer,
+      cellRenderer: ImageCellDisplay,
+      cellRendererParams: { config: ITEM_IMAGE_CONFIG },
     },
     {
       headerName: 'Name',

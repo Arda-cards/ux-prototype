@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 import { Tabs, TabsList, TabsTrigger } from '@/components/canary/primitives/tabs';
 import type { ToolbarAction, OverflowAction } from '../action-toolbar/action-toolbar';
 import { ArdaGridAction } from '../grid-action/grid-action';

@@ -1,5 +1,5 @@
 import { formatTime } from '@/components/extras/atoms/shared/formatters';
-import { getBrowserTimezone } from '@/types/canary/date-time';
+import { getBrowserTimezone } from '@/types/canary/utilities/date-time';
 import { FieldLabel, type FieldLabelProps } from '../field-label';
 
 /** Design-time configuration for time field display. */

@@ -116,27 +116,6 @@ export const MemoButton: Story = {
     );
   },
 };
-
-// ============================================================================
-// Playground
-// ============================================================================
-
-export const Playground: Story = {
-  args: {
-    value: 'A sample memo note for testing the display component.',
-    maxLength: 50,
-    hoverDelay: 500,
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await expect(canvas.getByText(/A sample memo/)).toBeInTheDocument();
-  },
-};
-
-// ============================================================================
-// MemoButton Interactive Test
-// ============================================================================
-
 export const MemoButtonInteraction: Story = {
   render: () => {
     const onSave = fn();
@@ -201,3 +180,23 @@ export const AllVariants: Story = {
     </div>
   ),
 };
+
+// ============================================================================
+// Playground
+// ============================================================================
+
+export const Playground: Story = {
+  args: {
+    value: 'A sample memo note for testing the display component.',
+    maxLength: 50,
+    hoverDelay: 500,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText(/A sample memo/)).toBeInTheDocument();
+  },
+};
+
+// ============================================================================
+// MemoButton Interactive Test
+// ============================================================================

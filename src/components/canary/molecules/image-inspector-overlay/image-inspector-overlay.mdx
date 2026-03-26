@@ -1,0 +1,152 @@
+{/* image-inspector-overlay.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as Stories from './image-inspector-overlay.stories';
+
+<Meta of={Stories} />
+
+# ImageInspectorOverlay
+
+Full-size image modal overlay with an optional Edit button. Supports both controlled and
+uncontrolled usage &#8212; when `open` is provided the caller manages state; when omitted the
+component renders an Eye trigger button and manages its own open state.
+
+**Molecule** &#8212; Canary | Import: `@/components/canary/molecules/image-inspector-overlay`
+
+---
+
+## Playground
+
+Click the button to open the overlay. Use the Controls panel to adjust `imageUrl` and `open`.
+
+<Canvas of={Stories.Playground} />
+
+---
+
+## Baked-In Behaviors
+
+### Controlled Mode
+
+When the `open` prop is provided, `ImageInspectorOverlay` operates as a fully controlled component. The caller is responsible for setting `open` to `true` to show the overlay and responding to `onClose` to hide it. The component never modifies open state internally in this mode.
+
+`onClose` is called in response to all three dismiss methods: Escape key, click-outside (backdrop click), and the X close button. The caller must handle each of these by setting `open` to `false`.
+
+### Uncontrolled Mode
+
+When the `open` prop is **not** provided, the component renders an Eye icon button (`aria-label="Inspect image"`) adjacent to wherever it is placed. Clicking that button opens the overlay. The component manages the boolean open state internally. `onClose` is optional in this mode &#8212; if provided it is called on dismiss in addition to the internal state update.
+
+### Full-Size Image Display
+
+The image inside the overlay is rendered with `max-h-[90vh] object-contain`, ensuring it never overflows the viewport vertically while preserving its native aspect ratio. The image is centered within the dialog content area. On very wide images, the dialog expands horizontally up to its maximum width.
+
+### Dismiss Methods
+
+Three paths close the overlay:
+
+<ul>
+  <li>Press <strong>Escape</strong> &#8212; handled natively by the Radix Dialog primitive</li>
+  <li>Click the <strong>backdrop</strong> (semi-transparent overlay behind the panel) &#8212; also handled by the Dialog primitive's <code>onOpenChange</code></li>
+  <li>Click the <strong>X button</strong> in the top-right corner &#8212; calls <code>onClose</code> directly</li>
+</ul>
+
+All three paths call `onClose` before or as part of closing, so the caller always receives a single notification regardless of which method was used.
+
+### Edit Button
+
+The Edit button appears in the dialog footer only when the `onEdit` prop is provided. When clicked, the component calls `onEdit()` first and then calls `onClose()` to dismiss the overlay. This ordering allows the parent to open an edit dialog (e.g., `ImageUploadDialog`) in the same event cycle, creating a seamless inspect-to-edit transition without a flash of the empty state.
+
+When `onEdit` is `undefined`, no Edit button is rendered and the footer contains only the close button.
+
+### Backdrop
+
+The overlay backdrop is styled with `bg-background/80`, a semi-transparent variant of the page background. This provides visual separation between the overlay content and the page without fully obscuring it.
+
+### Accessibility
+
+- The close button carries `aria-label="Close"`.
+- The uncontrolled Eye trigger button carries `aria-label="Inspect image"`.
+- The Radix Dialog primitive manages focus trapping, `aria-modal`, and `role="dialog"` automatically.
+
+---
+
+## Inspector to Edit
+
+When `onEdit` is provided, an Edit button appears in the footer. Clicking it calls
+`onEdit` and then closes the overlay.
+
+<Canvas of={Stories.WithEditButton} />
+
+---
+
+## Dismiss Methods
+
+Three ways to close the overlay:
+
+<ul>
+  <li>Press <strong>Escape</strong></li>
+  <li>Click the <strong>backdrop</strong> outside the image panel</li>
+  <li>Click the <strong>X button</strong> in the top-right corner</li>
+</ul>
+
+<Canvas of={Stories.DismissMethods} />
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Category</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>imageUrl</code></td>
+      <td>Runtime</td>
+      <td><code>string</code></td>
+      <td>Required</td>
+      <td>URL of the image to display full-size.</td>
+    </tr>
+    <tr>
+      <td><code>open</code></td>
+      <td>Runtime</td>
+      <td><code>boolean | undefined</code></td>
+      <td><code>undefined</code></td>
+      <td>Controlled open state. When provided, the caller manages open/close. When omitted, the component renders an Eye trigger button and manages state internally.</td>
+    </tr>
+    <tr>
+      <td><code>onClose</code></td>
+      <td>Runtime</td>
+      <td><code>() =&#62; void</code></td>
+      <td>Required in controlled mode</td>
+      <td>
+        Called when the overlay should close &#8212; on Escape, click-outside, or close button.
+        In uncontrolled mode this is optional; internal state is always updated.
+      </td>
+    </tr>
+    <tr>
+      <td><code>onEdit</code></td>
+      <td>Runtime</td>
+      <td><code>() =&#62; void | undefined</code></td>
+      <td><code>undefined</code></td>
+      <td>
+        When provided, an Edit button is rendered in the footer. Clicking it calls <code>onEdit</code>
+        then closes the overlay. When <code>undefined</code>, no Edit button appears.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { ImageInspectorOverlay } from '@/components/canary/molecules/image-inspector-overlay';
+// or
+import type { ImageInspectorOverlayProps } from '@/components/canary/molecules/image-inspector-overlay';
+```

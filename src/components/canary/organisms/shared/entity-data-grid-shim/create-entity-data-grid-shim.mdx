@@ -1,0 +1,179 @@
+{/* create-entity-data-grid-shim.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as Stories from './create-entity-data-grid-shim.stories';
+
+<Meta of={Stories} />
+
+# Entity Data Grid Shim
+
+Vendored-compatible wrapper around `createEntityDataGrid` that adds Tier 3b features:
+row actions, double-click handler, active-search empty state, and an extended ref API.
+
+**Organism** &#8212; Canary | Factory: `createEntityDataGridShim<T>(config)` | Import: `@arda-cards/design-system/canary`
+
+---
+
+## Playground
+
+<Canvas of={Stories.Default} />
+
+---
+
+## Purpose
+
+`createEntityDataGridShim` exists as a compatibility layer between the Arda design system&#8217;s
+`createEntityDataGrid` foundation and the vendored frontend application. It accepts the same
+`EntityDataGridConfig<T>` and returns `{ Component }` following the same factory pattern, but
+injects additional runtime props that the vendored app requires.
+
+The shim is intentionally thin &#8212; it delegates all core grid behaviour (editing, search,
+pagination, toolbar) to the base factory and only adds the features listed below.
+
+---
+
+## Baked-In Behaviors
+
+### Row Actions Column
+
+When `enableRowActions` is `true` and a non-empty `rowActions` array is provided, the shim
+appends an `ActionCellRenderer` column pinned to the right. The column is fixed at 48px,
+non-sortable, non-filterable, non-resizable, and non-movable. Each cell renders the action
+icons for that row via the shared `ActionCellRenderer` atom.
+
+When `enableRowActions` is `false` (the default), the column is not injected and the base
+grid&#8217;s column definitions are used unchanged.
+
+<Canvas of={Stories.WithRowActions} />
+
+### Double-Click Handler
+
+The optional `onRowDoubleClicked` prop is forwarded as the base grid&#8217;s `onRowClick` handler.
+When provided, double-clicking a row calls the handler with the full entity object.
+
+### Active-Search Empty State
+
+When `hasActiveSearch` is `true` and `data` is empty, the shim overrides the default empty
+state with a &#8220;No items found&#8221; message. This distinguishes between &#8220;no data exists&#8221; and
+&#8220;data exists but was filtered out by the current search.&#8221;
+
+<Canvas of={Stories.EmptyWithSearch} />
+
+When `hasActiveSearch` is `false` and data is empty, the default empty state from the base
+grid is shown.
+
+<Canvas of={Stories.EmptyWithoutSearch} />
+
+### Extended Ref API
+
+The shim exposes `EntityDataGridShimRef` via `forwardRef`, which extends the base
+`EntityDataGridRef` with four additional methods:
+
+<table>
+  <thead>
+    <tr>
+      <th>Method</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>refreshData()</code></td>
+      <td>Triggers a data refresh (stub &#8212; callers hook into it for server re-fetch).</td>
+    </tr>
+    <tr>
+      <td><code>getSelectedRows()</code></td>
+      <td>Returns the currently selected rows.</td>
+    </tr>
+    <tr>
+      <td><code>selectAll()</code></td>
+      <td>Selects all visible rows.</td>
+    </tr>
+    <tr>
+      <td><code>deselectAll()</code></td>
+      <td>Deselects all rows.</td>
+    </tr>
+  </tbody>
+</table>
+
+All base ref methods (`saveAll`, `discardAll`, `getDirtyRowIds`, `getGridApi`) are delegated
+through to the underlying grid.
+
+---
+
+## Full Featured
+
+All shim features active: row actions, editing, selection tracking, double-click handler.
+
+<Canvas of={Stories.FullFeatured} />
+
+---
+
+## With Pagination
+
+Server-driven pagination with page controls.
+
+<Canvas of={Stories.WithPagination} />
+
+---
+
+## Props
+
+### Factory Config
+
+`createEntityDataGridShim<T>(config)` accepts the same `EntityDataGridConfig<T>` as the base
+factory: `displayName`, `persistenceKeyPrefix`, `columnDefs`, `defaultColDef`, and `getEntityId`.
+
+### Runtime Props (Tier 3b Extensions)
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enableRowActions</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Inject <code>ActionCellRenderer</code> as a pinned-right column.</td>
+    </tr>
+    <tr>
+      <td><code>rowActions</code></td>
+      <td><code>RowAction&#60;T&#62;[]</code></td>
+      <td>&#8212;</td>
+      <td>Actions to display per row. Requires <code>enableRowActions: true</code>.</td>
+    </tr>
+    <tr>
+      <td><code>onRowDoubleClicked</code></td>
+      <td><code>(entity: T) =&#62; void</code></td>
+      <td>&#8212;</td>
+      <td>Called when a row is double-clicked.</td>
+    </tr>
+    <tr>
+      <td><code>hasActiveSearch</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>When true and data is empty, shows &#8220;No items found&#8221; instead of default empty state.</td>
+    </tr>
+  </tbody>
+</table>
+
+All base `EntityDataGridProps<T>` (`data`, `loading`, `activeTab`, `enableCellEditing`,
+`onRowPublish`, `onDirtyChange`, pagination props, etc.) are forwarded unchanged.
+
+---
+
+## Import
+
+```tsx
+import { createEntityDataGridShim } from '@arda-cards/design-system/canary';
+import type {
+  EntityDataGridShimProps,
+  EntityDataGridShimRef,
+  RowAction,
+} from '@arda-cards/design-system/canary';
+```

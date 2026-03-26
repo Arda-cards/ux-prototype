@@ -42,16 +42,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof ReadOnlyField>;
-
-export const Playground: Story = {
-  args: {
-    label: 'SKU',
-    value: 'ITEM-001-A',
-    variant: 'default',
-  },
-};
-
-/** Default rendering with a label and value. */
 export const Default: Story = {
   args: { label: 'SKU', value: 'ITEM-001-A' },
   play: async ({ canvasElement }) => {
@@ -144,3 +134,13 @@ export const AllVariants: Story = {
     </div>
   ),
 };
+
+export const Playground: Story = {
+  args: {
+    label: 'SKU',
+    value: 'ITEM-001-A',
+    variant: 'default',
+  },
+};
+
+/** Default rendering with a label and value. */

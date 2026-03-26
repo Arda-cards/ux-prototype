@@ -83,25 +83,6 @@ export const Editor: Story = {
     );
   },
 };
-
-// ============================================================================
-// Playground
-// ============================================================================
-
-export const Playground: Story = {
-  args: {
-    value: '2024-03-15',
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await expect(canvas.getByText('03/15/2024')).toBeInTheDocument();
-  },
-};
-
-// ============================================================================
-// AllVariants
-// ============================================================================
-
 export const AllVariants: Story = {
   parameters: { layout: 'padded' },
   render: () => (
@@ -135,3 +116,21 @@ export const AllVariants: Story = {
 };
 
 void fn;
+
+// ============================================================================
+// Playground
+// ============================================================================
+
+export const Playground: Story = {
+  args: {
+    value: '2024-03-15',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('03/15/2024')).toBeInTheDocument();
+  },
+};
+
+// ============================================================================
+// AllVariants
+// ============================================================================

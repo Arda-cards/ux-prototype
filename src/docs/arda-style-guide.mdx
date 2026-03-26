@@ -816,7 +816,64 @@ export interface ArdaComponentProps
 <a className="flex items-center gap-3 rounded-md border-l-2 border-[#FC5A29] bg-white/10 px-3 py-2 text-sm font-medium text-white">
 ```
 
-### 8.6 Brand Assets
+### 8.6 Interaction Patterns
+
+{/* agent-discovery: focus-ring, disabled-state, progress-bar — canonical Tailwind patterns for canary library interactive elements */}
+
+#### 8.6.1 Focus Ring Standard
+
+**Pattern:** `focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none`
+
+The canonical focus indicator applied to all interactive elements in the canary library. Ensures keyboard users see a visible ring on Tab focus without affecting mouse users.
+
+**Existing usage:** `atoms/button/button.tsx`, `primitives/input.tsx`, `atoms/dialog/dialog.tsx`, `atoms/grid/boolean/boolean-cell-editor.tsx`, `molecules/grid-action/grid-action.tsx`, all image upload components.
+
+```tsx
+<button
+  className="px-4 py-2 rounded-md bg-primary text-primary-foreground
+    focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+>
+  Save
+</button>
+```
+
+#### 8.6.2 Disabled State Standard
+
+**Pattern:** `disabled:pointer-events-none disabled:opacity-50`
+
+The universal disabled pattern for all disableable elements. Prevents interaction and provides a consistent visual dimming.
+
+**Existing usage:** `primitives/button.tsx`, `atoms/button/button.tsx`, `molecules/grid-action/grid-action.tsx`, `primitives/tabs.tsx`, `ImageUploadDialog`, `ImageFormField`.
+
+```tsx
+<button
+  disabled
+  className="px-4 py-2 rounded-md bg-primary text-primary-foreground
+    disabled:pointer-events-none disabled:opacity-50"
+>
+  Confirm
+</button>
+```
+
+#### 8.6.3 Progress Bar Token Mapping
+
+**Pattern:** `bg-primary` (fill) on `bg-border` (track)
+
+Token mapping for progress indicators. The fill uses the primary brand color; the track uses the border color for sufficient contrast against both light and dark backgrounds.
+
+**First instance:** `ImageUploadDialog` upload progress indicator.
+
+```tsx
+{/* Using the Progress primitive */}
+<Progress value={65} />
+
+{/* Manual equivalent */}
+<div className="h-1.5 w-full rounded-full bg-border">
+  <div className="h-full rounded-full bg-primary" style={{ width: '65%' }} />
+</div>
+```
+
+### 8.7 Brand Assets
 
 Located at `public/images/`:
 

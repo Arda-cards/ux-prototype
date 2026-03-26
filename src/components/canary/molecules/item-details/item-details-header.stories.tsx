@@ -30,6 +30,48 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof ItemDetailsHeader>;
+export const Default: Story = {
+  render: () => {
+    const [tab, setTab] = useState('details');
+    return (
+      <div className="w-[460px] border rounded-lg p-4 bg-background">
+        <ItemDetailsHeader
+          activeTab={tab}
+          onTabChange={setTab}
+          tabs={defaultTabs}
+          actions={defaultActions}
+          overflowActions={defaultOverflow}
+        />
+      </div>
+    );
+  },
+};
+
+/** Tabs only — no action grid (e.g., on the cards tab). */
+export const TabsOnly: Story = {
+  render: () => {
+    const [tab, setTab] = useState('cards');
+    return (
+      <div className="w-[460px] border rounded-lg p-4 bg-background">
+        <ItemDetailsHeader activeTab={tab} onTabChange={setTab} tabs={defaultTabs} />
+      </div>
+    );
+  },
+};
+
+/** Actions only — no tabs. */
+export const ActionsOnly: Story = {
+  render: () => (
+    <div className="w-[460px] border rounded-lg p-4 bg-background">
+      <ItemDetailsHeader
+        activeTab="details"
+        onTabChange={() => {}}
+        tabs={[]}
+        actions={defaultActions.slice(0, 3)}
+      />
+    </div>
+  ),
+};
 
 /**
  * Interactive Controls playground — the tab and actions props are complex
@@ -82,45 +124,3 @@ const defaultOverflow = [
 ];
 
 /** Full header with tabs and action grid. */
-export const Default: Story = {
-  render: () => {
-    const [tab, setTab] = useState('details');
-    return (
-      <div className="w-[460px] border rounded-lg p-4 bg-background">
-        <ItemDetailsHeader
-          activeTab={tab}
-          onTabChange={setTab}
-          tabs={defaultTabs}
-          actions={defaultActions}
-          overflowActions={defaultOverflow}
-        />
-      </div>
-    );
-  },
-};
-
-/** Tabs only — no action grid (e.g., on the cards tab). */
-export const TabsOnly: Story = {
-  render: () => {
-    const [tab, setTab] = useState('cards');
-    return (
-      <div className="w-[460px] border rounded-lg p-4 bg-background">
-        <ItemDetailsHeader activeTab={tab} onTabChange={setTab} tabs={defaultTabs} />
-      </div>
-    );
-  },
-};
-
-/** Actions only — no tabs. */
-export const ActionsOnly: Story = {
-  render: () => (
-    <div className="w-[460px] border rounded-lg p-4 bg-background">
-      <ItemDetailsHeader
-        activeTab="details"
-        onTabChange={() => {}}
-        tabs={[]}
-        actions={defaultActions.slice(0, 3)}
-      />
-    </div>
-  ),
-};

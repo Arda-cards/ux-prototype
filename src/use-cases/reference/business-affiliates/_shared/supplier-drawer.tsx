@@ -25,7 +25,7 @@ import {
   CollapsibleContent,
 } from '@frontend/components/ui/collapsible';
 import { Button } from '@frontend/components/ui/button';
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 import type { BusinessAffiliateWithRoles } from './types';
 
 // ---------------------------------------------------------------------------

@@ -670,29 +670,47 @@ export function UseCaseShell({
 }
 
 /* ================================================================
-   VIEWERS (internal — used by createUseCaseStories)
+   GENERIC WORKFLOW TYPES
    ================================================================ */
 
-function StepwiseViewer<T extends object>({
+/** A generic scene — any workflow (wizard, dialog, component interaction). */
+export interface WorkflowScene extends GuideEntry {}
+
+/** Configuration for the generic `createWorkflowStories` factory. */
+export interface WorkflowConfig {
+  /** Scenes with title/description/interaction annotations. */
+  scenes: WorkflowScene[];
+  /** Render a static snapshot for the given scene index (Stepwise mode). */
+  renderScene: (sceneIndex: number) => React.ReactNode;
+  /** Render the live interactive component (Interactive and Automated modes). */
+  renderLive: () => React.ReactNode;
+  /** Delay between automated steps in ms (default 2000). */
+  delayMs?: number;
+  /** Max width for the viewer container (default 560). */
+  maxWidth?: number;
+  /** Play function that drives the Automated story. */
+  play: (ctx: PlayContext) => Promise<void>;
+}
+
+/* ================================================================
+   GENERIC VIEWERS (used by createWorkflowStories)
+   ================================================================ */
+
+function GenericStepwiseViewer({
   scenes,
-  Wizard,
+  renderScene,
+  maxWidth = 560,
 }: {
-  scenes: Scene<T>[];
-  Wizard: React.ComponentType<WizardProps<T>>;
+  scenes: WorkflowScene[];
+  renderScene: (sceneIndex: number) => React.ReactNode;
+  maxWidth?: number;
 }) {
   const [sceneIndex, setSceneIndex] = useState(0);
-  const scene = scenes[sceneIndex] as Scene<T>;
+  const scene = scenes[sceneIndex] as WorkflowScene;
 
   return (
-    <div style={{ maxWidth: 560, margin: '0 auto' }}>
-      <div style={{ pointerEvents: 'none', opacity: 0.95 }}>
-        <Wizard
-          key={sceneIndex}
-          initialStep={scene.wizardStep}
-          initialFormData={scene.formData}
-          initialSubmitted={scene.submitted}
-        />
-      </div>
+    <div style={{ maxWidth, margin: '0 auto' }}>
+      <div style={{ pointerEvents: 'none', opacity: 0.95 }}>{renderScene(sceneIndex)}</div>
       <div style={{ marginTop: 16 }}>
         <GuidePanel guide={scene} />
       </div>
@@ -709,12 +727,14 @@ function StepwiseViewer<T extends object>({
   );
 }
 
-function AutomatedViewer<T extends object>({
+function GenericAutomatedViewer({
   scenes,
-  Wizard,
+  renderLive,
+  maxWidth = 560,
 }: {
-  scenes: Scene<T>[];
-  Wizard: React.ComponentType<WizardProps<T>>;
+  scenes: WorkflowScene[];
+  renderLive: () => React.ReactNode;
+  maxWidth?: number;
 }) {
   const [sceneIndex, setSceneIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -729,15 +749,11 @@ function AutomatedViewer<T extends object>({
     return () => el.removeEventListener('scene-change', handler);
   }, []);
 
-  const scene = scenes[sceneIndex] as Scene<T>;
+  const scene = scenes[sceneIndex] as WorkflowScene;
 
   return (
-    <div
-      ref={containerRef}
-      data-testid="automated-viewer"
-      style={{ maxWidth: 560, margin: '0 auto' }}
-    >
-      <Wizard />
+    <div ref={containerRef} data-testid="automated-viewer" style={{ maxWidth, margin: '0 auto' }}>
+      {renderLive()}
       <div style={{ marginTop: 16 }}>
         <GuidePanel guide={scene} />
       </div>
@@ -746,9 +762,114 @@ function AutomatedViewer<T extends object>({
 }
 
 /* ================================================================
-   FACTORY — createUseCaseStories
+   GENERIC FACTORY — createWorkflowStories
    ================================================================ */
 
+/**
+ * Generic factory for any multi-step workflow story (wizard, dialog, component
+ * interaction). Returns Interactive, Stepwise, and Automated story variants.
+ *
+ * - **Interactive**: renders the live component for manual exploration.
+ * - **Stepwise**: renders static snapshots with Previous/Next navigation and
+ *   scene annotations.
+ * - **Automated**: renders the live component with a `play` function that
+ *   drives the interaction and updates the annotation panel via custom events.
+ */
+export function createWorkflowStories(config: WorkflowConfig): {
+  Interactive: StoryObj;
+  Stepwise: StoryObj;
+  Automated: StoryObj;
+} {
+  const { maxWidth } = config;
+
+  const Interactive: StoryObj = {
+    render: () => <>{config.renderLive()}</>,
+  };
+
+  const stepwiseMaxWidth = maxWidth ?? 560;
+
+  const Stepwise: StoryObj = {
+    render: () => (
+      <GenericStepwiseViewer
+        scenes={config.scenes}
+        renderScene={config.renderScene}
+        maxWidth={stepwiseMaxWidth}
+      />
+    ),
+  };
+
+  const delayMs = config.delayMs ?? 2000;
+
+  const Automated: StoryObj = {
+    render: () => (
+      <GenericAutomatedViewer
+        scenes={config.scenes}
+        renderLive={config.renderLive}
+        maxWidth={stepwiseMaxWidth}
+      />
+    ),
+    play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+      const canvas = within(canvasElement);
+      const delay = () => new Promise<void>((r) => setTimeout(r, delayMs));
+      const viewer = canvas.getByTestId('automated-viewer');
+      const goToScene = (index: number) => {
+        viewer.dispatchEvent(new CustomEvent('scene-change', { detail: index }));
+      };
+      await config.play({ canvas, goToScene, delay });
+    },
+  };
+
+  return { Interactive, Stepwise, Automated };
+}
+
+/* ================================================================
+   WIZARD-SPECIFIC VIEWERS (backward-compatible wrappers)
+   ================================================================ */
+
+function StepwiseViewer<T extends object>({
+  scenes,
+  Wizard,
+}: {
+  scenes: Scene<T>[];
+  Wizard: React.ComponentType<WizardProps<T>>;
+}) {
+  return (
+    <GenericStepwiseViewer
+      scenes={scenes}
+      renderScene={(i) => {
+        const scene = scenes[i] as Scene<T>;
+        return (
+          <Wizard
+            key={i}
+            initialStep={scene.wizardStep}
+            initialFormData={scene.formData}
+            initialSubmitted={scene.submitted}
+          />
+        );
+      }}
+    />
+  );
+}
+
+function AutomatedViewer<T extends object>({
+  scenes,
+  Wizard,
+}: {
+  scenes: Scene<T>[];
+  Wizard: React.ComponentType<WizardProps<T>>;
+}) {
+  return <GenericAutomatedViewer scenes={scenes} renderLive={() => <Wizard />} />;
+}
+
+/* ================================================================
+   WIZARD-SPECIFIC FACTORY — createUseCaseStories
+   ================================================================ */
+
+/**
+ * Wizard-specific factory built on `createWorkflowStories`. Accepts
+ * `WizardProps<T>`-compatible components and `Scene<T>` snapshots.
+ * Returns Interactive, Stepwise, and Automated story variants.
+ */
 export function createUseCaseStories<T extends object>(
   config: UseCaseConfig<T>,
 ): { Interactive: StoryObj; Stepwise: StoryObj; Automated: StoryObj } {

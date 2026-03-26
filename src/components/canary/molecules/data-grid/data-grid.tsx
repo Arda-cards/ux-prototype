@@ -24,7 +24,7 @@ import {
   type RowClassParams,
 } from 'ag-grid-community';
 import '@/styles/canary/ag-theme-arda.css';
-import type { PaginationData } from '@/types/canary/pagination';
+import type { PaginationData } from '@/types/canary/utilities/pagination';
 import { useColumnPersistence } from './use-column-persistence';
 import { SortMenuHeader } from './sort-menu-header';
 
@@ -77,7 +77,7 @@ const dataGridColorVars: React.CSSProperties = {
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 // Re-export PaginationData from the canonical canary location
-export type { PaginationData } from '@/types/canary/pagination';
+export type { PaginationData } from '@/types/canary/utilities/pagination';
 
 export interface DataGridStaticConfig<T = Record<string, any>> {
   /* --- Model / Data Binding --- */
@@ -479,7 +479,7 @@ export const DataGrid = forwardRef(
       ...(enableCellEditing
         ? {
             singleClickEdit: false,
-            stopEditingWhenCellsLoseFocus: true,
+            stopEditingWhenCellsLoseFocus: false,
             enterNavigatesVertically: true,
             enterNavigatesVerticallyAfterEdit: true,
           }

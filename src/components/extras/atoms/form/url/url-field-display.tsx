@@ -1,6 +1,6 @@
 import { ExternalLink } from 'lucide-react';
 import { formatUrl } from '@/components/extras/atoms/shared/formatters';
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 import { FieldLabel, type FieldLabelProps } from '../field-label';
 
 /** Design-time configuration for URL field display. */

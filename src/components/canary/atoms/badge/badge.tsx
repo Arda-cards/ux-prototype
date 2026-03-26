@@ -1,4 +1,4 @@
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 import { Badge as BadgeBase, badgeVariants } from './badge-base';
 import type { VariantProps } from 'class-variance-authority';
 

@@ -18,6 +18,69 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.2.0] - 2026-03-25
+
+### Added
+
+- Generalized use-case story framework: `createWorkflowStories` factory accepts generic
+  `renderScene`/`renderLive` callbacks, enabling any multi-step workflow (dialog flows,
+  component interactions) to produce Interactive/Stepwise/Automated story variants
+- ImageDisplay edit-flow stories: Interactive, Stepwise (8-scene walkthrough), and Automated
+  (play-function-driven animation through the full edit-upload workflow)
+- Entity Data Grid Shim MDX documentation
+
+### Fixed
+
+- ImageDropZone: `handlePaste` no longer intercepts text paste events targeting the URL input;
+  lets native paste + onChange handle URL text normally
+- ImageDropZone: `handleDrop` parses `text/uri-list` per RFC 2483 and auto-submits valid HTTPS
+  URLs from browser drag-and-drop
+- ImageDropZone: Go button changed from `secondary` to `primary` variant for clear visual
+  distinction between enabled and disabled states
+- ImageDropZone MDX updated with clipboard paste, URL drag-from-browser, and Go button
+  documentation
+- Entity Data Grid Kitchen Sink story title flattened to prevent folder icon in sidebar
+
+## [4.1.0] - 2026-03-24
+
+### Added
+
+- Image upload component suite: 19 components across 6 tiers (utilities, primitives, atoms,
+  molecules, organisms) implementing the Entity Media Management use cases (`GEN::MEDIA::0001`,
+  `0002`, `0003`)
+- New utilities: `getInitials` (extracted from item-grid-columns), `getCroppedImage` (canvas helper),
+  `ImageFieldConfig` and related types (`ImageMimeType`, `ImageInput`, `ImageUploadResult`,
+  `CropData`, `PixelCrop`)
+- New ShadCN primitives: alert-dialog, checkbox, popover, progress, slider, aspect-ratio
+- New atoms: `CopyrightAcknowledgment` (mandatory checkbox for image ownership confirmation),
+  `ImageCellDisplay` (AG Grid cell renderer), `ImageCellEditor` with `createImageCellEditor` factory
+- New molecules: `ImageDisplay` (foundational rendering with loaded/loading/error/no-image states),
+  `ImageDropZone` (unified input surface: drag-drop, file picker, URL entry, paste),
+  `ImagePreviewEditor` (crop/zoom/rotate/pan with react-easy-crop),
+  `ImageHoverPreview` (500ms delay popover), `ImageInspectorOverlay` (full-size modal),
+  `ImageComparisonLayout` (responsive desktop side-by-side / mobile tabs),
+  `ImageFormField` (form field renderer with hover action icons and remove confirmation)
+- New organism: `ImageUploadDialog` (state machine orchestrator: EmptyImage, ProvidedImage,
+  FailedValidation, Uploading, Warn states with mock presigned-POST upload)
+- Modified atoms: `Badge` error-overlay variant, `Avatar` entityName prop with auto-computed initials
+- Modified molecules: `item-grid-columns` replaced inline `ImageCellRenderer` with `ImageCellDisplay`
+- New dependencies: react-easy-crop, browser-image-compression, heic2any (lazy-loaded)
+- MDX documentation for all new components, form guide, and updated primitives index
+- Storybook `src/types/**/*.mdx` glob for utilities documentation
+- Barrel exports in `canary.ts` for all new components, types, and utilities
+- 112 new unit tests (96 test files / 1159 total tests)
+- 76 new Storybook stories across 15 story files
+
+### Fixed
+
+- `src/types/canary/` restructured: `utils.ts`, `pagination.ts`, `date-time.ts` moved into
+  `utilities/` subdirectory with barrel re-export (116 import paths updated)
+- Primitives MDX: standalone `Meta title` (now appears in sidebar); added 6 new primitives to table
+- Tabs primitive: `data-horizontal:flex-col` replaced with `data-[orientation=horizontal]:flex-col`
+  (selector never matched because Radix sets `data-orientation="horizontal"`, not `data-horizontal`)
+- Slider primitive: track height made unconditional (`h-1.5` instead of
+  `data-[orientation=horizontal]:h-1.5`) so the track line is always visible
+
 ## [4.0.1] - 2026-03-24
 
 ### Fixed

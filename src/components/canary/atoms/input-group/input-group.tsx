@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 import { Button } from '@/components/canary/primitives/button';
 import { Input } from '@/components/canary/primitives/input';
 import { Textarea } from '@/components/canary/primitives/textarea';

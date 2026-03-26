@@ -27,46 +27,6 @@ const defaultActions = [
 ];
 
 const defaultButtonActions = [{ key: 'scan', icon: ScanBarcode, label: 'Scan' }];
-
-/**
- * Interactive Controls playground — use the Controls panel to toggle
- * `showSearch`. `actions` and `buttonActions` are complex arrays pre-populated
- * here. Search is wired to local state.
- */
-export const Playground: Story = {
-  argTypes: {
-    showSearch: {
-      control: 'boolean',
-      description: 'Show the search input',
-    },
-    searchPlaceholder: {
-      control: 'text',
-      description: 'Search input placeholder text',
-    },
-  },
-  args: {
-    showSearch: true,
-    searchPlaceholder: 'Search\u2026',
-    actions: defaultActions,
-    buttonActions: defaultButtonActions,
-  },
-  render: (args) => {
-    const [search, setSearch] = useState('');
-    return (
-      <AppHeader
-        actions={args.actions ?? defaultActions}
-        buttonActions={args.buttonActions ?? defaultButtonActions}
-        searchValue={search}
-        onSearchChange={setSearch}
-        {...(args.showSearch !== undefined ? { showSearch: args.showSearch } : {})}
-        {...(args.searchPlaceholder !== undefined
-          ? { searchPlaceholder: args.searchPlaceholder }
-          : {})}
-      />
-    );
-  },
-};
-
 export const Default: Story = {
   args: {
     actions: defaultActions,
@@ -149,6 +109,45 @@ export const Composition: Story = {
           <p className="text-muted-foreground">Page content goes here</p>
         </div>
       </div>
+    );
+  },
+};
+
+/**
+ * Interactive Controls playground — use the Controls panel to toggle
+ * `showSearch`. `actions` and `buttonActions` are complex arrays pre-populated
+ * here. Search is wired to local state.
+ */
+export const Playground: Story = {
+  argTypes: {
+    showSearch: {
+      control: 'boolean',
+      description: 'Show the search input',
+    },
+    searchPlaceholder: {
+      control: 'text',
+      description: 'Search input placeholder text',
+    },
+  },
+  args: {
+    showSearch: true,
+    searchPlaceholder: 'Search\u2026',
+    actions: defaultActions,
+    buttonActions: defaultButtonActions,
+  },
+  render: (args) => {
+    const [search, setSearch] = useState('');
+    return (
+      <AppHeader
+        actions={args.actions ?? defaultActions}
+        buttonActions={args.buttonActions ?? defaultButtonActions}
+        searchValue={search}
+        onSearchChange={setSearch}
+        {...(args.showSearch !== undefined ? { showSearch: args.showSearch } : {})}
+        {...(args.searchPlaceholder !== undefined
+          ? { searchPlaceholder: args.searchPlaceholder }
+          : {})}
+      />
     );
   },
 };

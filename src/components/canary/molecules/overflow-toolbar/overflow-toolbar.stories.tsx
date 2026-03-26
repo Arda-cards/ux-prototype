@@ -31,42 +31,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof OverflowToolbar>;
-
-/**
- * Interactive Controls playground — OverflowToolbar accepts children, so the
- * Playground pre-populates a representative set of buttons. Resize the canvas
- * to see the overflow behavior.
- */
-export const Playground: Story = {
-  render: () => (
-    <OverflowToolbar>
-      <Button
-        variant="outline"
-        size="sm"
-        data-overflow-label="Print"
-        onClick={() => console.log('Print')}
-      >
-        <Printer className="mr-1.5 h-4 w-4" />
-        Print cards
-      </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        data-overflow-label="Download"
-        onClick={() => console.log('Download')}
-      >
-        <Download className="mr-1.5 h-4 w-4" />
-        Export
-      </Button>
-      <Button size="sm" data-overflow-label="Add item" onClick={() => console.log('Add')}>
-        <Plus className="mr-1.5 h-4 w-4" />
-        Add item
-      </Button>
-    </OverflowToolbar>
-  ),
-};
-
-/** All buttons fit — no overflow menu shown. */
 export const Default: Story = {
   render: () => (
     <OverflowToolbar>
@@ -214,3 +178,39 @@ export const Constrained: Story = {
     </div>
   ),
 };
+
+/**
+ * Interactive Controls playground — OverflowToolbar accepts children, so the
+ * Playground pre-populates a representative set of buttons. Resize the canvas
+ * to see the overflow behavior.
+ */
+export const Playground: Story = {
+  render: () => (
+    <OverflowToolbar>
+      <Button
+        variant="outline"
+        size="sm"
+        data-overflow-label="Print"
+        onClick={() => console.log('Print')}
+      >
+        <Printer className="mr-1.5 h-4 w-4" />
+        Print cards
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        data-overflow-label="Download"
+        onClick={() => console.log('Download')}
+      >
+        <Download className="mr-1.5 h-4 w-4" />
+        Export
+      </Button>
+      <Button size="sm" data-overflow-label="Add item" onClick={() => console.log('Add')}>
+        <Plus className="mr-1.5 h-4 w-4" />
+        Add item
+      </Button>
+    </OverflowToolbar>
+  ),
+};
+
+/** All buttons fit — no overflow menu shown. */

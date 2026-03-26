@@ -106,26 +106,6 @@ export const Editor: Story = {
     );
   },
 };
-
-// ============================================================================
-// Playground
-// ============================================================================
-
-export const Playground: Story = {
-  args: {
-    value: 42,
-    precision: 0,
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await expect(canvas.getByText('42')).toBeInTheDocument();
-  },
-};
-
-// ============================================================================
-// AllVariants
-// ============================================================================
-
 export const AllVariants: Story = {
   parameters: { layout: 'padded' },
   render: () => (
@@ -169,3 +149,22 @@ export const AllVariants: Story = {
     </div>
   ),
 };
+
+// ============================================================================
+// Playground
+// ============================================================================
+
+export const Playground: Story = {
+  args: {
+    value: 42,
+    precision: 0,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('42')).toBeInTheDocument();
+  },
+};
+
+// ============================================================================
+// AllVariants
+// ============================================================================

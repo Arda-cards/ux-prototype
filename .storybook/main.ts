@@ -17,6 +17,7 @@ const config: StorybookConfig = {
     '../src/docs/**/*.stories.@(ts|tsx)',
     '../src/components/**/*.mdx',
     '../src/components/**/*.stories.@(ts|tsx)',
+    '../src/types/**/*.mdx',
     '../src/visual-elements/**/*.stories.@(ts|tsx|mdx)',
     '../src/dev-witness/**/*.mdx',
     '../src/dev-witness/**/*.stories.@(ts|tsx)',

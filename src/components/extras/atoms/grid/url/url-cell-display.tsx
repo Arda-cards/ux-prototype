@@ -1,6 +1,6 @@
 import { ExternalLink } from 'lucide-react';
 import { formatUrl } from '@/components/extras/atoms/shared/formatters';
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 
 /** Design-time configuration for URL cell display. */
 export interface UrlCellDisplayStaticConfig {

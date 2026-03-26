@@ -1,0 +1,206 @@
+{/* image-comparison-layout.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as Stories from './image-comparison-layout.stories';
+
+<Meta of={Stories} />
+
+# ImageComparisonLayout
+
+Responsive molecule for comparing an existing image against a new one. On desktop the two
+panels sit side-by-side; on mobile they collapse into a two-tab interface.
+
+**Molecule** &#8212; Canary | Import: `@/components/canary/molecules/image-comparison-layout`
+
+---
+
+## Overview
+
+`ImageComparisonLayout` wraps the left "Current" panel (an `ImageDisplay`) and the right "New"
+panel (caller-supplied `children`, typically an `ImagePreviewEditor`). The layout responds to
+the viewport:
+
+- **Desktop (md: and above)** &#8212; flex-row. Left panel is a fixed-width reference thumbnail
+  with a `border-r` divider. Right panel expands to fill the remaining space.
+- **Mobile (below md:)** &#8212; `Tabs` component with "Current" and "New" triggers. Defaults to
+  the "New" tab so the user immediately sees the upload area.
+
+When `existingImageUrl` is `null` the component passes through directly to `children` with no
+comparison chrome &#8212; useful for new-record forms where no existing image exists yet.
+
+---
+
+## Baked-In Behaviors
+
+### Pass-Through Mode
+
+When `existingImageUrl` is `null`, the component renders only `children` with no layout wrapper, no labels, no tabs, and no action footer. This mode is intended for new-record contexts where there is no existing image to compare against.
+
+### Desktop Side-by-Side Layout
+
+At the `md:` breakpoint and wider, the layout uses a flex row with two panels:
+
+- **Left panel (Current)**: A read-only `ImageDisplay` showing the existing image. No `onImageChange` or `config` is passed, so the display renders as a passive `<div>` with no interaction handlers. The panel is labeled "Current" in `text-muted-foreground text-sm` above the image.
+- **Right panel (New)**: The `children` prop, rendered in the remaining space. Labeled "New" in the same style.
+
+A vertical `border-r` divider separates the two panels.
+
+### Mobile Tabs Layout
+
+Below the `md:` breakpoint, the two panels are presented inside a Radix `Tabs` component. The tabs have `defaultValue="new"`, meaning the "New" tab is active when the dialog first opens on mobile. This ensures the user immediately sees the upload or editor surface rather than the read-only current image.
+
+Switching to the "Current" tab shows the read-only `ImageDisplay` of the existing image. Tabs are labeled "Current" and "New".
+
+### Current Image Read-Only Guarantee
+
+The `ImageDisplay` used for the "Current" panel is always instantiated without `onImageChange` or `config`. This is a structural guarantee &#8212; even if the parent provides these props to `ImageComparisonLayout`, they are never forwarded to the current image display. The current image can never be clicked or edited through this component.
+
+### Action Footer
+
+When any of `onAccept`, `onDismiss`, or `onUploadNew` is provided, an action footer is rendered below the comparison panels. Each button appears only when its corresponding prop is present:
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Button label</th>
+      <th>Variant</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>onAccept</code></td>
+      <td>Accept</td>
+      <td>Primary</td>
+      <td>Confirms the new image and propagates the change</td>
+    </tr>
+    <tr>
+      <td><code>onDismiss</code></td>
+      <td>Dismiss</td>
+      <td>Secondary (outline)</td>
+      <td>Discards the staged image and returns to the previous state</td>
+    </tr>
+    <tr>
+      <td><code>onUploadNew</code></td>
+      <td>Upload New Image</td>
+      <td>Secondary (outline)</td>
+      <td>Navigates the parent dialog back to the drop zone to start over</td>
+    </tr>
+  </tbody>
+</table>
+
+If none of the three action props are provided, no footer is rendered. The layout then acts as a pure display container.
+
+---
+
+## Desktop Side-by-Side
+
+<Canvas of={Stories.DesktopSideBySide} />
+
+---
+
+## Mobile Tabs
+
+On narrow viewports the same data is presented in a tabbed interface. Use the Storybook
+viewport toolbar to switch to a mobile size, or view the `MobileTabs` story which sets
+`viewport.defaultViewport` to `mobile1`.
+
+<Canvas of={Stories.MobileTabs} />
+
+---
+
+## No Existing Image
+
+When `existingImageUrl` is `null` no comparison UI is shown &#8212; only the `children` are
+rendered. This is the pass-through mode for new-record forms.
+
+<Canvas of={Stories.NoExistingImage} />
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Category</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>existingImageUrl</code></td>
+      <td>Runtime</td>
+      <td><code>string | null</code></td>
+      <td>Required</td>
+      <td>
+        URL of the existing (current) image. When <code>null</code> the component renders
+        only <code>children</code> (pass-through mode) &#8212; no comparison chrome is shown.
+      </td>
+    </tr>
+    <tr>
+      <td><code>children</code></td>
+      <td>Runtime</td>
+      <td><code>React.ReactNode</code></td>
+      <td>Required</td>
+      <td>
+        New image content, typically an <code>ImagePreviewEditor</code>. Rendered in the
+        &#8220;New&#8221; panel on desktop and the &#8220;New&#8221; tab on mobile.
+      </td>
+    </tr>
+    <tr>
+      <td><code>entityTypeDisplayName</code></td>
+      <td>Init</td>
+      <td><code>string</code></td>
+      <td>Required</td>
+      <td>
+        Display name of the entity type (e.g. &#8220;Item&#8221;). Passed to
+        <code>ImageDisplay</code> for initials derivation and alt text.
+      </td>
+    </tr>
+    <tr>
+      <td><code>propertyDisplayName</code></td>
+      <td>Init</td>
+      <td><code>string</code></td>
+      <td>Required</td>
+      <td>
+        Display name of the image property (e.g. &#8220;Product Image&#8221;). Passed to
+        <code>ImageDisplay</code> for accessibility labels.
+      </td>
+    </tr>
+    <tr>
+      <td><code>onAccept</code></td>
+      <td>Runtime</td>
+      <td><code>(() =&#62; void) | undefined</code></td>
+      <td><code>undefined</code></td>
+      <td>When provided, an Accept (primary) button is rendered in the action footer.</td>
+    </tr>
+    <tr>
+      <td><code>onDismiss</code></td>
+      <td>Runtime</td>
+      <td><code>(() =&#62; void) | undefined</code></td>
+      <td><code>undefined</code></td>
+      <td>When provided, a Dismiss (secondary) button is rendered in the action footer.</td>
+    </tr>
+    <tr>
+      <td><code>onUploadNew</code></td>
+      <td>Runtime</td>
+      <td><code>(() =&#62; void) | undefined</code></td>
+      <td><code>undefined</code></td>
+      <td>When provided, an &#8220;Upload New Image&#8221; (secondary) button is rendered in the action footer.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { ImageComparisonLayout } from '@/components/canary/molecules/image-comparison-layout';
+// or
+import type { ImageComparisonLayoutProps } from '@/components/canary/molecules/image-comparison-layout';
+```

@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 import { Button } from '@/components/canary/atoms/button';
 import { Separator } from '@/components/canary/primitives/separator';
 import { ArdaSearchInput } from '../../atoms/search-input/search-input';

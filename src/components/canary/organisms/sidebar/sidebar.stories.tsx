@@ -56,36 +56,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof Sidebar>;
-
-/**
- * Interactive Controls playground — toggle `open` and `dark` from the
- * Controls panel. The sidebar is pre-populated with a representative nav.
- */
-export const Playground: Story = {
-  args: {
-    open: true,
-    dark: true,
-  },
-  argTypes: {
-    open: { control: 'boolean' },
-    dark: { control: 'boolean' },
-  },
-  render: (args) => (
-    <Sidebar {...args}>
-      <SidebarHeader teamName="Arda Cards" />
-      <SidebarNav>
-        <SidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
-        <SidebarNavItem icon={Package} label="Items" badge={5} />
-        <SidebarNavItem icon={ShoppingCart} label="Order Queue" badge={3} />
-        <SidebarNavItem icon={Building2} label="Suppliers" />
-        <SidebarNavItem icon={Settings} label="Settings" />
-      </SidebarNav>
-      <SidebarUserMenu user={mockUser} actions={mockActions} />
-    </Sidebar>
-  ),
-};
-
-/** Default sidebar. Toggle `open` and `dark` in the controls panel. */
 export const Default: Story = {
   args: {
     open: true,
@@ -217,3 +187,33 @@ export const Composition: Story = {
     </Sidebar>
   ),
 };
+
+/**
+ * Interactive Controls playground — toggle `open` and `dark` from the
+ * Controls panel. The sidebar is pre-populated with a representative nav.
+ */
+export const Playground: Story = {
+  args: {
+    open: true,
+    dark: true,
+  },
+  argTypes: {
+    open: { control: 'boolean' },
+    dark: { control: 'boolean' },
+  },
+  render: (args) => (
+    <Sidebar {...args}>
+      <SidebarHeader teamName="Arda Cards" />
+      <SidebarNav>
+        <SidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
+        <SidebarNavItem icon={Package} label="Items" badge={5} />
+        <SidebarNavItem icon={ShoppingCart} label="Order Queue" badge={3} />
+        <SidebarNavItem icon={Building2} label="Suppliers" />
+        <SidebarNavItem icon={Settings} label="Settings" />
+      </SidebarNav>
+      <SidebarUserMenu user={mockUser} actions={mockActions} />
+    </Sidebar>
+  ),
+};
+
+/** Default sidebar. Toggle `open` and `dark` in the controls panel. */

@@ -24,24 +24,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof SidebarNav>;
-
-/**
- * Interactive Controls playground — `children` is rendered as nav items.
- * The `label` prop (group heading) can be adjusted in the Controls panel.
- */
-export const Playground: Story = {
-  render: () => (
-    <SidebarNav label="Main">
-      <SidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
-      <SidebarNavItem icon={Package} label="Items" badge={5} />
-      <SidebarNavItem icon={ShoppingCart} label="Order Queue" />
-      <SidebarNavItem icon={Building2} label="Suppliers" />
-      <SidebarNavItem icon={Settings} label="Settings" />
-    </SidebarNav>
-  ),
-};
-
-/** Default with a set of nav items. */
 export const Default: Story = {
   render: () => (
     <SidebarNav>
@@ -73,3 +55,21 @@ export const WithLabel: Story = {
     await expect(canvas.getByText('Navigation')).toBeInTheDocument();
   },
 };
+
+/**
+ * Interactive Controls playground — `children` is rendered as nav items.
+ * The `label` prop (group heading) can be adjusted in the Controls panel.
+ */
+export const Playground: Story = {
+  render: () => (
+    <SidebarNav label="Main">
+      <SidebarNavItem icon={LayoutDashboard} label="Dashboard" active />
+      <SidebarNavItem icon={Package} label="Items" badge={5} />
+      <SidebarNavItem icon={ShoppingCart} label="Order Queue" />
+      <SidebarNavItem icon={Building2} label="Suppliers" />
+      <SidebarNavItem icon={Settings} label="Settings" />
+    </SidebarNav>
+  ),
+};
+
+/** Default with a set of nav items. */

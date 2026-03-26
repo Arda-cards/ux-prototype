@@ -4,7 +4,7 @@ import React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Slot } from 'radix-ui';
 import { Loader2 } from 'lucide-react';
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 
 // --- CVA variant definition ---
 

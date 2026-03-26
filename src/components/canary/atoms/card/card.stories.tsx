@@ -28,35 +28,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof meta>;
-
-export const Playground: Story = {
-  argTypes: {
-    className: { control: 'text' },
-  },
-  args: {
-    className: 'w-80',
-  },
-  render: (args) => (
-    <Card {...args}>
-      <CardHeader>
-        <CardTitle>Card Title</CardTitle>
-        <CardDescription>Card description goes here.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-muted-foreground">Card body content.</p>
-      </CardContent>
-      <CardFooter>
-        <Button size="sm" variant="outline">
-          Cancel
-        </Button>
-        <Button size="sm" className="ml-2">
-          Confirm
-        </Button>
-      </CardFooter>
-    </Card>
-  ),
-};
-
 export const Default: Story = {
   render: () => (
     <Card className="w-80">
@@ -173,5 +144,33 @@ export const AllVariants: Story = {
         </Card>
       </div>
     </div>
+  ),
+};
+
+export const Playground: Story = {
+  argTypes: {
+    className: { control: 'text' },
+  },
+  args: {
+    className: 'w-80',
+  },
+  render: (args) => (
+    <Card {...args}>
+      <CardHeader>
+        <CardTitle>Card Title</CardTitle>
+        <CardDescription>Card description goes here.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm text-muted-foreground">Card body content.</p>
+      </CardContent>
+      <CardFooter>
+        <Button size="sm" variant="outline">
+          Cancel
+        </Button>
+        <Button size="sm" className="ml-2">
+          Confirm
+        </Button>
+      </CardFooter>
+    </Card>
   ),
 };

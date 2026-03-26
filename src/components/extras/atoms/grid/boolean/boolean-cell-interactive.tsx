@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 import type { AtomMode, AtomProps } from '@/components/extras/atoms/shared/props';
 import { ArdaBooleanCellDisplay } from './boolean-cell-display';
 

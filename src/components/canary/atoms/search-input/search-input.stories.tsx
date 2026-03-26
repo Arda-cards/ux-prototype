@@ -9,20 +9,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof meta>;
-
-export const Playground: Story = {
-  argTypes: {
-    placeholder: { control: 'text' },
-    value: { control: 'text' },
-    maxWidth: { control: 'text' },
-  },
-  args: {
-    placeholder: 'Search',
-    value: '',
-    maxWidth: '373px',
-  },
-};
-
 export const Default: Story = {
   args: {
     placeholder: 'Search',
@@ -65,4 +51,17 @@ export const AllVariants: Story = {
       </div>
     </div>
   ),
+};
+
+export const Playground: Story = {
+  argTypes: {
+    placeholder: { control: 'text' },
+    value: { control: 'text' },
+    maxWidth: { control: 'text' },
+  },
+  args: {
+    placeholder: 'Search',
+    value: '',
+    maxWidth: '373px',
+  },
 };

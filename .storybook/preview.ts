@@ -7,14 +7,36 @@ import { handlers } from '@frontend/mocks/handlers';
 import '../src/styles/globals.css';
 import '../src/styles/ag-theme-arda.css';
 
-initialize({
-  onUnhandledRequest: 'bypass',
-  serviceWorker: { url: './mockServiceWorker.js' },
-});
+// MSW initialization — wrapped in try-catch so stories still render when the
+// service worker can't register (e.g., Playwright headless, cross-origin iframes,
+// or environments without ServiceWorker support).
+try {
+  initialize({
+    onUnhandledRequest: 'bypass',
+    serviceWorker: { url: './mockServiceWorker.js' },
+  });
+} catch {
+  // Service worker registration failed — MSW handlers won't intercept requests
+  // but stories will still render with real network calls or static data.
+  console.warn(
+    '[MSW] Service worker initialization failed — stories will render without mock handlers.',
+  );
+}
+
+// Wrap mswLoader so that ServiceWorker failures (e.g., in Playwright headless,
+// cross-origin iframes) don't crash story rendering.
+const safeMswLoader: typeof mswLoader = async (context) => {
+  try {
+    return await mswLoader(context);
+  } catch {
+    // MSW loader failed — story renders without mock interception
+    return {};
+  }
+};
 
 const preview: Preview = {
   decorators: [withAgentation, withFullAppProviders],
-  loaders: [mswLoader],
+  loaders: [safeMswLoader],
   initialGlobals: {
     agentationEnabled: false,
   },
@@ -55,14 +77,19 @@ const preview: Preview = {
             ['Guide', 'Shared', 'Reference', '*'],
             'Canary',
             [
+              'Utilities',
               'Atoms',
               [
                 'Guide',
                 'Avatar',
+                ['Docs', '*', 'Playground'],
                 'Badge',
+                ['Docs', '*', 'Playground'],
                 'BrandLogo',
                 'Button',
                 'Card',
+                'CopyrightAcknowledgment',
+                ['Docs', '*', 'Playground'],
                 'Dialog',
                 'Drawer',
                 'IconButton',
@@ -71,7 +98,26 @@ const preview: Preview = {
                 'ReadOnlyField',
                 'SearchInput',
                 'Grid',
-                ['Guide', '*'],
+                [
+                  'Guide',
+                  'Boolean',
+                  ['Docs', '*', 'Playground'],
+                  'Color',
+                  ['Docs', '*', 'Playground'],
+                  'Date',
+                  ['Docs', '*', 'Playground'],
+                  'Image',
+                  ['Docs', '*', 'Playground'],
+                  'Memo',
+                  ['Docs', '*', 'Playground'],
+                  'Number',
+                  ['Docs', '*', 'Playground'],
+                  'Select',
+                  ['Docs', '*', 'Playground'],
+                  'Text',
+                  ['Docs', '*', 'Playground'],
+                  '*',
+                ],
                 '*',
               ],
               'Molecules',
@@ -80,12 +126,26 @@ const preview: Preview = {
                 'ActionToolbar',
                 'DataGrid',
                 'FieldList',
+                'Form',
+                ['Guide', 'ImageFormField', ['Docs', '*', 'Playground'], '*'],
                 'GridAction',
-                'OverflowToolbar',
+                'ImageComparisonLayout',
+                ['Docs', '*', 'Playground'],
+                'ImageDisplay',
+                ['Docs', '*', 'Playground'],
+                'ImageDropZone',
+                ['Docs', '*', 'Playground'],
+                'ImageHoverPreview',
+                ['Docs', '*', 'Playground'],
+                'ImageInspectorOverlay',
+                ['Docs', '*', 'Playground'],
+                'ImagePreviewEditor',
+                ['Docs', '*', 'Playground'],
                 'ItemDetails',
                 ['Guide', '*'],
                 'ItemGrid',
                 ['Guide', '*'],
+                'OverflowToolbar',
                 'Sidebar',
                 ['Guide', '*'],
                 '*',
@@ -101,14 +161,23 @@ const preview: Preview = {
                 [
                   'Guide',
                   'Entity Data Grid',
-                  ['Docs', 'Playground', '*'],
+                  ['Docs', '*', 'Playground'],
                   'Entity Data Grid Shim',
+                  'ImageUploadDialog',
+                  ['Docs', '*', 'Playground'],
                   '*',
                 ],
                 '*',
               ],
               'Primitives',
-              '*',
+              [
+                'Docs',
+                'AlertDialog (Image Context)',
+                'ImportCheck',
+                'Skeleton (Image Context)',
+                'Tabs (Image Context)',
+                '*',
+              ],
             ],
             'Extras',
             ['Atoms', 'Molecules', 'Organisms', '*'],

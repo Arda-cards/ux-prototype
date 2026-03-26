@@ -63,6 +63,8 @@ make publish          # Build library and publish to GitHub Packages
 make clean            # Remove build artifacts and node_modules
 ```
 
+**Package contents documentation**: After adding or removing exports from `canary.ts`, `index.ts`, or `extras.ts`, run `node tools/update-package-contents.js` to regenerate the "Current Content" inventory in the docs. This keeps the published documentation in sync with the actual package exports.
+
 ## Project Structure
 
 ```

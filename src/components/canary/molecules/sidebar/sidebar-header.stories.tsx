@@ -29,18 +29,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof SidebarHeader>;
-
-/**
- * Interactive Controls playground — adjust `teamName` in the Controls panel.
- * `teams` is a complex array and cannot be driven by a simple control.
- */
-export const Playground: Story = {
-  args: {
-    teamName: 'Arda Cards',
-  },
-};
-
-/** Default header with team name. */
 export const Default: Story = {
   args: {
     teamName: 'Arda Cards',
@@ -80,3 +68,15 @@ export const CustomChildren: Story = {
     await expect(canvas.getByText('Custom Header')).toBeVisible();
   },
 };
+
+/**
+ * Interactive Controls playground — adjust `teamName` in the Controls panel.
+ * `teams` is a complex array and cannot be driven by a simple control.
+ */
+export const Playground: Story = {
+  args: {
+    teamName: 'Arda Cards',
+  },
+};
+
+/** Default header with team name. */

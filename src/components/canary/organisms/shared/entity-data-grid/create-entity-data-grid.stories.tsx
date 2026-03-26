@@ -5,6 +5,9 @@ import { useState, useRef } from 'react';
 import type { ColDef } from 'ag-grid-community';
 import { createEntityDataGrid, type EntityDataGridRef } from './create-entity-data-grid';
 import { storyStepDelay } from './story-step-delay';
+import { ImageCellDisplay } from '@/components/canary/atoms/grid/image/image-cell-display';
+import { createImageCellEditor } from '@/components/canary/atoms/grid/image/image-cell-editor';
+import type { ImageFieldConfig } from '@/types/canary/utilities/image-field-config';
 
 // ============================================================================
 // Demo Entity
@@ -217,28 +220,6 @@ const meta: Meta<typeof DemoDataGrid> = {
 
 export default meta;
 type Story = StoryObj<typeof DemoDataGrid>;
-
-// ============================================================================
-// Playground — interactive controls for runtime props
-// ============================================================================
-
-export const Playground: Story = {
-  argTypes: {
-    loading: { control: 'boolean' },
-    enableCellEditing: { control: 'boolean' },
-  },
-  args: {
-    data: mockData,
-    loading: false,
-    enableCellEditing: true,
-    activeTab: 'playground',
-  },
-};
-
-// ============================================================================
-// Basic stories
-// ============================================================================
-
 export const Default: Story = {
   args: {
     data: mockData,
@@ -954,3 +935,161 @@ export const Interactive: Story = {
     );
   },
 };
+
+// ============================================================================
+// With Image Column — demonstrates ImageCellDisplay inside the entity grid
+// ============================================================================
+
+interface ImageDemoEntity {
+  id: string;
+  imageUrl: string | null;
+  name: string;
+  sku: string;
+  unitCost: number;
+}
+
+const IMAGE_DEMO_CONFIG: ImageFieldConfig = {
+  aspectRatio: 1,
+  acceptedFormats: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'],
+  maxFileSizeBytes: 10 * 1024 * 1024,
+  maxDimension: 2048,
+  entityTypeDisplayName: 'Part',
+  propertyDisplayName: 'Product Image',
+};
+
+const imageDemoCols: ColDef<ImageDemoEntity>[] = [
+  {
+    field: 'imageUrl',
+    headerName: 'Image',
+    width: 60,
+    sortable: false,
+    cellRenderer: ImageCellDisplay,
+    cellRendererParams: { config: IMAGE_DEMO_CONFIG },
+    cellEditor: createImageCellEditor(IMAGE_DEMO_CONFIG),
+    editable: true,
+  },
+  { field: 'name', headerName: 'Name', editable: true, flex: 1 },
+  { field: 'sku', headerName: 'SKU', width: 120 },
+  {
+    field: 'unitCost',
+    headerName: 'Unit Cost',
+    width: 110,
+    cellRenderer: (params: { data: ImageDemoEntity }) => `$${params.data.unitCost.toFixed(2)}`,
+  },
+];
+
+const imageDemoData: ImageDemoEntity[] = [
+  {
+    id: '1',
+    imageUrl: 'https://picsum.photos/seed/arda-item-1/400/400',
+    name: 'Hex Bolt M10x30',
+    sku: 'HB-1030',
+    unitCost: 0.45,
+  },
+  {
+    id: '2',
+    imageUrl: 'https://picsum.photos/seed/arda-item-2/400/400',
+    name: 'Flat Washer 3/8"',
+    sku: 'FW-0375',
+    unitCost: 0.12,
+  },
+  {
+    id: '3',
+    imageUrl: null,
+    name: 'Spring Pin 4x20',
+    sku: 'SP-0420',
+    unitCost: 0.28,
+  },
+  {
+    id: '4',
+    imageUrl: 'https://example.com/nonexistent-image-404.jpg',
+    name: 'Tee Nut 1/4-20',
+    sku: 'TN-2520',
+    unitCost: 0.65,
+  },
+  {
+    id: '5',
+    imageUrl: 'https://picsum.photos/seed/arda-item-5/400/400',
+    name: 'Cap Screw 5/16-18x1',
+    sku: 'CS-3118',
+    unitCost: 0.33,
+  },
+  {
+    id: '6',
+    imageUrl: 'https://picsum.photos/seed/arda-item-6/400/400',
+    name: 'Lock Washer #10',
+    sku: 'LW-0010',
+    unitCost: 0.08,
+  },
+];
+
+const IMAGE_EDITABLE_FIELDS = new Set(['imageUrl']);
+
+const { Component: ImageDemoGrid } = createEntityDataGrid<ImageDemoEntity>({
+  displayName: 'ImageDemoGrid',
+  persistenceKeyPrefix: 'canary-image-demo-grid',
+  columnDefs: imageDemoCols,
+  defaultColDef: { sortable: true, filter: false, resizable: true },
+  getEntityId: (e) => e.id,
+  enhanceEditableColumnDefs: (defs, { enabled }) => {
+    if (!enabled) return defs;
+    return defs.map((col) => {
+      const key = (col.field as string) || '';
+      if (!IMAGE_EDITABLE_FIELDS.has(key)) return col;
+      return { ...col, editable: true };
+    });
+  },
+});
+
+/**
+ * Entity grid with an image column. Demonstrates the full ImageCellDisplay +
+ * ImageCellEditor integration inside the entity data grid factory:
+ *
+ * **Display behaviors (hover):**
+ * - Hover a loaded image to see a 256&#215;256 preview popover (500ms delay).
+ * - Action icons (eye, pencil) appear on hover.
+ * - Eye icon is suppressed when the image URL is null or broken.
+ *
+ * **Editing behaviors (double-click / Enter):**
+ * - Double-click or press Enter on an image cell to open ImageUploadDialog.
+ * - The dialog shows the current image for comparison (if one exists).
+ * - Confirm an upload to commit a new URL to the cell.
+ * - Cancel to discard without changing the cell value.
+ * - Single click selects the row (suppressClickEdit is set).
+ *
+ * **Row states:**
+ * - **Rows 1, 2, 5, 6**: Loaded images
+ * - **Row 3**: No image (null) &#8212; initials placeholder "P"
+ * - **Row 4**: Broken URL &#8212; initials + error badge
+ */
+export const WithImageColumn: Story = {
+  render: () => (
+    <ImageDemoGrid
+      data={imageDemoData}
+      loading={false}
+      enableCellEditing={true}
+      activeTab="image-demo"
+    />
+  ),
+};
+
+// ============================================================================
+// Playground — interactive controls for runtime props
+// ============================================================================
+
+export const Playground: Story = {
+  argTypes: {
+    loading: { control: 'boolean' },
+    enableCellEditing: { control: 'boolean' },
+  },
+  args: {
+    data: mockData,
+    loading: false,
+    enableCellEditing: true,
+    activeTab: 'playground',
+  },
+};
+
+// ============================================================================
+// Basic stories
+// ============================================================================

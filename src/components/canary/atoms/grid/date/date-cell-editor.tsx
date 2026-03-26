@@ -1,8 +1,8 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 import { toDateInputValue } from '@/components/canary/atoms/shared/formatters';
-import { getBrowserTimezone, getTimezoneAbbreviation } from '@/types/canary/date-time';
+import { getBrowserTimezone, getTimezoneAbbreviation } from '@/types/canary/utilities/date-time';
 
 /** Design-time configuration for date cell editor. */
 export interface DateCellEditorStaticConfig {

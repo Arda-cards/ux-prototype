@@ -28,51 +28,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj;
-
-export const Playground: Story = {
-  argTypes: {
-    size: {
-      control: 'select',
-      options: ['md', 'lg', 'xl'],
-    },
-    side: {
-      control: 'select',
-      options: ['left', 'right'],
-    },
-  },
-  args: {
-    size: 'lg',
-    side: 'right',
-  },
-  render: (args: { size?: 'md' | 'lg' | 'xl'; side?: 'left' | 'right' }) => {
-    const [open, setOpen] = useState(false);
-    const size = args.size ?? 'lg';
-    const side = args.side ?? 'right';
-    return (
-      <>
-        <button
-          onClick={() => setOpen(true)}
-          className="rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background"
-        >
-          Open drawer
-        </button>
-        <Drawer open={open} onOpenChange={setOpen} size={size} side={side}>
-          <DrawerHeader>
-            <DrawerTitle>
-              Drawer ({size}, {side})
-            </DrawerTitle>
-            <DrawerDescription>Playground drawer instance.</DrawerDescription>
-          </DrawerHeader>
-          <DrawerBody className="px-6 py-4">
-            <p className="text-sm text-muted-foreground">Drawer body content.</p>
-          </DrawerBody>
-        </Drawer>
-      </>
-    );
-  },
-};
-
-/** Default drawer with header, body, and footer. */
 export const Default: Story = {
   render: () => {
     const [open, setOpen] = useState(false);
@@ -208,3 +163,48 @@ export const AllVariants: Story = {
     );
   },
 };
+
+export const Playground: Story = {
+  argTypes: {
+    size: {
+      control: 'select',
+      options: ['md', 'lg', 'xl'],
+    },
+    side: {
+      control: 'select',
+      options: ['left', 'right'],
+    },
+  },
+  args: {
+    size: 'lg',
+    side: 'right',
+  },
+  render: (args: { size?: 'md' | 'lg' | 'xl'; side?: 'left' | 'right' }) => {
+    const [open, setOpen] = useState(false);
+    const size = args.size ?? 'lg';
+    const side = args.side ?? 'right';
+    return (
+      <>
+        <button
+          onClick={() => setOpen(true)}
+          className="rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background"
+        >
+          Open drawer
+        </button>
+        <Drawer open={open} onOpenChange={setOpen} size={size} side={side}>
+          <DrawerHeader>
+            <DrawerTitle>
+              Drawer ({size}, {side})
+            </DrawerTitle>
+            <DrawerDescription>Playground drawer instance.</DrawerDescription>
+          </DrawerHeader>
+          <DrawerBody className="px-6 py-4">
+            <p className="text-sm text-muted-foreground">Drawer body content.</p>
+          </DrawerBody>
+        </Drawer>
+      </>
+    );
+  },
+};
+
+/** Default drawer with header, body, and footer. */

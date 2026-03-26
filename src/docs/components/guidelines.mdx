@@ -128,7 +128,7 @@ Create an Arda wrapper that imports the shadcn primitive and extends it:
 ```tsx
 import { Button as ShadcnButton, type buttonVariants } from '@/components/canary/primitives/button';
 import { cva, type VariantProps } from 'class-variance-authority';
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 
 // Arda-specific variant extensions
 const ardaButtonVariants = cva(
@@ -401,7 +401,7 @@ Use CVA (class-variance-authority) for all components with variant dimensions. T
 
 ```tsx
 import { cva, type VariantProps } from 'class-variance-authority';
-import { cn } from '@/types/canary/utils';
+import { cn } from '@/types/canary/utilities/utils';
 
 const badgeVariants = cva(
   // Base classes (always applied)
