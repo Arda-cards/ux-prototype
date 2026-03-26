@@ -18,7 +18,7 @@ export const ITEM_IMAGE_CONFIG: ImageFieldConfig = {
 /** Simulated presigned-POST upload (happy path, ~1.5s). */
 export async function mockUpload(_file: Blob): Promise<string> {
   await new Promise((r) => setTimeout(r, 1500));
-  return 'https://cdn.example.com/images/mock-uploaded.jpg';
+  return 'https://picsum.photos/seed/arda-uploaded/400/400';
 }
 
 /** Simulated URL reachability check (happy path, ~500ms). */
