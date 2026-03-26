@@ -14,6 +14,45 @@ Double-click opens `ImageUploadDialog` for uploading or changing the image.
 
 ---
 
+## Baked-In Behaviors
+
+### ImageCellDisplay
+
+`ImageCellDisplay` is a pure cell renderer. It renders a 28&#215;28px thumbnail (`w-7 h-7`) by composing `ImageHoverPreview` (outer, for the hover popover) and `ImageDisplay` (inner, read-only). The `ImageDisplay` inside the cell renderer is always instantiated without `onImageChange` or `config` &#8212; it is a passive display only. No action icons (eye, trash, pencil) appear inside the cell.
+
+Action icons are deliberately absent from the cell renderer. Their presence would intercept mouse events and prevent AG Grid's native double-click cell editing from triggering. Removing them ensures that a double-click on any part of the cell reaches the grid and opens the cell editor.
+
+The hover popover (256&#215;256px) is provided by the outer `ImageHoverPreview` wrapper. The 500ms hover delay and null suppression behaviors described in the `ImageHoverPreview` documentation apply here without modification.
+
+### ImageCellEditor
+
+`ImageCellEditor` is an AG Grid popup cell editor. It implements the AG Grid cell editor interface:
+
+- `isPopup()` returns `true`, instructing AG Grid to render the editor as a floating popup rather than replacing the cell content in place.
+- On mount, the component immediately opens `ImageUploadDialog` so the user sees the dialog without any intermediate state.
+- `getValue()` returns the pending new image URL after a confirm, or the original `value` prop if the user cancelled.
+- When the user confirms or cancels, `stopEditing()` is called via `setTimeout` (zero delay). The timeout defers the AG Grid call until React has flushed the state update that sets the internal result value. Without this deferral, AG Grid would call `getValue()` before the state update settles, returning a stale value.
+
+### Factory: createImageCellEditor
+
+`createImageCellEditor(config)` is a factory function that curries `ImageFieldConfig` and returns an `ImageCellEditor` component class. This pattern allows the `ImageFieldConfig` (accepted formats, aspect ratio, display names, etc.) to be bound once at column-definition time rather than injected on each cell render:
+
+```tsx
+columnDefs: [
+  {
+    field: 'imageUrl',
+    cellRenderer: ImageCellDisplay,
+    cellRendererParams: { config },
+    cellEditor: createImageCellEditor(config),
+    editable: true,
+  }
+]
+```
+
+The returned component is a valid AG Grid cell editor component that can be passed directly to `cellEditor` in a column definition.
+
+---
+
 ## Grid Display
 
 Four visual states in a single grid: loaded image, alternate image, null (no image), and broken URL.
@@ -89,7 +128,7 @@ you can pass directly to `cellEditor` in a column definition.
       <td><code>value</code></td>
       <td><code>string | null</code></td>
       <td>Yes</td>
-      <td>Image URL from the row. Null shows an initials placeholder.</td>
+      <td>Image URL from the row. Null shows an initials placeholder without an error badge.</td>
     </tr>
     <tr>
       <td><code>data</code></td>
@@ -116,13 +155,14 @@ you can pass directly to `cellEditor` in a column definition.
     <tr>
       <td><code>config</code></td>
       <td><code>ImageFieldConfig</code></td>
-      <td>Curried at column-definition time. Passed to ImageUploadDialog.</td>
+      <td>Curried at column-definition time. Passed to <code>ImageUploadDialog</code> inside the editor.</td>
     </tr>
   </tbody>
 </table>
 
 The returned editor exposes `getValue(): string | null` via ref for AG Grid.
 On confirm, returns the new image URL. On cancel, returns the original value.
+`stopEditing()` is called via `setTimeout` to ensure React state has settled before AG Grid reads the value.
 
 ---
 

@@ -57,6 +57,44 @@ inline error message below the drop zone.
 
 ---
 
+## Baked-In Behaviors
+
+### Input Method Details
+
+The component presents three distinct input surfaces simultaneously:
+
+- **Drag-and-drop area**: The entire component body is a drop target. When a user drags a file over the component, the border switches to `border-primary` and the background switches to `bg-accent` (JS-toggled via the `isDragActive` boolean from react-dropzone). This visual change indicates that the zone is active and ready to receive the file.
+- **File picker button**: A "Upload from computer" button opens the native OS file picker. The dropzone is configured with `noClick: true` so that clicking the drop area itself does not open the picker &#8212; only the explicit button does. `noKeyboard: true` is also set, disabling keyboard-triggered file selection on the drop area directly. This prevents accidental opens when the drop zone receives focus.
+- **URL text entry**: A text input field with an "Enter" or submit trigger accepts pasted image URLs. Only `https://` URLs are accepted; any URL that does not start with `https://` is rejected synchronously with an inline error.
+
+### File Validation
+
+When a file is dropped or selected via the picker, its MIME type is checked against the `acceptedFormats` array. If the type is not in the list, the component:
+
+1. Emits `onInput({ type: 'error', message: '...' })` with a descriptive message.
+2. Displays the error message inline in `text-destructive` with `role="alert"` so screen readers announce it immediately.
+
+The `multiple: false` dropzone option ensures only a single file is processed per drop event; if multiple files are dropped, only the first is used.
+
+### URL Validation
+
+URL input is validated on submission (Enter key or submit button). The check is purely syntactic: the URL must start with `https://`. Non-HTTPS URLs (including `http://` and bare hostnames) are rejected with an inline error message. No network request is made at this stage &#8212; reachability checking is the responsibility of the parent (e.g., `ImageUploadDialog`).
+
+### Drag-Over Visual
+
+While a file is being dragged over the component, the CSS classes `border-primary` and `bg-accent` are applied by toggling the `isDragActive` flag provided by react-dropzone. When the pointer leaves the drop target, the classes revert to their default state. This transition is immediate (no delay) and does not depend on the file type being valid.
+
+### Error Display
+
+Validation errors from either the file or URL path are rendered inline beneath the input area as a paragraph with `text-destructive` styling and `role="alert"`. The error clears automatically when the user submits a new valid input.
+
+### Events
+
+- `onInput` is called on every input attempt, including error variants. The caller receives a typed `ImageInput` discriminated union and is responsible for routing to the appropriate next state.
+- `onDismiss` is called when the user clicks the dedicated Dismiss button. This does not clear any error state &#8212; it signals to the parent that the user wants to abandon the input flow entirely.
+
+---
+
 ## Error Handling
 
 Errors are displayed inline in `text-destructive` beneath the input area. Two classes of errors

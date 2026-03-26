@@ -6,8 +6,8 @@ import * as Stories from './image-upload-dialog.stories';
 
 # ImageUploadDialog
 
-Full-flow image upload orchestrator for the Arda design system. Manages a five-state
-machine &#8212; **EmptyImage**, **ProvidedImage**, **FailedValidation**, **Uploading**, and
+Full-flow image upload orchestrator for the Arda design system. Manages a multi-state
+machine &#8212; **EditExisting**, **EmptyImage**, **ProvidedImage**, **FailedValidation**, **Uploading**, and
 **Warn** &#8212; coordinating drop zone, preview editor, copyright gate, progress bar,
 and discard guard in a single Dialog surface.
 
@@ -21,13 +21,20 @@ The component is driven by `useReducer`. The diagram below shows all states and 
 
 ```plantuml
 @startuml
-[*] --> EmptyImage : dialog opens
+[*] --> EditExisting : dialog opens (existingImageUrl non-null)
+[*] --> EmptyImage : dialog opens (existingImageUrl null)
+
+EditExisting --> ProvidedImage : Upload New Image clicked
+EditExisting --> [*] : Accept clicked (calls onConfirm with existing URL)
+EditExisting --> [*] : Dismiss clicked (calls onCancel)
 
 EmptyImage --> ProvidedImage : file / URL input (valid)
 EmptyImage --> FailedValidation : file / URL input (invalid)
+EmptyImage --> [*] : Cancel clicked (calls onCancel)
 
 FailedValidation --> ProvidedImage : retry (valid)
 FailedValidation --> FailedValidation : retry (invalid)
+FailedValidation --> [*] : Cancel clicked (calls onCancel)
 
 ProvidedImage --> Uploading : Confirm clicked (copyright checked)
 ProvidedImage --> Warn : Cancel clicked
@@ -38,6 +45,81 @@ Warn --> EmptyImage : Discard (+ calls onCancel)
 Uploading --> [*] : upload complete (calls onConfirm + closes)
 @enduml
 ```
+
+---
+
+## Baked-In Behaviors
+
+### Entry Logic
+
+When the dialog opens (`open` transitions from `false` to `true`), the initial state is determined by `existingImageUrl`:
+
+- **Non-null** `existingImageUrl` &#8594; **EditExisting** state. The dialog opens showing a side-by-side comparison (or tabs on mobile) of the current image alongside an empty "New" panel. The user can accept the existing image unchanged, dismiss, or choose to upload a replacement.
+- **Null** `existingImageUrl` &#8594; **EmptyImage** state. The dialog opens showing only the `ImageDropZone`, ready to receive a new image.
+
+Resetting `open` to `false` resets the internal state machine back to this entry logic on the next open.
+
+### EditExisting State
+
+The EditExisting state renders `ImageComparisonLayout` with the existing image on the left and an empty right panel. The layout's built-in action footer exposes three buttons:
+
+- **Accept**: Calls `onConfirm` with an `ImageUploadResult` wrapping the existing URL, then closes. No copyright acknowledgment is required in this path because no new image is being uploaded.
+- **Dismiss**: Calls `onCancel` and closes.
+- **Upload New Image**: Transitions the state machine to EmptyImage, replacing the comparison view with `ImageDropZone`.
+
+### EmptyImage State
+
+Renders `ImageDropZone`. When the user provides a valid file or URL, the state transitions to ProvidedImage and the drop zone is replaced by `ImagePreviewEditor`. Invalid input transitions to FailedValidation. A Cancel button calls `onCancel` and closes.
+
+### ProvidedImage State
+
+Renders `ImagePreviewEditor` wrapped in `ImageComparisonLayout` when `existingImageUrl` is non-null, or directly when null. Below the editor, `CopyrightAcknowledgment` is always shown. The Confirm button is disabled until `acknowledged` is `true`.
+
+When Confirm is clicked:
+
+1. If `cropData` is present (the user moved, zoomed, or rotated), `getCroppedImage()` is called to render the final pixel crop as a `Blob`.
+2. The `Blob` (or original `File` if no crop was applied) is passed to `onUpload(blob)`.
+3. On success, `onConfirm(result)` is called with the `ImageUploadResult` and the dialog closes.
+
+### FailedValidation State
+
+Renders an inline error message (`role="alert"`) above a fresh `ImageDropZone` for retry. The error message describes why the previous input was rejected. The user can retry with a new file or URL, or click Cancel to dismiss.
+
+### Uploading State
+
+After Confirm is clicked (copyright checked, crop complete), the dialog transitions to Uploading:
+
+- The footer shows a `Progress` bar and a disabled "Uploading&#8230;" button.
+- The progress bar is animated with 50ms ticks over a 1500ms simulated duration (driven by `onUpload`'s async resolution).
+- The dialog cannot be dismissed while uploading &#8212; the backdrop click and Escape key are suppressed.
+
+### Warn State (Discard Guard)
+
+If the user clicks Cancel while in ProvidedImage state (an image is staged), the component transitions to Warn rather than immediately dismissing. An `AlertDialog` opens over the main dialog with two actions:
+
+- **Discard**: Clears the staged image, transitions to EmptyImage, and calls `onCancel`.
+- **Go Back**: Closes the alert and returns to ProvidedImage, leaving the staged image intact.
+
+This guard prevents accidental data loss for users who have already cropped and positioned an image.
+
+### Upload Pipeline
+
+The full upload pipeline executed on Confirm:
+
+1. If `cropData` is non-null, call `getCroppedImage(imageSrc, pixelCrop, rotation)` to obtain a cropped `Blob`.
+2. Call `onUpload(blob)` &#8212; an async function provided by the caller (or the default mock handler in dev).
+3. Await the result (an `ImageUploadResult` containing the final URL).
+4. Call `onConfirm(result)` to notify the caller.
+5. Close the dialog.
+
+### Dependency Injection
+
+Two props allow callers to inject production implementations:
+
+- **`onUpload`**: `(blob: Blob) => Promise<ImageUploadResult>`. Called after cropping to perform the actual upload. Defaults to `defaultUploadHandler` (a mock that returns a picsum URL after ~1.5s) when not provided. Production apps must supply a real implementation.
+- **`onCheckReachability`**: `(url: string) => Promise<boolean>`. Called to verify that a URL-input image is reachable before staging it. Defaults to `defaultReachabilityCheck` (returns `true` unless the URL contains the string `"broken"`) when not provided.
+
+Both defaults are intentionally non-functional mocks for Storybook and development. They are production-safe in the sense that they do not make real network calls that could fail in CI, but they must be replaced for any real upload flow.
 
 ---
 
@@ -52,7 +134,7 @@ Use the Controls panel to toggle `open`, `existingImageUrl`, and `config`. Actio
 
 ## Empty Image State
 
-The dialog opens showing `ImageDropZone` &#8212; the entry state on every open.
+The dialog opens showing `ImageDropZone` &#8212; the entry state when no existing image is present.
 
 <Canvas of={Stories.EmptyImageState} />
 
@@ -150,7 +232,7 @@ Interactive end-to-end: open &#8594; drop file &#8594; preview &#8594; copyright
       <td>Runtime</td>
       <td><code>boolean</code></td>
       <td>Required</td>
-      <td>Controls whether the Dialog is open. Resetting to <code>false</code> resets state.</td>
+      <td>Controls whether the Dialog is open. Transitioning to <code>false</code> resets the internal state machine.</td>
     </tr>
     <tr>
       <td><code>existingImageUrl</code></td>
@@ -158,8 +240,8 @@ Interactive end-to-end: open &#8594; drop file &#8594; preview &#8594; copyright
       <td><code>string | null</code></td>
       <td>Required</td>
       <td>
-        When non-null, wraps the preview in <code>ImageComparisonLayout</code> for
-        side-by-side comparison.
+        Non-null &#8594; dialog opens in EditExisting mode with <code>ImageComparisonLayout</code>.
+        Null &#8594; dialog opens in EmptyImage mode showing only the drop zone.
       </td>
     </tr>
     <tr>
@@ -175,8 +257,28 @@ Interactive end-to-end: open &#8594; drop file &#8594; preview &#8594; copyright
       <td><code>() =&#62; void</code></td>
       <td>Required</td>
       <td>
-        Called when the user cancels &#8212; either directly from EmptyImage / FailedValidation
+        Called when the user cancels &#8212; directly from EmptyImage, FailedValidation, or EditExisting
         states, or after confirming discard in the Warn guard.
+      </td>
+    </tr>
+    <tr>
+      <td><code>onUpload</code></td>
+      <td>Runtime</td>
+      <td><code>(blob: Blob) =&#62; Promise&#60;ImageUploadResult&#62;</code></td>
+      <td><code>defaultUploadHandler</code></td>
+      <td>
+        Upload implementation called after cropping. Production apps must supply a real handler.
+        Defaults to a mock that returns a picsum URL after ~1.5s.
+      </td>
+    </tr>
+    <tr>
+      <td><code>onCheckReachability</code></td>
+      <td>Runtime</td>
+      <td><code>(url: string) =&#62; Promise&#60;boolean&#62;</code></td>
+      <td><code>defaultReachabilityCheck</code></td>
+      <td>
+        Reachability check called for URL-input images. Defaults to a mock that returns
+        <code>true</code> unless the URL contains <code>"broken"</code>.
       </td>
     </tr>
   </tbody>

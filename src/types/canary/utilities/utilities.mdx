@@ -135,6 +135,42 @@ getCroppedImage(
 
 ---
 
+## `image-upload-handlers`
+
+Default handler implementations for `ImageUploadDialog`'s `onUpload` and `onCheckReachability`
+props. These live in `src/types/canary/utilities/image-upload-handlers.ts`.
+
+**Import:**
+
+```ts
+import {
+  defaultUploadHandler,
+  defaultReachabilityCheck,
+} from '@arda-cards/design-system/canary';
+```
+
+### `defaultUploadHandler`
+
+A mock upload handler intended for Storybook stories and development environments.
+
+**Signature:** `(blob: Blob) => Promise<ImageUploadResult>`
+
+**Behavior:** Waits approximately 1.5 seconds (simulating network latency) and then returns an `ImageUploadResult` containing a randomly selected picsum.photos URL. No actual file upload is performed &#8212; the `Blob` argument is ignored.
+
+**Production note:** This handler must be replaced with a real implementation in production. It does not upload the image to any server.
+
+### `defaultReachabilityCheck`
+
+A mock reachability check intended for Storybook stories and development environments.
+
+**Signature:** `(url: string) => Promise<boolean>`
+
+**Behavior:** Returns `true` for all URLs except those containing the substring `"broken"`, which return `false`. No actual HTTP request is made. This allows story authors to simulate a broken-URL scenario by including `"broken"` anywhere in the URL string.
+
+**Production note:** This handler must be replaced with a real implementation in production. A typical production implementation would perform a `HEAD` request (or similar lightweight probe) to verify that the URL resolves before staging the image.
+
+---
+
 ## Shared Types
 
 The `image-field-config` module exports the configuration and data types used

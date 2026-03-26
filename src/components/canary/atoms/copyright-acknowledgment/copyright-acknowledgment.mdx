@@ -18,7 +18,33 @@ Mandatory checkbox confirming image ownership or license. Used as a gate before 
 
 ---
 
-## Gate Behavior
+## Baked-In Behaviors
+
+### Controlled Checkbox
+
+`CopyrightAcknowledgment` is fully stateless. It owns no internal checked state. The `acknowledged` prop is the sole source of truth for the checkbox state, and `onAcknowledge` is the only way for the component to report a change. If the parent does not update `acknowledged` in response to `onAcknowledge`, the checkbox will not visually toggle.
+
+### Baked-In Legal Text
+
+The warning text displayed alongside the checkbox is hardcoded inside the component:
+
+> "I confirm that I own this image or have the right to use it. Uploading images you do not own or are not licensed to use may result in account termination."
+
+This text is not a prop and cannot be overridden by the caller. It is intentionally fixed to ensure consistent legal language across all upload surfaces in the product.
+
+### Label Association
+
+The Radix `Checkbox` and its `Label` are linked via a shared `id`/`htmlFor` pair. This means clicking anywhere on the label text (not just the checkbox square itself) toggles the checkbox. The association is implemented with Radix primitives to ensure consistent cross-browser behavior.
+
+### Disabled State
+
+When `disabled` is `true`:
+
+- The Radix `Checkbox` receives the `disabled` attribute, making it non-interactive and removing it from the tab order.
+- The root container receives `data-[disabled]:opacity-50` via Tailwind's data attribute variant, reducing opacity to 50% to visually communicate the inactive state.
+- The `onAcknowledge` callback is never called while the checkbox is disabled.
+
+### Gate Behavior
 
 The component is designed to block the confirm action in upload dialogs until acknowledged. The story below shows the full dialog context: the Confirm button remains disabled until the checkbox is checked.
 
@@ -42,14 +68,6 @@ The component is designed to block the confirm action in upload dialogs until ac
 
 ---
 
-## Purpose
-
-`CopyrightAcknowledgment` is a controlled checkbox atom that ensures users explicitly confirm they own or are licensed to use an image before uploading. When `disabled` is true, the checkbox becomes non-interactive and the container receives `opacity-50`.
-
-The component is intentionally kept stateless &#8212; the parent (e.g., `ImageUploadDialog`) owns the `acknowledged` state and gates the confirm action on it.
-
----
-
 ## Props
 
 <table>
@@ -66,19 +84,19 @@ The component is intentionally kept stateless &#8212; the parent (e.g., `ImageUp
       <td><code>acknowledged</code></td>
       <td><code>boolean</code></td>
       <td>&#8212;</td>
-      <td>Controlled checked state of the checkbox.</td>
+      <td>Controlled checked state of the checkbox. The component renders the checkbox in the checked or unchecked state based solely on this prop.</td>
     </tr>
     <tr>
       <td><code>onAcknowledge</code></td>
       <td><code>(acknowledged: boolean) =&#62; void</code></td>
       <td>&#8212;</td>
-      <td>Called with the new value when the user toggles the checkbox.</td>
+      <td>Called with the new value when the user toggles the checkbox. The parent must update <code>acknowledged</code> to reflect the change.</td>
     </tr>
     <tr>
       <td><code>disabled</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Disables the checkbox and applies <code>opacity-50</code> to the container.</td>
+      <td>Disables the checkbox interaction and applies <code>opacity-50</code> to the container via <code>data-[disabled]</code>.</td>
     </tr>
   </tbody>
 </table>

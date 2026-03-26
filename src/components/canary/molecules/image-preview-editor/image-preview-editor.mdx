@@ -40,17 +40,22 @@ Adjust `aspectRatio` and `imageData` in the Controls panel. The Actions panel lo
     </tr>
     <tr>
       <td>Zoom</td>
-      <td>Slider (1&#8212;3&#215;)</td>
+      <td>Slider (0.5&#8211;3&#215;)</td>
       <td>Scales the image inside the crop area</td>
     </tr>
     <tr>
-      <td>Rotate</td>
-      <td>&#8635; button</td>
-      <td>Increments rotation by 90&#176; per click (0 &#8594; 90 &#8594; 180 &#8594; 270 &#8594; 0)</td>
+      <td>Rotate clockwise</td>
+      <td>Rotate CW button</td>
+      <td>Increments rotation by +90&#176; per click (0 &#8594; 90 &#8594; 180 &#8594; 270 &#8594; 0)</td>
+    </tr>
+    <tr>
+      <td>Rotate counter-clockwise</td>
+      <td>Rotate CCW button (Undo2 icon)</td>
+      <td>Decrements rotation by 90&#176; per click</td>
     </tr>
     <tr>
       <td>Reset</td>
-      <td>&#8634; button</td>
+      <td>Reset button</td>
       <td>Restores zoom to 1&#215;, rotation to 0&#176;, and crop to center</td>
     </tr>
   </tbody>
@@ -61,9 +66,57 @@ a `CropData` object containing `pixelCrop`, `zoom`, and `rotation`.
 
 ---
 
+## Baked-In Behaviors
+
+### Crop Area
+
+The crop viewport is rendered by `react-easy-crop` and fills the available container height. The `aspectRatio` prop is locked &#8212; the crop selection box cannot be resized by the user. Panning is performed by dragging inside the crop area; the image moves under the fixed selection window.
+
+### Zoom Slider
+
+The zoom slider has a range of 0.5&#215; (minimum, zoomed out) to 3&#215; (maximum, zoomed in) with a step of 0.1. The initial zoom value on mount and after reset is 1&#215;, which positions the slider in the lower portion of its range. This allows users to zoom both in and out from the default view.
+
+Every slider change fires `onCropChange` synchronously with the updated zoom value embedded in the `CropData` payload.
+
+### Rotation Buttons
+
+Two rotation buttons sit in the toolbar row below the zoom slider:
+
+- **Clockwise** button: adds +90&#176; to the current rotation value, wrapping from 270&#176; back to 0&#176;.
+- **Counter-clockwise** button (rendered with the Undo2 icon): subtracts 90&#176; from the current rotation, wrapping from 0&#176; back to 270&#176;.
+
+Each button press fires `onCropChange` with the updated rotation.
+
+### Reset
+
+The Reset button restores all three editable dimensions to their initial values:
+
+- Crop position: centered on the image
+- Zoom: 1&#215;
+- Rotation: 0&#176;
+
+After resetting internal state, the component calls `onReset()` to notify the parent. This allows the parent (e.g., `ImageUploadDialog`) to clear any previously stored `CropData` and treat the image as unedited.
+
+### File and Blob Handling
+
+When `imageData` is a `File` or `Blob`, the component calls `URL.createObjectURL()` on mount and stores the resulting object URL. This URL is passed to `react-easy-crop` as the image source. On unmount, the component calls `URL.revokeObjectURL()` to release the browser memory. When `imageData` is already a `string` (URL or data URL), it is used directly with no object URL lifecycle management.
+
+### Toolbar Layout
+
+The toolbar below the crop area is arranged in two rows:
+
+1. **Top row**: the zoom slider spanning the full width, labeled with zoom-out and zoom-in icons on either end.
+2. **Bottom row**: the counter-clockwise rotation button on the left, the clockwise rotation button in the center, and the Reset button on the right.
+
+### Event Emission
+
+`onCropChange` is called on every interactive change &#8212; crop drag, zoom slider movement, or rotation button click. The `CropData` payload always contains the complete current state (`pixelCrop`, `zoom`, `rotation`), not just the field that changed.
+
+---
+
 ## Reset
 
-The Reset button (&#8634;) restores all edit state to defaults and calls `onReset`.
+The Reset button restores all edit state to defaults and calls `onReset`.
 Use this to let users abandon edits and return to the original image.
 
 <Canvas of={ImagePreviewEditorStories.ResetBehavior} />
@@ -95,21 +148,21 @@ Use this to let users abandon edits and return to the original image.
       <td>Runtime</td>
       <td><code>File | Blob | string</code></td>
       <td>Required</td>
-      <td>Image source. <code>File</code> and <code>Blob</code> are converted to object URLs automatically. Strings are treated as URLs.</td>
+      <td>Image source. <code>File</code> and <code>Blob</code> are converted to object URLs automatically and revoked on unmount. Strings are treated as URLs.</td>
     </tr>
     <tr>
       <td><code>onCropChange</code></td>
       <td>Runtime</td>
       <td><code>(cropData: CropData) =&#62; void</code></td>
       <td>Required</td>
-      <td>Called on every crop, zoom, or rotation change with the current <code>CropData</code>.</td>
+      <td>Called on every crop, zoom, or rotation change with the complete current <code>CropData</code>.</td>
     </tr>
     <tr>
       <td><code>onReset</code></td>
       <td>Runtime</td>
       <td><code>() =&#62; void</code></td>
       <td>Required</td>
-      <td>Called when the user clicks the Reset button. Internal state is also reset.</td>
+      <td>Called when the user clicks the Reset button, after internal state has been restored to defaults.</td>
     </tr>
   </tbody>
 </table>
@@ -133,7 +186,7 @@ Use this to let users abandon edits and return to the original image.
     <tr>
       <td><code>zoom</code></td>
       <td><code>number</code></td>
-      <td>Current zoom level (1&#8212;3).</td>
+      <td>Current zoom level (0.5&#8211;3). Initial and reset value is 1.</td>
     </tr>
     <tr>
       <td><code>rotation</code></td>

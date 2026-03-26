@@ -28,6 +28,71 @@ All four states rendered side-by-side.
 
 ---
 
+## Baked-In Behaviors
+
+### Visual States
+
+`ImageDisplay` manages four distinct rendering states internally, driven entirely by `imageUrl` and the native `<img>` element's load/error events:
+
+<table>
+  <thead>
+    <tr>
+      <th>State</th>
+      <th>Trigger condition</th>
+      <th>What renders</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Loading</strong></td>
+      <td><code>imageUrl</code> is a non-null string and the image has not yet resolved</td>
+      <td>Skeleton shimmer (<code>animate-pulse bg-muted</code>) fills the container; no initials, no badge</td>
+    </tr>
+    <tr>
+      <td><strong>Loaded</strong></td>
+      <td><code>imageUrl</code> is a non-null string and the image loaded successfully</td>
+      <td>The <code>&lt;img&gt;</code> element rendered <code>object-cover w-full h-full</code></td>
+    </tr>
+    <tr>
+      <td><strong>Error</strong></td>
+      <td><code>imageUrl</code> is a non-null string but the image failed to load (<code>onError</code> fired)</td>
+      <td>Initials derived from <code>entityTypeDisplayName</code> plus a small destructive badge in the corner indicating a broken image</td>
+    </tr>
+    <tr>
+      <td><strong>No Image</strong></td>
+      <td><code>imageUrl</code> is <code>null</code></td>
+      <td>Initials derived from <code>entityTypeDisplayName</code>; no error badge (distinguishes "no image set" from "broken image")</td>
+    </tr>
+  </tbody>
+</table>
+
+The error badge is deliberately shown only when `imageUrl` is non-null and the load fails. A null URL is a valid "not yet set" state and never triggers an error indication.
+
+### Initials Derivation
+
+The placeholder text shown in the Error and No Image states is produced by `getInitials(entityTypeDisplayName)`. The function takes the first character of each word (up to two words), uppercases the result, and falls back to `"?"` for empty or whitespace-only input. For example: `"Item"` &#8594; `"I"`, `"Spare Part"` &#8594; `"SP"`.
+
+### Container Behavior
+
+The root element fills its parent via `w-full h-full`. No border is applied &#8212; the `bg-muted` background provides sufficient contrast even for white product images. The container clips its content with `rounded` (inherited from the parent in practice; the component itself does not set a border radius).
+
+### Interactive Mode
+
+When both `onImageChange` and `config` are provided, `ImageDisplay` renders its root as a `<button>` element. The following behaviors are baked in automatically:
+
+- Double-clicking the button opens `ImageUploadDialog` internally without any additional wiring from the caller.
+- Pressing Enter while the button is focused also opens the dialog.
+- The dialog opens in **EditExisting** mode when `imageUrl` is non-null, or **EmptyImage** mode when `imageUrl` is null.
+- On dialog confirm, `onImageChange` is called with the new image URL.
+- On dialog cancel or backdrop dismiss, the dialog closes silently; `onImageChange` is not called.
+- The button receives `aria-label`, `focus-visible:ring-2`, `cursor-pointer`, and `hover:border-primary/50` for keyboard and pointer affordances.
+
+### Passive Mode
+
+When `onImageChange` is **not** provided, the root element is a `<div>`. No click, double-click, or keyboard handlers are attached. The component is purely a display renderer with no interaction surface.
+
+---
+
 ## Design Decision: No Border
 
 The container uses `bg-muted` as its background. No border is applied &#8212; the muted background
@@ -70,6 +135,20 @@ provides sufficient contrast even for white product images.
       <td><code>string</code></td>
       <td>Required</td>
       <td>Display name of the image property (e.g. &#8220;Product Image&#8221;). Reserved for tooltips and accessibility labels in future iterations.</td>
+    </tr>
+    <tr>
+      <td><code>onImageChange</code></td>
+      <td>Runtime</td>
+      <td><code>((imageUrl: string | null) =&#62; void) | undefined</code></td>
+      <td><code>undefined</code></td>
+      <td>When provided (along with <code>config</code>), switches the root element to a <code>&lt;button&gt;</code> and enables the interactive edit flow via double-click or Enter.</td>
+    </tr>
+    <tr>
+      <td><code>config</code></td>
+      <td>Init</td>
+      <td><code>ImageFieldConfig | undefined</code></td>
+      <td><code>undefined</code></td>
+      <td>Field configuration required for the internal <code>ImageUploadDialog</code>. Must be provided together with <code>onImageChange</code> to enable interactive mode.</td>
     </tr>
   </tbody>
 </table>

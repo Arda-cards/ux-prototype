@@ -7,8 +7,8 @@ import * as Stories from './image-form-field.stories';
 # ImageFormField
 
 Form field renderer for entity image fields. Wraps an `ImageDisplay` thumbnail inside an
-`ImageHoverPreview` trigger and surfaces hover action icons for inspecting, editing, and
-removing the image.
+`ImageHoverPreview` trigger and surfaces hover action icons for inspecting and removing the
+image. Edit is triggered by double-clicking the thumbnail directly.
 
 **Molecule** &#8212; Canary | Import: `@/components/canary/molecules/form/image`
 
@@ -16,17 +16,50 @@ removing the image.
 
 ## Overview
 
-`ImageFormField` manages the full read &#8212; and remove &#8212; surface for a single image property on
-an entity form. Upload and crop are delegated to a parent dialog (opened via the Pencil action).
+`ImageFormField` manages the full read-and-remove surface for a single image property on
+an entity form. Upload and crop are handled internally by `ImageDisplay` when double-clicked
+&#8212; no additional wiring is required from the parent form.
 
-Key behaviours:
+---
 
-- Thumbnail renders at `w-24 h-24` by default; the container clips with `rounded-lg`.
-- Hover overlay fades in via `opacity-0 group-hover:opacity-100 transition-opacity`.
-- Eye and Trash actions are only shown when an image URL is present.
-- Remove confirmation is an `AlertDialog` (no accidental deletes).
-- Double-clicking the thumbnail is equivalent to clicking the Pencil icon.
-- `disabled` prop sets `opacity-50 pointer-events-none` on the root.
+## Baked-In Behaviors
+
+### Interactive Thumbnail
+
+`ImageFormField` passes both `onImageChange` and `config` to the internal `ImageDisplay`. This switches `ImageDisplay` into interactive mode, rendering its root as a `<button>`. Double-clicking or pressing Enter on the thumbnail opens `ImageUploadDialog` directly inside `ImageDisplay` &#8212; no additional event handlers or state management is required from `ImageFormField` or the parent form.
+
+### Hover Overlay
+
+The thumbnail container is a CSS `group`. When the pointer enters the container, the overlay div transitions from `opacity-0` to `opacity-100` via `group-hover:opacity-100 transition-opacity`. The overlay itself is `pointer-events-none`, which means it does not intercept clicks or double-clicks directed at the `ImageDisplay` button beneath it. Individual icon buttons within the overlay use `pointer-events-auto` to re-enable pointer events only on the buttons themselves.
+
+### Eye Icon (Inspect)
+
+The Eye icon button opens `ImageInspectorOverlay` in controlled mode. `ImageFormField` owns the boolean `inspectorOpen` state and sets it to `true` when the button is clicked, then to `false` when `onClose` fires. The Eye button is rendered only when `imageUrl` is non-null &#8212; there is no image to inspect when the field is empty.
+
+### Trash Icon (Remove)
+
+The Trash icon button opens an `AlertDialog` confirmation dialog. The dialog contains a destructive "Remove" confirm action and a "Cancel" action. Clicking "Remove" calls `onChange(null)`, which signals the parent form that the image has been removed. The Trash button is suppressed when `imageUrl` is null.
+
+### No Pencil Icon
+
+There is no separate pencil/edit icon in the hover overlay. Edit access is provided exclusively by double-clicking (or pressing Enter on) the thumbnail itself, which is wired through `ImageDisplay`'s interactive mode. This avoids a redundant affordance that would conflict with the double-click behavior.
+
+### Remove Confirmation Flow
+
+The remove flow uses an `AlertDialog` (not a plain `confirm()` dialog) to prevent accidental deletions:
+
+1. User hovers the thumbnail and clicks the Trash icon.
+2. `AlertDialog` opens with the prompt "Are you sure you want to remove this image?".
+3. Clicking "Remove" (destructive variant) &#8594; `onChange(null)` is called; dialog closes.
+4. Clicking "Cancel" &#8594; dialog closes; `onChange` is not called; the image URL is unchanged.
+
+### Disabled State
+
+When the `disabled` prop is `true`, the root container receives `opacity-50 pointer-events-none`. This visually dims the entire field and prevents all pointer and keyboard interaction, including the hover overlay, Eye button, Trash button, and double-click thumbnail editing.
+
+### Label
+
+The `propertyDisplayName` from `config` is rendered as a text label below the thumbnail in `text-sm text-muted-foreground`. This label is always visible (not just on hover).
 
 ---
 
@@ -40,7 +73,7 @@ Adjust `imageUrl` and `disabled` in the Controls panel.
 
 ## Hover Affordances
 
-Three icons appear on hover. Eye and Trash require an image; Pencil is always present.
+Eye and Trash icons appear on hover when an image is present. Edit is via double-click on the thumbnail.
 
 <Canvas of={Stories.HoverAffordances} />
 
@@ -79,7 +112,8 @@ Start with an image, hover the thumbnail, click the Trash icon, then confirm rem
       <td>Required</td>
       <td>
         Field configuration. Provides <code>entityTypeDisplayName</code>,
-        <code>propertyDisplayName</code>, and upload constraints used by the upload dialog.
+        <code>propertyDisplayName</code>, and upload constraints passed to <code>ImageDisplay</code>
+        and the internal <code>ImageUploadDialog</code>.
       </td>
     </tr>
     <tr>
@@ -106,8 +140,8 @@ Start with an image, hover the thumbnail, click the Trash icon, then confirm rem
       </td>
       <td>Required</td>
       <td>
-        Called when the image changes. Receives <code>null</code> when the user confirms removal.
-        Will receive a new URL when upload is wired in a future iteration.
+        Called when the image changes. Receives <code>null</code> when the user confirms removal,
+        or a new URL string after a successful upload via the thumbnail dialog.
       </td>
     </tr>
     <tr>
@@ -123,7 +157,7 @@ Start with an image, hover the thumbnail, click the Trash icon, then confirm rem
       </td>
       <td>
         When <code>true</code>, applies <code>opacity-50 pointer-events-none</code> &#8212; the
-        field is fully read-only.
+        field is fully read-only and non-interactive.
       </td>
     </tr>
   </tbody>

@@ -29,6 +29,70 @@ comparison chrome &#8212; useful for new-record forms where no existing image ex
 
 ---
 
+## Baked-In Behaviors
+
+### Pass-Through Mode
+
+When `existingImageUrl` is `null`, the component renders only `children` with no layout wrapper, no labels, no tabs, and no action footer. This mode is intended for new-record contexts where there is no existing image to compare against.
+
+### Desktop Side-by-Side Layout
+
+At the `md:` breakpoint and wider, the layout uses a flex row with two panels:
+
+- **Left panel (Current)**: A read-only `ImageDisplay` showing the existing image. No `onImageChange` or `config` is passed, so the display renders as a passive `<div>` with no interaction handlers. The panel is labeled "Current" in `text-muted-foreground text-sm` above the image.
+- **Right panel (New)**: The `children` prop, rendered in the remaining space. Labeled "New" in the same style.
+
+A vertical `border-r` divider separates the two panels.
+
+### Mobile Tabs Layout
+
+Below the `md:` breakpoint, the two panels are presented inside a Radix `Tabs` component. The tabs have `defaultValue="new"`, meaning the "New" tab is active when the dialog first opens on mobile. This ensures the user immediately sees the upload or editor surface rather than the read-only current image.
+
+Switching to the "Current" tab shows the read-only `ImageDisplay` of the existing image. Tabs are labeled "Current" and "New".
+
+### Current Image Read-Only Guarantee
+
+The `ImageDisplay` used for the "Current" panel is always instantiated without `onImageChange` or `config`. This is a structural guarantee &#8212; even if the parent provides these props to `ImageComparisonLayout`, they are never forwarded to the current image display. The current image can never be clicked or edited through this component.
+
+### Action Footer
+
+When any of `onAccept`, `onDismiss`, or `onUploadNew` is provided, an action footer is rendered below the comparison panels. Each button appears only when its corresponding prop is present:
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Button label</th>
+      <th>Variant</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>onAccept</code></td>
+      <td>Accept</td>
+      <td>Primary</td>
+      <td>Confirms the new image and propagates the change</td>
+    </tr>
+    <tr>
+      <td><code>onDismiss</code></td>
+      <td>Dismiss</td>
+      <td>Secondary (outline)</td>
+      <td>Discards the staged image and returns to the previous state</td>
+    </tr>
+    <tr>
+      <td><code>onUploadNew</code></td>
+      <td>Upload New Image</td>
+      <td>Secondary (outline)</td>
+      <td>Navigates the parent dialog back to the drop zone to start over</td>
+    </tr>
+  </tbody>
+</table>
+
+If none of the three action props are provided, no footer is rendered. The layout then acts as a pure display container.
+
+---
+
 ## Desktop Side-by-Side
 
 <Canvas of={Stories.DesktopSideBySide} />
@@ -106,6 +170,27 @@ rendered. This is the pass-through mode for new-record forms.
         Display name of the image property (e.g. &#8220;Product Image&#8221;). Passed to
         <code>ImageDisplay</code> for accessibility labels.
       </td>
+    </tr>
+    <tr>
+      <td><code>onAccept</code></td>
+      <td>Runtime</td>
+      <td><code>(() =&#62; void) | undefined</code></td>
+      <td><code>undefined</code></td>
+      <td>When provided, an Accept (primary) button is rendered in the action footer.</td>
+    </tr>
+    <tr>
+      <td><code>onDismiss</code></td>
+      <td>Runtime</td>
+      <td><code>(() =&#62; void) | undefined</code></td>
+      <td><code>undefined</code></td>
+      <td>When provided, a Dismiss (secondary) button is rendered in the action footer.</td>
+    </tr>
+    <tr>
+      <td><code>onUploadNew</code></td>
+      <td>Runtime</td>
+      <td><code>(() =&#62; void) | undefined</code></td>
+      <td><code>undefined</code></td>
+      <td>When provided, an &#8220;Upload New Image&#8221; (secondary) button is rendered in the action footer.</td>
     </tr>
   </tbody>
 </table>

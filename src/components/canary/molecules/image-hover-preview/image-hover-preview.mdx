@@ -23,6 +23,42 @@ Hover the thumbnail to trigger the preview.
 
 ---
 
+## Baked-In Behaviors
+
+### Hover Delay
+
+The popover does not open immediately on `mouseenter`. Instead, a 500ms `setTimeout` is started. If the pointer leaves the trigger before the timer fires, `clearTimeout` cancels it and the popover never opens. This prevents popover flicker when the user moves the pointer across multiple cells or thumbnails in rapid succession.
+
+On `mouseleave`, the popover is closed immediately with no delay. The cancel/open timer is always cleared on leave regardless of whether it has fired.
+
+### Popover Dimensions and Position
+
+The popover content is sized to 256&#215;256 pixels (`w-64 h-64`). It is positioned with `sideOffset={-4}`, which causes it to overlap the trigger element by 4 pixels. This small overlap eliminates the gap between the trigger boundary and the popover edge &#8212; without it, moving the pointer toward the popover would cross a gap and trigger a `mouseleave` event, closing the popover before the user could read it.
+
+### Null Suppression
+
+When `imageUrl` is `null`, the hover timer is never started and the `Popover` controlled state remains `false`. No preview appears regardless of how long the pointer hovers. This applies both to the initial null state and to any runtime transition from a non-null URL to null &#8212; the timer is cleared when `imageUrl` changes to null.
+
+### Not a Modal
+
+`ImageHoverPreview` uses a `Popover`, not a `Dialog`. There is no focus trap, no backdrop overlay, and no keyboard-dismissible modal. The popover is purely a visual affordance triggered by pointer proximity.
+
+### Focus Prevention
+
+The popover's `onOpenAutoFocus` callback calls `e.preventDefault()`. This prevents the Radix `Popover.Content` from stealing keyboard focus when it opens, which would be disruptive in a grid or form context where the user may be navigating with Tab or arrow keys.
+
+### Timer Cleanup
+
+The hover timer is cleared in three situations:
+
+1. `mouseleave` fires on the trigger element.
+2. The component unmounts (cleanup in `useEffect`).
+3. `imageUrl` changes to null while a timer is pending.
+
+This prevents a stale timer from opening the popover after the component has unmounted or after the URL has been removed.
+
+---
+
 ## Error Suppression
 
 When `imageUrl` is `null`, or when the image enters an error state, the popover is suppressed
