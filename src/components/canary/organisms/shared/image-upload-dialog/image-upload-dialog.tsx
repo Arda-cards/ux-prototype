@@ -292,9 +292,16 @@ export function ImageUploadDialog({
             </DialogTitle>
           </DialogHeader>
 
-          {/* EditExisting state */}
+          {/* EditExisting state — side-by-side with baked-in action buttons */}
           {phase.name === 'EditExisting' && (
-            <div className="flex flex-col gap-4">
+            <ImageComparisonLayout
+              existingImageUrl={phase.imageUrl}
+              entityTypeDisplayName={config.entityTypeDisplayName}
+              propertyDisplayName={config.propertyDisplayName}
+              onAccept={() => void handleEditConfirm()}
+              onDismiss={onCancel}
+              onUploadNew={() => dispatch({ type: 'UPLOAD_NEW' })}
+            >
               <ImagePreviewEditor
                 aspectRatio={config.aspectRatio}
                 imageData={phase.imageUrl}
@@ -305,7 +312,7 @@ export function ImageUploadDialog({
                   cropDataRef.current = null;
                 }}
               />
-            </div>
+            </ImageComparisonLayout>
           )}
 
           {/* EmptyImage state */}
@@ -378,31 +385,8 @@ export function ImageUploadDialog({
             </div>
           )}
 
-          {/* Footer — EditExisting */}
-          {phase.name === 'EditExisting' && (
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => dispatch({ type: 'UPLOAD_NEW' })}
-              >
-                Upload New Image
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                className="bg-secondary text-secondary-foreground"
-                onClick={onCancel}
-              >
-                Dismiss
-              </Button>
-              <Button type="button" onClick={() => void handleEditConfirm()}>
-                Accept
-              </Button>
-            </DialogFooter>
-          )}
-
           {/* Footer — hidden during upload, shown for ProvidedImage/Warn */}
+          {/* EditExisting footer is baked into ImageComparisonLayout above */}
           {!isUploading &&
             phase.name !== 'EmptyImage' &&
             phase.name !== 'FailedValidation' &&

@@ -3,6 +3,7 @@ import * as React from 'react';
 import { cn } from '@/types/canary/utilities/utils';
 import { ImageDisplay } from '@/components/canary/molecules/image-display/image-display';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/canary/primitives/tabs';
+import { Button } from '@/components/canary/primitives/button';
 
 // --- Interfaces ---
 
@@ -23,6 +24,12 @@ export interface ImageComparisonLayoutRuntimeProps {
   existingImageUrl: string | null;
   /** New image content, typically an ImagePreviewEditor. */
   children: React.ReactNode;
+  /** Accept the edited image. When provided, renders an "Accept" button. */
+  onAccept?: () => void;
+  /** Dismiss without changes. When provided, renders a "Dismiss" button. */
+  onDismiss?: () => void;
+  /** Switch to upload surface. When provided, renders an "Upload New Image" button. */
+  onUploadNew?: () => void;
 }
 
 /** Combined props for ImageComparisonLayout. */
@@ -48,7 +55,11 @@ export function ImageComparisonLayout({
   entityTypeDisplayName,
   propertyDisplayName,
   children,
+  onAccept,
+  onDismiss,
+  onUploadNew,
 }: ImageComparisonLayoutProps) {
+  const hasActions = onAccept !== undefined || onDismiss !== undefined || onUploadNew !== undefined;
   // Pass-through mode: no existing image to compare against
   if (existingImageUrl === null) {
     return (
@@ -104,6 +115,27 @@ export function ImageComparisonLayout({
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Action footer — rendered when any action callback is provided */}
+      {hasActions && (
+        <div className={cn('flex items-center justify-end gap-2 pt-4 border-t border-border mt-4')}>
+          {onUploadNew !== undefined && (
+            <Button type="button" variant="secondary" onClick={onUploadNew}>
+              Upload New Image
+            </Button>
+          )}
+          {onDismiss !== undefined && (
+            <Button type="button" variant="secondary" onClick={onDismiss}>
+              Dismiss
+            </Button>
+          )}
+          {onAccept !== undefined && (
+            <Button type="button" onClick={onAccept}>
+              Accept
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

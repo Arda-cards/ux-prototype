@@ -9,18 +9,6 @@ import {
 import { ImageComparisonLayout } from './image-comparison-layout';
 import { ImagePreviewEditor } from '@/components/canary/molecules/image-preview-editor/image-preview-editor';
 
-/** Placeholder representing new image content (e.g. ImagePreviewEditor). */
-function NewImagePlaceholder({ label = 'New Image Area' }: { label?: string }) {
-  return (
-    <div
-      className="w-full aspect-square max-w-64 rounded bg-muted/50 border border-dashed border-border flex items-center justify-center"
-      aria-label={label}
-    >
-      <span className="text-sm text-muted-foreground">{label}</span>
-    </div>
-  );
-}
-
 const meta = {
   title: 'Components/Canary/Molecules/ImageComparisonLayout',
   component: ImageComparisonLayout,
@@ -46,6 +34,7 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof ImageComparisonLayout>;
+/** Desktop side-by-side with baked-in Accept/Dismiss/Upload New buttons. */
 export const DesktopSideBySide: Story = {
   render: () => (
     <div className="max-w-2xl">
@@ -53,8 +42,16 @@ export const DesktopSideBySide: Story = {
         existingImageUrl={MOCK_ITEM_IMAGE}
         entityTypeDisplayName={ITEM_IMAGE_CONFIG.entityTypeDisplayName}
         propertyDisplayName={ITEM_IMAGE_CONFIG.propertyDisplayName}
+        onAccept={() => alert('Accept: apply edits')}
+        onDismiss={() => alert('Dismiss: discard changes')}
+        onUploadNew={() => alert('Upload New: switch to upload surface')}
       >
-        <NewImagePlaceholder label="Drop or select new image" />
+        <ImagePreviewEditor
+          aspectRatio={ITEM_IMAGE_CONFIG.aspectRatio}
+          imageData={MOCK_ITEM_IMAGE}
+          onCropChange={() => {}}
+          onReset={() => {}}
+        />
       </ImageComparisonLayout>
     </div>
   ),
@@ -66,6 +63,7 @@ export const DesktopSideBySide: Story = {
  * The viewport is hinted to mobile1 so Storybook renders at a phone width,
  * showing the Tabs interface instead of the desktop side-by-side layout.
  */
+/** Mobile tabbed layout — viewport hinted to phone width. */
 export const MobileTabs: Story = {
   parameters: {
     viewport: { defaultViewport: 'mobile1' },
@@ -76,7 +74,12 @@ export const MobileTabs: Story = {
       entityTypeDisplayName={ITEM_IMAGE_CONFIG.entityTypeDisplayName}
       propertyDisplayName={ITEM_IMAGE_CONFIG.propertyDisplayName}
     >
-      <NewImagePlaceholder label="Drop or select new image" />
+      <ImagePreviewEditor
+        aspectRatio={ITEM_IMAGE_CONFIG.aspectRatio}
+        imageData={MOCK_ITEM_IMAGE}
+        onCropChange={() => {}}
+        onReset={() => {}}
+      />
     </ImageComparisonLayout>
   ),
 };
@@ -87,6 +90,7 @@ export const MobileTabs: Story = {
  * When `existingImageUrl` is `null` the component renders only `children`
  * without any comparison UI.
  */
+/** No existing image &#8212; pass-through mode, only children rendered. */
 export const NoExistingImage: Story = {
   render: () => (
     <div className="max-w-2xl">
@@ -95,7 +99,12 @@ export const NoExistingImage: Story = {
         entityTypeDisplayName={ITEM_IMAGE_CONFIG.entityTypeDisplayName}
         propertyDisplayName={ITEM_IMAGE_CONFIG.propertyDisplayName}
       >
-        <NewImagePlaceholder label="No existing image — full width" />
+        <ImagePreviewEditor
+          aspectRatio={ITEM_IMAGE_CONFIG.aspectRatio}
+          imageData="https://picsum.photos/seed/arda-new-image/400/400"
+          onCropChange={() => {}}
+          onReset={() => {}}
+        />
       </ImageComparisonLayout>
     </div>
   ),
@@ -107,30 +116,12 @@ export const NoExistingImage: Story = {
  * The ImageDisplay for the existing image shows the initials placeholder with
  * an error badge, while the new image area remains functional.
  */
+/** Broken existing image &#8212; shows initials + error badge on Current side. */
 export const ExistingImageBroken: Story = {
   render: () => (
     <div className="max-w-2xl">
       <ImageComparisonLayout
         existingImageUrl={MOCK_BROKEN_IMAGE}
-        entityTypeDisplayName={ITEM_IMAGE_CONFIG.entityTypeDisplayName}
-        propertyDisplayName={ITEM_IMAGE_CONFIG.propertyDisplayName}
-      >
-        <NewImagePlaceholder label="Replace with new image" />
-      </ImageComparisonLayout>
-    </div>
-  ),
-};
-
-/**
- * With new image in editor &#8212; Current shows the existing image (read-only),
- * New shows the ImagePreviewEditor with crop/zoom/rotate controls.
- * This is the view the user sees after providing a new image in the upload flow.
- */
-export const WithNewImageEditor: Story = {
-  render: () => (
-    <div className="max-w-2xl">
-      <ImageComparisonLayout
-        existingImageUrl={MOCK_ITEM_IMAGE}
         entityTypeDisplayName={ITEM_IMAGE_CONFIG.entityTypeDisplayName}
         propertyDisplayName={ITEM_IMAGE_CONFIG.propertyDisplayName}
       >
@@ -155,10 +146,13 @@ export const Playground: Story = {
   render: (args) => (
     <div className="max-w-2xl">
       <ImageComparisonLayout {...args}>
-        <NewImagePlaceholder />
+        <ImagePreviewEditor
+          aspectRatio={ITEM_IMAGE_CONFIG.aspectRatio}
+          imageData={args.existingImageUrl ?? MOCK_ITEM_IMAGE}
+          onCropChange={() => {}}
+          onReset={() => {}}
+        />
       </ImageComparisonLayout>
     </div>
   ),
 };
-
-/** Desktop side-by-side layout with an existing image and a new image placeholder. */

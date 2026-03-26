@@ -42,12 +42,21 @@ vi.mock('@/components/canary/molecules/image-comparison-layout/image-comparison-
   ImageComparisonLayout: ({
     existingImageUrl,
     children,
+    onAccept,
+    onDismiss,
+    onUploadNew,
   }: {
     existingImageUrl: string | null;
     children: React.ReactNode;
+    onAccept?: () => void;
+    onDismiss?: () => void;
+    onUploadNew?: () => void;
   }) => (
     <div data-testid="image-comparison-layout" data-existing-url={existingImageUrl ?? ''}>
       {children}
+      {onAccept && <button onClick={onAccept}>Accept</button>}
+      {onDismiss && <button onClick={onDismiss}>Dismiss</button>}
+      {onUploadNew && <button onClick={onUploadNew}>Upload New Image</button>}
     </div>
   ),
 }));
