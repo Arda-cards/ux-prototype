@@ -1,0 +1,204 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Workflows/Providing Feedback" />
+
+# Providing Feedback on Stories and Components
+
+This guide covers the end-to-end workflow for reviewing UI components and stories using **Agentation** (DOM-level annotation) and **Hypothesis** (persistent threaded discussion). The two tools are integrated: Agentation captures feedback on specific elements, and Hypothesis persists it for team discussion.
+
+> **Prerequisites.** You need a [Hypothesis account](https://hypothes.is/signup) and membership in the `arda-products` group. See the [documentation site commenting guide](https://arda-cards.github.io/documentation/about/commenting/) for setup instructions.
+
+## Quick Reference
+
+<table>
+  <thead>
+    <tr>
+      <th>Action</th>
+      <th>Tool</th>
+      <th>How</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Annotate a specific DOM element</td>
+      <td>Agentation</td>
+      <td>Toggle overlay, click element, write comment</td>
+    </tr>
+    <tr>
+      <td>Persist annotations for team discussion</td>
+      <td>Hypothesis (via bridge)</td>
+      <td>Click <strong>Copy feedback</strong> in the Agentation toolbar</td>
+    </tr>
+    <tr>
+      <td>Reply to or discuss an annotation</td>
+      <td>Hypothesis sidebar</td>
+      <td>Open the <code>&lt;</code> tab on the right edge of the story</td>
+    </tr>
+    <tr>
+      <td>File GitHub issues from annotations</td>
+      <td>Claude Code skill</td>
+      <td>Paste the clipboard JSON into <code>/agentation-feedback</code></td>
+    </tr>
+  </tbody>
+</table>
+
+## Step-by-Step Workflow
+
+### 1. Enable Agentation
+
+- Click the **chat bubble icon** in the Storybook toolbar, or press **Ctrl+Shift+A**.
+- The overlay appears. You can now click any element to annotate it.
+
+### 2. Create Annotations
+
+- **Click** an element in the story to select it.
+- A comment dialog appears. Write your feedback.
+- Set the **intent** (`fix`, `change`, `question`, or `approve`) and **severity** (`blocking`, `important`, `suggestion`).
+- Click **Save** to store the annotation locally.
+- Repeat for all elements you want to review.
+
+> Annotations are stored in your browser&#8217;s localStorage with a 7-day TTL. They are **not** shared with the team until you post them to Hypothesis.
+
+### 3. Post to Hypothesis
+
+When you&#8217;re ready to share your feedback:
+
+1. Click the **Copy feedback** button (clipboard icon) in the Agentation toolbar.
+2. The bridge automatically:
+   - Posts each annotation to Hypothesis in the `arda-products` group with the `Forensic` tag
+   - Clears the annotations from Agentation
+   - Copies the raw annotation JSON to your clipboard (for the Claude Code skill)
+   - Briefly resets the Agentation overlay so you can continue annotating
+
+You will see a console message: `[hypothesis-bridge] Posted N annotation(s) to Hypothesis`.
+
+### 4. View and Discuss in Hypothesis
+
+After posting, open the **Hypothesis sidebar** by clicking the `<` tab on the right edge of the story viewport.
+
+- Make sure you are **logged in** and the **arda-products** group is selected.
+- Your annotations appear in the sidebar, ready for threaded replies and discussion.
+
+### 5. (Optional) File GitHub Issues
+
+The clipboard still contains the Agentation JSON from Step 3. You can paste it into Claude Code:
+
+```
+/agentation-feedback [paste JSON]
+```
+
+This creates prioritized GitHub issues in `Arda-cards/management` with the reviewer&#8217;s comment, component path, and suggested approach.
+
+## Where Annotations Appear in Hypothesis
+
+Annotations show up in different places depending on whether the annotated element has visible text content:
+
+<table>
+  <thead>
+    <tr>
+      <th>Scenario</th>
+      <th>Hypothesis location</th>
+      <th>Badge on page?</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Element has visible text (e.g., a button label, a heading)</td>
+      <td><strong>Annotations</strong> tab &#8212; anchored to the element&#8217;s text, with a yellow highlight</td>
+      <td>Yes &#8212; a numbered grey badge appears on the element after page reload</td>
+    </tr>
+    <tr>
+      <td>Element has no visible text (e.g., an empty container, a spacer, a background area)</td>
+      <td><strong>Page Notes</strong> tab &#8212; attached to the page but not anchored to specific text</td>
+      <td>No &#8212; no badge is shown because the element cannot be reliably located after reload</td>
+    </tr>
+  </tbody>
+</table>
+
+> **Tip.** To ensure your annotation gets a badge and text highlight, annotate elements that contain visible text &#8212; buttons, labels, headings, table cells, etc. If you need to comment on a layout or spacing issue in an empty area, the annotation will still be visible in the **Page Notes** tab of the Hypothesis sidebar.
+
+### Understanding the Sidebar Tabs
+
+The Hypothesis sidebar has two tabs:
+
+- **Annotations** &#8212; Shows annotations anchored to specific text on the page. These have a yellow highlight on the story content and a grey numbered badge from the highlight layer.
+- **Page Notes** &#8212; Shows annotations attached to the page but not anchored to specific text. These are used when the annotated element had no visible text content.
+
+Both tabs support **threaded replies**. Click the reply icon on any annotation to start a discussion.
+
+## Tags on Hypothesis Annotations
+
+Every annotation posted through the bridge carries these tags:
+
+<table>
+  <thead>
+    <tr>
+      <th>Tag</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Forensic</code></td>
+      <td>Identifies annotations created through the Agentation &#8594; Hypothesis bridge</td>
+    </tr>
+    <tr>
+      <td><code>agentation</code></td>
+      <td>Origin marker &#8212; distinguishes bridge annotations from manually created Hypothesis annotations</td>
+    </tr>
+    <tr>
+      <td><code>selector:&lt;cssPath&gt;</code></td>
+      <td>The CSS selector of the annotated element, used by the highlight badge layer</td>
+    </tr>
+    <tr>
+      <td>Intent tag (e.g., <code>fix</code>)</td>
+      <td>The reviewer&#8217;s intent classification, if set</td>
+    </tr>
+    <tr>
+      <td>Severity tag (e.g., <code>blocking</code>)</td>
+      <td>The reviewer&#8217;s severity classification, if set</td>
+    </tr>
+  </tbody>
+</table>
+
+You can use these tags to filter annotations in the Hypothesis sidebar search or in the [Hypothesis Notebook](https://hypothes.is/notebook).
+
+## The Grey Badge Overlay
+
+After a page reload, the **highlight layer** fetches all `agentation`-tagged annotations from Hypothesis for the current story and renders grey numbered badges on elements that have a valid CSS selector.
+
+- Badges are **color-coded by severity**: red (blocking), orange (important), blue (suggestion), grey (no severity).
+- **Hover** over a badge to see a tooltip with the annotation comment.
+- Badges **reposition automatically** when the viewport resizes or the DOM changes.
+- Badges appear only for annotations with a non-empty `selector:` tag &#8212; page notes do not generate badges.
+
+## Troubleshooting
+
+**Annotations don&#8217;t appear in the sidebar after Copy**
+- Hard-reload the page (Cmd+Shift+R / Ctrl+Shift+R).
+- Ensure you are logged in to Hypothesis and have `arda-products` selected.
+- Check the browser console for `[hypothesis-bridge]` error messages.
+
+**The Hypothesis sidebar shows &#8220;no annotations&#8221; but the Notebook has them**
+- The annotation&#8217;s URI may not match the current page. This can happen if Storybook&#8217;s URL changed between when the annotation was created and when you&#8217;re viewing.
+
+**Badges don&#8217;t appear after reload**
+- The annotation&#8217;s CSS selector may be empty (annotated the root `html` element) or the DOM structure may have changed since the annotation was created.
+- Check that the `HYPOTHESIS_API_TOKEN` environment variable is set when starting Storybook.
+
+**Copy button doesn&#8217;t seem to do anything**
+- Open the browser console (F12) and look for `[hypothesis-bridge]` messages.
+- Ensure Storybook was started with `HYPOTHESIS_API_TOKEN` set:
+  ```bash
+  HYPOTHESIS_API_TOKEN=$(op read 'op://Private/Hypothesis-API/credential') npx storybook dev
+  ```
+
+## Environment Setup
+
+The Hypothesis bridge requires an API token to post annotations. Start Storybook with:
+
+```bash
+HYPOTHESIS_API_TOKEN=$(op read 'op://Private/Hypothesis-API/credential') npx storybook dev
+```
+
+Without the token, annotation posting will fail with a 500 error. The Hypothesis sidebar (for reading and replying) works without the token &#8212; it uses your browser login session.

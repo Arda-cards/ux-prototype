@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // This file has been automatically migrated to valid ESM format by Storybook.
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
@@ -90,6 +91,61 @@ const config: StorybookConfig = {
           return { code: transformed, map: null };
         }
         return null;
+      },
+    });
+
+    // Vite plugin to proxy Hypothesis API requests.
+    const HYPOTHESIS_API_BASE = 'https://hypothes.is/api';
+    config.plugins.push({
+      name: 'hypothesis-api-proxy',
+      configureServer(server) {
+        server.middlewares.use('/hypothesis-proxy', (req, res) => {
+          const token = process.env['HYPOTHESIS_API_TOKEN'];
+          if (!token) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'HYPOTHESIS_API_TOKEN not set' }));
+            return;
+          }
+
+          const chunks: Buffer[] = [];
+          req.on('data', (chunk: Buffer) => chunks.push(chunk));
+          req.on('end', async () => {
+            const body = Buffer.concat(chunks).toString('utf-8');
+            const url = req.url || '';
+            const method = req.method || 'GET';
+
+            let hypothesisUrl: string;
+            if (url.startsWith('/search')) {
+              hypothesisUrl = `${HYPOTHESIS_API_BASE}${url}`;
+            } else if (url.startsWith('/annotations')) {
+              hypothesisUrl = `${HYPOTHESIS_API_BASE}${url}`;
+            } else {
+              res.writeHead(404, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: 'Not found' }));
+              return;
+            }
+
+            try {
+              const fetchOpts: RequestInit = {
+                method,
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+                },
+              };
+              if (method === 'POST' || method === 'PATCH') {
+                fetchOpts.body = body;
+              }
+              const upstream = await fetch(hypothesisUrl, fetchOpts);
+              const responseBody = await upstream.text();
+              res.writeHead(upstream.status, { 'Content-Type': 'application/json' });
+              res.end(responseBody);
+            } catch (err) {
+              res.writeHead(502, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: String(err) }));
+            }
+          });
+        });
       },
     });
 

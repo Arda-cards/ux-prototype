@@ -1,0 +1,21 @@
+<script>
+  // Normalize Storybook iframe URL for Hypothesis annotation matching.
+  // Strip volatile params (globals, args) keeping id and viewMode.
+  (function() {
+    try {
+      var url = new URL(window.location.href);
+      var id = url.searchParams.get('id');
+      if (id) {
+        var clean = url.origin + url.pathname + '?id=' + encodeURIComponent(id);
+        var viewMode = url.searchParams.get('viewMode');
+        if (viewMode) {
+          clean += '&viewMode=' + encodeURIComponent(viewMode);
+        }
+        var link = document.createElement('link');
+        link.rel = 'canonical';
+        link.href = clean;
+        document.head.appendChild(link);
+      }
+    } catch(e) {}
+  })();
+</script>

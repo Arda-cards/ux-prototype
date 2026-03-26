@@ -1,0 +1,28 @@
+<script>
+  // Dynamically generate Hypothesis config with normalized document URI.
+  (function() {
+    var config = {
+      openSidebar: false,
+      showHighlights: "whenSidebarOpen",
+      branding: { appBackgroundColor: "#f5f5f5" }
+    };
+    try {
+      var url = new URL(window.location.href);
+      var id = url.searchParams.get('id');
+      if (id) {
+        var clean = url.origin + url.pathname + '?id=' + encodeURIComponent(id);
+        var viewMode = url.searchParams.get('viewMode');
+        if (viewMode) {
+          clean += '&viewMode=' + encodeURIComponent(viewMode);
+        }
+        config.document = { uri: clean };
+      }
+    } catch(e) {}
+    var script = document.createElement('script');
+    script.type = 'application/json';
+    script.className = 'js-hypothesis-config';
+    script.textContent = JSON.stringify(config);
+    document.head.appendChild(script);
+  })();
+</script>
+<script src="https://hypothes.is/embed.js" async></script>
