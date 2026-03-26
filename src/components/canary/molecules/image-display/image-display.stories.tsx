@@ -344,21 +344,17 @@ function ImageEditScene({ sceneIndex }: { sceneIndex: number }) {
         </div>
       );
 
-    // Scene 2: EditExisting — side-by-side comparison
+    // Scene 2: EditExisting — side-by-side comparison with baked-in action buttons
     case 1:
       return (
-        <DialogFrame
-          title="Edit Product Image"
-          footer={
-            <Button variant="secondary" disabled>
-              Dismiss
-            </Button>
-          }
-        >
+        <DialogFrame title="Edit Product Image">
           <ImageComparisonLayout
             existingImageUrl={MOCK_ITEM_IMAGE}
             entityTypeDisplayName="Item"
             propertyDisplayName="Product Image"
+            onAccept={noop}
+            onDismiss={noop}
+            onUploadNew={noop}
           >
             <ImagePreviewEditor
               aspectRatio={1}
