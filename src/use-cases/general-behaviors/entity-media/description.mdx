@@ -1,0 +1,40 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Use Cases/General Behaviors/Entity Media/Description" />
+
+# Entity Media
+
+Cross-cutting behaviors for attaching, replacing, removing, and viewing images on entities.
+
+<a href="https://arda-cards.github.io/documentation/product/use-cases/general-behaviors/entity-behaviors/entity-media/"
+   target="_blank" rel="noopener">
+  View full specification &#8594;
+</a>
+
+## Use Cases
+
+<table>
+  <thead><tr><th>ID</th><th>Use Case</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>GEN-MEDIA-0001</td>
+      <td>Set Entity Image</td>
+      <td>Complete</td>
+    </tr>
+    <tr>
+      <td>GEN-MEDIA-0002</td>
+      <td>Remove Entity Image</td>
+      <td>Complete</td>
+    </tr>
+    <tr>
+      <td>GEN-MEDIA-0003</td>
+      <td>View Entity Image</td>
+      <td>Complete</td>
+    </tr>
+  </tbody>
+</table>
+
+## Cross-Cutting Concerns
+
+- **Permissions**: All authenticated users can set and remove entity images.
+- **Concurrency**: Last-user-wins semantics. Bitemporal audit trail.

@@ -18,6 +18,30 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.4.0] - 2026-03-26
+
+### Added
+
+- Entity Media use case stories (GEN-MEDIA-0001 Set Entity Image): 30 stories
+  covering set image, input detection, format validation, URL validation,
+  preview/crop, confirm/persist, and grid inline edit scenarios
+- Entity Media use case stories (GEN-MEDIA-0002 Remove Entity Image): 3 stories
+  for remove-from-form, cancel, and playground
+- Entity Media use case stories (GEN-MEDIA-0003 View Entity Image): 10 stories
+  for grid thumbnails, hover preview, inspector overlay, and thumbnail fallback
+- Item integration stories (REF-ITM-0003::0010): vendored reference story and
+  canary simplified-form story for set image during item creation
+- Item integration stories (REF-ITM-0004::0006): 2 canary stories for change
+  and remove item image via grid and detail panel
+- 17 `description.mdx` files with scenario descriptions linking to product
+  use case specifications
+- Use-case mock data module (`_shared/mock-data.ts`) with File, Blob, URL,
+  and upload-variant mocks for input method simulation
+- Hierarchical sidebar ordering for Entity Media section with scenario-level
+  fold/expand grouping in `preview.ts`
+- Items use case index (`items.mdx`) updated with ITM-0003::0010 and
+  ITM-0004::0006 entries
+
 ## [4.3.0] - 2026-03-25
 
 ### Added

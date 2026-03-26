@@ -26,5 +26,5 @@
     }
   },
   "include": ["src", ".storybook", "tests", "vite.config.ts", "vitest.config.ts", "vitest.setup.ts"],
-  "exclude": ["node_modules", "dist", "storybook-static", "coverage", "src/vendored", "src/shims", "src/decorators", "src/dev-witness", "src/canary-refactor", "src/use-cases/reference/business-affiliates"]
+  "exclude": ["node_modules", "dist", "storybook-static", "coverage", "src/vendored", "src/shims", "src/decorators", "src/dev-witness", "src/canary-refactor", "src/use-cases/reference/business-affiliates", "src/use-cases/reference/items/create-item/0010-set-image/during-creation.stories.tsx"]
 }

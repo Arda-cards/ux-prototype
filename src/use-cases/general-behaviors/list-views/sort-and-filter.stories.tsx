@@ -166,6 +166,7 @@ const { Component: FilterGrid } = createEntityDataGrid<DemoRow>({
 
 const meta: Meta = {
   title: 'Use Cases/General Behaviors/List Views/GEN-LST-0003-0004 Sort and Filter',
+
   tags: ['skip-ci'],
   parameters: {
     layout: 'padded',
