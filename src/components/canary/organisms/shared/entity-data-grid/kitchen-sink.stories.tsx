@@ -328,7 +328,7 @@ function KitchenSinkPage() {
 // ---------------------------------------------------------------------------
 
 const meta: Meta<typeof KitchenSinkPage> = {
-  title: 'Components/Canary/Organisms/Shared/Entity Data Grid/Kitchen Sink',
+  title: 'Components/Canary/Organisms/Shared/Entity Data Grid',
   component: KitchenSinkPage,
   tags: ['skip-ci'],
   parameters: {

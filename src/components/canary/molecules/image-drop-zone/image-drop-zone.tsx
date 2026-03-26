@@ -88,12 +88,17 @@ export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDrop
   });
 
   // --- Clipboard paste handler ---
+  // Handles image data pasted from the clipboard (e.g. screenshot via Cmd+V).
+  // When the paste target is the URL text input, we skip text-URL handling and
+  // let the input's own onChange populate the field so the user can review the
+  // URL and click "Go".
   const handlePaste = React.useCallback(
     (e: React.ClipboardEvent) => {
       setError(null);
       const items = e.clipboardData?.items;
       if (!items) return;
 
+      // Always intercept image data from the clipboard, regardless of target.
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
         if (item?.type.startsWith('image/')) {
@@ -114,7 +119,13 @@ export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDrop
         }
       }
 
-      // Check for pasted text that might be a URL
+      // If the paste originated from the URL text input, let the input's
+      // onChange handle it normally — the user can review the value and submit
+      // via "Go" or Enter.
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT') return;
+
+      // Paste landed on the drop-zone background — check for a URL in the text.
       const text = e.clipboardData?.getData('text/plain')?.trim();
       if (text && text.startsWith('https://')) {
         setUrlValue(text);
@@ -153,24 +164,42 @@ export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDrop
   const isUrlValid = urlValue.trim().startsWith('https://');
 
   // Merge react-dropzone's drop handler with our URL-drop handler.
-  // When dragging an image from another browser window, dataTransfer.files is
-  // empty but dataTransfer contains the image URL as text/uri-list or text/plain.
+  // When dragging an image from another browser window, dataTransfer.files may be
+  // empty while dataTransfer contains the image source URL as text/uri-list or
+  // text/plain.  Extract the URL eagerly (before react-dropzone can consume the
+  // event), then use it as a fallback when no files are present.
   const rootProps = getRootProps();
   const dropzoneOnDrop = rootProps.onDrop;
   const handleDrop = React.useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
-      // Let react-dropzone process file drops first
+      // Capture URL data before any handler can alter the event.
+      // text/uri-list (RFC 2483) may have comment lines (#…) and multiple URLs.
+      const parseFirstUrl = (raw: string): string | undefined =>
+        raw
+          .split(/[\r\n]+/)
+          .map((l) => l.trim())
+          .find((l) => l.length > 0 && !l.startsWith('#'));
+
+      const droppedUrl =
+        parseFirstUrl(e.dataTransfer?.getData('text/uri-list') ?? '') ||
+        parseFirstUrl(e.dataTransfer?.getData('text/plain') ?? '');
+
+      // Let react-dropzone process file drops first.
       dropzoneOnDrop?.(e as unknown as React.DragEvent<HTMLElement>);
 
-      // If no files in the drop event, check for a URL and fill the text field.
-      // Don't auto-submit — let the user review the URL and click "Go".
-      if (e.dataTransfer?.files.length === 0) {
-        const url = e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text/plain');
-        const trimmed = url?.trim();
-        if (trimmed) {
-          e.preventDefault();
-          setError(null);
-          setUrlValue(trimmed);
+      // When no files are present (URL-only drop from another browser window),
+      // populate the field and auto-submit valid HTTPS URLs.  The user already
+      // expressed intent by dragging-and-dropping, so there is no reason to make
+      // them also click "Go".
+      if ((e.dataTransfer?.files.length ?? 0) === 0 && droppedUrl) {
+        e.preventDefault();
+        setError(null);
+        setUrlValue(droppedUrl);
+
+        if (droppedUrl.startsWith('https://')) {
+          onInput({ type: 'url', url: droppedUrl });
+        } else {
+          setError('URL must start with https://');
         }
       }
     },
@@ -218,7 +247,8 @@ export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDrop
           />
           <Button
             type="button"
-            variant="secondary"
+            variant="default"
+            className="bg-primary text-primary-foreground"
             onClick={handleUrlSubmit}
             disabled={!isUrlValid}
           >

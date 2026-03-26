@@ -1,5 +1,6 @@
 import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, within, userEvent, waitFor } from 'storybook/test';
 
 import {
   MOCK_ITEM_IMAGE,
@@ -264,6 +265,156 @@ export const Playground: Story = {
       <ImageDisplay {...args} />
     </div>
   ),
+};
+
+// --- Helper ---
+const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Animated Happy Path &#8212; walks through the full edit-upload workflow:
+ *
+ * 1. Start with a pre-existing image
+ * 2. Double-click to open the upload dialog (EditExisting mode)
+ * 3. Click "Upload New Image" to switch to the drop zone
+ * 4. Enter a URL and click Go
+ * 5. Adjust zoom on the crop editor
+ * 6. Check copyright acknowledgment
+ * 7. Click Confirm &#8594; upload progress &#8594; new image displayed
+ *
+ * Each step pauses briefly so the viewer can follow along.
+ */
+export const AnimatedHappyPath: Story = {
+  render: () => {
+    const [imageUrl, setImageUrl] = React.useState<string | null>(MOCK_ITEM_IMAGE);
+    return (
+      <div className="flex flex-col items-center gap-4" data-testid="happy-path-root">
+        <p className="text-sm text-muted-foreground max-w-xs text-center">
+          Watch the full edit-upload workflow animate automatically.
+        </p>
+        <div className="w-32 h-32">
+          <ImageDisplay
+            imageUrl={imageUrl}
+            entityTypeDisplayName="Item"
+            propertyDisplayName="Product Image"
+            config={ITEM_IMAGE_CONFIG}
+            onImageChange={(result) => setImageUrl(result.imageUrl)}
+          />
+        </div>
+        <span className="text-xs text-muted-foreground font-mono break-all max-w-xs text-center">
+          {imageUrl ?? '(no image)'}
+        </span>
+      </div>
+    );
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    const STEP_DELAY = 1500;
+
+    // Step 1: Wait for the image to load
+    await step('Image loads in the thumbnail', async () => {
+      await waitFor(
+        () => {
+          const img = canvasElement.querySelector('[data-slot="image-display"] img');
+          expect(img).toBeTruthy();
+        },
+        { timeout: 5000 },
+      );
+      await delay(STEP_DELAY);
+    });
+
+    // Step 2: Double-click to open the upload dialog
+    await step('Double-click thumbnail to open editor', async () => {
+      const button = canvas.getByRole('button', { name: /edit.*image/i });
+      await userEvent.dblClick(button);
+      await delay(500);
+      // Dialog should be open in EditExisting mode
+      await waitFor(
+        () => {
+          const dialog = canvasElement.ownerDocument.querySelector('[role="dialog"]');
+          expect(dialog).toBeTruthy();
+        },
+        { timeout: 3000 },
+      );
+      await delay(STEP_DELAY);
+    });
+
+    // Step 3: Click "Upload New Image" to go to drop zone
+    await step('Click "Upload New Image" to switch to drop zone', async () => {
+      const doc = canvasElement.ownerDocument;
+      const uploadNewBtn = within(doc.body).getByRole('button', { name: /upload new/i });
+      await userEvent.click(uploadNewBtn);
+      await delay(STEP_DELAY);
+    });
+
+    // Step 4: Enter a URL and click Go
+    await step('Enter an image URL and click Go', async () => {
+      const doc = canvasElement.ownerDocument;
+      const urlInput = within(doc.body).getByPlaceholderText(/paste an image url/i);
+      await userEvent.click(urlInput);
+      await userEvent.type(urlInput, 'https://picsum.photos/seed/arda-new/400/400', {
+        delay: 20,
+      });
+      await delay(800);
+
+      const goBtn = within(doc.body).getByRole('button', { name: 'Go' });
+      await userEvent.click(goBtn);
+      await delay(STEP_DELAY);
+    });
+
+    // Step 5: Interact with the crop editor — adjust zoom
+    await step('Adjust zoom on the crop editor', async () => {
+      const doc = canvasElement.ownerDocument;
+      await waitFor(
+        () => {
+          const slider = doc.querySelector('[role="slider"]');
+          expect(slider).toBeTruthy();
+        },
+        { timeout: 5000 },
+      );
+      // Click the slider area to adjust zoom
+      const slider = doc.querySelector('[role="slider"]') as HTMLElement;
+      if (slider) {
+        // Press ArrowRight a few times to zoom in
+        slider.focus();
+        for (let i = 0; i < 5; i++) {
+          await userEvent.keyboard('{ArrowRight}');
+          await delay(150);
+        }
+      }
+      await delay(STEP_DELAY);
+    });
+
+    // Step 6: Check copyright acknowledgment
+    await step('Check copyright acknowledgment', async () => {
+      const doc = canvasElement.ownerDocument;
+      const checkbox = within(doc.body).getByRole('checkbox', { name: /copyright/i });
+      await userEvent.click(checkbox);
+      await delay(STEP_DELAY);
+    });
+
+    // Step 7: Click Confirm — triggers upload progress
+    await step('Click Confirm and wait for upload to complete', async () => {
+      const doc = canvasElement.ownerDocument;
+      const confirmBtn = within(doc.body).getByRole('button', { name: /confirm/i });
+      await userEvent.click(confirmBtn);
+      // Wait for upload to complete and dialog to close (~2s)
+      await waitFor(
+        () => {
+          const dialog = doc.querySelector('[role="dialog"]');
+          expect(dialog).toBeFalsy();
+        },
+        { timeout: 10000 },
+      );
+      await delay(STEP_DELAY);
+    });
+
+    // Step 8: Verify the new image URL is displayed (mock handler returns arda-uploaded)
+    await step('New image is displayed', async () => {
+      await waitFor(() => {
+        expect(canvas.getByText(/arda-uploaded/i)).toBeInTheDocument();
+      });
+    });
+  },
 };
 
 /** Image successfully loaded. */

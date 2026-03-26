@@ -45,9 +45,19 @@ Use the Controls panel to toggle accepted formats. The Actions panel logs `onInp
       <td>MIME type must be in <code>acceptedFormats</code></td>
     </tr>
     <tr>
-      <td>Paste image URL &#8594; Enter</td>
+      <td>Paste image from clipboard (Cmd+V)</td>
+      <td><code>&#123; type: 'file', file &#125;</code></td>
+      <td>MIME type must be in <code>acceptedFormats</code></td>
+    </tr>
+    <tr>
+      <td>Type or paste URL &#8594; Go / Enter</td>
       <td><code>&#123; type: 'url', url &#125;</code></td>
       <td>Must begin with <code>https://</code></td>
+    </tr>
+    <tr>
+      <td>Drag image URL from another browser window</td>
+      <td><code>&#123; type: 'url', url &#125;</code></td>
+      <td>Must begin with <code>https://</code>; auto-submitted</td>
     </tr>
   </tbody>
 </table>
@@ -61,11 +71,13 @@ inline error message below the drop zone.
 
 ### Input Method Details
 
-The component presents three distinct input surfaces simultaneously:
+The component presents five distinct input paths from three visual surfaces:
 
-- **Drag-and-drop area**: The entire component body is a drop target. When a user drags a file over the component, the border switches to `border-primary` and the background switches to `bg-accent` (JS-toggled via the `isDragActive` boolean from react-dropzone). This visual change indicates that the zone is active and ready to receive the file.
-- **File picker button**: A "Upload from computer" button opens the native OS file picker. The dropzone is configured with `noClick: true` so that clicking the drop area itself does not open the picker &#8212; only the explicit button does. `noKeyboard: true` is also set, disabling keyboard-triggered file selection on the drop area directly. This prevents accidental opens when the drop zone receives focus.
-- **URL text entry**: A text input field with an "Enter" or submit trigger accepts pasted image URLs. Only `https://` URLs are accepted; any URL that does not start with `https://` is rejected synchronously with an inline error.
+- **Drag-and-drop area**: The entire component body is a drop target. When a user drags a file over the component, the border switches to `border-primary` and the background switches to `bg-accent` (JS-toggled via the `isDragActive` boolean from react-dropzone). This visual change indicates that the zone is active and ready to receive the file. When a user drags an image URL from another browser window (no file in `dataTransfer`, only `text/uri-list` or `text/plain`), the component extracts the first URL (parsing RFC 2483 format, skipping comment lines) and auto-submits it if it starts with `https://`. Non-HTTPS URLs are shown in the text field with an inline error.
+- **File picker button**: An "Upload from computer" button opens the native OS file picker. The dropzone is configured with `noClick: true` so that clicking the drop area itself does not open the picker &#8212; only the explicit button does. `noKeyboard: true` is also set, disabling keyboard-triggered file selection on the drop area directly. This prevents accidental opens when the drop zone receives focus.
+- **URL text entry**: A text input field with a "Go" button (primary variant, visually enabled only when the URL starts with `https://`). The user can submit via the Go button or by pressing Enter. Only `https://` URLs are accepted; non-HTTPS URLs are rejected with an inline error.
+- **Clipboard paste (image data)**: Pressing Cmd+V (or equivalent) anywhere in the drop zone intercepts image data from the clipboard. The paste handler inspects `clipboardData.items` for entries whose MIME type starts with `image/`, extracts the file via `getAsFile()`, and validates it against `acceptedFormats`. If the paste target is the URL text input and no image data is found, the handler defers to the input's native paste behavior so the user can paste a URL string normally.
+- **Clipboard paste (URL on background)**: When pasting text outside the URL input (e.g. on the drop zone background), the handler checks the clipboard text. If it starts with `https://`, the URL is auto-submitted via `onInput`. Otherwise an error is shown.
 
 ### File Validation
 
@@ -78,7 +90,23 @@ The `multiple: false` dropzone option ensures only a single file is processed pe
 
 ### URL Validation
 
-URL input is validated on submission (Enter key or submit button). The check is purely syntactic: the URL must start with `https://`. Non-HTTPS URLs (including `http://` and bare hostnames) are rejected with an inline error message. No network request is made at this stage &#8212; reachability checking is the responsibility of the parent (e.g., `ImageUploadDialog`).
+URL input is validated on submission (Enter key or Go button click). The Go button uses the `default` (primary) variant so it is visually prominent when enabled and clearly dimmed (`opacity-50`) when disabled. The check is purely syntactic: the URL must start with `https://`. Non-HTTPS URLs (including `http://` and bare hostnames) are rejected with an inline error message. No network request is made at this stage &#8212; reachability checking is the responsibility of the parent (e.g., `ImageUploadDialog`).
+
+### Clipboard Paste
+
+A paste handler on the drop zone container intercepts Cmd+V events. It first scans `clipboardData.items` for image data (any MIME type starting with `image/`). If image data is found, the file is extracted and validated against `acceptedFormats` before being emitted as a file input.
+
+When the paste originates from the URL text input (`target.tagName === 'INPUT'`) and no image data is found, the handler returns early, deferring to the input's native paste + React `onChange` flow. This allows the user to paste a URL string into the text field and review it before submitting via Go or Enter.
+
+When the paste lands on the drop zone background (not the input) and contains text starting with `https://`, the URL is auto-submitted via `onInput`. Non-HTTPS text shows an error.
+
+### URL Drag from Browser
+
+When a user drags an image from another browser window, the browser may include only URL data (no `File` objects) in `dataTransfer`. The drop handler extracts URL data eagerly from `text/uri-list` and `text/plain` before passing the event to react-dropzone. The `text/uri-list` data is parsed per RFC 2483: split by newlines, comment lines (starting with `#`) are skipped, and the first valid URL is used.
+
+If `dataTransfer.files` is empty and a URL was extracted, the URL is populated in the text field and:
+- If it starts with `https://`, it is auto-submitted via `onInput` (the user already expressed intent by dropping).
+- Otherwise, an inline error is shown explaining the HTTPS requirement.
 
 ### Drag-Over Visual
 
