@@ -297,7 +297,7 @@ export interface ArdaWidgetStaticConfig extends VariantProps<typeof widgetVarian
 }
 ```
 
-Includes: labels, titles, variant/size, structural variations, accessibility identifiers, viewport sizes, accepted file types, aspect ratios.
+Includes: fixed UI labels (hardcoded in JSX, not tenant-overridable), titles, variant/size, structural variations, accessibility identifiers, viewport sizes, accepted file types, aspect ratios. For tenant/user-overridable display names, use InitConfig instead.
 
 #### RuntimeConfig (Dynamic)
 
