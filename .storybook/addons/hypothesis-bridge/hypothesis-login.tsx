@@ -3,6 +3,7 @@ import { setToken } from './token-store';
 
 interface HypothesisLoginProps {
   onAuthenticated: () => void;
+  onSkip: () => void;
 }
 
 /**
@@ -10,7 +11,10 @@ interface HypothesisLoginProps {
  * Renders as a standard form with a password field so that 1Password and
  * other password managers recognize it and offer to autofill.
  */
-export function HypothesisLogin({ onAuthenticated }: HypothesisLoginProps): React.ReactElement {
+export function HypothesisLogin({
+  onAuthenticated,
+  onSkip,
+}: HypothesisLoginProps): React.ReactElement {
   const [token, setTokenValue] = useState('');
   const [error, setError] = useState('');
 
@@ -186,6 +190,38 @@ export function HypothesisLogin({ onAuthenticated }: HypothesisLoginProps): Reac
             Connect
           </button>
         </form>
+
+        <button
+          type="button"
+          onClick={onSkip}
+          style={{
+            marginTop: 12,
+            width: '100%',
+            padding: '8px 0',
+            fontSize: 13,
+            color: '#6b7280',
+            backgroundColor: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            textDecoration: 'underline',
+            textUnderlineOffset: 2,
+          }}
+        >
+          Skip for now
+        </button>
+        <p
+          style={{
+            margin: '4px 0 0',
+            fontSize: 11,
+            color: '#9ca3af',
+            textAlign: 'center',
+            lineHeight: 1.5,
+          }}
+        >
+          Without a token, annotations stay local to your browser only.
+          <br />
+          They won&apos;t sync to Hypothesis or appear for other collaborators.
+        </p>
       </div>
     </div>
   );

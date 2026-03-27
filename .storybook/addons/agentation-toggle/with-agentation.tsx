@@ -95,6 +95,7 @@ async function postToHypothesis(): Promise<void> {
 
 function AgentationWrapper({ onCopy }: { onCopy: () => void }): React.ReactElement {
   const [showLogin, setShowLogin] = useState(() => isProduction && !hasToken());
+  const [skipped, setSkipped] = useState(false);
 
   const handleCopy = useCallback(() => {
     // In production, ensure a token is present before posting
@@ -112,12 +113,16 @@ function AgentationWrapper({ onCopy }: { onCopy: () => void }): React.ReactEleme
 
   return (
     <>
-      {showLogin && (
+      {showLogin && !skipped && (
         <HypothesisLogin
           onAuthenticated={() => {
             setShowLogin(false);
             // Trigger highlight layer refresh now that we have a token
             window.dispatchEvent(new CustomEvent('hypothesis-annotations-updated'));
+          }}
+          onSkip={() => {
+            setShowLogin(false);
+            setSkipped(true);
           }}
         />
       )}
