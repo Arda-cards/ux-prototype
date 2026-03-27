@@ -156,9 +156,6 @@ const config: StorybookConfig = {
     // process.env references (e.g., process.env.ANYTHING_ELSE).
     config.define = {
       ...config.define,
-      // Hypothesis API token — injected at build time for production (GitHub Pages).
-      // In dev mode the Vite proxy handles auth, so this is only needed for static builds.
-      __HYPOTHESIS_API_TOKEN__: JSON.stringify(process.env['HYPOTHESIS_API_TOKEN'] || ''),
       'process.env.NODE_ENV': JSON.stringify('development'),
       'process.env.NEXT_PUBLIC_MOCK_MODE': JSON.stringify('true'),
       'process.env.NEXT_PUBLIC_COGNITO_REGION': JSON.stringify('us-east-1'),

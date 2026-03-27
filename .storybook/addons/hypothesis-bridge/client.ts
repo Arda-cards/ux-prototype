@@ -1,4 +1,5 @@
 import { PROXY_BASE, HYPOTHESIS_API_BASE } from './constants';
+import { getToken } from './token-store';
 import type { HypothesisAnnotationPayload } from './transform';
 
 export interface HypothesisAnnotation {
@@ -28,29 +29,13 @@ export interface SearchParams {
 }
 
 /**
- * Hypothesis API token injected at build time via Vite `define`.
- * In local dev the proxy handles auth, so this may be empty.
- * In production (GitHub Pages) this is the primary auth mechanism.
- */
-declare const __HYPOTHESIS_API_TOKEN__: string;
-
-function getApiToken(): string {
-  try {
-    return typeof __HYPOTHESIS_API_TOKEN__ === 'string' ? __HYPOTHESIS_API_TOKEN__ : '';
-  } catch {
-    return '';
-  }
-}
-
-/**
  * Determine whether to use the local dev proxy or the direct Hypothesis API.
  *
  * In local dev (Vite dev server), the proxy is available at `/hypothesis-proxy`.
  * In static builds (GitHub Pages, Vercel), there is no proxy — we call the
- * Hypothesis API directly using a build-time token for CORS-authenticated requests.
+ * Hypothesis API directly using the user's token from localStorage.
  */
 function getBaseUrl(): string {
-  // Static builds set import.meta.env.MODE to 'production'
   if (import.meta.env.MODE === 'production') {
     return HYPOTHESIS_API_BASE;
   }
@@ -62,10 +47,10 @@ function getHeaders(): Record<string, string> {
     'Content-Type': 'application/json',
   };
 
-  // In production, attach the token directly for CORS requests.
-  // In dev, the proxy adds the Authorization header server-side.
+  // In production, attach the user's token for direct CORS requests.
+  // In dev, the Vite proxy adds the Authorization header server-side.
   if (import.meta.env.MODE === 'production') {
-    const token = getApiToken();
+    const token = getToken();
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }

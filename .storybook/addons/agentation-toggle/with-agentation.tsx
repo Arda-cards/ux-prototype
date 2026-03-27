@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import type { DecoratorFunction } from 'storybook/internal/types';
 import type { ReactRenderer } from '@storybook/react-vite';
 import { Agentation, loadAnnotations, saveAnnotations } from 'agentation';
@@ -7,9 +7,14 @@ import { PARAM_KEY } from './constants';
 import type { AgentationAnnotation } from '../hypothesis-bridge/transform';
 import { transformAnnotations } from '../hypothesis-bridge/transform';
 import { postAnnotation } from '../hypothesis-bridge/client';
+import { hasToken, clearToken } from '../hypothesis-bridge/token-store';
+import { HypothesisLogin } from '../hypothesis-bridge/hypothesis-login';
 
 // Track annotation IDs that have already been posted to prevent duplicates
 const postedIds = new Set<string>();
+
+/** True when running a production (static) build rather than the Vite dev server. */
+const isProduction = import.meta.env.MODE === 'production';
 
 async function postToHypothesis(): Promise<void> {
   const pathname = window.location.pathname;
@@ -88,6 +93,70 @@ async function postToHypothesis(): Promise<void> {
   }
 }
 
+function AgentationWrapper({ onCopy }: { onCopy: () => void }): React.ReactElement {
+  const [showLogin, setShowLogin] = useState(() => isProduction && !hasToken());
+
+  const handleCopy = useCallback(() => {
+    // In production, ensure a token is present before posting
+    if (isProduction && !hasToken()) {
+      setShowLogin(true);
+      return;
+    }
+    onCopy();
+  }, [onCopy]);
+
+  const handleSignOut = useCallback(() => {
+    clearToken();
+    setShowLogin(true);
+  }, []);
+
+  return (
+    <>
+      {showLogin && (
+        <HypothesisLogin
+          onAuthenticated={() => {
+            setShowLogin(false);
+            // Trigger highlight layer refresh now that we have a token
+            window.dispatchEvent(new CustomEvent('hypothesis-annotations-updated'));
+          }}
+        />
+      )}
+      <Agentation onCopy={handleCopy} copyToClipboard />
+      {isProduction && hasToken() && !showLogin && (
+        <button
+          type="button"
+          onClick={handleSignOut}
+          title="Disconnect Hypothesis token"
+          style={{
+            position: 'fixed',
+            bottom: 12,
+            right: 60,
+            zIndex: 100000,
+            padding: '4px 10px',
+            fontSize: 11,
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            color: '#6b7280',
+            backgroundColor: '#f3f4f6',
+            border: '1px solid #e5e7eb',
+            borderRadius: 6,
+            cursor: 'pointer',
+            opacity: 0.7,
+            transition: 'opacity 0.15s',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.opacity = '1';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.opacity = '0.7';
+          }}
+        >
+          Disconnect Hypothesis
+        </button>
+      )}
+    </>
+  );
+}
+
 export const withAgentation: DecoratorFunction<ReactRenderer> = (StoryFn, context) => {
   const isActive = !!context.globals[PARAM_KEY];
 
@@ -95,11 +164,10 @@ export const withAgentation: DecoratorFunction<ReactRenderer> = (StoryFn, contex
     <>
       <StoryFn />
       {isActive && (
-        <Agentation
+        <AgentationWrapper
           onCopy={() => {
             void postToHypothesis();
           }}
-          copyToClipboard
         />
       )}
     </>
