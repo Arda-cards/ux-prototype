@@ -18,6 +18,15 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.4.1] - 2026-03-27
+
+### Changed
+
+- Clarify StaticConfig vs InitConfig distinction in Component Guidelines (Section
+  4.1): StaticConfig is system-level and release-gated; InitConfig carries
+  user/tenant-configurable properties stable for the session. Added decision test
+  and tenant-configurable examples (locale, displayName).
+
 ## [4.4.0] - 2026-03-26
 
 ### Added
