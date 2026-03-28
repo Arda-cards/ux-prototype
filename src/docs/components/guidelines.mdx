@@ -31,7 +31,7 @@ Always check the [shadcn/ui component catalog](https://ui.shadcn.com/docs/compon
 - **Accessibility first.** Use Radix UI primitives for complex interactive patterns (dialogs, selects, popovers, tooltips). Never hand-roll focus traps, ARIA state management, or keyboard navigation when a Radix primitive exists.
 - **Token-driven styling.** All colors, spacing, and typography reference design tokens from `globals.css`. No hardcoded hex values.
 - **Type-safe variants.** Use CVA (class-variance-authority) for components with variant dimensions. Export `VariantProps` for consumer type safety.
-- **Separated lifecycle interfaces.** Split props by when they change: StaticConfig (design-time), RuntimeConfig (dynamic), InitConfig (mount-time, optional).
+- **Separated lifecycle interfaces.** Split props by when they change: StaticConfig (system-level, release-gated), RuntimeConfig (dynamic), InitConfig (user/tenant-configurable, optional).
 
 ---
 
@@ -280,12 +280,14 @@ For AG Grid wrappers, note the AG Grid features used:
 
 Split component props into distinct TypeScript interfaces based on **when they change**. Only include interfaces that are relevant to the component.
 
-#### StaticConfig (Design Time)
+#### StaticConfig (System Design)
 
-Properties chosen when the component is placed in a layout. These never change after composition.
+Properties determined by the **system design** that cannot be changed by user or tenant settings without a code release. These are fixed at composition time and never change after that.
+
+**Decision test:** *Can a tenant admin or user setting change this value without a code release?* If **no** &#8594; StaticConfig.
 
 ```tsx
-/** Design-time configuration for ArdaWidget. */
+/** System-level configuration for ArdaWidget (release-gated). */
 export interface ArdaWidgetStaticConfig extends VariantProps<typeof widgetVariants> {
   /* --- View / Layout / Controller --- */
   /** Display label shown above the widget. */
@@ -295,7 +297,7 @@ export interface ArdaWidgetStaticConfig extends VariantProps<typeof widgetVarian
 }
 ```
 
-Includes: labels, titles, variant/size, structural variations, accessibility identifiers.
+Includes: fixed UI labels (hardcoded in JSX, not tenant-overridable), titles, variant/size, structural variations, accessibility identifiers, viewport sizes, accepted file types, aspect ratios. For tenant/user-overridable display names, use InitConfig instead.
 
 #### RuntimeConfig (Dynamic)
 
@@ -320,13 +322,19 @@ export interface ArdaWidgetRuntimeConfig {
 
 Includes: dynamic state (loading, disabled, active), event handlers, controlled values, validation errors, conditional rendering flags.
 
-#### InitConfig (Mount Time) -- Optional
+#### InitConfig (User/Tenant Configuration) -- Optional
 
-Properties that execute once when the component mounts. **Only include when the component actually has mount-time behavior** (async data fetching, one-time computations). Most components do not need this.
+Properties determined at mount time by **user or tenant configuration** that remain stable for the session. **Only include when the component accepts configuration that varies by user or tenant context** (locale, timezone, visible columns, column order, field visibility, display names, preferred renderers) or has mount-time side effects (async data fetching). Most components do not need this.
+
+**Decision test:** *Can a tenant admin or user setting change this value without a code release?* If **yes** &#8594; InitConfig.
 
 ```tsx
-/** Mount-time configuration for ArdaWidget. */
+/** User/tenant configuration for ArdaWidget (session-stable). */
 export interface ArdaWidgetInitConfig {
+  /** Locale for number/date formatting, resolved from tenant or user settings. */
+  locale?: string;
+  /** Display name override from tenant configuration. */
+  displayName?: string;
   /** Fetches initial data when the widget mounts. */
   getInitialData?: () => Promise<WidgetData>;
   /** Initial value for uncontrolled mode. */
@@ -349,7 +357,7 @@ Guidelines:
 - Export all sub-interfaces so consumers can use them for partial typing.
 - Add JSDoc comments to every interface and every property.
 - Purely presentational components (e.g., Badge) may only need `StaticConfig`.
-- Omit `InitConfig` if the component has no mount-time behavior.
+- Omit `InitConfig` if the component has no user/tenant-configurable properties or mount-time behavior.
 
 ### 4.2 Model/Data vs. View/Controller Separation
 
