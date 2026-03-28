@@ -20,7 +20,7 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
 
 ## [4.4.1] - 2026-03-27
 
-### Changed
+### Fixed
 
 - Clarify StaticConfig vs InitConfig distinction in Component Guidelines (Section
   4.1): StaticConfig is system-level and release-gated; InitConfig carries
