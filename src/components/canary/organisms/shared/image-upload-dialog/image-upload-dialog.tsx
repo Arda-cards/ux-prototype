@@ -291,7 +291,7 @@ export function ImageUploadDialog({
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent
           data-slot="image-upload-dialog"
-          className={cn('bg-background border-border rounded-lg p-6 max-w-2xl w-full')}
+          className={cn('bg-background border-border rounded-lg p-4 sm:p-6 sm:max-w-2xl w-full overflow-hidden')}
           showCloseButton={false}
         >
           <DialogHeader>

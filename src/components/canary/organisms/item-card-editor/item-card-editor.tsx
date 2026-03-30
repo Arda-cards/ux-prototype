@@ -64,10 +64,22 @@ export function ItemCardEditor({
     [fields, onChange],
   );
 
-  const handleDropZoneInput = React.useCallback((input: ImageInput) => {
-    if (input.type === 'error') return;
-    setDialogOpen(true);
-  }, []);
+  // New images go straight onto the card — no dialog.
+  const handleDropZoneInput = React.useCallback(
+    (input: ImageInput) => {
+      if (input.type === 'error') return;
+
+      if (input.type === 'file') {
+        const url = URL.createObjectURL(input.file);
+        onChange({ ...fields, imageUrl: url });
+        onImageConfirmed?.(url);
+      } else if (input.type === 'url') {
+        onChange({ ...fields, imageUrl: input.url });
+        onImageConfirmed?.(input.url);
+      }
+    },
+    [fields, onChange, onImageConfirmed],
+  );
 
   const handleDialogConfirm = React.useCallback(
     (result: ImageUploadResult) => {
