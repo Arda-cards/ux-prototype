@@ -18,6 +18,25 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.4.2] - 2026-03-28
+
+### Fixed
+
+- Hypothesis bridge not working on GitHub Pages: the bridge relied on a Vite
+  dev server proxy (`/hypothesis-proxy`) that only exists in local development.
+  In production builds, the client now calls the Hypothesis API directly via
+  CORS with a per-user API token stored in localStorage, entered through a
+  1Password-compatible login form.
+
+## [4.4.1] - 2026-03-27
+
+### Fixed
+
+- Clarify StaticConfig vs InitConfig distinction in Component Guidelines (Section
+  4.1): StaticConfig is system-level and release-gated; InitConfig carries
+  user/tenant-configurable properties stable for the session. Added decision test
+  and tenant-configurable examples (locale, displayName).
+
 ## [4.4.0] - 2026-03-26
 
 ### Added

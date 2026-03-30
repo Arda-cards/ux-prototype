@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { searchAnnotations } from './client';
 import type { HypothesisAnnotation } from './client';
+import { hasToken } from './token-store';
 import {
   parseSelectorTag,
   getSeverityColor,
@@ -91,6 +92,13 @@ export function HighlightLayer({ storyUrl }: HighlightLayerProps): React.ReactEl
   }, []);
 
   const fetchAndRender = useCallback(async () => {
+    // Skip network calls when no token is configured (e.g., CI, fresh deploy).
+    // Without this guard, the unauthenticated fetch can hang and prevent
+    // Playwright's networkidle from resolving, causing VRT timeouts.
+    if (import.meta.env.MODE === 'production' && !hasToken()) {
+      return;
+    }
+
     let annotations: HypothesisAnnotation[];
 
     const cached = annotationCache.get(normalizedUrl);
