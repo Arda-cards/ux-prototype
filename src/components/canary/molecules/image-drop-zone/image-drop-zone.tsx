@@ -52,7 +52,7 @@ export type ImageDropZoneProps = ImageDropZoneStaticProps &
  * Accepts images via drag-and-drop, file picker, clipboard paste, or URL entry.
  * Validates MIME types for files and HTTPS for URLs before calling `onInput`.
  */
-export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDropZoneProps) {
+export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) {
   const [urlValue, setUrlValue] = React.useState('');
   const [error, setError] = React.useState<string | null>(null);
   const [converting, setConverting] = React.useState(false);
@@ -186,7 +186,7 @@ export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDrop
     }
   };
 
-  const isUrlValid = urlValue.trim().startsWith('https://');
+
 
   // Merge react-dropzone's drop handler with our URL-drop handler.
   // When dragging an image from another browser window, dataTransfer.files may be
@@ -242,7 +242,7 @@ export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDrop
       onPaste={handlePaste}
       className={cn(
         'border-2 border-dashed rounded-lg p-8 transition-colors',
-        isDragActive ? 'border-primary bg-accent' : 'border-border bg-background',
+        isDragActive ? 'border-primary bg-accent' : 'border-border bg-[var(--tailwind-colors-gray-50)]',
       )}
     >
       <input {...getInputProps()} />
