@@ -4,7 +4,7 @@ import { ImageUp } from 'lucide-react';
 import heic2any from 'heic2any';
 
 import { cn } from '@/types/canary/utilities/utils';
-import { Button } from '@/components/canary/primitives/button';
+import { Button } from '@/components/canary/atoms/button/button';
 import { Input } from '@/components/canary/primitives/input';
 import type { ImageMimeType, ImageInput } from '@/types/canary/utilities/image-field-config';
 
@@ -55,6 +55,7 @@ export type ImageDropZoneProps = ImageDropZoneStaticProps &
 export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDropZoneProps) {
   const [urlValue, setUrlValue] = React.useState('');
   const [error, setError] = React.useState<string | null>(null);
+  const [converting, setConverting] = React.useState(false);
 
   // --- File drop handler ---
   const onDrop = React.useCallback(
@@ -83,8 +84,13 @@ export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDrop
             onInput({ type: 'error', message: `Invalid file type. Accepted formats: ${formats}` });
             return;
           }
-          const converted = await maybeConvertHeic(file);
-          onInput({ type: 'file', file: converted });
+          setConverting(true);
+          try {
+            const converted = await maybeConvertHeic(file);
+            onInput({ type: 'file', file: converted });
+          } finally {
+            setConverting(false);
+          }
         }
       }
     },
@@ -128,8 +134,10 @@ export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDrop
               });
               return;
             }
+            setConverting(true);
             void maybeConvertHeic(file).then((converted) => {
               onInput({ type: 'file', file: converted });
+              setConverting(false);
             });
             return;
           }
@@ -250,7 +258,7 @@ export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDrop
         </div>
 
         {/* Select file button */}
-        <Button type="button" variant="outline" onClick={open}>
+        <Button type="button" variant="outline" loading={converting} onClick={open}>
           Select file
         </Button>
 
