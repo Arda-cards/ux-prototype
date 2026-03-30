@@ -19,6 +19,11 @@ const { getOnDrop, setOnDrop } = vi.hoisted(() => {
   };
 });
 
+// heic2any uses Web Workers unavailable in jsdom — mock it as a passthrough.
+vi.mock('heic2any', () => ({
+  default: async ({ blob }: { blob: Blob }) => blob,
+}));
+
 vi.mock('react-dropzone', () => ({
   useDropzone: ({
     onDrop,
@@ -72,12 +77,12 @@ describe('ImageDropZone', () => {
 
   it('renders upload button', () => {
     renderDropZone();
-    expect(screen.getByRole('button', { name: /upload from computer/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /select file/i })).toBeInTheDocument();
   });
 
   it('renders URL text field', () => {
     renderDropZone();
-    expect(screen.getByPlaceholderText(/or paste an image url/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/example\.com\/image/i)).toBeInTheDocument();
   });
 
   it('calls onInput with file data on file selection', async () => {
@@ -96,7 +101,7 @@ describe('ImageDropZone', () => {
   it('calls onInput with URL on text submit (Enter key)', async () => {
     const user = userEvent.setup();
     const { onInput } = renderDropZone();
-    const urlInput = screen.getByPlaceholderText(/or paste an image url/i);
+    const urlInput = screen.getByPlaceholderText(/example\.com\/image/i);
 
     await user.click(urlInput);
     await user.type(urlInput, 'https://example.com/image.jpg');
@@ -121,12 +126,9 @@ describe('ImageDropZone', () => {
     expect(onInput).toHaveBeenCalledWith(expect.objectContaining({ type: 'error' }));
   });
 
-  it('calls onDismiss on dismiss click', async () => {
-    const user = userEvent.setup();
-    const { onDismiss } = renderDropZone();
-
-    await user.click(screen.getByRole('button', { name: /dismiss/i }));
-    expect(onDismiss).toHaveBeenCalledOnce();
+  it('does not render a dismiss button (parent handles dismissal)', () => {
+    renderDropZone();
+    expect(screen.queryByRole('button', { name: /dismiss/i })).not.toBeInTheDocument();
   });
 
   it('shows idle border classes initially (before any drag)', () => {
@@ -148,20 +150,18 @@ describe('ImageDropZone', () => {
     expect(dropZone).toHaveClass('border-border');
   });
 
-  it('rejects non-HTTPS URL and shows error message', async () => {
+  it('submits valid https:// URL on Enter', async () => {
     const user = userEvent.setup();
     const { onInput } = renderDropZone();
-    const urlInput = screen.getByPlaceholderText(/or paste an image url/i);
+    const urlInput = screen.getByPlaceholderText(/example\.com\/image/i);
 
     await user.click(urlInput);
-    await user.type(urlInput, 'http://example.com/image.jpg');
+    await user.type(urlInput, 'https://example.com/image.jpg');
     await user.keyboard('{Enter}');
 
     expect(onInput).toHaveBeenCalledWith({
-      type: 'error',
-      message: 'URL must start with https://',
+      type: 'url',
+      url: 'https://example.com/image.jpg',
     });
-
-    expect(screen.getByRole('alert')).toHaveTextContent('URL must start with https://');
   });
 });

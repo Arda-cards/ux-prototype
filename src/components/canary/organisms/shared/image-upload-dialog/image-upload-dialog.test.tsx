@@ -90,26 +90,6 @@ vi.mock('@/components/canary/molecules/image-drop-zone/image-drop-zone', () => (
   ),
 }));
 
-vi.mock('@/components/canary/atoms/copyright-acknowledgment/copyright-acknowledgment', () => ({
-  CopyrightAcknowledgment: ({
-    acknowledged,
-    onAcknowledge,
-  }: {
-    acknowledged: boolean;
-    onAcknowledge: (v: boolean) => void;
-  }) => (
-    <div data-testid="copyright-acknowledgment">
-      <input
-        type="checkbox"
-        data-testid="copyright-checkbox"
-        checked={acknowledged}
-        onChange={(e) => onAcknowledge(e.target.checked)}
-        aria-label="Copyright acknowledgment"
-      />
-    </div>
-  ),
-}));
-
 vi.mock('@/types/canary/utilities/get-cropped-image', () => ({
   getCroppedImage: vi.fn().mockResolvedValue(new Blob(['cropped'], { type: 'image/jpeg' })),
 }));
@@ -164,30 +144,11 @@ describe('ImageUploadDialog', () => {
     });
   });
 
-  it('shows CopyrightAcknowledgment in ProvidedImage state', async () => {
+  it('shows copyright subtext and enabled Confirm button in ProvidedImage state', async () => {
     renderDialog();
     fireEvent.click(screen.getByText('drop file'));
     await waitFor(() => {
-      expect(screen.getByTestId('copyright-acknowledgment')).toBeInTheDocument();
-    });
-  });
-
-  it('Confirm button is disabled when copyright unchecked', async () => {
-    renderDialog();
-    fireEvent.click(screen.getByText('drop file'));
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Confirm' })).toBeDisabled();
-    });
-  });
-
-  it('Confirm button is enabled when copyright checked', async () => {
-    renderDialog();
-    fireEvent.click(screen.getByText('drop file'));
-    await waitFor(() => {
-      expect(screen.getByTestId('copyright-checkbox')).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByTestId('copyright-checkbox'));
-    await waitFor(() => {
+      expect(screen.getByText(/you acknowledge that you own/i)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Confirm' })).not.toBeDisabled();
     });
   });
@@ -265,13 +226,6 @@ describe('ImageUploadDialog', () => {
       await act(async () => {
         await Promise.resolve();
       });
-      expect(screen.getByTestId('copyright-checkbox')).toBeInTheDocument();
-
-      fireEvent.click(screen.getByTestId('copyright-checkbox'));
-      await act(async () => {
-        await Promise.resolve();
-      });
-      expect(screen.getByRole('button', { name: 'Confirm' })).not.toBeDisabled();
 
       fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
 
@@ -301,9 +255,7 @@ describe('ImageUploadDialog', () => {
       await act(async () => {
         await Promise.resolve();
       });
-      expect(screen.getByTestId('copyright-checkbox')).toBeInTheDocument();
 
-      fireEvent.click(screen.getByTestId('copyright-checkbox'));
       fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
 
       await act(async () => {
@@ -356,9 +308,9 @@ describe('ImageUploadDialog', () => {
       expect(screen.getByTestId('preview-src')).toHaveTextContent(EXISTING_URL);
     });
 
-    it('does NOT show CopyrightAcknowledgment in EditExisting state', () => {
+    it('does NOT show copyright subtext in EditExisting state', () => {
       renderDialog({ existingImageUrl: EXISTING_URL });
-      expect(screen.queryByTestId('copyright-acknowledgment')).not.toBeInTheDocument();
+      expect(screen.queryByText(/you acknowledge that you own/i)).not.toBeInTheDocument();
     });
 
     it('shows "Upload New Image", "Dismiss", and "Accept" buttons in EditExisting state', () => {

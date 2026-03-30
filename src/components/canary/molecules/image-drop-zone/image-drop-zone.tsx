@@ -1,10 +1,24 @@
 import * as React from 'react';
 import { useDropzone, type FileRejection } from 'react-dropzone';
+import { ImageUp } from 'lucide-react';
+import heic2any from 'heic2any';
 
 import { cn } from '@/types/canary/utilities/utils';
 import { Button } from '@/components/canary/primitives/button';
 import { Input } from '@/components/canary/primitives/input';
 import type { ImageMimeType, ImageInput } from '@/types/canary/utilities/image-field-config';
+
+const HEIC_TYPES: string[] = ['image/heic', 'image/heif'];
+
+/** Convert HEIC/HEIF files to JPEG so browsers can render them. */
+async function maybeConvertHeic(file: File): Promise<File> {
+  if (!HEIC_TYPES.includes(file.type)) return file;
+
+  const result = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.92 });
+  const blob = Array.isArray(result) ? result[0]! : result;
+  const name = file.name.replace(/\.hei[cf]$/i, '.jpg');
+  return new File([blob], name, { type: 'image/jpeg' });
+}
 
 // --- Interfaces ---
 
@@ -44,7 +58,7 @@ export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDrop
 
   // --- File drop handler ---
   const onDrop = React.useCallback(
-    (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
+    async (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
       setError(null);
 
       if (rejectedFiles.length > 0) {
@@ -69,7 +83,8 @@ export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDrop
             onInput({ type: 'error', message: `Invalid file type. Accepted formats: ${formats}` });
             return;
           }
-          onInput({ type: 'file', file });
+          const converted = await maybeConvertHeic(file);
+          onInput({ type: 'file', file: converted });
         }
       }
     },
@@ -113,7 +128,9 @@ export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDrop
               });
               return;
             }
-            onInput({ type: 'file', file });
+            void maybeConvertHeic(file).then((converted) => {
+              onInput({ type: 'file', file: converted });
+            });
             return;
           }
         }
@@ -206,6 +223,9 @@ export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDrop
     [dropzoneOnDrop, onInput],
   );
 
+  // Derive human-readable format list from accepted MIME types
+  const formatLabels = acceptedFormats.map((mime) => mime.replace('image/', ''));
+
   return (
     <div
       data-slot="image-drop-zone"
@@ -213,62 +233,48 @@ export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDrop
       onDrop={handleDrop}
       onPaste={handlePaste}
       className={cn(
-        'border-2 border-dashed rounded-lg p-6 transition-colors',
+        'border-2 border-dashed rounded-lg p-8 transition-colors',
         isDragActive ? 'border-primary bg-accent' : 'border-border bg-background',
       )}
     >
       <input {...getInputProps()} />
 
-      <div className="flex flex-col items-center gap-4 text-center">
-        <p className="text-sm text-muted-foreground">
-          Drag and drop an image, paste from clipboard, or
-        </p>
+      <div className="flex flex-col items-center gap-3 text-center">
+        {/* Upload icon */}
+        <ImageUp className="w-12 h-12 text-muted-foreground/60" strokeWidth={1.5} />
 
-        <Button
-          type="button"
-          variant="default"
-          className="bg-primary text-primary-foreground"
-          onClick={open}
-        >
-          Upload from computer
+        {/* Heading */}
+        <div>
+          <p className="text-sm text-muted-foreground">Drop image or click to select</p>
+          <p className="text-xs text-muted-foreground/70">({formatLabels.join(', ')})</p>
+        </div>
+
+        {/* Select file button */}
+        <Button type="button" variant="outline" onClick={open}>
+          Select file
         </Button>
 
-        <div className="w-full flex gap-2">
-          <Input
-            type="text"
-            placeholder="Or paste an image URL"
-            value={urlValue}
-            onChange={(e) => {
-              setUrlValue(e.target.value);
-              setError(null);
-            }}
-            onKeyDown={handleUrlKeyDown}
-            className="flex-1"
-          />
-          <Button
-            type="button"
-            variant="default"
-            className="bg-primary text-primary-foreground"
-            onClick={handleUrlSubmit}
-            disabled={!isUrlValid}
-          >
-            Go
-          </Button>
-        </div>
+        {/* Divider text */}
+        <p className="text-sm text-muted-foreground">... or enter image URL</p>
+
+        {/* URL input */}
+        <Input
+          type="text"
+          placeholder="https://example.com/image.jpg"
+          value={urlValue}
+          onChange={(e) => {
+            setUrlValue(e.target.value);
+            setError(null);
+          }}
+          onKeyDown={handleUrlKeyDown}
+          className="w-full"
+        />
 
         {error && (
           <p className="text-sm text-destructive" role="alert">
             {error}
           </p>
         )}
-
-        <button
-          type="button"
-          onClick={onDismiss}
-          className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-2 cursor-pointer bg-transparent border-0 p-0"
-        >
-          Dismiss
-        </button>
       </div>
     </div>
   );
