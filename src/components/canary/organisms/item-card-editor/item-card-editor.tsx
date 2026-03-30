@@ -130,12 +130,10 @@ export function ItemCardEditor({
             />
           </div>
           <div className="flex flex-col items-center flex-shrink-0 h-10 justify-between">
-            <img
-              src="/images/qr-code.png"
-              alt="QR"
-              className="w-7 h-7 object-contain"
-            />
-            <span className="text-[9px] font-semibold text-muted-foreground leading-none">Arda</span>
+            <img src="/images/qr-code.png" alt="QR" className="w-7 h-7 object-contain" />
+            <span className="text-[9px] font-semibold text-muted-foreground leading-none">
+              Arda
+            </span>
           </div>
         </div>
 

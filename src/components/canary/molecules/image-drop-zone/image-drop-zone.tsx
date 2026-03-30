@@ -15,7 +15,7 @@ async function maybeConvertHeic(file: File): Promise<File> {
   if (!HEIC_TYPES.includes(file.type)) return file;
 
   const result = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.92 });
-  const blob = Array.isArray(result) ? result[0]! : result;
+  const blob = Array.isArray(result) ? (result[0] as Blob) : result;
   const name = file.name.replace(/\.hei[cf]$/i, '.jpg');
   return new File([blob], name, { type: 'image/jpeg' });
 }
@@ -186,8 +186,6 @@ export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) 
     }
   };
 
-
-
   // Merge react-dropzone's drop handler with our URL-drop handler.
   // When dragging an image from another browser window, dataTransfer.files may be
   // empty while dataTransfer contains the image source URL as text/uri-list or
@@ -242,7 +240,9 @@ export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) 
       onPaste={handlePaste}
       className={cn(
         'border-2 border-dashed rounded-lg p-8 transition-colors',
-        isDragActive ? 'border-primary bg-accent' : 'border-border bg-[var(--tailwind-colors-gray-50)]',
+        isDragActive
+          ? 'border-primary bg-accent'
+          : 'border-border bg-[var(--tailwind-colors-gray-50)]',
       )}
     >
       <input {...getInputProps()} />

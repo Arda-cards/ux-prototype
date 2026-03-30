@@ -35,11 +35,7 @@ function InlineCardCreationPage() {
           Fill in the card fields directly. Drop or select an image in the card&rsquo;s image area.
         </p>
       </div>
-      <ItemCardEditor
-        imageConfig={ITEM_IMAGE_CONFIG}
-        fields={fields}
-        onChange={setFields}
-      />
+      <ItemCardEditor imageConfig={ITEM_IMAGE_CONFIG} fields={fields} onChange={setFields} />
     </div>
   );
 }

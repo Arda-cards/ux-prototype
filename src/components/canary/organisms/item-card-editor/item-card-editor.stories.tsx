@@ -1,11 +1,7 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import {
-  ItemCardEditor,
-  EMPTY_ITEM_CARD_FIELDS,
-  type ItemCardFields,
-} from './item-card-editor';
+import { ItemCardEditor, EMPTY_ITEM_CARD_FIELDS, type ItemCardFields } from './item-card-editor';
 import { ITEM_IMAGE_CONFIG, MOCK_ITEM_IMAGE } from '@/components/canary/__mocks__/image-story-data';
 
 // ---------------------------------------------------------------------------
@@ -20,11 +16,7 @@ function ItemCardEditorDemo({ initialFields }: { initialFields?: Partial<ItemCar
 
   return (
     <div className="flex items-center justify-center p-8 bg-muted/30 min-h-[600px]">
-      <ItemCardEditor
-        imageConfig={ITEM_IMAGE_CONFIG}
-        fields={fields}
-        onChange={setFields}
-      />
+      <ItemCardEditor imageConfig={ITEM_IMAGE_CONFIG} fields={fields} onChange={setFields} />
     </div>
   );
 }
@@ -52,7 +44,6 @@ export const CreateNew: StoryObj = {
 
 /** Pre-populated card — the starting state for "Edit item". */
 export const EditExisting: StoryObj = {
-  name: 'Edit Existing',
   render: () => (
     <ItemCardEditorDemo
       initialFields={{
