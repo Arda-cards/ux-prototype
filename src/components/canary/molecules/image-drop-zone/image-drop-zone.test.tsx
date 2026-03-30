@@ -19,11 +19,6 @@ const { getOnDrop, setOnDrop } = vi.hoisted(() => {
   };
 });
 
-// heic2any uses Web Workers unavailable in jsdom — mock it as a passthrough.
-vi.mock('heic2any', () => ({
-  default: async ({ blob }: { blob: Blob }) => blob,
-}));
-
 vi.mock('react-dropzone', () => ({
   useDropzone: ({
     onDrop,
