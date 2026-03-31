@@ -226,7 +226,7 @@ const {
     await delay();
 
     // Find the URL input field
-    const urlInput = canvas.getByPlaceholderText(/paste an image url/i);
+    const urlInput = canvas.getByPlaceholderText(/example\.com\/image/i);
     await waitFor(() => {
       expect(urlInput).toBeVisible();
     });

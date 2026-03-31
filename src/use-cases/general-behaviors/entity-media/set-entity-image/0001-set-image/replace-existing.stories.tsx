@@ -343,7 +343,7 @@ const {
     await userEvent.click(uploadNewBtn);
 
     await waitFor(() => {
-      expect(screen.getByText(/drag and drop an image/i)).toBeVisible();
+      expect(screen.getByText(/drop image or click to select/i)).toBeVisible();
     });
     goToScene(2);
     await delay();
@@ -356,19 +356,10 @@ const {
     });
     await userEvent.upload(fileInput, MOCK_FILE_JPEG);
 
-    await waitFor(() => {
-      expect(screen.getByRole('checkbox', { name: /copyright/i })).toBeVisible();
-    });
     goToScene(3);
     await delay();
 
-    // Scene 4 -> 5: Acknowledge copyright
-    const copyrightCheckbox = screen.getByRole('checkbox', { name: /copyright/i });
-    await userEvent.click(copyrightCheckbox);
-    goToScene(4);
-    await delay();
-
-    // Scene 5 -> 6: Confirm the upload
+    // Scene 4 -> 5: Confirm the upload (copyright is now passive subtext)
     const confirmBtn = await waitFor(() => {
       const btn = screen.getByRole('button', { name: /^confirm$/i });
       expect(btn).not.toBeDisabled();

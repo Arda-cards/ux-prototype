@@ -188,7 +188,7 @@ const {
 
     // Verify the upload button is visible
     await waitFor(() => {
-      expect(canvas.getByRole('button', { name: /upload from computer/i })).toBeVisible();
+      expect(canvas.getByRole('button', { name: /select file/i })).toBeVisible();
     });
     goToScene(1);
     await delay();

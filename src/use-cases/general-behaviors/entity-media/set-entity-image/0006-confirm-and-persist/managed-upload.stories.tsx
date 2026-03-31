@@ -303,24 +303,16 @@ const {
     });
     await userEvent.upload(fileInput, MOCK_FILE_JPEG);
 
-    // Wait for copyright checkbox to appear (ProvidedImage state)
+    // Wait for ProvidedImage state (Confirm is enabled, copyright is passive subtext)
     await waitFor(
       () => {
-        expect(screen.getByRole('checkbox', { name: /copyright acknowledgment/i })).toBeVisible();
+        expect(screen.getByRole('button', { name: /confirm/i })).not.toBeDisabled();
       },
       { timeout: 5000 },
     );
 
     goToScene(1);
     await delay();
-
-    // Check copyright
-    const checkbox = screen.getByRole('checkbox', { name: /copyright acknowledgment/i });
-    await userEvent.click(checkbox);
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /confirm/i })).not.toBeDisabled();
-    });
 
     goToScene(2);
     await delay();

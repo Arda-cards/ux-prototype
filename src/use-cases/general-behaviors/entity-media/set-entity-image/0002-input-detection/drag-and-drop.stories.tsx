@@ -212,7 +212,7 @@ const {
 
     // Verify idle state — upload button is present
     await waitFor(() => {
-      expect(canvas.getByRole('button', { name: /upload from computer/i })).toBeVisible();
+      expect(canvas.getByRole('button', { name: /select file/i })).toBeVisible();
     });
     goToScene(1);
     await delay();

@@ -239,10 +239,10 @@ const {
     await delay();
 
     await waitFor(() => {
-      expect(canvas.getByPlaceholderText(/paste an image url/i)).toBeVisible();
+      expect(canvas.getByPlaceholderText(/example\.com\/image/i)).toBeVisible();
     });
 
-    const input = canvas.getByPlaceholderText(/paste an image url/i);
+    const input = canvas.getByPlaceholderText(/example\.com\/image/i);
     await userEvent.click(input);
     goToScene(1);
     await delay();
@@ -308,10 +308,10 @@ const {
     await delay();
 
     await waitFor(() => {
-      expect(canvas.getByPlaceholderText(/paste an image url/i)).toBeVisible();
+      expect(canvas.getByPlaceholderText(/example\.com\/image/i)).toBeVisible();
     });
 
-    const input = canvas.getByPlaceholderText(/paste an image url/i);
+    const input = canvas.getByPlaceholderText(/example\.com\/image/i);
     await userEvent.click(input);
     goToScene(1);
     await delay();

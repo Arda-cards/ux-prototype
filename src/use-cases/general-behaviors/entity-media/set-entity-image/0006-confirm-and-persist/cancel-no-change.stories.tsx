@@ -332,10 +332,10 @@ const {
     });
     await userEvent.upload(fileInput, MOCK_FILE_JPEG);
 
-    // Wait for ProvidedImage state (copyright checkbox appears)
+    // Wait for ProvidedImage state (Confirm button appears)
     await waitFor(
       () => {
-        expect(screen.getByRole('checkbox', { name: /copyright acknowledgment/i })).toBeVisible();
+        expect(screen.getByRole('button', { name: /^cancel$/i })).toBeVisible();
       },
       { timeout: 5000 },
     );

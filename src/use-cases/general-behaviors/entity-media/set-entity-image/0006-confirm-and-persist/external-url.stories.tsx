@@ -260,33 +260,25 @@ const {
     );
     await waitFor(
       () => {
-        expect(screen.getByPlaceholderText(/paste an image url/i)).toBeVisible();
+        expect(screen.getByPlaceholderText(/example\.com\/image/i)).toBeVisible();
       },
       { timeout: 5000 },
     );
 
     // Type the URL and press Enter
-    const urlInput = screen.getByPlaceholderText(/paste an image url/i);
+    const urlInput = screen.getByPlaceholderText(/example\.com\/image/i);
     await userEvent.clear(urlInput);
     await userEvent.type(urlInput, MOCK_EXTERNAL_URL);
     goToScene(1);
     await userEvent.keyboard('{Enter}');
 
-    // Wait for copyright checkbox to appear (ProvidedImage state)
+    // Wait for ProvidedImage state (Confirm is enabled, copyright is passive subtext)
     await waitFor(
       () => {
-        expect(screen.getByRole('checkbox', { name: /copyright acknowledgment/i })).toBeVisible();
+        expect(screen.getByRole('button', { name: /confirm/i })).not.toBeDisabled();
       },
       { timeout: 5000 },
     );
-
-    // Check copyright
-    const checkbox = screen.getByRole('checkbox', { name: /copyright acknowledgment/i });
-    await userEvent.click(checkbox);
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /confirm/i })).not.toBeDisabled();
-    });
 
     goToScene(2);
     await delay();
