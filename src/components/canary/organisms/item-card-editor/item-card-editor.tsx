@@ -1,6 +1,10 @@
 import * as React from 'react';
 import { PackageMinus, Package, Crop } from 'lucide-react';
 
+import {
+  ColorSwatchPicker,
+  getSwatchHex,
+} from '@/components/canary/atoms/color-swatch-picker/color-swatch-picker';
 import { ImageDropZone } from '@/components/canary/molecules/image-drop-zone/image-drop-zone';
 import { ImageUploadDialog } from '@/components/canary/organisms/shared/image-upload-dialog/image-upload-dialog';
 import { Input } from '@/components/canary/primitives/input';
@@ -20,6 +24,7 @@ export interface ItemCardFields {
   orderQty: string;
   orderUnit: string;
   imageUrl: string | null;
+  accentColor: string;
 }
 
 /** Init configuration for ItemCardEditor. */
@@ -138,7 +143,10 @@ export function ItemCardEditor({
         </div>
 
         {/* Accent Divider */}
-        <div className="w-full h-1 rounded-full bg-muted" />
+        <div
+          className="w-full h-[4px] transition-colors"
+          style={{ backgroundColor: getSwatchHex(fields.accentColor) }}
+        />
 
         {/* Attribute Blocks — editable inputs */}
         <div className="space-y-2">
@@ -198,8 +206,11 @@ export function ItemCardEditor({
           )}
         </div>
 
-        {/* Bottom accent */}
-        <div className="w-full h-1.5 rounded-full bg-muted" />
+        {/* Color Swatch Picker + accent bar */}
+        <ColorSwatchPicker
+          value={fields.accentColor}
+          onChange={(color) => updateField('accentColor', color)}
+        />
 
         {/* Footer Branding */}
         <div className="text-center pb-1">
@@ -227,4 +238,5 @@ export const EMPTY_ITEM_CARD_FIELDS: ItemCardFields = {
   orderQty: '',
   orderUnit: '',
   imageUrl: null,
+  accentColor: 'GRAY',
 };

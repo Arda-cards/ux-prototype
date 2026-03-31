@@ -53,6 +53,7 @@ export const EditExisting: StoryObj = {
         orderQty: '500',
         orderUnit: 'each',
         imageUrl: MOCK_ITEM_IMAGE,
+        accentColor: 'BLUE',
       }}
     />
   ),
