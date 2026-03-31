@@ -18,6 +18,12 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.4.3] - 2026-03-31
+
+### Added
+
+- `CLAUDE.md` quick-reference guide for Claude Code agents.
+
 ## [4.4.2] - 2026-03-28
 
 ### Fixed
