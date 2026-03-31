@@ -56,3 +56,11 @@ The library has three entry points: main (`index.ts`), `canary` (experimental), 
 | `src/use-cases/` | Use-case stories and MDX documentation |
 | `src/docs/` | MDX documentation pages |
 | `tools/` | Build scripts and helpers |
+
+
+## Knowledge base
+
+The `knowledge-base/` directory contains repository-specific knowledge — recommended practices, patterns, insights, and lessons learned that are useful for working in this repo. Agents should:
+
+- **Read** relevant files before starting work to understand repo-specific conventions.
+- **Write** new insights discovered during implementation (patterns, gotchas, decisions) as Markdown files in this directory for future reference.
