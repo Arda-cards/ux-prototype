@@ -5,7 +5,12 @@ import heic2any from 'heic2any';
 
 import { cn } from '@/types/canary/utilities/utils';
 import { Button } from '@/components/canary/atoms/button/button';
-import { Input } from '@/components/canary/primitives/input';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '@/components/canary/atoms/input-group/input-group';
 import type { ImageMimeType, ImageInput } from '@/types/canary/utilities/image-field-config';
 
 const HEIC_TYPES: string[] = ['image/heic', 'image/heif'];
@@ -246,9 +251,7 @@ export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) 
       onPaste={handlePaste}
       className={cn(
         'border-2 border-dashed rounded-lg p-8 transition-colors',
-        isDragActive
-          ? 'border-primary bg-accent'
-          : 'border-border bg-[var(--tailwind-colors-gray-50)]',
+        isDragActive ? 'border-primary bg-accent' : 'border-border bg-muted',
       )}
     >
       <input {...getInputProps()} />
@@ -271,18 +274,24 @@ export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) 
         {/* Divider text */}
         <p className="text-sm text-muted-foreground">... or enter image URL</p>
 
-        {/* URL input */}
-        <Input
-          type="text"
-          placeholder="https://example.com/image.jpg"
-          value={urlValue}
-          onChange={(e) => {
-            setUrlValue(e.target.value);
-            setError(null);
-          }}
-          onKeyDown={handleUrlKeyDown}
-          className="w-full"
-        />
+        {/* URL input with Go button */}
+        <InputGroup className="w-full bg-background">
+          <InputGroupInput
+            type="text"
+            placeholder="https://example.com/image.jpg"
+            value={urlValue}
+            onChange={(e) => {
+              setUrlValue(e.target.value);
+              setError(null);
+            }}
+            onKeyDown={handleUrlKeyDown}
+          />
+          <InputGroupAddon align="inline-end">
+            <InputGroupButton onClick={handleUrlSubmit} aria-label="Go" disabled={!urlValue.trim()}>
+              Go
+            </InputGroupButton>
+          </InputGroupAddon>
+        </InputGroup>
 
         {error && (
           <p className="text-sm text-destructive" role="alert">

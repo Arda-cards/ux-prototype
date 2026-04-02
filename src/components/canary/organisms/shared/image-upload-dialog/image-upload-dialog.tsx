@@ -399,19 +399,10 @@ export function ImageUploadDialog({
                   By confirming, you acknowledge that you own or have a license to use this image.
                 </p>
                 <div className="flex justify-end gap-2">
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    className="bg-secondary text-secondary-foreground"
-                    onClick={handleCancelClick}
-                  >
+                  <Button type="button" variant="secondary" onClick={handleCancelClick}>
                     Cancel
                   </Button>
-                  <Button
-                    type="button"
-                    className="bg-primary text-primary-foreground"
-                    onClick={handleConfirmClick}
-                  >
+                  <Button type="button" onClick={handleConfirmClick}>
                     Confirm
                   </Button>
                 </div>
@@ -421,12 +412,7 @@ export function ImageUploadDialog({
           {/* Footer for empty/failed states — just dismiss */}
           {(phase.name === 'EmptyImage' || phase.name === 'FailedValidation') && (
             <DialogFooter>
-              <Button
-                type="button"
-                variant="secondary"
-                className="bg-secondary text-secondary-foreground"
-                onClick={onCancel}
-              >
+              <Button type="button" variant="secondary" onClick={onCancel}>
                 Cancel
               </Button>
             </DialogFooter>

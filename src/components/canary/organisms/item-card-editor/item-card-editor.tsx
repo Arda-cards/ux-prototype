@@ -1,8 +1,9 @@
 import * as React from 'react';
-import { PackageMinus, Package, Crop } from 'lucide-react';
+import { PackageMinus, Package, Crop, Trash2 } from 'lucide-react';
 
 import { ImageDropZone } from '@/components/canary/molecules/image-drop-zone/image-drop-zone';
 import { ImageUploadDialog } from '@/components/canary/organisms/shared/image-upload-dialog/image-upload-dialog';
+import { ArdaConfirmDialog } from '@/components/canary/atoms/confirm-dialog/confirm-dialog';
 import { Input } from '@/components/canary/primitives/input';
 import type {
   ImageFieldConfig,
@@ -56,6 +57,7 @@ export function ItemCardEditor({
   onImageConfirmed,
 }: ItemCardEditorProps) {
   const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [confirmRemoveOpen, setConfirmRemoveOpen] = React.useState(false);
   const objectUrlRef = React.useRef<string | null>(null);
 
   // Revoke any object URL we created when the component unmounts.
@@ -95,6 +97,14 @@ export function ItemCardEditor({
     },
     [fields, onChange, onImageConfirmed],
   );
+
+  const handleRemoveImage = React.useCallback(() => {
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+    onChange({ ...fields, imageUrl: null });
+  }, [fields, onChange]);
 
   const handleDialogConfirm = React.useCallback(
     (result: ImageUploadResult) => {
@@ -195,6 +205,16 @@ export function ItemCardEditor({
                 alt={fields.title || 'Product'}
                 className="w-full h-full object-cover"
               />
+              {/* Delete image button — top-left */}
+              <button
+                type="button"
+                className="absolute top-1.5 left-1.5 z-10 bg-black/50 hover:bg-destructive text-white rounded-full p-2.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                onClick={() => setConfirmRemoveOpen(true)}
+                aria-label="Remove image"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+              {/* Edit/replace overlay */}
               <button
                 type="button"
                 className="absolute inset-0 bg-black/0 hover:bg-black/20 focus-visible:bg-black/20 transition-colors flex items-center justify-center opacity-0 hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none"
@@ -231,6 +251,20 @@ export function ItemCardEditor({
         open={dialogOpen}
         onConfirm={handleDialogConfirm}
         onCancel={handleDialogCancel}
+      />
+
+      {/* Confirm remove image */}
+      <ArdaConfirmDialog
+        title="Remove image?"
+        message="This will remove the image from the card. You can add a new one at any time."
+        confirmLabel="Remove"
+        confirmVariant="destructive"
+        open={confirmRemoveOpen}
+        onConfirm={() => {
+          handleRemoveImage();
+          setConfirmRemoveOpen(false);
+        }}
+        onCancel={() => setConfirmRemoveOpen(false)}
       />
     </>
   );
