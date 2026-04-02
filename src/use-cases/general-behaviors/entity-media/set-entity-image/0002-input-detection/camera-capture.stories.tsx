@@ -31,11 +31,7 @@ function CameraCaptureLive() {
         file-picked image.
       </p>
 
-      <ImageDropZone
-        acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-        onInput={() => {}}
-        onDismiss={() => {}}
-      />
+      <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={() => {}} />
 
       <div className="rounded-lg border border-dashed border-border p-4 space-y-2">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -75,11 +71,7 @@ function CameraCaptureScene({ sceneIndex }: { sceneIndex: number }) {
             The drop zone is idle. On mobile, tapping &ldquo;Upload from computer&rdquo; will open
             the native file picker.
           </p>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
         </div>
       );
 
@@ -94,11 +86,7 @@ function CameraCaptureScene({ sceneIndex }: { sceneIndex: number }) {
             The user taps <strong>Upload from computer</strong>. On iOS/Android, the OS presents a
             native picker with a &ldquo;Take Photo&rdquo; option alongside the filesystem browser.
           </p>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
           <div className="rounded-lg border border-primary bg-accent/30 p-3">
             <p className="text-xs font-semibold text-primary">
               Mobile OS file picker opens with camera option

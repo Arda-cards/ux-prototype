@@ -377,11 +377,7 @@ function ImageEditScene({ sceneIndex }: { sceneIndex: number }) {
             </Button>
           }
         >
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
         </DialogFrame>
       );
 

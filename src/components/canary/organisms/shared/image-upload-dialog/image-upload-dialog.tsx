@@ -331,11 +331,7 @@ export function ImageUploadDialog({
 
           {/* EmptyImage state */}
           {phase.name === 'EmptyImage' && (
-            <ImageDropZone
-              acceptedFormats={config.acceptedFormats}
-              onInput={handleInput}
-              onDismiss={onCancel}
-            />
+            <ImageDropZone acceptedFormats={config.acceptedFormats} onInput={handleInput} />
           )}
 
           {/* FailedValidation state */}
@@ -344,11 +340,7 @@ export function ImageUploadDialog({
               <p className={cn('text-sm text-destructive')} role="alert">
                 {phase.errorMessage}
               </p>
-              <ImageDropZone
-                acceptedFormats={config.acceptedFormats}
-                onInput={handleInput}
-                onDismiss={onCancel}
-              />
+              <ImageDropZone acceptedFormats={config.acceptedFormats} onInput={handleInput} />
             </div>
           )}
 
@@ -395,12 +387,13 @@ export function ImageUploadDialog({
             </div>
           )}
 
-          {/* Footer — hidden during upload, shown for ProvidedImage/Warn */}
+          {/* Footer — shown only for ProvidedImage */}
           {/* EditExisting footer is baked into ImageComparisonLayout above */}
           {!isUploading &&
             phase.name !== 'EmptyImage' &&
             phase.name !== 'FailedValidation' &&
-            phase.name !== 'EditExisting' && (
+            phase.name !== 'EditExisting' &&
+            phase.name !== 'Warn' && (
               <DialogFooter className="flex flex-col gap-2">
                 <p className="text-xs text-muted-foreground text-center">
                   By confirming, you acknowledge that you own or have a license to use this image.

@@ -35,8 +35,6 @@ export interface ImageDropZoneInitProps {
 export interface ImageDropZoneRuntimeProps {
   /** Called when the user provides an image input. */
   onInput: (input: ImageInput) => void;
-  /** Called when the user dismisses the drop zone. */
-  onDismiss: () => void;
 }
 
 /** Combined props for ImageDropZone. */
@@ -135,10 +133,18 @@ export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) 
               return;
             }
             setConverting(true);
-            void maybeConvertHeic(file).then((converted) => {
-              onInput({ type: 'file', file: converted });
-              setConverting(false);
-            });
+            void maybeConvertHeic(file)
+              .then((converted) => {
+                onInput({ type: 'file', file: converted });
+              })
+              .catch(() => {
+                const message = 'Failed to process image from clipboard. Please try again.';
+                setError(message);
+                onInput({ type: 'error', message });
+              })
+              .finally(() => {
+                setConverting(false);
+              });
             return;
           }
         }
@@ -253,7 +259,7 @@ export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) 
 
         {/* Heading */}
         <div>
-          <p className="text-sm text-muted-foreground">Drop image or click to select</p>
+          <p className="text-sm text-muted-foreground">Drop image here</p>
           <p className="text-xs text-muted-foreground/70">({formatLabels.join(', ')})</p>
         </div>
 

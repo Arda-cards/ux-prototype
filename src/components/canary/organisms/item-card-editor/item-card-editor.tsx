@@ -56,6 +56,14 @@ export function ItemCardEditor({
   onImageConfirmed,
 }: ItemCardEditorProps) {
   const [dialogOpen, setDialogOpen] = React.useState(false);
+  const objectUrlRef = React.useRef<string | null>(null);
+
+  // Revoke any object URL we created when the component unmounts.
+  React.useEffect(() => {
+    return () => {
+      if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
+    };
+  }, []);
 
   const updateField = React.useCallback(
     <K extends keyof ItemCardFields>(key: K, value: ItemCardFields[K]) => {
@@ -69,8 +77,15 @@ export function ItemCardEditor({
     (input: ImageInput) => {
       if (input.type === 'error') return;
 
+      // Revoke previous object URL before creating a new one.
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
+      }
+
       if (input.type === 'file') {
         const url = URL.createObjectURL(input.file);
+        objectUrlRef.current = url;
         onChange({ ...fields, imageUrl: url });
         onImageConfirmed?.(url);
       } else if (input.type === 'url') {
@@ -171,7 +186,10 @@ export function ItemCardEditor({
         {/* Product Image Area — drop zone or image */}
         <div className="w-full">
           {fields.imageUrl ? (
-            <div className="relative w-full aspect-[4/3] overflow-hidden rounded-lg border border-border">
+            <div
+              className="relative w-full overflow-hidden rounded-lg border border-border"
+              style={{ aspectRatio: imageConfig.aspectRatio }}
+            >
               <img
                 src={fields.imageUrl}
                 alt={fields.title || 'Product'}
@@ -179,7 +197,7 @@ export function ItemCardEditor({
               />
               <button
                 type="button"
-                className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 hover:opacity-100"
+                className="absolute inset-0 bg-black/0 hover:bg-black/20 focus-visible:bg-black/20 transition-colors flex items-center justify-center opacity-0 hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none"
                 onClick={() => setDialogOpen(true)}
                 aria-label="Replace image"
               >
@@ -193,7 +211,6 @@ export function ItemCardEditor({
             <ImageDropZone
               acceptedFormats={imageConfig.acceptedFormats}
               onInput={handleDropZoneInput}
-              onDismiss={() => {}}
             />
           )}
         </div>

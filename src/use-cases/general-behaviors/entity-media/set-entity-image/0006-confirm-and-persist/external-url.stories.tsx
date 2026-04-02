@@ -113,11 +113,7 @@ function ExternalUrlScene({ sceneIndex }: { sceneIndex: number }) {
     case 0:
       return (
         <DialogFrame title="Add Product Image" footer={<Button variant="secondary">Cancel</Button>}>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
         </DialogFrame>
       );
 
@@ -125,11 +121,7 @@ function ExternalUrlScene({ sceneIndex }: { sceneIndex: number }) {
     case 1:
       return (
         <DialogFrame title="Add Product Image" footer={<Button variant="secondary">Cancel</Button>}>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
           <p className="mt-2 text-xs text-muted-foreground text-center">
             URL typed: <code className="break-all">{MOCK_EXTERNAL_URL}</code>
           </p>
