@@ -8,6 +8,7 @@ import {
 import { ImageDropZone } from '@/components/canary/molecules/image-drop-zone/image-drop-zone';
 import { ImageUploadDialog } from '@/components/canary/organisms/shared/image-upload-dialog/image-upload-dialog';
 import { ArdaConfirmDialog } from '@/components/canary/atoms/confirm-dialog/confirm-dialog';
+import { Button } from '@/components/canary/primitives/button';
 import { Input } from '@/components/canary/primitives/input';
 import type {
   ImageFieldConfig,
@@ -147,7 +148,7 @@ export function ItemCardEditor({
     <>
       <div
         data-slot="item-card-editor"
-        className="relative w-[348px] max-w-full rounded-xl border border-border bg-card text-card-foreground shadow-sm px-5 py-4 flex flex-col gap-3 font-sans"
+        className="relative w-full sm:w-[348px] rounded-xl border border-border bg-card text-card-foreground shadow-sm px-4 sm:px-5 py-4 flex flex-col gap-3 font-sans"
       >
         {/* Header — editable title + QR code */}
         <div className="flex items-start justify-between gap-3">
@@ -169,7 +170,7 @@ export function ItemCardEditor({
 
         {/* Accent Divider */}
         <div
-          className="w-full h-[4px] transition-colors"
+          className="w-full h-1 transition-colors"
           style={{ backgroundColor: getSwatchHex(fields.accentColor) }}
         />
 
@@ -213,15 +214,16 @@ export function ItemCardEditor({
                 alt={fields.title || 'Product'}
                 className="w-full h-full object-cover"
               />
-              {/* Delete image button — top-left */}
-              <button
+              <Button
                 type="button"
-                className="absolute top-1.5 left-1.5 z-10 bg-black/50 hover:bg-destructive text-white rounded-full p-2.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                variant="ghost"
+                size="icon"
+                className="absolute top-1.5 left-1.5 z-10 rounded-full bg-black/50 hover:bg-destructive text-white hover:text-white"
                 onClick={() => setConfirmRemoveOpen(true)}
                 aria-label="Remove image"
               >
                 <Trash2 className="w-4 h-4" />
-              </button>
+              </Button>
               {/* Edit/replace overlay */}
               <button
                 type="button"
