@@ -77,11 +77,7 @@ function WrongContentTypeLive() {
         content type — surfacing an error when the response is not an image.
       </p>
 
-      <ImageDropZone
-        acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-        onInput={handleInput}
-        onDismiss={() => {}}
-      />
+      <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={handleInput} />
 
       {status === 'checking' && (
         <div className="rounded-lg border border-border p-4 text-sm text-muted-foreground">
@@ -140,11 +136,7 @@ function WrongContentTypeSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
             The drop zone is idle. Enter a non-image URL (e.g. .html, .pdf) to trigger content-type
             rejection.
           </p>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
         </div>
       );
 
@@ -155,11 +147,7 @@ function WrongContentTypeSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
           <h1 className="text-xl font-semibold tracking-tight">
             GEN-MEDIA-0001 — URL Validation: Wrong Content Type
           </h1>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
           <div className="rounded-lg border border-border p-4 text-sm text-muted-foreground">
             Checking content type&hellip;
           </div>
@@ -177,11 +165,7 @@ function WrongContentTypeSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
           <h1 className="text-xl font-semibold tracking-tight">
             GEN-MEDIA-0001 — URL Validation: Wrong Content Type
           </h1>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
           <div
             role="status"
             aria-label="content-type-error"
@@ -238,7 +222,7 @@ const {
     await delay();
 
     // Find the URL input field
-    const urlInput = canvas.getByPlaceholderText(/paste an image url/i);
+    const urlInput = canvas.getByPlaceholderText(/example\.com\/image/i);
     await waitFor(() => {
       expect(urlInput).toBeVisible();
     });

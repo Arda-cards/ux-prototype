@@ -16,7 +16,7 @@
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
 
-  --primary: oklch(0.637 0.222 29);
+  --primary: oklch(0.665 0.226 36.4);
   --primary-foreground: oklch(1 0 0);
 
   --secondary: oklch(0.97 0 0);
@@ -39,15 +39,15 @@
 
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.637 0.222 29);
+  --ring: oklch(0.665 0.226 36.4);
 
   /* ---------- Orange state ramp — all hue 29, contrast-safe ---------- */
-  --primary-hover: oklch(0.55 0.2 29);
-  --primary-active: oklch(0.47 0.17 29);
-  --primary-muted: oklch(0.98 0.016 29);
+  --primary-hover: oklch(0.578 0.204 36.4);
+  --primary-active: oklch(0.498 0.174 36.4);
+  --primary-muted: oklch(0.98 0.016 36.4);
 
   /* ---------- Chart colors ---------- */
-  --chart-1: oklch(0.637 0.222 29);
+  --chart-1: oklch(0.665 0.226 36.4);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
@@ -82,7 +82,7 @@
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
 
-  --primary: oklch(0.637 0.222 29);
+  --primary: oklch(0.665 0.226 36.4);
   --primary-foreground: oklch(1 0 0);
 
   --secondary: oklch(0.269 0 0);
@@ -105,14 +105,14 @@
 
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.637 0.222 29);
+  --ring: oklch(0.665 0.226 36.4);
 
   /* Orange state ramp — dark mode */
-  --primary-hover: oklch(0.72 0.18 29);
-  --primary-active: oklch(0.79 0.14 29);
-  --primary-muted: oklch(0.269 0.04 29);
+  --primary-hover: oklch(0.748 0.184 36.4);
+  --primary-active: oklch(0.818 0.144 36.4);
+  --primary-muted: oklch(0.269 0.04 36.4);
 
-  --chart-1: oklch(0.637 0.222 29);
+  --chart-1: oklch(0.665 0.226 36.4);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);

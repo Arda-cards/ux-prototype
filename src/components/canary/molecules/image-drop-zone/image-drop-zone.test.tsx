@@ -1,4 +1,4 @@
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@testing-library/jest-dom/vitest';
@@ -44,18 +44,14 @@ function renderDropZone(
   overrides: Partial<{
     acceptedFormats: ImageMimeType[];
     onInput: ReturnType<typeof vi.fn>;
-    onDismiss: ReturnType<typeof vi.fn>;
   }> = {},
 ) {
   const onInput = overrides.onInput ?? vi.fn();
-  const onDismiss = overrides.onDismiss ?? vi.fn();
   const acceptedFormats = overrides.acceptedFormats ?? ACCEPTED_FORMATS;
 
-  const result = render(
-    <ImageDropZone acceptedFormats={acceptedFormats} onInput={onInput} onDismiss={onDismiss} />,
-  );
+  const result = render(<ImageDropZone acceptedFormats={acceptedFormats} onInput={onInput} />);
 
-  return { ...result, onInput, onDismiss };
+  return { ...result, onInput };
 }
 
 beforeEach(() => {
@@ -72,12 +68,12 @@ describe('ImageDropZone', () => {
 
   it('renders upload button', () => {
     renderDropZone();
-    expect(screen.getByRole('button', { name: /upload from computer/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /select file/i })).toBeInTheDocument();
   });
 
   it('renders URL text field', () => {
     renderDropZone();
-    expect(screen.getByPlaceholderText(/or paste an image url/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/example\.com\/image/i)).toBeInTheDocument();
   });
 
   it('calls onInput with file data on file selection', async () => {
@@ -90,13 +86,15 @@ describe('ImageDropZone', () => {
       onDrop!([file], []);
     });
 
-    expect(onInput).toHaveBeenCalledWith({ type: 'file', file });
+    await waitFor(() => {
+      expect(onInput).toHaveBeenCalledWith({ type: 'file', file });
+    });
   });
 
   it('calls onInput with URL on text submit (Enter key)', async () => {
     const user = userEvent.setup();
     const { onInput } = renderDropZone();
-    const urlInput = screen.getByPlaceholderText(/or paste an image url/i);
+    const urlInput = screen.getByPlaceholderText(/example\.com\/image/i);
 
     await user.click(urlInput);
     await user.type(urlInput, 'https://example.com/image.jpg');
@@ -121,12 +119,9 @@ describe('ImageDropZone', () => {
     expect(onInput).toHaveBeenCalledWith(expect.objectContaining({ type: 'error' }));
   });
 
-  it('calls onDismiss on dismiss click', async () => {
-    const user = userEvent.setup();
-    const { onDismiss } = renderDropZone();
-
-    await user.click(screen.getByRole('button', { name: /dismiss/i }));
-    expect(onDismiss).toHaveBeenCalledOnce();
+  it('does not render a dismiss button (parent handles dismissal)', () => {
+    renderDropZone();
+    expect(screen.queryByRole('button', { name: /dismiss/i })).not.toBeInTheDocument();
   });
 
   it('shows idle border classes initially (before any drag)', () => {
@@ -148,20 +143,31 @@ describe('ImageDropZone', () => {
     expect(dropZone).toHaveClass('border-border');
   });
 
-  it('rejects non-HTTPS URL and shows error message', async () => {
+  it('submits valid https:// URL on Enter', async () => {
     const user = userEvent.setup();
     const { onInput } = renderDropZone();
-    const urlInput = screen.getByPlaceholderText(/or paste an image url/i);
+    const urlInput = screen.getByPlaceholderText(/example\.com\/image/i);
+
+    await user.click(urlInput);
+    await user.type(urlInput, 'https://example.com/image.jpg');
+    await user.keyboard('{Enter}');
+
+    expect(onInput).toHaveBeenCalledWith({
+      type: 'url',
+      url: 'https://example.com/image.jpg',
+    });
+  });
+
+  it('shows error and emits error input for non-https URL on Enter', async () => {
+    const user = userEvent.setup();
+    const { onInput } = renderDropZone();
+    const urlInput = screen.getByPlaceholderText(/example\.com\/image/i);
 
     await user.click(urlInput);
     await user.type(urlInput, 'http://example.com/image.jpg');
     await user.keyboard('{Enter}');
 
-    expect(onInput).toHaveBeenCalledWith({
-      type: 'error',
-      message: 'URL must start with https://',
-    });
-
-    expect(screen.getByRole('alert')).toHaveTextContent('URL must start with https://');
+    expect(onInput).toHaveBeenCalledWith(expect.objectContaining({ type: 'error' }));
+    expect(screen.getByText(/url must start with https:\/\//i)).toBeInTheDocument();
   });
 });

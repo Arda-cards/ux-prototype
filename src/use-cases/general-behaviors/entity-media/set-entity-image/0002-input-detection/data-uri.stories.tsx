@@ -104,11 +104,7 @@ function DataUriLive({ sampleUri }: { sampleUri: string }) {
         today. A future enhancement could decode image data URIs and route them as managed uploads.
       </p>
 
-      <ImageDropZone
-        acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-        onInput={() => {}}
-        onDismiss={() => {}}
-      />
+      <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={() => {}} />
 
       <div className="rounded-lg border border-dashed border-border p-4 space-y-3">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -178,11 +174,7 @@ function DataUriScene({
           <p className="text-sm text-muted-foreground">
             The drop zone is idle. The user has a data URI or blob URI on the clipboard.
           </p>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
         </div>
       );
 

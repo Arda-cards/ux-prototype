@@ -37,7 +37,6 @@ function DragAndDropLive() {
         onInput={(input) => {
           setLastInput(input);
         }}
-        onDismiss={() => {}}
       />
 
       {lastInput && (
@@ -81,11 +80,7 @@ function DragAndDropScene({ sceneIndex }: { sceneIndex: number }) {
             The drop zone is idle with a dashed border. Drag an image file from your OS file manager
             onto this area.
           </p>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
         </div>
       );
 
@@ -212,7 +207,7 @@ const {
 
     // Verify idle state — upload button is present
     await waitFor(() => {
-      expect(canvas.getByRole('button', { name: /upload from computer/i })).toBeVisible();
+      expect(canvas.getByRole('button', { name: /select file/i })).toBeVisible();
     });
     goToScene(1);
     await delay();
