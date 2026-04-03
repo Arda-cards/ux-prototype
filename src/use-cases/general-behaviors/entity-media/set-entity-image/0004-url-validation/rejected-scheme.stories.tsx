@@ -43,7 +43,6 @@ function RejectedSchemeLive() {
       <ImageDropZone
         acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
         onInput={(input) => setLastInput(input)}
-        onDismiss={() => {}}
       />
 
       {lastInput && (
@@ -90,11 +89,7 @@ function RejectedSchemeSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
           <p className="text-sm text-muted-foreground">
             The drop zone is idle. Enter an http:// URL to trigger scheme rejection.
           </p>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
         </div>
       );
 
@@ -109,11 +104,7 @@ function RejectedSchemeSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
             An <code>http://</code> URL has been entered. The drop zone rejects it immediately
             without a network request.
           </p>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
           <p className="text-xs text-muted-foreground font-mono">Submitted: {HTTP_URL}</p>
         </div>
       );
@@ -126,11 +117,7 @@ function RejectedSchemeSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
           <h1 className="text-xl font-semibold tracking-tight">
             GEN-MEDIA-0001 — URL Validation: Rejected Scheme
           </h1>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
           <div
             className="rounded-lg border border-destructive bg-destructive/5 p-4"
             data-testid="result-panel"

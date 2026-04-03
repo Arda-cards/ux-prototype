@@ -71,11 +71,7 @@ function UnreachableLive() {
         reachability check — surfacing an error when the image cannot be loaded.
       </p>
 
-      <ImageDropZone
-        acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-        onInput={handleInput}
-        onDismiss={() => {}}
-      />
+      <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={handleInput} />
 
       {status === 'checking' && (
         <div className="rounded-lg border border-border p-4 text-sm text-muted-foreground">
@@ -128,11 +124,7 @@ function UnreachableSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
           <p className="text-sm text-muted-foreground">
             The drop zone is idle. Enter a broken HTTPS URL to trigger the reachability failure.
           </p>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
         </div>
       );
 
@@ -143,11 +135,7 @@ function UnreachableSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
           <h1 className="text-xl font-semibold tracking-tight">
             GEN-MEDIA-0001 — URL Validation: Unreachable
           </h1>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
           <div className="rounded-lg border border-border p-4 text-sm text-muted-foreground">
             Checking reachability&hellip;
           </div>
@@ -165,11 +153,7 @@ function UnreachableSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
           <h1 className="text-xl font-semibold tracking-tight">
             GEN-MEDIA-0001 — URL Validation: Unreachable
           </h1>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
           <div
             role="status"
             aria-label="reachability-error"

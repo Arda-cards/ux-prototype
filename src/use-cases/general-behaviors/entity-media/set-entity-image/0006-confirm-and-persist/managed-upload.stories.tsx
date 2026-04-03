@@ -109,11 +109,7 @@ function ManagedUploadScene({ sceneIndex }: { sceneIndex: number }) {
     case 0:
       return (
         <DialogFrame title="Add Product Image" footer={<Button variant="secondary">Cancel</Button>}>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
         </DialogFrame>
       );
 

@@ -31,15 +31,9 @@ const meta: Meta<typeof ImageDropZone> = {
       description: 'Called with classified ImageInput on valid submission.',
       table: { category: 'Runtime' },
     },
-    onDismiss: {
-      action: 'onDismiss',
-      description: 'Called when the user dismisses the drop zone.',
-      table: { category: 'Runtime' },
-    },
   },
   args: {
     onInput: fn(),
-    onDismiss: fn(),
   },
 };
 
@@ -178,7 +172,7 @@ export const InputClassification: Story = {
 
 /**
  * Interactive Controls playground.
- * Use the Controls panel to toggle accepted formats. Actions log onInput and onDismiss.
+ * Use the Controls panel to toggle accepted formats. Actions log onInput.
  */
 export const Playground: Story = {
   args: {

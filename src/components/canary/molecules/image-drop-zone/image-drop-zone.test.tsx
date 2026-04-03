@@ -1,4 +1,4 @@
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@testing-library/jest-dom/vitest';
@@ -44,18 +44,14 @@ function renderDropZone(
   overrides: Partial<{
     acceptedFormats: ImageMimeType[];
     onInput: ReturnType<typeof vi.fn>;
-    onDismiss: ReturnType<typeof vi.fn>;
   }> = {},
 ) {
   const onInput = overrides.onInput ?? vi.fn();
-  const onDismiss = overrides.onDismiss ?? vi.fn();
   const acceptedFormats = overrides.acceptedFormats ?? ACCEPTED_FORMATS;
 
-  const result = render(
-    <ImageDropZone acceptedFormats={acceptedFormats} onInput={onInput} onDismiss={onDismiss} />,
-  );
+  const result = render(<ImageDropZone acceptedFormats={acceptedFormats} onInput={onInput} />);
 
-  return { ...result, onInput, onDismiss };
+  return { ...result, onInput };
 }
 
 beforeEach(() => {
@@ -90,7 +86,9 @@ describe('ImageDropZone', () => {
       onDrop!([file], []);
     });
 
-    expect(onInput).toHaveBeenCalledWith({ type: 'file', file });
+    await waitFor(() => {
+      expect(onInput).toHaveBeenCalledWith({ type: 'file', file });
+    });
   });
 
   it('calls onInput with URL on text submit (Enter key)', async () => {
@@ -158,5 +156,18 @@ describe('ImageDropZone', () => {
       type: 'url',
       url: 'https://example.com/image.jpg',
     });
+  });
+
+  it('shows error and emits error input for non-https URL on Enter', async () => {
+    const user = userEvent.setup();
+    const { onInput } = renderDropZone();
+    const urlInput = screen.getByPlaceholderText(/example\.com\/image/i);
+
+    await user.click(urlInput);
+    await user.type(urlInput, 'http://example.com/image.jpg');
+    await user.keyboard('{Enter}');
+
+    expect(onInput).toHaveBeenCalledWith(expect.objectContaining({ type: 'error' }));
+    expect(screen.getByText(/url must start with https:\/\//i)).toBeInTheDocument();
   });
 });

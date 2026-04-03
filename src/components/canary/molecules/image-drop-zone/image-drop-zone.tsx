@@ -5,7 +5,12 @@ import heic2any from 'heic2any';
 
 import { cn } from '@/types/canary/utilities/utils';
 import { Button } from '@/components/canary/atoms/button/button';
-import { Input } from '@/components/canary/primitives/input';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '@/components/canary/atoms/input-group/input-group';
 import type { ImageMimeType, ImageInput } from '@/types/canary/utilities/image-field-config';
 
 const HEIC_TYPES: string[] = ['image/heic', 'image/heif'];
@@ -35,8 +40,6 @@ export interface ImageDropZoneInitProps {
 export interface ImageDropZoneRuntimeProps {
   /** Called when the user provides an image input. */
   onInput: (input: ImageInput) => void;
-  /** Called when the user dismisses the drop zone. */
-  onDismiss: () => void;
 }
 
 /** Combined props for ImageDropZone. */
@@ -135,10 +138,18 @@ export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) 
               return;
             }
             setConverting(true);
-            void maybeConvertHeic(file).then((converted) => {
-              onInput({ type: 'file', file: converted });
-              setConverting(false);
-            });
+            void maybeConvertHeic(file)
+              .then((converted) => {
+                onInput({ type: 'file', file: converted });
+              })
+              .catch(() => {
+                const message = 'Failed to process image from clipboard. Please try again.';
+                setError(message);
+                onInput({ type: 'error', message });
+              })
+              .finally(() => {
+                setConverting(false);
+              });
             return;
           }
         }
@@ -240,9 +251,7 @@ export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) 
       onPaste={handlePaste}
       className={cn(
         'border-2 border-dashed rounded-lg p-8 transition-colors',
-        isDragActive
-          ? 'border-primary bg-accent'
-          : 'border-border bg-[var(--tailwind-colors-gray-50)]',
+        isDragActive ? 'border-primary bg-accent' : 'border-border bg-muted',
       )}
     >
       <input {...getInputProps()} />
@@ -253,7 +262,7 @@ export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) 
 
         {/* Heading */}
         <div>
-          <p className="text-sm text-muted-foreground">Drop image or click to select</p>
+          <p className="text-sm text-muted-foreground">Drop image here</p>
           <p className="text-xs text-muted-foreground/70">({formatLabels.join(', ')})</p>
         </div>
 
@@ -265,18 +274,24 @@ export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) 
         {/* Divider text */}
         <p className="text-sm text-muted-foreground">... or enter image URL</p>
 
-        {/* URL input */}
-        <Input
-          type="text"
-          placeholder="https://example.com/image.jpg"
-          value={urlValue}
-          onChange={(e) => {
-            setUrlValue(e.target.value);
-            setError(null);
-          }}
-          onKeyDown={handleUrlKeyDown}
-          className="w-full"
-        />
+        {/* URL input with Go button */}
+        <InputGroup className="w-full bg-background">
+          <InputGroupInput
+            type="text"
+            placeholder="https://example.com/image.jpg"
+            value={urlValue}
+            onChange={(e) => {
+              setUrlValue(e.target.value);
+              setError(null);
+            }}
+            onKeyDown={handleUrlKeyDown}
+          />
+          <InputGroupAddon align="inline-end">
+            <InputGroupButton onClick={handleUrlSubmit} aria-label="Go" disabled={!urlValue.trim()}>
+              Go
+            </InputGroupButton>
+          </InputGroupAddon>
+        </InputGroup>
 
         {error && (
           <p className="text-sm text-destructive" role="alert">

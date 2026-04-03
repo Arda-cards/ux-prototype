@@ -52,11 +52,7 @@ function UnrecognizedLive() {
         error and keeps the field editable for retry.
       </p>
 
-      <ImageDropZone
-        acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-        onInput={handleInput}
-        onDismiss={() => {}}
-      />
+      <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={handleInput} />
 
       <div className="rounded-lg border border-dashed border-border p-3 space-y-2">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -118,11 +114,7 @@ function UnrecognizedScene({ sceneIndex, typedText }: { sceneIndex: number; type
             The drop zone URL field is idle, waiting for input. The user is about to type text that
             is not a valid image URL.
           </p>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
         </div>
       );
 
@@ -140,11 +132,7 @@ function UnrecognizedScene({ sceneIndex, typedText }: { sceneIndex: number; type
               {typedText.length > 40 ? '...' : ''}&rdquo;
             </code>
           </p>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
         </div>
       );
 
@@ -158,11 +146,7 @@ function UnrecognizedScene({ sceneIndex, typedText }: { sceneIndex: number; type
           <p className="text-sm text-muted-foreground">
             After pressing Enter, the drop zone shows an inline error. The field remains editable.
           </p>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
           <div className="rounded border border-destructive p-3" role="alert">
             <p className="text-xs text-destructive font-medium">URL must start with https://</p>
           </div>
@@ -181,11 +165,7 @@ function UnrecognizedScene({ sceneIndex, typedText }: { sceneIndex: number; type
             The URL field stays editable after the error. The user can clear the text and type a
             valid <code>https://</code> URL to retry.
           </p>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
           <p className="text-xs text-muted-foreground">
             The field remains editable — correct the URL and press Enter to retry.
           </p>
