@@ -371,3 +371,40 @@ export const Default: Story = {
     await storyStepDelay();
   },
 };
+
+/**
+ * HideAll — open View dropdown, click "Hide All", save, and verify only
+ * the Name column remains visible.
+ */
+export const HideAll: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await canvas.findByText('Apex Medical Distributors', { selector: '[role="gridcell"]' }, { timeout: 10000 });
+    await storyStepDelay();
+
+    // Open View dropdown
+    const viewButton = canvas.getByRole('button', { name: /toggle column visibility/i });
+    await userEvent.click(viewButton);
+
+    // Click "Hide All"
+    await waitFor(() => {
+      expect(canvas.getByRole('button', { name: 'Hide All' })).toBeVisible();
+    }, { timeout: 10000 });
+    await userEvent.click(canvas.getByRole('button', { name: 'Hide All' }));
+
+    await storyStepDelay();
+
+    // Save
+    await userEvent.click(canvas.getByRole('button', { name: 'Save' }));
+
+    // Verify only Name column remains
+    await waitFor(() => {
+      expect(getColumnHeader(canvasElement, 'name')).toBeTruthy();
+      expect(getColumnHeader(canvasElement, 'contact')).toBeFalsy();
+      expect(getColumnHeader(canvasElement, 'email')).toBeFalsy();
+      expect(getColumnHeader(canvasElement, 'city')).toBeFalsy();
+      expect(getColumnHeader(canvasElement, 'state')).toBeFalsy();
+    }, { timeout: 10000 });
+  },
+};

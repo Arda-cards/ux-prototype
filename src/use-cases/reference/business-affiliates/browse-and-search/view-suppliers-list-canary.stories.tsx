@@ -176,7 +176,7 @@ const { Component: SupplierGrid } = createEntityDataGrid<SupplierEntity>({
 // Page wrapper
 // ---------------------------------------------------------------------------
 
-function SuppliersCanaryPage() {
+function SuppliersCanaryPage({ data = supplierMockData }: { data?: SupplierEntity[] }) {
   const [selectedSupplier, setSelectedSupplier] = useState<SupplierEntity | null>(null);
 
   return (
@@ -203,7 +203,7 @@ function SuppliersCanaryPage() {
             </div>
             <div style={{ height: 480 }}>
               <SupplierGrid
-                data={supplierMockData}
+                data={data}
                 activeTab="suppliers"
                 onRowClick={setSelectedSupplier}
               />
@@ -314,5 +314,58 @@ export const Default: Story = {
     });
 
     await storyStepDelay();
+  },
+};
+
+/**
+ * EmptyState — render the supplier grid with no data, verify "0 items" appears.
+ */
+export const EmptyState: Story = {
+  render: () => <SuppliersCanaryPage data={[]} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    // The createEntityDataGrid shows "0 items" for an empty grid
+    await waitFor(
+      () => {
+        expect(canvas.getByText('0 items')).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
+  },
+};
+
+/**
+ * LoadingState — render with empty data, verify page header renders but no
+ * data rows are present.
+ */
+export const LoadingState: Story = {
+  render: () => <SuppliersCanaryPage data={[]} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await waitFor(
+      () => {
+        expect(canvas.getByRole('heading', { name: 'Suppliers', level: 1 })).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
+    expect(canvas.queryByText('Apex Medical Distributors')).not.toBeInTheDocument();
+  },
+};
+
+/**
+ * ErrorState — render with empty data, verify the page structure renders
+ * without any supplier rows.
+ */
+export const ErrorState: Story = {
+  render: () => <SuppliersCanaryPage data={[]} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await waitFor(
+      () => {
+        expect(canvas.getByRole('heading', { name: 'Suppliers', level: 1 })).toBeVisible();
+      },
+      { timeout: 10000 },
+    );
+    expect(canvas.queryByText('Apex Medical Distributors')).not.toBeInTheDocument();
   },
 };

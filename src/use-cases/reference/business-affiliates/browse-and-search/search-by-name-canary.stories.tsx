@@ -235,3 +235,32 @@ export const Default: Story = {
     await storyStepDelay();
   },
 };
+
+/**
+ * NoResults — type a non-matching search term and verify the grid shows
+ * "0 of 8 items" with no data rows visible.
+ */
+export const NoResults: Story = {
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step('Wait for grid to load', async () => {
+      await canvas.findByText('Apex Medical Distributors', { selector: '[role="gridcell"]' }, { timeout: 10000 });
+    });
+
+    await storyStepDelay();
+
+    await step('Type non-matching search term', async () => {
+      const searchInput = canvas.getByRole('searchbox');
+      await userEvent.type(searchInput, 'ZZZZZ');
+      await waitFor(
+        () => {
+          expect(canvas.getByText('0 of 8 items')).toBeVisible();
+        },
+        { timeout: 5000 },
+      );
+    });
+
+    await storyStepDelay();
+  },
+};

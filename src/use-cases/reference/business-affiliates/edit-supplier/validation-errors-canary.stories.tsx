@@ -7,7 +7,7 @@
  *
  * State machine: view -> edit -> save
  *
- * Single story: ClearRequiredField
+ * Stories: ClearRequiredField, CancelDiscards, NetworkError
  */
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -91,10 +91,11 @@ const { Component: SupplierGrid } = createEntityDataGrid<SupplierEntity>({
 // Page component
 // ---------------------------------------------------------------------------
 
-function EditValidationCanaryPage() {
+function EditValidationCanaryPage({ simulateError }: { simulateError?: 'network' }) {
   const [selectedSupplier, setSelectedSupplier] = useState<SupplierEntity | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const drawerOpen = selectedSupplier !== null;
 
@@ -104,26 +105,42 @@ function EditValidationCanaryPage() {
     setSelectedSupplier(supplier);
     setIsEditing(false);
     setEditName(supplier.name);
+    setErrorMessage(null);
   };
 
   const handleEdit = () => {
     if (selectedSupplier) {
       setIsEditing(true);
       setEditName(selectedSupplier.name);
+      setErrorMessage(null);
     }
   };
 
   const handleSave = () => {
     if (!isSaveDisabled && selectedSupplier) {
+      if (simulateError === 'network') {
+        setErrorMessage('Internal server error. Please try again later.');
+        return;
+      }
       console.log('Saving updated supplier:', editName);
       setSelectedSupplier({ ...selectedSupplier, name: editName });
       setIsEditing(false);
+      setErrorMessage(null);
     }
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    if (selectedSupplier) {
+      setEditName(selectedSupplier.name);
+    }
+    setErrorMessage(null);
   };
 
   const handleClose = () => {
     setSelectedSupplier(null);
     setIsEditing(false);
+    setErrorMessage(null);
   };
 
   const viewFields: FieldDef[] = selectedSupplier
@@ -220,12 +237,27 @@ function EditValidationCanaryPage() {
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => setIsEditing(false)}
+                    onClick={handleCancel}
                     aria-label="Cancel"
                   >
                     Cancel
                   </Button>
                 </div>
+                {errorMessage && (
+                  <div
+                    role="alert"
+                    style={{
+                      padding: '8px 12px',
+                      backgroundColor: '#fef2f2',
+                      border: '1px solid #fecaca',
+                      borderRadius: 6,
+                      color: '#dc2626',
+                      fontSize: 14,
+                    }}
+                  >
+                    {errorMessage}
+                  </div>
+                )}
               </div>
             )}
           </ItemDetails>
@@ -348,6 +380,176 @@ export const ClearRequiredField: Story = {
         const saveButton = drawer.getByRole('button', { name: /save/i });
         expect(saveButton).toBeEnabled();
       }, { timeout: 10000 });
+    });
+
+    await storyStepDelay();
+  },
+};
+
+// ---------------------------------------------------------------------------
+// CancelDiscards
+// ---------------------------------------------------------------------------
+
+/**
+ * Opens Apex Medical Distributors, enters edit mode, modifies the name,
+ * clicks Cancel, and verifies the drawer returns to view mode with the
+ * original name displayed.
+ */
+export const CancelDiscards: Story = {
+  name: 'Cancel Discards',
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step('Wait for grid to render', async () => {
+      await canvas.findByText(
+        'Apex Medical Distributors',
+        { selector: '[role="gridcell"]' },
+        { timeout: 10000 },
+      );
+    });
+
+    await storyStepDelay();
+
+    await step('Click Apex Medical row to open drawer', async () => {
+      const row = canvas.getByText('Apex Medical Distributors', {
+        selector: '[role="gridcell"]',
+      });
+      await userEvent.click(row);
+    });
+
+    await storyStepDelay();
+
+    await step('Verify drawer opens', async () => {
+      const dialogs = screen.getAllByRole('dialog');
+      expect(dialogs.length).toBeGreaterThan(0);
+      const drawer = dialogs[dialogs.length - 1]!;
+      await waitFor(() => expect(drawer).toBeVisible(), { timeout: 10000 });
+    });
+
+    await step('Click Edit action button', async () => {
+      const dialogs = screen.getAllByRole('dialog');
+      const drawer = within(dialogs[dialogs.length - 1]!);
+      const editButton = drawer.getByRole('button', { name: /edit/i });
+      await userEvent.click(editButton);
+    });
+
+    await storyStepDelay();
+
+    await step('Verify edit mode and modify name', async () => {
+      const dialogs = screen.getAllByRole('dialog');
+      const drawer = within(dialogs[dialogs.length - 1]!);
+      const nameInput = drawer.getByLabelText(/name/i);
+      await waitFor(() => expect(nameInput).toBeVisible(), { timeout: 10000 });
+      await userEvent.clear(nameInput);
+      await userEvent.type(nameInput, 'Modified Supplier Name');
+    });
+
+    await storyStepDelay();
+
+    await step('Click Cancel', async () => {
+      const dialogs = screen.getAllByRole('dialog');
+      const drawer = within(dialogs[dialogs.length - 1]!);
+      const cancelButton = drawer.getByRole('button', { name: /cancel/i });
+      await userEvent.click(cancelButton);
+    });
+
+    await storyStepDelay();
+
+    await step('Verify drawer returns to view mode with original name', async () => {
+      const dialogs = screen.getAllByRole('dialog');
+      const drawer = within(dialogs[dialogs.length - 1]!);
+
+      // Edit mode inputs should be gone — Edit button should reappear
+      await waitFor(() => {
+        expect(drawer.getByRole('button', { name: /edit/i })).toBeVisible();
+      }, { timeout: 10000 });
+
+      // Original name should be displayed in view fields
+      expect(drawer.getByText('Apex Medical Distributors')).toBeVisible();
+    });
+
+    await storyStepDelay();
+  },
+};
+
+// ---------------------------------------------------------------------------
+// NetworkError
+// ---------------------------------------------------------------------------
+
+/**
+ * Opens Apex Medical Distributors, enters edit mode, modifies the name,
+ * clicks Save with a simulated network error, and verifies the error
+ * message is shown while the drawer stays in edit mode with data preserved.
+ */
+export const NetworkError: Story = {
+  name: 'Network Error',
+  render: () => <EditValidationCanaryPage simulateError="network" />,
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step('Wait for grid to render', async () => {
+      await canvas.findByText(
+        'Apex Medical Distributors',
+        { selector: '[role="gridcell"]' },
+        { timeout: 10000 },
+      );
+    });
+
+    await storyStepDelay();
+
+    await step('Click Apex Medical row to open drawer', async () => {
+      const row = canvas.getByText('Apex Medical Distributors', {
+        selector: '[role="gridcell"]',
+      });
+      await userEvent.click(row);
+    });
+
+    await storyStepDelay();
+
+    await step('Verify drawer opens', async () => {
+      const dialogs = screen.getAllByRole('dialog');
+      expect(dialogs.length).toBeGreaterThan(0);
+      const drawer = dialogs[dialogs.length - 1]!;
+      await waitFor(() => expect(drawer).toBeVisible(), { timeout: 10000 });
+    });
+
+    await step('Click Edit action button', async () => {
+      const dialogs = screen.getAllByRole('dialog');
+      const drawer = within(dialogs[dialogs.length - 1]!);
+      const editButton = drawer.getByRole('button', { name: /edit/i });
+      await userEvent.click(editButton);
+    });
+
+    await storyStepDelay();
+
+    await step('Modify the name', async () => {
+      const dialogs = screen.getAllByRole('dialog');
+      const drawer = within(dialogs[dialogs.length - 1]!);
+      const nameInput = drawer.getByLabelText(/name/i);
+      await waitFor(() => expect(nameInput).toBeVisible(), { timeout: 10000 });
+      await userEvent.clear(nameInput);
+      await userEvent.type(nameInput, 'Updated Supplier Name');
+    });
+
+    await storyStepDelay();
+
+    await step('Click Save and verify network error appears', async () => {
+      const dialogs = screen.getAllByRole('dialog');
+      const drawer = within(dialogs[dialogs.length - 1]!);
+      const saveButton = drawer.getByRole('button', { name: /save/i });
+      await userEvent.click(saveButton);
+
+      await waitFor(() => {
+        const alert = drawer.getByRole('alert');
+        expect(alert).toHaveTextContent('Internal server error');
+      }, { timeout: 10000 });
+    });
+
+    await step('Verify drawer stays in edit mode with data preserved', async () => {
+      const dialogs = screen.getAllByRole('dialog');
+      const drawer = within(dialogs[dialogs.length - 1]!);
+      const nameInput = drawer.getByLabelText(/name/i);
+      expect(nameInput).toHaveValue('Updated Supplier Name');
     });
 
     await storyStepDelay();

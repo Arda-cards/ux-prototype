@@ -5,7 +5,7 @@
  * The page has an "Add Supplier" button that opens a create drawer
  * with a Name input and a Save button. Save is disabled when Name is empty.
  *
- * Single story: EmptyNameBlocked
+ * Stories: EmptyNameBlocked, NetworkError, DuplicateNameError
  */
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -89,17 +89,27 @@ const { Component: SupplierGrid } = createEntityDataGrid<SupplierEntity>({
 // Page component
 // ---------------------------------------------------------------------------
 
-function CreateValidationCanaryPage() {
+function CreateValidationCanaryPage({ simulateError }: { simulateError?: 'network' | 'duplicate' }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [newName, setNewName] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const isSaveDisabled = !newName.trim();
 
   const handleSave = () => {
     if (!isSaveDisabled) {
+      if (simulateError === 'network') {
+        setErrorMessage('Internal server error. Please try again later.');
+        return;
+      }
+      if (simulateError === 'duplicate') {
+        setErrorMessage('A supplier with this name already exists.');
+        return;
+      }
       console.log('Saving new supplier:', newName);
       setDrawerOpen(false);
       setNewName('');
+      setErrorMessage(null);
     }
   };
 
@@ -144,6 +154,7 @@ function CreateValidationCanaryPage() {
               if (!open) {
                 setDrawerOpen(false);
                 setNewName('');
+                setErrorMessage(null);
               }
             }}
             title="New Supplier"
@@ -179,6 +190,21 @@ function CreateValidationCanaryPage() {
               >
                 Save
               </Button>
+              {errorMessage && (
+                <div
+                  role="alert"
+                  style={{
+                    padding: '8px 12px',
+                    backgroundColor: '#fef2f2',
+                    border: '1px solid #fecaca',
+                    borderRadius: 6,
+                    color: '#dc2626',
+                    fontSize: 14,
+                  }}
+                >
+                  {errorMessage}
+                </div>
+              )}
             </div>
           </ItemDetails>
         </SidebarInset>
@@ -276,6 +302,146 @@ export const EmptyNameBlocked: Story = {
         const saveButton = drawer.getByRole('button', { name: /save/i });
         expect(saveButton).toBeEnabled();
       }, { timeout: 10000 });
+    });
+
+    await storyStepDelay();
+  },
+};
+
+// ---------------------------------------------------------------------------
+// NetworkError
+// ---------------------------------------------------------------------------
+
+/**
+ * Fills in a supplier name and clicks Save. A simulated network error
+ * is shown inline and the drawer stays open with form data preserved.
+ */
+export const NetworkError: Story = {
+  name: 'Network Error',
+  render: () => <CreateValidationCanaryPage simulateError="network" />,
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step('Wait for grid to render', async () => {
+      await canvas.findByText(
+        'Apex Medical Distributors',
+        { selector: '[role="gridcell"]' },
+        { timeout: 10000 },
+      );
+    });
+
+    await storyStepDelay();
+
+    await step('Click Add Supplier to open create drawer', async () => {
+      const addButton = canvas.getByRole('button', { name: /add supplier/i });
+      await userEvent.click(addButton);
+    });
+
+    await storyStepDelay();
+
+    await step('Verify drawer opens', async () => {
+      const dialogs = screen.getAllByRole('dialog');
+      expect(dialogs.length).toBeGreaterThan(0);
+      const drawer = dialogs[dialogs.length - 1]!;
+      await waitFor(() => expect(drawer).toBeVisible(), { timeout: 10000 });
+    });
+
+    await step('Type a name', async () => {
+      const dialogs = screen.getAllByRole('dialog');
+      const drawer = within(dialogs[dialogs.length - 1]!);
+      const nameInput = drawer.getByLabelText(/name/i);
+      await userEvent.type(nameInput, 'New Test Supplier');
+    });
+
+    await storyStepDelay();
+
+    await step('Click Save and verify network error appears', async () => {
+      const dialogs = screen.getAllByRole('dialog');
+      const drawer = within(dialogs[dialogs.length - 1]!);
+      const saveButton = drawer.getByRole('button', { name: /save/i });
+      await userEvent.click(saveButton);
+
+      await waitFor(() => {
+        const alert = drawer.getByRole('alert');
+        expect(alert).toHaveTextContent('Internal server error');
+      }, { timeout: 10000 });
+    });
+
+    await step('Verify drawer stays open and form data preserved', async () => {
+      const dialogs = screen.getAllByRole('dialog');
+      const drawer = within(dialogs[dialogs.length - 1]!);
+      const nameInput = drawer.getByLabelText(/name/i);
+      expect(nameInput).toHaveValue('New Test Supplier');
+    });
+
+    await storyStepDelay();
+  },
+};
+
+// ---------------------------------------------------------------------------
+// DuplicateNameError
+// ---------------------------------------------------------------------------
+
+/**
+ * Fills in a supplier name and clicks Save. A simulated duplicate-name
+ * error is shown inline and the drawer stays open with form data preserved.
+ */
+export const DuplicateNameError: Story = {
+  name: 'Duplicate Name Error',
+  render: () => <CreateValidationCanaryPage simulateError="duplicate" />,
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step('Wait for grid to render', async () => {
+      await canvas.findByText(
+        'Apex Medical Distributors',
+        { selector: '[role="gridcell"]' },
+        { timeout: 10000 },
+      );
+    });
+
+    await storyStepDelay();
+
+    await step('Click Add Supplier to open create drawer', async () => {
+      const addButton = canvas.getByRole('button', { name: /add supplier/i });
+      await userEvent.click(addButton);
+    });
+
+    await storyStepDelay();
+
+    await step('Verify drawer opens', async () => {
+      const dialogs = screen.getAllByRole('dialog');
+      expect(dialogs.length).toBeGreaterThan(0);
+      const drawer = dialogs[dialogs.length - 1]!;
+      await waitFor(() => expect(drawer).toBeVisible(), { timeout: 10000 });
+    });
+
+    await step('Type an existing supplier name', async () => {
+      const dialogs = screen.getAllByRole('dialog');
+      const drawer = within(dialogs[dialogs.length - 1]!);
+      const nameInput = drawer.getByLabelText(/name/i);
+      await userEvent.type(nameInput, 'Apex Medical Distributors');
+    });
+
+    await storyStepDelay();
+
+    await step('Click Save and verify duplicate error appears', async () => {
+      const dialogs = screen.getAllByRole('dialog');
+      const drawer = within(dialogs[dialogs.length - 1]!);
+      const saveButton = drawer.getByRole('button', { name: /save/i });
+      await userEvent.click(saveButton);
+
+      await waitFor(() => {
+        const alert = drawer.getByRole('alert');
+        expect(alert).toHaveTextContent('A supplier with this name already exists');
+      }, { timeout: 10000 });
+    });
+
+    await step('Verify drawer stays open and form data preserved', async () => {
+      const dialogs = screen.getAllByRole('dialog');
+      const drawer = within(dialogs[dialogs.length - 1]!);
+      const nameInput = drawer.getByLabelText(/name/i);
+      expect(nameInput).toHaveValue('Apex Medical Distributors');
     });
 
     await storyStepDelay();

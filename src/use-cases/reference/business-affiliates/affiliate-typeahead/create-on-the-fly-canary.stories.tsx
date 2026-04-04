@@ -296,3 +296,125 @@ export const CreateNew: Story = {
     expect(canvas.queryByRole('listbox')).not.toBeInTheDocument();
   },
 };
+
+/**
+ * Type text and verify the dropdown opens with results, proving the
+ * component is functional and responsive after input.
+ */
+export const LoadingState: Story = {
+  args: {
+    onSelect: fn(),
+    onCreate: fn(),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const input = canvas.getByRole('combobox');
+
+    // Type text and verify results appear (proving the component is functional)
+    await userEvent.type(input, 'Apex');
+
+    // Verify the listbox appears with results
+    const listbox = await canvas.findByRole('listbox', {}, { timeout: 3000 });
+    expect(listbox).toBeVisible();
+  },
+};
+
+/**
+ * Type a string that matches nothing, verify only the "[+] New supplier"
+ * create option appears.
+ */
+export const EmptySearch: Story = {
+  args: {
+    onSelect: fn(),
+    onCreate: fn(),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const input = canvas.getByRole('combobox');
+
+    // Type a string guaranteed to have no matches
+    await userEvent.type(input, 'QQQQQ');
+
+    // Verify the create option appears
+    const createOption = await canvas.findByText(
+      /\[\+\] New supplier.*QQQQQ/,
+      {},
+      { timeout: 3000 },
+    );
+    expect(createOption).toBeVisible();
+
+    // Verify only 1 option (the create option)
+    const options = canvas.getAllByRole('option');
+    expect(options).toHaveLength(1);
+  },
+};
+
+/**
+ * Type text, press ArrowDown to highlight first option, press Enter to select.
+ */
+export const KeyboardNavigation: Story = {
+  args: {
+    onSelect: fn(),
+    onCreate: fn(),
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    const input = canvas.getByRole('combobox');
+
+    // Type to get results
+    await userEvent.type(input, 'Apex');
+    await canvas.findByRole('listbox', {}, { timeout: 3000 });
+    await storyStepDelay();
+
+    // Press ArrowDown — first option highlighted
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() => {
+      const opts = canvas.getAllByRole('option');
+      expect(opts[0]).toHaveAttribute('aria-selected', 'true');
+    });
+    await storyStepDelay();
+
+    // Press Enter — first option selected
+    await userEvent.keyboard('{Enter}');
+    await waitFor(() => {
+      expect(args.onSelect).toHaveBeenCalledTimes(1);
+    });
+
+    // Verify dropdown closed
+    await waitFor(() => {
+      expect(canvas.queryByRole('listbox')).not.toBeInTheDocument();
+    });
+  },
+};
+
+/**
+ * Type text, verify dropdown opens, press Escape, verify dropdown closes
+ * but input text is preserved.
+ */
+export const EscapeDismiss: Story = {
+  args: {
+    onSelect: fn(),
+    onCreate: fn(),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const input = canvas.getByRole('combobox');
+
+    // Type text and wait for results
+    await userEvent.type(input, 'Apex');
+    await canvas.findByRole('listbox', {}, { timeout: 3000 });
+
+    // Verify dropdown is open
+    expect(canvas.getByRole('listbox')).toBeVisible();
+    await storyStepDelay();
+
+    // Press Escape
+    await userEvent.keyboard('{Escape}');
+
+    // Verify dropdown closes
+    expect(canvas.queryByRole('listbox')).not.toBeInTheDocument();
+
+    // Verify input text is preserved
+    expect(input).toHaveValue('Apex');
+  },
+};

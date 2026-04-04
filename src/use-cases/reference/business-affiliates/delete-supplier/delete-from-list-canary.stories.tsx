@@ -274,3 +274,83 @@ export const SingleDelete: Story = {
     }, { timeout: 10000 });
   },
 };
+
+/**
+ * Select 3 rows, click "Delete Selected", confirm bulk deletion, verify rows removed.
+ */
+export const BulkDelete: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await canvas.findByText('Apex Medical Distributors', { selector: '[role="gridcell"]' }, { timeout: 10000 });
+    await storyStepDelay();
+
+    // Select 3 rows
+    const checkboxes = canvas.getAllByRole('checkbox');
+    await userEvent.click(checkboxes[1]); // row 1
+    await userEvent.click(checkboxes[2]); // row 2
+    await userEvent.click(checkboxes[3]); // row 3
+    await storyStepDelay();
+
+    // Click "Delete Selected"
+    const deleteButton = canvas.getByRole('button', { name: /delete selected/i });
+    await userEvent.click(deleteButton);
+
+    // Verify confirm dialog
+    const dialog = await canvas.findByRole('alertdialog', {}, { timeout: 10000 });
+    expect(dialog).toBeVisible();
+    await storyStepDelay();
+
+    // Click "Delete" confirm
+    const confirmButton = within(dialog).getByRole('button', { name: /delete/i });
+    await userEvent.click(confirmButton);
+
+    // Verify dialog closes
+    await waitFor(() => {
+      expect(canvas.queryByRole('alertdialog')).not.toBeInTheDocument();
+    }, { timeout: 10000 });
+
+    // Verify rows removed — Apex Medical should be gone
+    await waitFor(() => {
+      expect(canvas.queryByText('Apex Medical Distributors')).not.toBeInTheDocument();
+    }, { timeout: 10000 });
+  },
+};
+
+/**
+ * Select a row, click "Delete Selected", verify dialog, cancel, verify row still present.
+ */
+export const CancelDelete: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await canvas.findByText('Apex Medical Distributors', { selector: '[role="gridcell"]' }, { timeout: 10000 });
+    await storyStepDelay();
+
+    // Select row 1
+    const checkboxes = canvas.getAllByRole('checkbox');
+    await userEvent.click(checkboxes[1]);
+    await storyStepDelay();
+
+    // Click "Delete Selected"
+    const deleteButton = canvas.getByRole('button', { name: /delete selected/i });
+    await userEvent.click(deleteButton);
+
+    // Verify confirm dialog
+    const dialog = await canvas.findByRole('alertdialog', {}, { timeout: 10000 });
+    expect(dialog).toBeVisible();
+    await storyStepDelay();
+
+    // Click "Cancel"
+    const cancelButton = within(dialog).getByRole('button', { name: /cancel/i });
+    await userEvent.click(cancelButton);
+
+    // Verify dialog closes
+    await waitFor(() => {
+      expect(canvas.queryByRole('alertdialog')).not.toBeInTheDocument();
+    }, { timeout: 10000 });
+
+    // Verify row still present
+    expect(canvas.getByText('Apex Medical Distributors', { selector: '[role="gridcell"]' })).toBeVisible();
+  },
+};

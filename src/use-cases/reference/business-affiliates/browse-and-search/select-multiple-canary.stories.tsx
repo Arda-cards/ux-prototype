@@ -302,3 +302,43 @@ export const Default: Story = {
     await storyStepDelay();
   },
 };
+
+/**
+ * SelectAll — click the header checkbox to select all rows, verify all are
+ * checked, then click again to deselect and verify all are unchecked.
+ */
+export const SelectAll: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await canvas.findByText('Apex Medical Distributors', { selector: '[role="gridcell"]' }, { timeout: 10000 });
+    await storyStepDelay();
+
+    // Click header checkbox (select all)
+    const checkboxes = canvas.getAllByRole('checkbox');
+    const headerCheckbox = checkboxes[0];
+    await userEvent.click(headerCheckbox);
+
+    // Verify all data row checkboxes are checked
+    await waitFor(() => {
+      const allCheckboxes = canvas.getAllByRole('checkbox');
+      for (let i = 1; i < allCheckboxes.length; i++) {
+        expect(allCheckboxes[i]).toBeChecked();
+      }
+    }, { timeout: 10000 });
+
+    await storyStepDelay();
+
+    // Click header checkbox again (deselect all)
+    const freshCheckboxes = canvas.getAllByRole('checkbox');
+    await userEvent.click(freshCheckboxes[0]);
+
+    // Verify all unchecked
+    await waitFor(() => {
+      const allCheckboxes = canvas.getAllByRole('checkbox');
+      for (let i = 1; i < allCheckboxes.length; i++) {
+        expect(allCheckboxes[i]).not.toBeChecked();
+      }
+    }, { timeout: 10000 });
+  },
+};

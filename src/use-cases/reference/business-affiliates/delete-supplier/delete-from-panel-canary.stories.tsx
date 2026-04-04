@@ -304,3 +304,55 @@ export const ConfirmDelete: Story = {
     }, { timeout: 10000 });
   },
 };
+
+/**
+ * Click a row, open detail drawer, click Delete, cancel, verify dialog closes and drawer stays open.
+ */
+export const CancelDelete: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await canvas.findByText('Apex Medical Distributors', { selector: '[role="gridcell"]' }, { timeout: 10000 });
+    await storyStepDelay();
+
+    // Click row to open drawer
+    const firstRow = canvas.getByText('Apex Medical Distributors', { selector: '[role="gridcell"]' });
+    await userEvent.click(firstRow);
+
+    // Verify drawer opens (ItemDetails renders via portal — use screen)
+    await waitFor(
+      () => {
+        const dialogs = screen.getAllByRole('dialog');
+        expect(dialogs.length).toBeGreaterThan(0);
+      },
+      { timeout: 10000 },
+    );
+    await storyStepDelay();
+
+    // Click Delete action in drawer
+    const dialogs = screen.getAllByRole('dialog');
+    const drawer = within(dialogs[dialogs.length - 1]);
+    const deleteButton = drawer.getByRole('button', { name: /delete/i });
+    await userEvent.click(deleteButton);
+
+    // Verify confirm dialog
+    const confirmDialog = await canvas.findByRole('alertdialog', {}, { timeout: 10000 });
+    expect(confirmDialog).toBeVisible();
+    await storyStepDelay();
+
+    // Click Cancel
+    const cancelButton = within(confirmDialog).getByRole('button', { name: /cancel/i });
+    await userEvent.click(cancelButton);
+
+    // Verify dialog closes
+    await waitFor(() => {
+      expect(canvas.queryByRole('alertdialog')).not.toBeInTheDocument();
+    }, { timeout: 10000 });
+
+    // Verify drawer still open
+    await waitFor(() => {
+      const remainingDialogs = screen.getAllByRole('dialog');
+      expect(remainingDialogs.length).toBeGreaterThan(0);
+    }, { timeout: 10000 });
+  },
+};
