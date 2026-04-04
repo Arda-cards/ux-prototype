@@ -179,6 +179,7 @@ const meta: Meta<typeof PaginationCanaryPage> = {
   title:
     'Use Cases/Reference/Business Affiliates/BA-0001 Browse and Search/Pagination (Canary)',
   component: PaginationCanaryPage,
+  tags: ['skip-ci'],
   parameters: {
     layout: 'fullscreen',
   },

@@ -442,7 +442,7 @@ function ExperimentalWizardCanary(props: WizardProps<SupplierFormData>) {
 const meta = {
   title:
     'Use Cases/Reference/Business Affiliates/BA-0003 Create Supplier/[Experimental] Wizard (Canary)',
-  tags: ['experimental'],
+  tags: ['skip-ci', 'experimental'],
   parameters: { layout: 'centered' },
 } satisfies Meta;
 

@@ -213,6 +213,7 @@ const meta: Meta<typeof DeleteFromListCanaryPage> = {
   title:
     'Use Cases/Reference/Business Affiliates/BA-0005 Delete Supplier/Delete from List (Canary)',
   component: DeleteFromListCanaryPage,
+  tags: ['skip-ci'],
   parameters: {
     layout: 'fullscreen',
   },

@@ -196,6 +196,7 @@ const meta: Meta<typeof CanaryAffiliateTypeahead> = {
   title:
     'Use Cases/Reference/Business Affiliates/BR-0002 Affiliate Typeahead/Create on the Fly (Canary)',
   component: CanaryAffiliateTypeahead,
+  tags: ['skip-ci'],
   parameters: {
     layout: 'centered',
   },

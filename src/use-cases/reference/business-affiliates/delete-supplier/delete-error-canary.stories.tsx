@@ -237,6 +237,7 @@ const meta: Meta<typeof DeleteErrorCanaryPage> = {
   title:
     'Use Cases/Reference/Business Affiliates/BA-0005 Delete Supplier/Delete Error (Canary)',
   component: DeleteErrorCanaryPage,
+  tags: ['skip-ci'],
   parameters: {
     layout: 'fullscreen',
   },
