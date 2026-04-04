@@ -16,7 +16,7 @@ import {
 } from '@frontend/components/ui/dropdown-menu';
 import { Button } from '@frontend/components/ui/button';
 import { SuppliersPage } from '../_shared/suppliers-page';
-import { ArdaConfirmDialog } from '../_shared/confirm-dialog';
+import { ConfirmDialog } from '../_shared/confirm-dialog';
 import { affiliateStore } from '../_shared/msw-handlers';
 
 // ---------------------------------------------------------------------------
@@ -122,7 +122,7 @@ export function DeletableSuppliersPage(props: DeletableSuppliersPageProps) {
           </DropdownMenu>
         )}
       />
-      <ArdaConfirmDialog
+      <ConfirmDialog
         open={confirmState.open}
         title={dialogTitle}
         message={dialogMessage}

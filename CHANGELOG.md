@@ -35,6 +35,10 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
 - Layout integrity smoke tests for canary suppliers page (sidebar visibility
   and AG Grid data visibility)
 
+### Changed
+
+- Renamed `ArdaConfirmDialog` to `ConfirmDialog` for consistency with other canary library components. The old names (`ArdaConfirmDialog`, `ArdaConfirmDialogProps`, `ArdaConfirmDialogStaticConfig`, `ArdaConfirmDialogRuntimeConfig`) are still exported as deprecated aliases.
+
 ## [4.5.0] - 2026-03-31
 
 ### Added
