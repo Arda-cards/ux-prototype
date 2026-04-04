@@ -324,3 +324,140 @@ export const Default: Story = {
     await storyStepDelay();
   },
 };
+
+/**
+ * MinimalData — click ColdChain Direct (minimal data) to view its details.
+ * Verifies drawer shows only available fields.
+ */
+export const MinimalData: Story = {
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step('Supplier grid renders with data', async () => {
+      await canvas.findByText('ColdChain Direct', { selector: '[role="gridcell"]' }, { timeout: 10000 });
+    });
+
+    await storyStepDelay();
+
+    await step('Click ColdChain Direct to open detail drawer', async () => {
+      const row = canvas.getByText('ColdChain Direct', { selector: '[role="gridcell"]' });
+      await userEvent.click(row);
+      await waitFor(
+        () => {
+          const dialogs = screen.getAllByRole('dialog');
+          expect(dialogs.length).toBeGreaterThan(0);
+          expect(dialogs[dialogs.length - 1]).toBeVisible();
+        },
+        { timeout: 10000 },
+      );
+    });
+
+    await storyStepDelay();
+
+    await step('Drawer shows minimal supplier data', async () => {
+      const dialogs = screen.getAllByRole('dialog');
+      const drawer = within(dialogs[dialogs.length - 1]);
+      await expect(
+        drawer.findByText('ColdChain Direct', {}, { timeout: 10000 }),
+      ).resolves.toBeVisible();
+      // Verify ID field is present
+      await expect(
+        drawer.findByText('sup-004', {}, { timeout: 10000 }),
+      ).resolves.toBeVisible();
+      // Verify roles
+      await expect(
+        drawer.findByText('CARRIER', {}, { timeout: 10000 }),
+      ).resolves.toBeVisible();
+    });
+
+    await storyStepDelay();
+  },
+};
+
+/**
+ * CloseDrawer — open the drawer, then close it via the X button.
+ */
+export const CloseDrawer: Story = {
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step('Click first row to open drawer', async () => {
+      const firstRow = await canvas.findByText('Apex Medical Distributors', { selector: '[role="gridcell"]' }, { timeout: 10000 });
+      await userEvent.click(firstRow);
+      await waitFor(
+        () => {
+          const dialogs = screen.getAllByRole('dialog');
+          expect(dialogs.length).toBeGreaterThan(0);
+        },
+        { timeout: 10000 },
+      );
+    });
+
+    await storyStepDelay();
+
+    await step('Close the drawer', async () => {
+      const dialogs = screen.getAllByRole('dialog');
+      const drawer = within(dialogs[dialogs.length - 1]);
+      const closeButton = drawer.getByRole('button', { name: /close/i });
+      await userEvent.click(closeButton);
+      await waitFor(
+        () => {
+          expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        },
+        { timeout: 10000 },
+      );
+    });
+
+    await storyStepDelay();
+
+    await step('Grid is still visible', async () => {
+      expect(canvas.getByText('Apex Medical Distributors', { selector: '[role="gridcell"]' })).toBeVisible();
+    });
+  },
+};
+
+/**
+ * SectionCollapse — verify all supplier fields are visible in the detail panel.
+ * The canary ItemDetails renders fields in a flat list; this verifies completeness.
+ */
+export const SectionCollapse: Story = {
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step('Click first row to open drawer', async () => {
+      const firstRow = await canvas.findByText('Apex Medical Distributors', { selector: '[role="gridcell"]' }, { timeout: 10000 });
+      await userEvent.click(firstRow);
+      await waitFor(
+        () => {
+          const dialogs = screen.getAllByRole('dialog');
+          expect(dialogs.length).toBeGreaterThan(0);
+        },
+        { timeout: 10000 },
+      );
+    });
+
+    await storyStepDelay();
+
+    await step('Verify all supplier fields are visible', async () => {
+      const dialogs = screen.getAllByRole('dialog');
+      const drawer = within(dialogs[dialogs.length - 1]);
+
+      // Identity
+      await expect(drawer.findByText('Apex Medical Distributors', {}, { timeout: 10000 })).resolves.toBeVisible();
+      await expect(drawer.findByText('sup-001', {}, { timeout: 10000 })).resolves.toBeVisible();
+
+      // Contact
+      await expect(drawer.findByText('Dr. Maria Santos', {}, { timeout: 10000 })).resolves.toBeVisible();
+      await expect(drawer.findByText('msantos@apexmedical.com', {}, { timeout: 10000 })).resolves.toBeVisible();
+      await expect(drawer.findByText('(555) 123-4567', {}, { timeout: 10000 })).resolves.toBeVisible();
+
+      // Location
+      await expect(drawer.findByText('Denver, CO', {}, { timeout: 10000 })).resolves.toBeVisible();
+
+      // Tax ID
+      await expect(drawer.findByText('11-2233445', {}, { timeout: 10000 })).resolves.toBeVisible();
+    });
+
+    await storyStepDelay();
+  },
+};

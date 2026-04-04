@@ -1,11 +1,10 @@
 /**
- * REF::BA::0001 — Browse and Search Business Affiliates (Canary Variant)
+ * REF::BA::0001 — Pagination (Canary Variant)
  *
- * Demonstrates the canary entity-data-grid factory for a non-item entity.
- * Uses Sidebar + AppHeader + createEntityDataGrid for suppliers,
- * proving the factory is generic and not item-domain-specific.
+ * Tests client-side pagination with the canary entity-data-grid factory.
+ * Uses 25 generated suppliers with a page size of 10 to produce 3 pages.
  *
- * Maps to: REF::BA::0001 — Browse and Search Business Affiliates
+ * Maps to: BA::0001::0006
  */
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -48,80 +47,18 @@ interface SupplierEntity {
 }
 
 // ---------------------------------------------------------------------------
-// Mock data
+// Mock data — 25 suppliers for pagination
 // ---------------------------------------------------------------------------
 
-const supplierMockData: SupplierEntity[] = [
-  {
-    id: 'sup-001',
-    name: 'Apex Medical Distributors',
-    contact: 'Dr. Maria Santos',
-    email: 'msantos@apexmedical.com',
-    city: 'Denver',
-    state: 'CO',
-    roles: ['VENDOR'],
-  },
-  {
-    id: 'sup-002',
-    name: 'BioTech Supplies Inc.',
-    contact: 'James Lee',
-    email: 'jlee@biotechsupplies.com',
-    city: 'Boston',
-    state: 'MA',
-    roles: ['VENDOR', 'CARRIER'],
-  },
-  {
-    id: 'sup-003',
-    name: 'Cardinal Health',
-    contact: 'Susan Williams',
-    email: 'swilliams@cardinalhealth.com',
-    city: 'Dublin',
-    state: 'OH',
-    roles: ['VENDOR'],
-  },
-  {
-    id: 'sup-004',
-    name: 'CleanRoom Solutions',
-    email: 'info@cleanroomsolutions.com',
-    city: 'San Jose',
-    state: 'CA',
-    roles: ['VENDOR'],
-  },
-  {
-    id: 'sup-005',
-    name: 'ColdChain Direct',
-    city: 'Chicago',
-    state: 'IL',
-    roles: ['CARRIER'],
-  },
-  {
-    id: 'sup-006',
-    name: 'Delta Pharma Group',
-    contact: 'Robert Chen',
-    email: 'rchen@deltapharma.com',
-    city: 'Atlanta',
-    state: 'GA',
-    roles: ['VENDOR', 'CUSTOMER'],
-  },
-  {
-    id: 'sup-007',
-    name: 'Eppendorf AG',
-    contact: 'Anna Schmidt',
-    email: 'aschmidt@eppendorf.com',
-    city: 'Hamburg',
-    state: '',
-    roles: ['VENDOR'],
-  },
-  {
-    id: 'sup-008',
-    name: 'Fisher Scientific',
-    contact: 'Tom Nguyen',
-    email: 'tnguyen@fishersci.com',
-    city: 'Pittsburgh',
-    state: 'PA',
-    roles: ['VENDOR'],
-  },
-];
+const paginatedMockData: SupplierEntity[] = Array.from({ length: 25 }, (_, i) => ({
+  id: `sup-${String(i + 1).padStart(3, '0')}`,
+  name: `Supplier ${String.fromCharCode(65 + i)}${i + 1}`,
+  contact: i % 3 === 0 ? `Contact ${i + 1}` : undefined,
+  email: `supplier${i + 1}@example.com`,
+  city: ['Denver', 'Boston', 'Chicago', 'Atlanta', 'San Jose'][i % 5],
+  state: ['CO', 'MA', 'IL', 'GA', 'CA'][i % 5],
+  roles: i % 2 === 0 ? ['VENDOR'] : ['CARRIER'],
+}));
 
 // ---------------------------------------------------------------------------
 // Column definitions
@@ -156,19 +93,17 @@ const supplierColDefs: ColDef<SupplierEntity>[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// Canary entity-data-grid for suppliers
+// Canary entity-data-grid for suppliers (client-side pagination)
 // ---------------------------------------------------------------------------
 
 const { Component: SupplierGrid } = createEntityDataGrid<SupplierEntity>({
-  displayName: 'SupplierGrid',
-  persistenceKeyPrefix: 'canary-supplier-grid',
+  displayName: 'SupplierPaginationGrid',
+  persistenceKeyPrefix: 'canary-supplier-pagination-grid',
   columnDefs: supplierColDefs,
   defaultColDef: { resizable: true, sortable: true, filter: false },
   getEntityId: (s) => s.id,
-  searchConfig: {
-    fields: ['name', 'contact', 'email', 'city'],
-    placeholder: 'Search suppliers\u2026',
-  },
+  paginationMode: 'client',
+  pageSize: 10,
   enableDragToScroll: true,
 });
 
@@ -176,7 +111,7 @@ const { Component: SupplierGrid } = createEntityDataGrid<SupplierEntity>({
 // Page wrapper
 // ---------------------------------------------------------------------------
 
-function SuppliersCanaryPage({ data = supplierMockData }: { data?: SupplierEntity[] }) {
+function PaginationCanaryPage() {
   const [selectedSupplier, setSelectedSupplier] = useState<SupplierEntity | null>(null);
 
   return (
@@ -193,7 +128,7 @@ function SuppliersCanaryPage({ data = supplierMockData }: { data?: SupplierEntit
               <div>
                 <h1 className="text-2xl font-semibold tracking-tight">Suppliers</h1>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Business affiliates with a Vendor role.
+                  Browse paginated supplier list (10 per page).
                 </p>
               </div>
               <Button size="sm" onClick={() => console.log('Add Supplier')}>
@@ -201,10 +136,10 @@ function SuppliersCanaryPage({ data = supplierMockData }: { data?: SupplierEntit
                 Add Supplier
               </Button>
             </div>
-            <div style={{ height: 480 }}>
+            <div style={{ height: 540 }}>
               <SupplierGrid
-                data={data}
-                activeTab="suppliers"
+                data={paginatedMockData}
+                activeTab="pagination"
                 onRowClick={setSelectedSupplier}
               />
             </div>
@@ -240,132 +175,67 @@ function SuppliersCanaryPage({ data = supplierMockData }: { data?: SupplierEntit
 // Story meta
 // ---------------------------------------------------------------------------
 
-const meta: Meta<typeof SuppliersCanaryPage> = {
+const meta: Meta<typeof PaginationCanaryPage> = {
   title:
-    'Use Cases/Reference/Business Affiliates/BA-0001 Browse and Search/View Suppliers List (Canary)',
-  component: SuppliersCanaryPage,
+    'Use Cases/Reference/Business Affiliates/BA-0001 Browse and Search/Pagination (Canary)',
+  component: PaginationCanaryPage,
   parameters: {
     layout: 'fullscreen',
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof SuppliersCanaryPage>;
+type Story = StoryObj<typeof PaginationCanaryPage>;
 
 /**
- * Default — supplier list rendered with the canary entity-data-grid factory.
- * Demonstrates that createEntityDataGrid is generic (not items-specific).
- * Play function: verify grid renders, search by name, verify filtered count.
+ * Default — verify page 1 renders, navigate to page 2, then page 3,
+ * verifying data changes between pages.
  */
 export const Default: Story = {
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
 
-    await step('Supplier grid renders with data', async () => {
-      const firstRow = await canvas.findByText(
-        'Apex Medical Distributors',
+    await step('Page 1 renders with first supplier', async () => {
+      await canvas.findByText(
+        'Supplier A1',
         { selector: '[role="gridcell"]' },
         { timeout: 10000 },
       );
-      expect(firstRow).toBeVisible();
     });
 
     await storyStepDelay();
 
-    await step('Page header is visible', async () => {
-      expect(canvas.getByRole('heading', { name: 'Suppliers', level: 1 })).toBeVisible();
-      expect(canvas.getByText('Business affiliates with a Vendor role.')).toBeVisible();
-    });
+    await step('Navigate to page 2', async () => {
+      const nextButton = canvas.getByRole('button', { name: 'Next page' });
+      expect(nextButton).toBeEnabled();
+      await userEvent.click(nextButton);
 
-    await storyStepDelay();
-
-    await step('Search filters supplier rows', async () => {
-      const searchInput = canvas.getByRole('searchbox');
-      await userEvent.type(searchInput, 'cardinal');
       await waitFor(
         () => {
-          expect(canvas.getByText(/1 of 8 items/)).toBeVisible();
+          expect(
+            canvas.getByText('Supplier K11', { selector: '[role="gridcell"]' }),
+          ).toBeVisible();
         },
-        { timeout: 5000 },
+        { timeout: 10000 },
       );
     });
 
     await storyStepDelay();
 
-    await step('Clear search restores all suppliers', async () => {
-      const searchInput = canvas.getByRole('searchbox');
-      await userEvent.clear(searchInput);
+    await step('Navigate to page 3', async () => {
+      const nextButton = canvas.getByRole('button', { name: 'Next page' });
+      await userEvent.click(nextButton);
+
       await waitFor(
         () => {
-          expect(canvas.getByText('8 items')).toBeVisible();
+          expect(
+            canvas.getByText('Supplier U21', { selector: '[role="gridcell"]' }),
+          ).toBeVisible();
         },
-        { timeout: 5000 },
+        { timeout: 10000 },
       );
     });
 
     await storyStepDelay();
-
-    await step('Click a row triggers onRowClick', async () => {
-      const row = canvas.getByText('Cardinal Health', { selector: '[role="gridcell"]' });
-      await userEvent.click(row);
-      // Use findByText (async retry) for the selection label; the text is split across nodes
-      // so match on the <strong> child text content directly for CI reliability
-      await canvas.findByText('Cardinal Health', { selector: 'strong' }, { timeout: 10000 });
-    });
-
-    await storyStepDelay();
-  },
-};
-
-/**
- * EmptyState — render the supplier grid with no data, verify "0 items" appears.
- */
-export const EmptyState: Story = {
-  render: () => <SuppliersCanaryPage data={[]} />,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    // The createEntityDataGrid shows "0 items" for an empty grid
-    await waitFor(
-      () => {
-        expect(canvas.getByText('0 items')).toBeVisible();
-      },
-      { timeout: 10000 },
-    );
-  },
-};
-
-/**
- * LoadingState — render with empty data, verify page header renders but no
- * data rows are present.
- */
-export const LoadingState: Story = {
-  render: () => <SuppliersCanaryPage data={[]} />,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await waitFor(
-      () => {
-        expect(canvas.getByRole('heading', { name: 'Suppliers', level: 1 })).toBeVisible();
-      },
-      { timeout: 10000 },
-    );
-    expect(canvas.queryByText('Apex Medical Distributors')).not.toBeInTheDocument();
-  },
-};
-
-/**
- * ErrorState — render with empty data, verify the page structure renders
- * without any supplier rows.
- */
-export const ErrorState: Story = {
-  render: () => <SuppliersCanaryPage data={[]} />,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await waitFor(
-      () => {
-        expect(canvas.getByRole('heading', { name: 'Suppliers', level: 1 })).toBeVisible();
-      },
-      { timeout: 10000 },
-    );
-    expect(canvas.queryByText('Apex Medical Distributors')).not.toBeInTheDocument();
   },
 };
