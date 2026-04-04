@@ -9,7 +9,7 @@
  */
 import { useState, useEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, within, waitFor } from 'storybook/test';
+import { expect, screen, within, waitFor } from 'storybook/test';
 import type { ColDef } from 'ag-grid-community';
 import {
   LayoutDashboard,
@@ -220,7 +220,6 @@ const meta: Meta<typeof DeepLinkCanaryPage> = {
   title:
     'Use Cases/Reference/Business Affiliates/BA-0001 Browse and Search/Deep Link (Canary)',
   component: DeepLinkCanaryPage,
-  tags: ['skip-ci'],
   parameters: {
     layout: 'fullscreen',
   },
@@ -254,8 +253,9 @@ export const Default: Story = {
     await step('Detail panel auto-opens for deep-linked supplier', async () => {
       await waitFor(
         () => {
-          const dialog = canvas.getByRole('dialog');
-          expect(dialog).toBeVisible();
+          const dialogs = screen.getAllByRole('dialog');
+          expect(dialogs.length).toBeGreaterThan(0);
+          expect(dialogs[dialogs.length - 1]).toBeVisible();
         },
         { timeout: 10000 },
       );
@@ -264,10 +264,10 @@ export const Default: Story = {
     await storyStepDelay();
 
     await step('Detail panel shows supplier name', async () => {
-      const dialog = canvas.getByRole('dialog');
-      const drawerScope = within(dialog);
+      const dialogs = screen.getAllByRole('dialog');
+      const drawer = within(dialogs[dialogs.length - 1]);
       expect(
-        drawerScope.getByText('Apex Medical Distributors'),
+        drawer.getByText('Apex Medical Distributors'),
       ).toBeVisible();
     });
 

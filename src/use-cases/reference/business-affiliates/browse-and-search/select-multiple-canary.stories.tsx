@@ -193,6 +193,14 @@ function SelectMultipleCanaryPage() {
                 </Button>
               </div>
             </div>
+            <style>{`.arda-hide-auto-selection [col-id*="SelectionColumn"],
+              .arda-hide-auto-selection [col-id*="SelectionColumn"] * {
+                display: revert !important;
+                visibility: visible !important;
+                width: auto !important;
+                min-width: auto !important;
+                max-width: none !important;
+              }`}</style>
             <div style={{ height: 480 }}>
               <SupplierGrid
                 data={supplierMockData}
@@ -236,7 +244,6 @@ const meta: Meta<typeof SelectMultipleCanaryPage> = {
   title:
     'Use Cases/Reference/Business Affiliates/BA-0001 Browse and Search/Select Multiple (Canary)',
   component: SelectMultipleCanaryPage,
-  tags: ['skip-ci'],
   parameters: {
     layout: 'fullscreen',
   },

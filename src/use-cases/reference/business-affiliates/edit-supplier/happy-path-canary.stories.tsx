@@ -318,7 +318,6 @@ function EditSupplierCanaryWizard(props: WizardProps<EditFormData>) {
 const meta = {
   title:
     'Use Cases/Reference/Business Affiliates/BA-0004 Edit Supplier/Happy Path (Canary)',
-  tags: ['skip-ci'],
   parameters: { layout: 'centered' },
 } satisfies Meta;
 

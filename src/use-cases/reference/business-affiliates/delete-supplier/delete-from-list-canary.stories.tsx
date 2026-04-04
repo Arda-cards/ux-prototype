@@ -163,6 +163,14 @@ function DeleteFromListCanaryPage() {
                 </Button>
               )}
             </div>
+            <style>{`.arda-hide-auto-selection [col-id*="SelectionColumn"],
+              .arda-hide-auto-selection [col-id*="SelectionColumn"] * {
+                display: revert !important;
+                visibility: visible !important;
+                width: auto !important;
+                min-width: auto !important;
+                max-width: none !important;
+              }`}</style>
             <div style={{ height: 480 }}>
               <SupplierGrid
                 data={suppliers}
@@ -213,7 +221,6 @@ const meta: Meta<typeof DeleteFromListCanaryPage> = {
   title:
     'Use Cases/Reference/Business Affiliates/BA-0005 Delete Supplier/Delete from List (Canary)',
   component: DeleteFromListCanaryPage,
-  tags: ['skip-ci'],
   parameters: {
     layout: 'fullscreen',
   },

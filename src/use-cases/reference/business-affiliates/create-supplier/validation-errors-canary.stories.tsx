@@ -237,7 +237,6 @@ const meta: Meta<typeof CreateValidationCanaryPage> = {
   title:
     'Use Cases/Reference/Business Affiliates/BA-0003 Create Supplier/Validation Errors (Canary)',
   component: CreateValidationCanaryPage,
-  tags: ['skip-ci'],
   parameters: {
     layout: 'fullscreen',
   },

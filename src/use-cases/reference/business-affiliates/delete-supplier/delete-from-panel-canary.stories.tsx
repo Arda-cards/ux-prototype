@@ -236,7 +236,6 @@ const meta: Meta<typeof DeleteFromPanelCanaryPage> = {
   title:
     'Use Cases/Reference/Business Affiliates/BA-0005 Delete Supplier/Delete from Panel (Canary)',
   component: DeleteFromPanelCanaryPage,
-  tags: ['skip-ci'],
   parameters: {
     layout: 'fullscreen',
   },
