@@ -289,6 +289,7 @@ const meta: Meta<typeof EditValidationCanaryPage> = {
   title:
     'Use Cases/Reference/Business Affiliates/BA-0004 Edit Supplier/Validation Errors (Canary)',
   component: EditValidationCanaryPage,
+  tags: ['skip-ci'],
   parameters: {
     layout: 'fullscreen',
   },

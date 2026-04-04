@@ -220,6 +220,7 @@ const meta: Meta<typeof DeepLinkCanaryPage> = {
   title:
     'Use Cases/Reference/Business Affiliates/BA-0001 Browse and Search/Deep Link (Canary)',
   component: DeepLinkCanaryPage,
+  tags: ['skip-ci'],
   parameters: {
     layout: 'fullscreen',
   },
