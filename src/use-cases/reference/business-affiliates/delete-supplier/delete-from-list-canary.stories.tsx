@@ -84,7 +84,6 @@ const { Component: SupplierGrid } = createEntityDataGrid<SupplierEntity>({
   columnDefs: supplierColDefs,
   defaultColDef: { resizable: true, sortable: true, filter: false },
   getEntityId: (s) => s.id,
-  enableRowSelection: true,
 });
 
 // ---------------------------------------------------------------------------

@@ -176,9 +176,7 @@ function EditValidationCanaryPage({ simulateError }: { simulateError?: 'network'
               <SupplierGrid
                 data={supplierMockData}
                 activeTab="edit-validation"
-                onRowClicked={(e) => {
-                  if (e.data) handleRowClick(e.data);
-                }}
+                onRowClick={handleRowClick}
               />
             </div>
           </main>
@@ -200,7 +198,7 @@ function EditValidationCanaryPage({ simulateError }: { simulateError?: 'network'
                       key: 'edit',
                       label: 'Edit',
                       icon: SquarePen,
-                      onClick: handleEdit,
+                      onAction: handleEdit,
                     },
                   ]
             }
