@@ -298,7 +298,6 @@ const meta: Meta<typeof ToggleColumnsCanaryPage> = {
   title:
     'Use Cases/Reference/Business Affiliates/BA-0001 Browse and Search/Toggle Columns (Canary)',
   component: ToggleColumnsCanaryPage,
-  tags: ['skip-ci'],
   parameters: {
     layout: 'fullscreen',
   },

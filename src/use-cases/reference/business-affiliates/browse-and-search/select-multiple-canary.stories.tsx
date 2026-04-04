@@ -236,7 +236,6 @@ const meta: Meta<typeof SelectMultipleCanaryPage> = {
   title:
     'Use Cases/Reference/Business Affiliates/BA-0001 Browse and Search/Select Multiple (Canary)',
   component: SelectMultipleCanaryPage,
-  tags: ['skip-ci'],
   parameters: {
     layout: 'fullscreen',
   },
