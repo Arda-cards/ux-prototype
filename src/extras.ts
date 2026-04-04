@@ -33,8 +33,11 @@ export type {
   ArdaButtonSize,
 } from './components/extras/atoms/button/button';
 
-export { ArdaConfirmDialog } from './components/extras/atoms/confirm-dialog/confirm-dialog';
+export { ConfirmDialog, ArdaConfirmDialog } from './components/extras/atoms/confirm-dialog/confirm-dialog';
 export type {
+  ConfirmDialogProps,
+  ConfirmDialogStaticConfig,
+  ConfirmDialogRuntimeConfig,
   ArdaConfirmDialogProps,
   ArdaConfirmDialogStaticConfig,
   ArdaConfirmDialogRuntimeConfig,

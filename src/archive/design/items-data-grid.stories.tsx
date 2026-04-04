@@ -6,7 +6,7 @@ import {
   ArdaItemsDataGrid,
   ArdaItemsDataGridRef,
 } from '@/components/extras/organisms/reference/items/items-data-grid/items-data-grid';
-import { ArdaConfirmDialog } from '@/components/extras/atoms/confirm-dialog/confirm-dialog';
+import { ConfirmDialog } from '@/components/extras/atoms/confirm-dialog/confirm-dialog';
 import {
   mockPublishedItems,
   mockDraftItems,
@@ -340,7 +340,7 @@ export const UnsavedChanges: Story = {
         </div>
 
         {/* Confirm Dialog */}
-        <ArdaConfirmDialog
+        <ConfirmDialog
           open={showConfirmDialog}
           title="Discard unsaved changes?"
           message="All unsaved changes will be lost. This action cannot be undone."
