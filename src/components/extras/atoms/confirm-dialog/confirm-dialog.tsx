@@ -32,8 +32,7 @@ export interface ConfirmDialogRuntimeConfig {
   open: boolean;
 }
 
-export interface ConfirmDialogProps
-  extends ConfirmDialogStaticConfig, ConfirmDialogRuntimeConfig {}
+export interface ConfirmDialogProps extends ConfirmDialogStaticConfig, ConfirmDialogRuntimeConfig {}
 
 /** @deprecated Use `ConfirmDialogStaticConfig` instead. */
 export type ArdaConfirmDialogStaticConfig = ConfirmDialogStaticConfig;
