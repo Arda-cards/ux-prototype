@@ -37,7 +37,6 @@ function AcceptedLive() {
       <ImageDropZone
         acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
         onInput={(input) => setLastInput(input)}
-        onDismiss={() => {}}
       />
 
       {lastInput && (
@@ -106,11 +105,7 @@ function AcceptedSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
           <p className="text-sm text-muted-foreground mb-4">
             Drop or select an image file. JPEG, PNG, WebP, and HEIC are supported.
           </p>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
         </div>
       );
 
@@ -124,11 +119,7 @@ function AcceptedSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
           <p className="text-sm text-muted-foreground mb-4">
             A JPEG file has been selected. The drop zone is validating the format.
           </p>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
           <p className="mt-3 text-xs text-muted-foreground font-mono">
             Selected: test-image.jpg (image/jpeg)
           </p>
@@ -143,11 +134,7 @@ function AcceptedSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
           <h1 className="text-xl font-semibold tracking-tight mb-1">
             GEN-MEDIA-0001 — Formats and Size: Accepted Formats
           </h1>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
           <div className="mt-4 rounded-lg border border-border p-4" data-testid="result-panel">
             <h2 className="text-sm font-semibold mb-1">
               <span className="text-green-600">File accepted</span>

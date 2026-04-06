@@ -69,11 +69,7 @@ function ClipboardImageLive() {
         this path without real clipboard access.
       </p>
 
-      <ImageDropZone
-        acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-        onInput={() => {}}
-        onDismiss={() => {}}
-      />
+      <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={() => {}} />
 
       <div className="rounded-lg border border-dashed border-border p-4 space-y-2">
         <p className="text-xs text-muted-foreground">
@@ -130,11 +126,7 @@ function ClipboardImageScene({ sceneIndex }: { sceneIndex: number }) {
           <p className="text-sm text-muted-foreground">
             The drop zone is idle. The user has taken a screenshot and it is on the clipboard.
           </p>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
         </div>
       );
 
@@ -154,11 +146,7 @@ function ClipboardImageScene({ sceneIndex }: { sceneIndex: number }) {
               Paste event detected — checking for image/jpeg or image/png blob
             </p>
           </div>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
         </div>
       );
 

@@ -377,11 +377,7 @@ function ImageEditScene({ sceneIndex }: { sceneIndex: number }) {
             </Button>
           }
         >
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
         </DialogFrame>
       );
 
@@ -550,12 +546,11 @@ const {
     goToScene(2);
     await delay();
 
-    // Step 3 → 4: Enter URL, click Go, then adjust zoom
-    const urlInput = within(document.body).getByPlaceholderText(/paste an image url/i);
+    // Step 3 → 4: Enter URL, press Enter, then adjust zoom
+    const urlInput = within(document.body).getByPlaceholderText(/example\.com\/image/i);
     await userEvent.click(urlInput);
     await userEvent.type(urlInput, 'https://picsum.photos/seed/arda-new/400/400', { delay: 20 });
-    const goBtn = within(document.body).getByRole('button', { name: 'Go' });
-    await userEvent.click(goBtn);
+    await userEvent.keyboard('{Enter}');
     await waitFor(
       () => {
         const slider = document.querySelector('[role="slider"]');
@@ -573,13 +568,7 @@ const {
     goToScene(3);
     await delay();
 
-    // Step 4 → 5: Check copyright
-    const checkbox = within(document.body).getByRole('checkbox', { name: /copyright/i });
-    await userEvent.click(checkbox);
-    goToScene(4);
-    await delay();
-
-    // Step 5 → 6: Click Confirm
+    // Step 4 → 5: Click Confirm (copyright acknowledgment is now passive subtext)
     const confirmBtn = within(document.body).getByRole('button', { name: /confirm/i });
     await userEvent.click(confirmBtn);
     goToScene(5);

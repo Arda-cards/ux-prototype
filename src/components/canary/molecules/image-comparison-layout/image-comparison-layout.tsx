@@ -118,7 +118,11 @@ export function ImageComparisonLayout({
 
       {/* Action footer — rendered when any action callback is provided */}
       {hasActions && (
-        <div className={cn('flex items-center justify-end gap-2 pt-4 border-t border-border mt-4')}>
+        <div
+          className={cn(
+            'flex flex-wrap items-center justify-end gap-2 pt-4 border-t border-border mt-4',
+          )}
+        >
           {onUploadNew !== undefined && (
             <Button type="button" variant="secondary" onClick={onUploadNew}>
               Upload New Image

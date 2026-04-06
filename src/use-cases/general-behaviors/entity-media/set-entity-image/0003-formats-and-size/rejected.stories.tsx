@@ -33,7 +33,6 @@ function RejectedLive() {
       <ImageDropZone
         acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
         onInput={(input) => setLastInput(input)}
-        onDismiss={() => {}}
       />
 
       {lastInput && lastInput.type === 'error' && (
@@ -90,11 +89,7 @@ function RejectedSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
           <p className="text-sm text-muted-foreground mb-4">
             Drop or select a file. Unsupported formats will be rejected.
           </p>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
         </div>
       );
 
@@ -108,11 +103,7 @@ function RejectedSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
           <p className="text-sm text-muted-foreground mb-4">
             A BMP file has been selected. The drop zone is validating the MIME type.
           </p>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
           <p className="mt-3 text-xs text-muted-foreground font-mono">
             Selected: unsupported.bmp (image/bmp)
           </p>
@@ -127,11 +118,7 @@ function RejectedSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
           <h1 className="text-xl font-semibold tracking-tight mb-1">
             GEN-MEDIA-0001 — Formats and Size: Rejected Format
           </h1>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
           <div
             className="mt-4 rounded-lg border border-destructive/40 bg-destructive/5 p-4"
             data-testid="result-panel"
