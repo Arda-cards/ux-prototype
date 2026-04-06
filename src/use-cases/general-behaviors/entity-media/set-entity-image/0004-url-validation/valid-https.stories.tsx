@@ -39,7 +39,6 @@ function ValidHttpsLive() {
       <ImageDropZone
         acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
         onInput={(input) => setLastInput(input)}
-        onDismiss={() => {}}
       />
 
       {lastInput && (
@@ -81,11 +80,7 @@ function ValidHttpsSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
           <p className="text-sm text-muted-foreground">
             The drop zone is idle. The URL input field is available for entering an image URL.
           </p>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
         </div>
       );
 
@@ -99,11 +94,7 @@ function ValidHttpsSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
           <p className="text-sm text-muted-foreground">
             The HTTPS URL has been typed and Enter has been pressed. Scheme validation is running.
           </p>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
           <p className="text-xs text-muted-foreground font-mono">Validating: {MOCK_EXTERNAL_URL}</p>
         </div>
       );
@@ -116,11 +107,7 @@ function ValidHttpsSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
           <h1 className="text-xl font-semibold tracking-tight">
             GEN-MEDIA-0001 — URL Validation: Valid HTTPS
           </h1>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
           <div className="rounded-lg border border-border p-4" data-testid="result-panel">
             <h2 className="text-sm font-semibold mb-1">Emitted input</h2>
             <pre className="text-xs text-muted-foreground font-mono whitespace-pre-wrap">
@@ -175,7 +162,7 @@ const {
     await delay();
 
     // Find the URL input field
-    const urlInput = canvas.getByPlaceholderText(/paste an image url/i);
+    const urlInput = canvas.getByPlaceholderText(/example\.com\/image/i);
     await waitFor(() => {
       expect(urlInput).toBeVisible();
     });

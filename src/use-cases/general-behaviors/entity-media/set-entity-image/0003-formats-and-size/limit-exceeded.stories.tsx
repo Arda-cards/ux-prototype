@@ -55,11 +55,7 @@ function LimitExceededLive() {
         the limit. Drop or select an oversized file to see the error.
       </p>
 
-      <ImageDropZone
-        acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-        onInput={handleInput}
-        onDismiss={() => {}}
-      />
+      <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={handleInput} />
 
       {status === 'size-error' && (
         <div
@@ -113,11 +109,7 @@ function LimitExceededSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
           <p className="text-sm text-muted-foreground mb-4">
             Drop or select an oversized file to see the size limit error.
           </p>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
         </div>
       );
 
@@ -132,11 +124,7 @@ function LimitExceededSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
             An 11 MB JPEG has been selected. Auto-compression is being attempted to bring it within
             the 10 MB limit.
           </p>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
           <p className="mt-3 text-xs text-muted-foreground font-mono">
             Processing: oversized.jpg (11.0 MB) — compressing&hellip;
           </p>
@@ -151,11 +139,7 @@ function LimitExceededSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
           <h1 className="text-xl font-semibold tracking-tight mb-1">
             GEN-MEDIA-0001 — Formats and Size: Limit Exceeded
           </h1>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
           <div
             className="mt-4 rounded-lg border border-destructive/40 bg-destructive/5 p-4"
             data-testid="result-panel"

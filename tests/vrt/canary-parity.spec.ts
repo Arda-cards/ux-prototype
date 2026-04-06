@@ -40,7 +40,7 @@ for (const pair of PAIRS) {
   test(`Canary parity: ${pair.label} — Dev Witness`, async ({ page }) => {
     await page.goto(
       `/iframe.html?id=${pair.devWitnessId}&viewMode=story&globals=`,
-      { waitUntil: 'networkidle' },
+      { waitUntil: 'load' },
     );
     await disableAnimationsAndSettle(page);
     await expect(page).toHaveScreenshot(`${pair.name}--dev-witness.png`, {
@@ -51,7 +51,7 @@ for (const pair of PAIRS) {
   test(`Canary parity: ${pair.label} — Canary Refactor`, async ({ page }) => {
     await page.goto(
       `/iframe.html?id=${pair.canaryId}&viewMode=story&globals=`,
-      { waitUntil: 'networkidle' },
+      { waitUntil: 'load' },
     );
     await disableAnimationsAndSettle(page);
     await expect(page).toHaveScreenshot(`${pair.name}--canary.png`, {

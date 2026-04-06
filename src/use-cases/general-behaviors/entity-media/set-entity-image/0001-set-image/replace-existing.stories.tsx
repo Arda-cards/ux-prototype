@@ -16,7 +16,6 @@ import { ImageUploadDialog } from '@/components/canary/organisms/shared/image-up
 import { ImageDropZone } from '@/components/canary/molecules/image-drop-zone/image-drop-zone';
 import { ImagePreviewEditor } from '@/components/canary/molecules/image-preview-editor/image-preview-editor';
 import { ImageComparisonLayout } from '@/components/canary/molecules/image-comparison-layout/image-comparison-layout';
-import { CopyrightAcknowledgment } from '@/components/canary/atoms/copyright-acknowledgment/copyright-acknowledgment';
 import { Button } from '@/components/canary/primitives/button';
 import {
   ITEM_IMAGE_CONFIG,
@@ -167,52 +166,12 @@ function ReplaceExistingSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
     case 2:
       return (
         <DialogFrame title="Add Product Image" footer={<Button variant="secondary">Cancel</Button>}>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
         </DialogFrame>
       );
 
-    // Scene 4: New file staged — ProvidedImage with comparison, copyright unchecked
+    // Scene 4: New file staged — ProvidedImage with comparison, Confirm enabled
     case 3:
-      return (
-        <DialogFrame
-          title="Edit Product Image"
-          footer={
-            <>
-              <Button variant="secondary">Cancel</Button>
-              <Button disabled>Confirm</Button>
-            </>
-          }
-        >
-          <div className="flex gap-4">
-            <div className="flex flex-col items-center gap-2 flex-1">
-              <span className="text-xs text-muted-foreground font-medium uppercase">Current</span>
-              <img
-                src={MOCK_ITEM_IMAGE}
-                alt="Current"
-                className="w-full object-cover rounded border border-border"
-              />
-            </div>
-            <div className="flex flex-col items-center gap-2 flex-1">
-              <span className="text-xs text-muted-foreground font-medium uppercase">New</span>
-              <ImagePreviewEditor
-                aspectRatio={1}
-                imageData={MOCK_ITEM_IMAGE}
-                onCropChange={noop}
-                onReset={noop}
-              />
-            </div>
-          </div>
-          <div className="mt-4">
-            <CopyrightAcknowledgment acknowledged={false} onAcknowledge={noop} />
-          </div>
-        </DialogFrame>
-      );
-
-    // Scene 5: Copyright acknowledged — Confirm enabled
     case 4:
       return (
         <DialogFrame
@@ -243,9 +202,9 @@ function ReplaceExistingSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
               />
             </div>
           </div>
-          <div className="mt-4">
-            <CopyrightAcknowledgment acknowledged={true} onAcknowledge={noop} />
-          </div>
+          <p className="mt-4 text-xs text-muted-foreground text-center">
+            By confirming, you acknowledge that you own or have a license to use this image.
+          </p>
         </DialogFrame>
       );
 
@@ -343,7 +302,7 @@ const {
     await userEvent.click(uploadNewBtn);
 
     await waitFor(() => {
-      expect(screen.getByText(/drag and drop an image/i)).toBeVisible();
+      expect(screen.getByText(/drop image here/i)).toBeVisible();
     });
     goToScene(2);
     await delay();
@@ -356,19 +315,10 @@ const {
     });
     await userEvent.upload(fileInput, MOCK_FILE_JPEG);
 
-    await waitFor(() => {
-      expect(screen.getByRole('checkbox', { name: /copyright/i })).toBeVisible();
-    });
     goToScene(3);
     await delay();
 
-    // Scene 4 -> 5: Acknowledge copyright
-    const copyrightCheckbox = screen.getByRole('checkbox', { name: /copyright/i });
-    await userEvent.click(copyrightCheckbox);
-    goToScene(4);
-    await delay();
-
-    // Scene 5 -> 6: Confirm the upload
+    // Scene 4 -> 5: Confirm the upload (copyright is now passive subtext)
     const confirmBtn = await waitFor(() => {
       const btn = screen.getByRole('button', { name: /^confirm$/i });
       expect(btn).not.toBeDisabled();

@@ -120,9 +120,9 @@ export function ImagePreviewEditor({
   }, [onReset]);
 
   return (
-    <div data-slot="image-preview-editor" className="flex flex-col gap-3" style={{ minWidth: 280 }}>
+    <div data-slot="image-preview-editor" className="flex flex-col gap-3 min-w-0 sm:min-w-[280px]">
       {/* Crop area — square aspect container */}
-      <div className="relative w-full aspect-square min-h-[200px] max-h-[400px] bg-muted rounded overflow-hidden">
+      <div className="relative w-full aspect-square min-h-0 sm:min-h-[200px] max-h-[400px] bg-muted rounded overflow-hidden">
         {imageSrc && (
           <Cropper
             image={imageSrc}
@@ -141,7 +141,7 @@ export function ImagePreviewEditor({
       </div>
 
       {/* Toolbar — two rows for usability */}
-      <div className="bg-muted rounded-lg p-3 flex flex-col gap-3">
+      <div className="bg-muted rounded-lg p-2 sm:p-3 flex flex-col gap-2 sm:gap-3">
         {/* Row 1: Zoom slider */}
         <div className="flex items-center gap-3">
           <span className="text-sm font-medium text-muted-foreground shrink-0">Zoom</span>

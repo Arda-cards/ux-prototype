@@ -256,26 +256,17 @@ const { Interactive, Stepwise, Automated } = createUseCaseStories<ImageFormData>
     goToScene(2);
     await delay();
 
-    // Scene 3 — ProvidedImage state: copyright checkbox is visible, Confirm is disabled
-    const copyrightCheckbox = await waitFor(() => {
-      const el = screen.getByRole('checkbox', { name: /copyright acknowledgment/i });
-      expect(el).toBeVisible();
-      return el;
-    });
-
-    const confirmBtn = screen.getByRole('button', { name: /^confirm$/i });
-    expect(confirmBtn).toBeDisabled();
-
-    // Acknowledge copyright to enable Confirm
-    await userEvent.click(copyrightCheckbox);
+    // Scene 3 — ProvidedImage state: Confirm is enabled (copyright is passive subtext)
     goToScene(3);
     await delay();
 
-    // Scene 4 — copyright acknowledged, Confirm now enabled — click to begin upload
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /^confirm$/i })).not.toBeDisabled();
+    // Scene 4 — click Confirm to begin upload
+    const confirmBtn = await waitFor(() => {
+      const btn = screen.getByRole('button', { name: /^confirm$/i });
+      expect(btn).not.toBeDisabled();
+      return btn;
     });
-    await userEvent.click(screen.getByRole('button', { name: /^confirm$/i }));
+    await userEvent.click(confirmBtn);
 
     // Wait for the upload to complete (dialog closes, onConfirm fires)
     await waitFor(
