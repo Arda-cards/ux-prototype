@@ -55,10 +55,11 @@ export const SingleDelete: Story = {
     await userEvent.click(checkboxes[1]);
     await storyStepDelay();
 
-    // 3. Open the Actions dropdown
-    const actionsButton = canvas.getByRole('button', { name: 'Actions' });
-    expect(actionsButton).toBeEnabled();
-    await userEvent.click(actionsButton);
+    // 3. Open the Actions dropdown (wait for selection state to propagate)
+    await waitFor(() => {
+      expect(canvas.getByRole('button', { name: 'Actions' })).toBeEnabled();
+    }, { timeout: 10000 });
+    await userEvent.click(canvas.getByRole('button', { name: 'Actions' }));
 
     // 4. Click "Delete" menu item
     // Radix DropdownMenuContent portals to document.body — use screen (not canvas)

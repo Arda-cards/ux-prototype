@@ -13,7 +13,7 @@
 import React, { useState, useCallback } from 'react';
 import { toast, Toaster } from 'sonner';
 import { SuppliersPage } from '../_shared/suppliers-page';
-import { ArdaConfirmDialog } from '../_shared/confirm-dialog';
+import { ConfirmDialog } from '../_shared/confirm-dialog';
 import type { BusinessAffiliateWithRoles } from '../_shared/types';
 
 // ---------------------------------------------------------------------------
@@ -86,7 +86,7 @@ export function PanelDeletableSuppliersPage(props: PanelDeletableSuppliersPagePr
         {...props}
         onDrawerDelete={handleDrawerDelete}
       />
-      <ArdaConfirmDialog
+      <ConfirmDialog
         open={confirmState.open}
         title="Delete Supplier"
         message={`Are you sure you want to delete ${affiliateName}? This action cannot be undone.`}

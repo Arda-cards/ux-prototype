@@ -18,6 +18,27 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.7.0] - 2026-04-06
+
+### Added
+
+- Canary variants for all Business Affiliates use-case stories: 13 new story
+  files covering Browse & Search, Create Supplier, Edit Supplier, Delete
+  Supplier, and Affiliate Typeahead — each self-contained with canary
+  components (Sidebar, AppHeader, createEntityDataGrid, ItemDetails) and no
+  extras/vendored dependencies
+- Play function parity: 21 additional story variants added to canary files to
+  match original coverage (EmptyState, LoadingState, ErrorState, NoResults,
+  HideAll, SelectAll, MinimalData, CloseDrawer, SectionCollapse,
+  NetworkError, DuplicateNameError, CancelDiscards, BulkDelete, CancelDelete,
+  KeyboardNavigation, EscapeDismiss, and more)
+- Layout integrity smoke tests for canary suppliers page (sidebar visibility
+  and AG Grid data visibility)
+
+### Fixed
+
+- Renamed `ArdaConfirmDialog` to `ConfirmDialog` for consistency with other canary library components. The old names (`ArdaConfirmDialog`, `ArdaConfirmDialogProps`, `ArdaConfirmDialogStaticConfig`, `ArdaConfirmDialogRuntimeConfig`) are still exported as deprecated aliases.
+
 ## [4.6.0] - 2026-04-06
 
 ### Added
