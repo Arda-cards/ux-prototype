@@ -44,7 +44,6 @@ function UrlEntryLive() {
         onInput={(input) => {
           setLastInput(input);
         }}
-        onDismiss={() => {}}
       />
 
       {lastInput && (
@@ -104,11 +103,7 @@ function UrlEntryScene({
           <p className="text-sm text-muted-foreground">
             The URL field is empty and ready for input. The user will type or paste a URL.
           </p>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
         </div>
       );
 
@@ -122,11 +117,7 @@ function UrlEntryScene({
           <p className="text-sm text-muted-foreground">
             The user has typed: <code>{typedUrl}</code>. They are about to press Enter or click Go.
           </p>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
         </div>
       );
 
@@ -235,10 +226,10 @@ const {
     await delay();
 
     await waitFor(() => {
-      expect(canvas.getByPlaceholderText(/paste an image url/i)).toBeVisible();
+      expect(canvas.getByPlaceholderText(/example\.com\/image/i)).toBeVisible();
     });
 
-    const input = canvas.getByPlaceholderText(/paste an image url/i);
+    const input = canvas.getByPlaceholderText(/example\.com\/image/i);
     await userEvent.click(input);
     goToScene(1);
     await delay();
@@ -311,10 +302,10 @@ const {
     await delay();
 
     await waitFor(() => {
-      expect(canvas.getByPlaceholderText(/paste an image url/i)).toBeVisible();
+      expect(canvas.getByPlaceholderText(/example\.com\/image/i)).toBeVisible();
     });
 
-    const input = canvas.getByPlaceholderText(/paste an image url/i);
+    const input = canvas.getByPlaceholderText(/example\.com\/image/i);
     await userEvent.click(input);
     goToScene(1);
     await delay();

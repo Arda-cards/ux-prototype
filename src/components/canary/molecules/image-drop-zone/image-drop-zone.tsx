@@ -1,9 +1,16 @@
 import * as React from 'react';
 import { useDropzone, type FileRejection } from 'react-dropzone';
+import { ImageUp } from 'lucide-react';
 
 import { cn } from '@/types/canary/utilities/utils';
-import { Button } from '@/components/canary/primitives/button';
-import { Input } from '@/components/canary/primitives/input';
+import { maybeConvertHeic } from '@/types/canary/utilities/maybe-convert-heic';
+import { Button } from '@/components/canary/atoms/button/button';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '@/components/canary/atoms/input-group/input-group';
 import type { ImageMimeType, ImageInput } from '@/types/canary/utilities/image-field-config';
 
 // --- Interfaces ---
@@ -21,8 +28,6 @@ export interface ImageDropZoneInitProps {
 export interface ImageDropZoneRuntimeProps {
   /** Called when the user provides an image input. */
   onInput: (input: ImageInput) => void;
-  /** Called when the user dismisses the drop zone. */
-  onDismiss: () => void;
 }
 
 /** Combined props for ImageDropZone. */
@@ -38,13 +43,14 @@ export type ImageDropZoneProps = ImageDropZoneStaticProps &
  * Accepts images via drag-and-drop, file picker, clipboard paste, or URL entry.
  * Validates MIME types for files and HTTPS for URLs before calling `onInput`.
  */
-export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDropZoneProps) {
+export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) {
   const [urlValue, setUrlValue] = React.useState('');
   const [error, setError] = React.useState<string | null>(null);
+  const [converting, setConverting] = React.useState(false);
 
   // --- File drop handler ---
   const onDrop = React.useCallback(
-    (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
+    async (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
       setError(null);
 
       if (rejectedFiles.length > 0) {
@@ -69,7 +75,13 @@ export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDrop
             onInput({ type: 'error', message: `Invalid file type. Accepted formats: ${formats}` });
             return;
           }
-          onInput({ type: 'file', file });
+          setConverting(true);
+          try {
+            const converted = await maybeConvertHeic(file);
+            onInput({ type: 'file', file: converted });
+          } finally {
+            setConverting(false);
+          }
         }
       }
     },
@@ -113,7 +125,19 @@ export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDrop
               });
               return;
             }
-            onInput({ type: 'file', file });
+            setConverting(true);
+            void maybeConvertHeic(file)
+              .then((converted) => {
+                onInput({ type: 'file', file: converted });
+              })
+              .catch(() => {
+                const message = 'Failed to process image from clipboard. Please try again.';
+                setError(message);
+                onInput({ type: 'error', message });
+              })
+              .finally(() => {
+                setConverting(false);
+              });
             return;
           }
         }
@@ -161,8 +185,6 @@ export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDrop
     }
   };
 
-  const isUrlValid = urlValue.trim().startsWith('https://');
-
   // Merge react-dropzone's drop handler with our URL-drop handler.
   // When dragging an image from another browser window, dataTransfer.files may be
   // empty while dataTransfer contains the image source URL as text/uri-list or
@@ -206,6 +228,9 @@ export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDrop
     [dropzoneOnDrop, onInput],
   );
 
+  // Derive human-readable format list from accepted MIME types
+  const formatLabels = acceptedFormats.map((mime) => mime.replace('image/', ''));
+
   return (
     <div
       data-slot="image-drop-zone"
@@ -213,62 +238,54 @@ export function ImageDropZone({ acceptedFormats, onInput, onDismiss }: ImageDrop
       onDrop={handleDrop}
       onPaste={handlePaste}
       className={cn(
-        'border-2 border-dashed rounded-lg p-6 transition-colors',
-        isDragActive ? 'border-primary bg-accent' : 'border-border bg-background',
+        'border-2 border-dashed rounded-lg p-8 transition-colors',
+        isDragActive ? 'border-primary bg-accent' : 'border-border bg-muted',
       )}
     >
       <input {...getInputProps()} />
 
-      <div className="flex flex-col items-center gap-4 text-center">
-        <p className="text-sm text-muted-foreground">
-          Drag and drop an image, paste from clipboard, or
-        </p>
+      <div className="flex flex-col items-center gap-3 text-center">
+        {/* Upload icon */}
+        <ImageUp className="w-12 h-12 text-muted-foreground/60" strokeWidth={1.5} />
 
-        <Button
-          type="button"
-          variant="default"
-          className="bg-primary text-primary-foreground"
-          onClick={open}
-        >
-          Upload from computer
+        {/* Heading */}
+        <div>
+          <p className="text-sm text-muted-foreground">Drop image here</p>
+          <p className="text-xs text-muted-foreground/70">({formatLabels.join(', ')})</p>
+        </div>
+
+        {/* Select file button */}
+        <Button type="button" variant="outline" loading={converting} onClick={open}>
+          Select file
         </Button>
 
-        <div className="w-full flex gap-2">
-          <Input
+        {/* Divider text */}
+        <p className="text-sm text-muted-foreground">... or enter image URL</p>
+
+        {/* URL input with Go button */}
+        <InputGroup className="w-full bg-background">
+          <InputGroupInput
             type="text"
-            placeholder="Or paste an image URL"
+            placeholder="https://example.com/image.jpg"
             value={urlValue}
             onChange={(e) => {
               setUrlValue(e.target.value);
               setError(null);
             }}
             onKeyDown={handleUrlKeyDown}
-            className="flex-1"
           />
-          <Button
-            type="button"
-            variant="default"
-            className="bg-primary text-primary-foreground"
-            onClick={handleUrlSubmit}
-            disabled={!isUrlValid}
-          >
-            Go
-          </Button>
-        </div>
+          <InputGroupAddon align="inline-end">
+            <InputGroupButton onClick={handleUrlSubmit} aria-label="Go" disabled={!urlValue.trim()}>
+              Go
+            </InputGroupButton>
+          </InputGroupAddon>
+        </InputGroup>
 
         {error && (
           <p className="text-sm text-destructive" role="alert">
             {error}
           </p>
         )}
-
-        <button
-          type="button"
-          onClick={onDismiss}
-          className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-2 cursor-pointer bg-transparent border-0 p-0"
-        >
-          Dismiss
-        </button>
       </div>
     </div>
   );

@@ -182,7 +182,6 @@ const meta: Meta<typeof SearchByNameCanaryPage> = {
   title:
     'Use Cases/Reference/Business Affiliates/BA-0001 Browse and Search/Search by Name (Canary)',
   component: SearchByNameCanaryPage,
-  tags: ['skip-ci'],
   parameters: {
     layout: 'fullscreen',
   },

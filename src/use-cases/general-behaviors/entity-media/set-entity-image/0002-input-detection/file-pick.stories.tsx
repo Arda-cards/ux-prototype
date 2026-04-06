@@ -20,7 +20,6 @@ import type { ImageInput } from '@/types/canary/utilities/image-field-config';
 function FilePickPage(args: {
   acceptedFormats: typeof ITEM_IMAGE_CONFIG.acceptedFormats;
   onInput: (input: ImageInput) => void;
-  onDismiss: () => void;
 }) {
   const [lastInput, setLastInput] = useState<ImageInput | null>(null);
 
@@ -93,7 +92,6 @@ const meta: Meta<typeof FilePickPage> = {
   args: {
     acceptedFormats: ITEM_IMAGE_CONFIG.acceptedFormats,
     onInput: fn(),
-    onDismiss: fn(),
   },
 };
 

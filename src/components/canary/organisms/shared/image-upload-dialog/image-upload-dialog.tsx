@@ -23,7 +23,6 @@ import { Button } from '@/components/canary/primitives/button';
 import { ImageDropZone } from '@/components/canary/molecules/image-drop-zone/image-drop-zone';
 import { ImagePreviewEditor } from '@/components/canary/molecules/image-preview-editor/image-preview-editor';
 import { ImageComparisonLayout } from '@/components/canary/molecules/image-comparison-layout/image-comparison-layout';
-import { CopyrightAcknowledgment } from '@/components/canary/atoms/copyright-acknowledgment/copyright-acknowledgment';
 import {
   defaultUploadHandler,
   defaultReachabilityCheck,
@@ -165,7 +164,6 @@ export function ImageUploadDialog({
   onCheckReachability = defaultReachabilityCheck,
 }: ImageUploadDialogProps) {
   const [phase, dispatch] = React.useReducer(dialogReducer, { name: 'EmptyImage' });
-  const [copyrightAcked, setCopyrightAcked] = React.useState(false);
   // cropData tracks current crop/zoom/rotation for use in the real upload pipeline
   const cropDataRef = React.useRef<unknown>(null);
 
@@ -173,11 +171,9 @@ export function ImageUploadDialog({
   React.useEffect(() => {
     if (open) {
       dispatch({ type: 'RESET', existingImageUrl });
-      setCopyrightAcked(false);
       cropDataRef.current = null;
     } else {
       dispatch({ type: 'RESET', existingImageUrl: null });
-      setCopyrightAcked(false);
       cropDataRef.current = null;
     }
   }, [open]); // Intentionally deps on open only — existingImageUrl is captured at open time
@@ -216,13 +212,11 @@ export function ImageUploadDialog({
     (input: ImageInput) => {
       if (input.type === 'file') {
         dispatch({ type: 'INPUT_FILE', file: input.file });
-        setCopyrightAcked(false);
       } else if (input.type === 'url') {
         // Reachability check; transition optimistically
         onCheckReachability(input.url).then((reachable) => {
           if (reachable) {
             dispatch({ type: 'INPUT_URL', url: input.url });
-            setCopyrightAcked(false);
           } else {
             dispatch({ type: 'INPUT_ERROR', message: 'URL could not be reached' });
           }
@@ -243,10 +237,10 @@ export function ImageUploadDialog({
   }, [phase.name, onCancel]);
 
   const handleConfirmClick = React.useCallback(() => {
-    if (phase.name === 'ProvidedImage' && copyrightAcked) {
+    if (phase.name === 'ProvidedImage') {
       dispatch({ type: 'CONFIRM_CLICK' });
     }
-  }, [phase.name, copyrightAcked]);
+  }, [phase.name]);
 
   const handleEditConfirm = React.useCallback(async () => {
     if (phase.name !== 'EditExisting') return;
@@ -297,7 +291,9 @@ export function ImageUploadDialog({
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent
           data-slot="image-upload-dialog"
-          className={cn('bg-background border-border rounded-lg p-6 max-w-2xl w-full')}
+          className={cn(
+            'bg-background border-border rounded-lg p-4 sm:p-6 sm:max-w-2xl w-full overflow-hidden',
+          )}
           showCloseButton={false}
         >
           <DialogHeader>
@@ -335,11 +331,7 @@ export function ImageUploadDialog({
 
           {/* EmptyImage state */}
           {phase.name === 'EmptyImage' && (
-            <ImageDropZone
-              acceptedFormats={config.acceptedFormats}
-              onInput={handleInput}
-              onDismiss={onCancel}
-            />
+            <ImageDropZone acceptedFormats={config.acceptedFormats} onInput={handleInput} />
           )}
 
           {/* FailedValidation state */}
@@ -348,11 +340,7 @@ export function ImageUploadDialog({
               <p className={cn('text-sm text-destructive')} role="alert">
                 {phase.errorMessage}
               </p>
-              <ImageDropZone
-                acceptedFormats={config.acceptedFormats}
-                onInput={handleInput}
-                onDismiss={onCancel}
-              />
+              <ImageDropZone acceptedFormats={config.acceptedFormats} onInput={handleInput} />
             </div>
           )}
 
@@ -388,10 +376,6 @@ export function ImageUploadDialog({
                   }}
                 />
               )}
-              <CopyrightAcknowledgment
-                acknowledged={copyrightAcked}
-                onAcknowledge={setCopyrightAcked}
-              />
             </div>
           )}
 
@@ -403,44 +387,32 @@ export function ImageUploadDialog({
             </div>
           )}
 
-          {/* Footer — hidden during upload, shown for ProvidedImage/Warn */}
+          {/* Footer — shown only for ProvidedImage */}
           {/* EditExisting footer is baked into ImageComparisonLayout above */}
           {!isUploading &&
             phase.name !== 'EmptyImage' &&
             phase.name !== 'FailedValidation' &&
-            phase.name !== 'EditExisting' && (
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  className="bg-secondary text-secondary-foreground"
-                  onClick={handleCancelClick}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="button"
-                  className={cn(
-                    'bg-primary text-primary-foreground',
-                    'disabled:pointer-events-none disabled:opacity-50',
-                  )}
-                  disabled={!copyrightAcked}
-                  onClick={handleConfirmClick}
-                >
-                  Confirm
-                </Button>
+            phase.name !== 'EditExisting' &&
+            phase.name !== 'Warn' && (
+              <DialogFooter className="flex flex-col gap-2">
+                <p className="text-xs text-muted-foreground text-center">
+                  By confirming, you acknowledge that you own or have a license to use this image.
+                </p>
+                <div className="flex justify-end gap-2">
+                  <Button type="button" variant="secondary" onClick={handleCancelClick}>
+                    Cancel
+                  </Button>
+                  <Button type="button" onClick={handleConfirmClick}>
+                    Confirm
+                  </Button>
+                </div>
               </DialogFooter>
             )}
 
           {/* Footer for empty/failed states — just dismiss */}
           {(phase.name === 'EmptyImage' || phase.name === 'FailedValidation') && (
             <DialogFooter>
-              <Button
-                type="button"
-                variant="secondary"
-                className="bg-secondary text-secondary-foreground"
-                onClick={onCancel}
-              >
+              <Button type="button" variant="secondary" onClick={onCancel}>
                 Cancel
               </Button>
             </DialogFooter>

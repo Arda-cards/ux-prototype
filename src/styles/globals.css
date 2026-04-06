@@ -165,7 +165,7 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.637 0.222 29);
+  --primary: oklch(0.665 0.226 36.4);
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
@@ -177,7 +177,7 @@
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.637 0.222 29);
+  --ring: oklch(0.665 0.226 36.4);
 }
 
 /* Touch devices and small screens get larger interactive targets */

@@ -84,7 +84,6 @@ const { Component: SupplierGrid } = createEntityDataGrid<SupplierEntity>({
   columnDefs: supplierColDefs,
   defaultColDef: { resizable: true, sortable: true, filter: false },
   getEntityId: (s) => s.id,
-  enableRowSelection: true,
 });
 
 // ---------------------------------------------------------------------------
@@ -163,6 +162,14 @@ function DeleteFromListCanaryPage() {
                 </Button>
               )}
             </div>
+            <style>{`.arda-hide-auto-selection [col-id*="SelectionColumn"],
+              .arda-hide-auto-selection [col-id*="SelectionColumn"] * {
+                display: revert !important;
+                visibility: visible !important;
+                width: auto !important;
+                min-width: auto !important;
+                max-width: none !important;
+              }`}</style>
             <div style={{ height: 480 }}>
               <SupplierGrid
                 data={suppliers}

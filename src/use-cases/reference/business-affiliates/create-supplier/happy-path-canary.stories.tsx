@@ -263,7 +263,6 @@ function CreateSupplierCanaryWizard(props: WizardProps<SupplierFormData>) {
 const meta = {
   title:
     'Use Cases/Reference/Business Affiliates/BA-0003 Create Supplier/Happy Path (Canary)',
-  tags: ['skip-ci'],
   parameters: { layout: 'centered' },
 } satisfies Meta;
 
