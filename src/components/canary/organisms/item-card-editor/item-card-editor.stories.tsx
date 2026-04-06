@@ -15,7 +15,7 @@ function ItemCardEditorDemo({ initialFields }: { initialFields?: Partial<ItemCar
   });
 
   return (
-    <div className="flex items-center justify-center p-8 bg-muted/30 min-h-[600px]">
+    <div className="flex items-center justify-center p-4 sm:p-8 bg-muted/30 min-h-[600px]">
       <ItemCardEditor imageConfig={ITEM_IMAGE_CONFIG} fields={fields} onChange={setFields} />
     </div>
   );
@@ -53,6 +53,7 @@ export const EditExisting: StoryObj = {
         orderQty: '500',
         orderUnit: 'each',
         imageUrl: MOCK_ITEM_IMAGE,
+        accentColor: 'BLUE',
       }}
     />
   ),
