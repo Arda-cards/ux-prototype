@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { useDropzone, type FileRejection } from 'react-dropzone';
 import { ImageUp } from 'lucide-react';
-import heic2any from 'heic2any';
 
 import { cn } from '@/types/canary/utilities/utils';
+import { maybeConvertHeic } from '@/types/canary/utilities/maybe-convert-heic';
 import { Button } from '@/components/canary/atoms/button/button';
 import {
   InputGroup,
@@ -12,18 +12,6 @@ import {
   InputGroupInput,
 } from '@/components/canary/atoms/input-group/input-group';
 import type { ImageMimeType, ImageInput } from '@/types/canary/utilities/image-field-config';
-
-const HEIC_TYPES: string[] = ['image/heic', 'image/heif'];
-
-/** Convert HEIC/HEIF files to JPEG so browsers can render them. */
-async function maybeConvertHeic(file: File): Promise<File> {
-  if (!HEIC_TYPES.includes(file.type)) return file;
-
-  const result = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.92 });
-  const blob = Array.isArray(result) ? (result[0] as Blob) : result;
-  const name = file.name.replace(/\.hei[cf]$/i, '.jpg');
-  return new File([blob], name, { type: 'image/jpeg' });
-}
 
 // --- Interfaces ---
 
