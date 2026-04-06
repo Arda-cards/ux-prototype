@@ -12,14 +12,14 @@ import { unitLookupHandler } from '@/components/canary/__mocks__/handlers/unit-l
 function TypeaheadDemo({
   initialValue = '',
   ...props
-}: Omit<React.ComponentProps<typeof TypeaheadInput>, 'value' | 'onChange'> & {
+}: Omit<React.ComponentProps<typeof TypeaheadInput>, 'value' | 'onValueChange'> & {
   initialValue?: string;
 }) {
   const [value, setValue] = useState(initialValue);
 
   return (
     <div className="w-64 p-8">
-      <TypeaheadInput value={value} onChange={setValue} {...props} />
+      <TypeaheadInput value={value} onValueChange={setValue} {...props} />
       <p className="mt-2 text-xs text-muted-foreground">
         Value: <code>{value || '(empty)'}</code>
       </p>

@@ -200,7 +200,7 @@ export function ItemCardEditor({
                 />
                 <TypeaheadInput
                   value={fields[section.unitKey]}
-                  onChange={(val) => updateField(section.unitKey, val)}
+                  onValueChange={(val) => updateField(section.unitKey, val)}
                   lookup={unitLookup}
                   allowCreate
                   placeholder={section.unitPlaceholder}

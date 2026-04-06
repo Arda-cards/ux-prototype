@@ -11,25 +11,36 @@ export interface TypeaheadOption {
   value: string;
 }
 
-export interface TypeaheadInputProps {
+export interface TypeaheadInputProps extends Omit<React.ComponentProps<'div'>, 'onChange'> {
   /** Current value. */
   value: string;
   /** Called when the user selects or creates a value. */
-  onChange: (value: string) => void;
+  onValueChange: (value: string) => void;
   /** Async lookup function — receives search text, returns matching options. */
   lookup: (search: string) => Promise<TypeaheadOption[]>;
   /** Allow creating new values not in the lookup results. */
   allowCreate?: boolean;
   /** Input placeholder text. */
   placeholder?: string;
+  /** Accessible label for the input. */
+  'aria-label'?: string;
   /** Disable the input. */
   disabled?: boolean;
-  /** Additional class names for the wrapper. */
-  className?: string;
 }
 
 const MAX_RESULTS = 8;
 const DEBOUNCE_MS = 150;
+const LISTBOX_ID = 'typeahead-listbox';
+
+// Hoisted static JSX — avoids recreation on every render
+const loadingIndicator = (
+  <div className="flex items-center justify-center gap-2 px-3 py-2 text-sm text-muted-foreground">
+    <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+    Searching&hellip;
+  </div>
+);
+
+const noResults = <div className="px-3 py-2 text-sm text-muted-foreground">No results</div>;
 
 // --- Component ---
 
@@ -41,12 +52,14 @@ const DEBOUNCE_MS = 150;
  */
 export function TypeaheadInput({
   value,
-  onChange,
+  onValueChange,
   lookup,
   allowCreate = false,
   placeholder = 'Search\u2026',
+  'aria-label': ariaLabel,
   disabled = false,
   className,
+  ...rest
 }: TypeaheadInputProps) {
   const [inputValue, setInputValue] = React.useState(value);
   const [options, setOptions] = React.useState<TypeaheadOption[]>([]);
@@ -60,6 +73,16 @@ export function TypeaheadInput({
   const debounceRef = React.useRef<ReturnType<typeof setTimeout>>(undefined);
   const abortRef = React.useRef<AbortController>(undefined);
   const wrapperRef = React.useRef<HTMLDivElement>(null);
+
+  // Refs for values used in stable callbacks
+  const valueRef = React.useRef(value);
+  valueRef.current = value;
+  const inputValueRef = React.useRef(inputValue);
+  inputValueRef.current = inputValue;
+  const optionsRef = React.useRef(options);
+  optionsRef.current = options;
+  const highlightedRef = React.useRef(highlightedIndex);
+  highlightedRef.current = highlightedIndex;
 
   // Sync external value changes
   React.useEffect(() => {
@@ -112,11 +135,11 @@ export function TypeaheadInput({
   const selectOption = React.useCallback(
     (opt: TypeaheadOption) => {
       setInputValue(opt.value);
-      onChange(opt.value);
+      onValueChange(opt.value);
       setOpen(false);
       setOptions([]);
     },
-    [onChange],
+    [onValueChange],
   );
 
   const createValue = React.useCallback(
@@ -124,18 +147,17 @@ export function TypeaheadInput({
       const trimmed = val.trim();
       if (!trimmed) return;
       setInputValue(trimmed);
-      onChange(trimmed);
+      onValueChange(trimmed);
       setOpen(false);
       setOptions([]);
     },
-    [onChange],
+    [onValueChange],
   );
 
-  // --- Show "create" option? ---
+  // --- Derived state ---
   const trimmedInput = inputValue.trim();
   const exactMatch = options.some((o) => o.value.toLowerCase() === trimmedInput.toLowerCase());
   const showCreate = allowCreate && trimmedInput.length > 0 && !exactMatch;
-  const totalItems = options.length + (showCreate ? 1 : 0);
 
   // --- Input handlers ---
   const handleInputChange = React.useCallback(
@@ -150,86 +172,81 @@ export function TypeaheadInput({
 
   const handleFocus = React.useCallback(() => {
     setOpen(true);
-    doSearch(inputValue);
-  }, [doSearch, inputValue]);
+    doSearch(inputValueRef.current);
+  }, [doSearch]);
 
-  // Close on outside click
+  // Close on outside click — deps narrowed to [open] via refs
   React.useEffect(() => {
     if (!open) return;
     const handleClickOutside = (e: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
         setOpen(false);
-        // Revert to last confirmed value if input changed
-        if (inputValue.trim() !== value) {
-          setInputValue(value);
+        if (inputValueRef.current.trim() !== valueRef.current) {
+          setInputValue(valueRef.current);
         }
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [open, inputValue, value]);
+  }, [open]);
 
-  // --- Keyboard ---
+  // --- Keyboard — uses refs for stable callback ---
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent) => {
       if (!open) {
         if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
           e.preventDefault();
           setOpen(true);
-          doSearch(inputValue);
+          doSearch(inputValueRef.current);
         }
         return;
       }
 
+      const opts = optionsRef.current;
+      const hi = highlightedRef.current;
+      const total =
+        opts.length +
+        (allowCreate &&
+        inputValueRef.current.trim().length > 0 &&
+        !opts.some((o) => o.value.toLowerCase() === inputValueRef.current.trim().toLowerCase())
+          ? 1
+          : 0);
+
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault();
-          setHighlightedIndex((prev) => (prev + 1) % totalItems);
+          setHighlightedIndex((prev) => (prev + 1) % total);
           break;
         case 'ArrowUp':
           e.preventDefault();
-          setHighlightedIndex((prev) => (prev - 1 + totalItems) % totalItems);
+          setHighlightedIndex((prev) => (prev - 1 + total) % total);
           break;
         case 'Enter':
           e.preventDefault();
-          if (highlightedIndex >= 0 && highlightedIndex < options.length) {
-            selectOption(options[highlightedIndex] as TypeaheadOption);
-          } else if (showCreate && highlightedIndex === options.length) {
-            createValue(trimmedInput);
-          } else if (showCreate) {
-            createValue(trimmedInput);
+          if (hi >= 0 && hi < opts.length) {
+            selectOption(opts[hi] as TypeaheadOption);
+          } else if (hi === opts.length && total > opts.length) {
+            createValue(inputValueRef.current.trim());
+          } else if (total > opts.length) {
+            createValue(inputValueRef.current.trim());
           }
           break;
         case 'Escape':
           e.preventDefault();
           setOpen(false);
-          setInputValue(value);
+          setInputValue(valueRef.current);
           break;
         case 'Tab':
-          // Accept current selection or typed value on Tab
-          if (highlightedIndex >= 0 && highlightedIndex < options.length) {
-            selectOption(options[highlightedIndex] as TypeaheadOption);
-          } else if (trimmedInput && allowCreate) {
-            createValue(trimmedInput);
+          if (hi >= 0 && hi < opts.length) {
+            selectOption(opts[hi] as TypeaheadOption);
+          } else if (inputValueRef.current.trim() && allowCreate) {
+            createValue(inputValueRef.current.trim());
           }
           setOpen(false);
           break;
       }
     },
-    [
-      open,
-      totalItems,
-      highlightedIndex,
-      options,
-      showCreate,
-      trimmedInput,
-      selectOption,
-      createValue,
-      value,
-      doSearch,
-      inputValue,
-      allowCreate,
-    ],
+    [open, allowCreate, doSearch, selectOption, createValue],
   );
 
   // Scroll highlighted item into view
@@ -241,8 +258,32 @@ export function TypeaheadInput({
 
   const showDropdown = open && (loading || error || options.length > 0 || showCreate);
 
+  // Live region announcement
+  const statusMessage = loading
+    ? 'Searching'
+    : error
+      ? 'Failed to load results'
+      : options.length > 0
+        ? `${options.length} result${options.length === 1 ? '' : 's'} available`
+        : open && trimmedInput
+          ? 'No results'
+          : '';
+
   return (
-    <div ref={wrapperRef} className={cn('relative', className)} data-slot="typeahead-input">
+    <div
+      ref={wrapperRef}
+      className={cn('relative', className)}
+      data-slot="typeahead-input"
+      data-state={open ? 'open' : 'closed'}
+      data-loading={loading || undefined}
+      data-disabled={disabled || undefined}
+      {...rest}
+    >
+      {/* Live region for screen readers */}
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {statusMessage}
+      </div>
+
       <Input
         ref={inputRef}
         value={inputValue}
@@ -254,25 +295,23 @@ export function TypeaheadInput({
         role="combobox"
         aria-expanded={showDropdown}
         aria-haspopup="listbox"
+        aria-controls={showDropdown ? LISTBOX_ID : undefined}
         aria-activedescendant={
           highlightedIndex >= 0 ? `typeahead-opt-${highlightedIndex}` : undefined
         }
+        aria-label={ariaLabel ?? placeholder}
         autoComplete="off"
       />
 
       {showDropdown && (
         <div
           ref={listRef}
+          id={LISTBOX_ID}
           role="listbox"
           className="absolute z-50 top-full left-0 right-0 mt-1 max-h-52 overflow-auto rounded-md border border-border bg-popover text-popover-foreground shadow-md"
         >
           {/* Loading */}
-          {loading && (
-            <div className="flex items-center justify-center gap-2 px-3 py-2 text-sm text-muted-foreground">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Searching\u2026
-            </div>
-          )}
+          {loading && loadingIndicator}
 
           {/* Error */}
           {error && (
@@ -281,7 +320,7 @@ export function TypeaheadInput({
               className="flex items-center gap-2 w-full px-3 py-2 text-sm text-destructive hover:bg-accent cursor-pointer"
               onClick={() => doSearch(inputValue)}
             >
-              <AlertCircle className="w-4 h-4" />
+              <AlertCircle className="w-4 h-4" aria-hidden="true" />
               Failed to load. Click to retry.
             </button>
           )}
@@ -329,15 +368,13 @@ export function TypeaheadInput({
               }}
               onMouseEnter={() => setHighlightedIndex(options.length)}
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-4 h-4" aria-hidden="true" />
               New: {trimmedInput}
             </div>
           )}
 
           {/* Empty state */}
-          {!loading && !error && options.length === 0 && !showCreate && (
-            <div className="px-3 py-2 text-sm text-muted-foreground">No results</div>
-          )}
+          {!loading && !error && options.length === 0 && !showCreate && noResults}
         </div>
       )}
     </div>
