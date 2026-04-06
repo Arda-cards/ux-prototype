@@ -18,7 +18,7 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
-## [4.6.0] - 2026-04-04
+## [4.7.0] - 2026-04-04
 
 ### Added
 
@@ -35,9 +35,32 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
 - Layout integrity smoke tests for canary suppliers page (sidebar visibility
   and AG Grid data visibility)
 
-### Changed
+### Fixed
 
 - Renamed `ArdaConfirmDialog` to `ConfirmDialog` for consistency with other canary library components. The old names (`ArdaConfirmDialog`, `ArdaConfirmDialogProps`, `ArdaConfirmDialogStaticConfig`, `ArdaConfirmDialogRuntimeConfig`) are still exported as deprecated aliases.
+
+## [4.6.0] - 2026-04-06
+
+### Added
+
+- `ImageDropZone` redesign: upload icon, "Select file" outline button, simplified
+  URL input, gray-50 background, and passive copyright subtext replacing the
+  checkbox in `ImageUploadDialog`.
+- HEIC-to-JPEG client-side conversion via `heic2any` — Apple photos now preview
+  and store correctly across all browsers.
+- `ItemCardEditor` organism: reusable WYSIWYG card editor with inline image
+  upload (no dialog for new images, crop dialog for editing existing).
+- Loading spinner on "Select file" button during HEIC conversion.
+- Color swatch picker for `ItemCardEditor` — accent color selection for card
+  dividers and branding elements.
+
+### Fixed
+
+- `ImageUploadDialog` too wide on mobile — responsive `max-w`, removed fixed
+  `min-width` on crop area, wrapping action buttons.
+- 14 Storybook play functions updated for redesigned `ImageDropZone` selectors.
+- Global `heic2any` mock added to fix 6 test suite failures in jsdom.
+- Flaky VRT timeout resolved by using `waitUntil: 'load'`.
 
 ## [4.5.0] - 2026-03-31
 
