@@ -18,6 +18,23 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.7.1] - 2026-04-07
+
+### Fixed
+
+- Drag-and-drop from Google Images now works — extracts image data from the
+  HTML data URI the browser provides instead of using the unusable Google
+  search result URL.
+- Deferred file rejection errors in `ImageDropZone` to allow URL/data URI
+  fallback path before showing an error.
+
+### Added
+
+- `focus-ring` Tailwind utility in `globals.css` for consistent focus styling
+  across components.
+- Clickable focus state on `ImageDropZone` to signal paste readiness.
+- PR workflow rule in `CLAUDE.md`: always ask about changelog before PRs.
+
 ## [4.7.0] - 2026-04-06
 
 ### Added
