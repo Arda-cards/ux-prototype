@@ -88,6 +88,8 @@ export function ItemCardEditor({
   );
 
   // New images go straight onto the card — no dialog.
+  // For URLs (e.g. dragged from Google Images), fetch as blob first to avoid
+  // referrer-restricted or short-lived URLs breaking the <img> tag.
   const handleDropZoneInput = React.useCallback(
     (input: ImageInput) => {
       if (input.type === 'error') return;
@@ -104,8 +106,27 @@ export function ItemCardEditor({
         onChange({ ...fields, imageUrl: url });
         onImageConfirmed?.(url);
       } else if (input.type === 'url') {
-        onChange({ ...fields, imageUrl: input.url });
-        onImageConfirmed?.(input.url);
+        // Fetch the image as a blob so it works even if the source URL
+        // is referrer-restricted (Google Images, CDNs with hotlink protection).
+        fetch(input.url, { mode: 'cors' })
+          .then((res) => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const ct = res.headers.get('content-type') ?? '';
+            if (!ct.startsWith('image/')) throw new Error(`Not an image: ${ct}`);
+            return res.blob();
+          })
+          .then((blob) => {
+            const url = URL.createObjectURL(blob);
+            objectUrlRef.current = url;
+            onChange({ ...fields, imageUrl: url });
+            onImageConfirmed?.(url);
+          })
+          .catch(() => {
+            // If fetch fails (CORS, not an image), fall back to using the URL directly.
+            // It may still work if the server allows <img> loading but blocks fetch.
+            onChange({ ...fields, imageUrl: input.url });
+            onImageConfirmed?.(input.url);
+          });
       }
     },
     [fields, onChange, onImageConfirmed],
