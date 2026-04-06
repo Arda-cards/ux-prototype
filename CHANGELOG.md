@@ -18,6 +18,14 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.7.0] - 2026-04-06
+
+### Added
+
+- `TypeaheadInput` molecule: standalone async typeahead with debounced search,
+  keyboard navigation, allow-create, and MSW-backed unit lookup matching the
+  production API. Wired into `ItemCardEditor` units fields.
+
 ## [4.6.0] - 2026-04-06
 
 ### Added
