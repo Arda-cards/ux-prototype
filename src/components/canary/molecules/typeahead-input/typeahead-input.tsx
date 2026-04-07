@@ -37,7 +37,7 @@ export interface TypeaheadInputProps extends Omit<React.ComponentProps<'div'>, '
 
 const MAX_RESULTS = 8;
 const DEBOUNCE_MS = 250;
-const LISTBOX_ID = 'typeahead-listbox';
+// LISTBOX_ID generated per instance via useId() — see component body
 
 // Hoisted static JSX — avoids recreation on every render
 const loadingIndicator = (
@@ -75,6 +75,9 @@ export function TypeaheadInput({
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState(false);
   const [open, setOpen] = React.useState(false);
+  const instanceId = React.useId();
+  const listboxId = `typeahead-listbox-${instanceId}`;
+  const optionId = (index: number) => `typeahead-opt-${instanceId}-${index}`;
 
   const inputRef = React.useRef<HTMLInputElement>(null);
   const listRef = React.useRef<HTMLDivElement>(null);
@@ -290,7 +293,7 @@ export function TypeaheadInput({
 
   // --- Dropdown list content (shared between inline and portaled) ---
   const dropdownList = (
-    <div ref={listRef} id={LISTBOX_ID} role="listbox">
+    <div ref={listRef} id={listboxId} role="listbox">
       {loading && loadingIndicator}
 
       {error && (
@@ -309,7 +312,7 @@ export function TypeaheadInput({
         options.map((opt, i) => (
           <div
             key={opt.value}
-            id={`typeahead-opt-${i}`}
+            id={optionId(i)}
             role="option"
             aria-selected={i === highlightedIndex}
             className={cn(
@@ -328,7 +331,7 @@ export function TypeaheadInput({
 
       {!loading && !error && showCreate && (
         <div
-          id={`typeahead-opt-${options.length}`}
+          id={optionId(options.length)}
           role="option"
           aria-selected={highlightedIndex === options.length}
           className={cn(
@@ -363,10 +366,8 @@ export function TypeaheadInput({
       role="combobox"
       aria-expanded={showDropdown}
       aria-haspopup="listbox"
-      aria-controls={showDropdown ? LISTBOX_ID : undefined}
-      aria-activedescendant={
-        highlightedIndex >= 0 ? `typeahead-opt-${highlightedIndex}` : undefined
-      }
+      aria-controls={showDropdown ? listboxId : undefined}
+      aria-activedescendant={highlightedIndex >= 0 ? optionId(highlightedIndex) : undefined}
       aria-label={ariaLabel ?? placeholder}
       autoComplete="off"
       className={
