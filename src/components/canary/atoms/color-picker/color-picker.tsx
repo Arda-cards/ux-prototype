@@ -127,14 +127,14 @@ export function ColorPicker({
         <PopoverContent
           align="start"
           sideOffset={-44}
-          className="flex gap-1.5 items-center w-auto p-3 rounded-lg"
+          className="w-auto max-w-[calc(100vw-2rem)] p-3 rounded-lg"
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
           <div
             ref={paletteRef}
             role="radiogroup"
             aria-label="Color palette"
-            className="flex gap-1.5 items-center"
+            className="flex flex-wrap gap-3 items-center justify-center"
             onKeyDown={handleKeyDown}
           >
             {colorEntries.map(([key, { hex, name }], i) => (
