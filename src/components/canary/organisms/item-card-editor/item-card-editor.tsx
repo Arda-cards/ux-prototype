@@ -1,10 +1,7 @@
 import * as React from 'react';
 import { PackageMinus, Package, Crop, Trash2 } from 'lucide-react';
 
-import {
-  ColorSwatchPicker,
-  getSwatchHex,
-} from '@/components/canary/atoms/color-swatch-picker/color-swatch-picker';
+import { ColorPicker, getColorHex } from '@/components/canary/atoms/color-picker/color-picker';
 import { ImageDropZone } from '@/components/canary/molecules/image-drop-zone/image-drop-zone';
 import { ImageUploadDialog } from '@/components/canary/organisms/shared/image-upload-dialog/image-upload-dialog';
 import { ArdaConfirmDialog } from '@/components/canary/atoms/confirm-dialog/confirm-dialog';
@@ -171,7 +168,7 @@ export function ItemCardEditor({
         {/* Accent Divider */}
         <div
           className="w-full h-1 transition-colors"
-          style={{ backgroundColor: getSwatchHex(fields.accentColor) }}
+          style={{ backgroundColor: getColorHex(fields.accentColor) }}
         />
 
         {/* Attribute Blocks — editable inputs */}
@@ -246,10 +243,16 @@ export function ItemCardEditor({
         </div>
 
         {/* Color Swatch Picker + accent bar */}
-        <ColorSwatchPicker
-          value={fields.accentColor}
-          onChange={(color) => updateField('accentColor', color)}
-        />
+        <div className="flex items-center gap-2 w-full">
+          <ColorPicker
+            value={fields.accentColor}
+            onValueChange={(color) => updateField('accentColor', color)}
+          />
+          <div
+            className="flex-1 h-[10px] transition-colors"
+            style={{ backgroundColor: getColorHex(fields.accentColor) }}
+          />
+        </div>
 
         {/* Footer Branding */}
         <div className="text-center pb-1">
