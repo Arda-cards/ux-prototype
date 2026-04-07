@@ -18,6 +18,18 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.7.3] - 2026-04-08
+
+### Added
+
+- `ColorPicker` atom: standalone swatch button with popover palette, arrow-key
+  navigation, 44px touch targets, responsive wrapping for mobile.
+
+### Deprecated
+
+- `ColorSwatchPicker` — use `ColorPicker` instead. The old component coupled
+  the swatch button with a color bar.
+
 ## [4.7.0] - 2026-04-06
 
 ### Added
