@@ -56,7 +56,7 @@ export function ColorPicker({
       const target = buttons?.[selectedIdx >= 0 ? selectedIdx : 0];
       target?.focus();
     });
-  }, [open]);
+  }, [open, colorEntries, value]);
 
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent) => {
@@ -134,7 +134,7 @@ export function ColorPicker({
             ref={paletteRef}
             role="radiogroup"
             aria-label="Color palette"
-            className="flex flex-wrap gap-3 items-center justify-center"
+            className="flex flex-wrap gap-0 items-center justify-center"
             onKeyDown={handleKeyDown}
           >
             {colorEntries.map(([key, { hex, name }], i) => (
@@ -147,13 +147,16 @@ export function ColorPicker({
                 tabIndex={i === focusedIndex ? 0 : -1}
                 onClick={() => handleSelect(key)}
                 className={cn(
-                  'relative size-[22px] rounded-sm shadow-[0.5px_0.5px_1.5px_0.5px_rgba(0,0,0,0.12)] cursor-pointer',
-                  'before:absolute before:inset-[-11px] before:rounded-md',
+                  'min-h-11 min-w-11 flex items-center justify-center rounded-md cursor-pointer',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
                   key === value && 'ring-2 ring-ring ring-offset-1',
                 )}
-                style={{ backgroundColor: hex }}
-              />
+              >
+                <span
+                  className="size-[22px] rounded-sm shadow-[0.5px_0.5px_1.5px_0.5px_rgba(0,0,0,0.12)]"
+                  style={{ backgroundColor: hex }}
+                />
+              </button>
             ))}
           </div>
         </PopoverContent>
