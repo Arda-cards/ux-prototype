@@ -18,6 +18,19 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.7.2] - 2026-04-08
+
+### Fixed
+
+- `TypeaheadInput`: added `cellEditorMode` prop for inline AG Grid editing
+  (borderless input, blur-accepts-value, Popover dropdown for both modes).
+- `TypeaheadInput`: unique IDs per instance via `useId()` — fixes broken ARIA
+  when multiple typeaheads render on the same page.
+- `TypeaheadInput`: debounce aligned to 250ms matching the frontend app.
+- `TypeaheadCellEditor` factory: `createTypeaheadCellEditor({ lookup, ... })`
+  for AG Grid column definitions.
+- Date-time tests: timezone-independent by using midday UTC timestamps.
+
 ## [4.7.0] - 2026-04-06
 
 ### Added
