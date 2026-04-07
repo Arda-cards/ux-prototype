@@ -56,7 +56,7 @@ export function ColorPicker({
       const target = buttons?.[selectedIdx >= 0 ? selectedIdx : 0];
       target?.focus();
     });
-  }, [open, colorEntries, value]);
+  }, [open]);
 
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent) => {
@@ -127,14 +127,14 @@ export function ColorPicker({
         <PopoverContent
           align="start"
           sideOffset={-44}
-          className="w-auto max-w-[calc(100vw-2rem)] p-3 rounded-lg"
+          className="w-auto max-w-[calc(100vw-2rem)] p-0 rounded-lg"
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
           <div
             ref={paletteRef}
             role="radiogroup"
             aria-label="Color palette"
-            className="flex flex-wrap gap-0 items-center justify-center"
+            className="flex flex-wrap items-center"
             onKeyDown={handleKeyDown}
           >
             {colorEntries.map(([key, { hex, name }], i) => (
@@ -146,14 +146,14 @@ export function ColorPicker({
                 aria-label={name}
                 tabIndex={i === focusedIndex ? 0 : -1}
                 onClick={() => handleSelect(key)}
+                onKeyDown={handleKeyDown}
                 className={cn(
-                  'min-h-11 min-w-11 flex items-center justify-center rounded-md cursor-pointer',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
-                  key === value && 'ring-2 ring-ring ring-offset-1',
+                  'min-h-11 min-w-11 flex items-center justify-center rounded-md cursor-pointer outline-none',
+                  i === focusedIndex && 'ring-2 ring-ring ring-offset-1',
                 )}
               >
                 <span
-                  className="size-[22px] rounded-sm shadow-[0.5px_0.5px_1.5px_0.5px_rgba(0,0,0,0.12)]"
+                  className="size-[22px] rounded-sm shadow-[0.5px_0.5px_1.5px_0.5px_rgba(0,0,0,0.12)] pointer-events-none"
                   style={{ backgroundColor: hex }}
                 />
               </button>
