@@ -127,7 +127,7 @@ export function ColorPicker({
         <PopoverContent
           align="start"
           sideOffset={-44}
-          className="flex gap-1.5 items-center w-auto p-[7px] rounded-lg"
+          className="flex gap-1.5 items-center w-auto p-3 rounded-lg"
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
           <div
@@ -148,7 +148,7 @@ export function ColorPicker({
                 onClick={() => handleSelect(key)}
                 className={cn(
                   'relative size-[22px] rounded-sm shadow-[0.5px_0.5px_1.5px_0.5px_rgba(0,0,0,0.12)] cursor-pointer',
-                  'before:absolute before:inset-[-4px] before:rounded-md',
+                  'before:absolute before:inset-[-11px] before:rounded-md',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
                   key === value && 'ring-2 ring-ring ring-offset-1',
                 )}
