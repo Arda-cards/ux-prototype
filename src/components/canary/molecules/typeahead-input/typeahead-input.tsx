@@ -3,6 +3,7 @@ import { Plus, Loader2, AlertCircle } from 'lucide-react';
 
 import { cn } from '@/types/canary/utilities/utils';
 import { Input } from '@/components/canary/primitives/input';
+import { Popover, PopoverAnchor, PopoverContent } from '@/components/canary/primitives/popover';
 
 // --- Types ---
 
@@ -26,10 +27,16 @@ export interface TypeaheadInputProps extends Omit<React.ComponentProps<'div'>, '
   'aria-label'?: string;
   /** Disable the input. */
   disabled?: boolean;
+  /**
+   * Cell editor mode — for use inside AG Grid or similar overflow-clipped containers.
+   * When true: blur accepts typed value (instead of reverting) and the dropdown
+   * is portaled via Radix Popover to escape overflow clipping.
+   */
+  cellEditorMode?: boolean;
 }
 
 const MAX_RESULTS = 8;
-const DEBOUNCE_MS = 150;
+const DEBOUNCE_MS = 250;
 const LISTBOX_ID = 'typeahead-listbox';
 
 // Hoisted static JSX — avoids recreation on every render
@@ -58,6 +65,7 @@ export function TypeaheadInput({
   placeholder = 'Search\u2026',
   'aria-label': ariaLabel,
   disabled = false,
+  cellEditorMode = false,
   className,
   ...rest
 }: TypeaheadInputProps) {
@@ -175,20 +183,29 @@ export function TypeaheadInput({
     doSearch(inputValueRef.current);
   }, [doSearch]);
 
-  // Close on outside click — deps narrowed to [open] via refs
+  // Close on outside click — deps narrowed to [open, cellEditorMode] via refs
   React.useEffect(() => {
     if (!open) return;
     const handleClickOutside = (e: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
         setOpen(false);
-        if (inputValueRef.current.trim() !== valueRef.current) {
-          setInputValue(valueRef.current);
+        if (cellEditorMode) {
+          // Cell editor: accept typed value on blur
+          const trimmed = inputValueRef.current.trim();
+          if (trimmed && trimmed !== valueRef.current) {
+            onValueChange(trimmed);
+          }
+        } else {
+          // Form mode: revert to confirmed value
+          if (inputValueRef.current.trim() !== valueRef.current) {
+            setInputValue(valueRef.current);
+          }
         }
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [open]);
+  }, [open, cellEditorMode, onValueChange]);
 
   // --- Keyboard — uses refs for stable callback ---
   const handleKeyDown = React.useCallback(
@@ -241,12 +258,14 @@ export function TypeaheadInput({
             selectOption(opts[hi] as TypeaheadOption);
           } else if (inputValueRef.current.trim() && allowCreate) {
             createValue(inputValueRef.current.trim());
+          } else if (cellEditorMode && inputValueRef.current.trim()) {
+            onValueChange(inputValueRef.current.trim());
           }
           setOpen(false);
           break;
       }
     },
-    [open, allowCreate, doSearch, selectOption, createValue],
+    [open, allowCreate, cellEditorMode, doSearch, selectOption, createValue, onValueChange],
   );
 
   // Scroll highlighted item into view
@@ -269,6 +288,95 @@ export function TypeaheadInput({
           ? 'No results'
           : '';
 
+  // --- Dropdown list content (shared between inline and portaled) ---
+  const dropdownList = (
+    <div ref={listRef} id={LISTBOX_ID} role="listbox">
+      {loading && loadingIndicator}
+
+      {error && (
+        <button
+          type="button"
+          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-destructive hover:bg-accent cursor-pointer"
+          onClick={() => doSearch(inputValue)}
+        >
+          <AlertCircle className="w-4 h-4" aria-hidden="true" />
+          Failed to load. Click to retry.
+        </button>
+      )}
+
+      {!loading &&
+        !error &&
+        options.map((opt, i) => (
+          <div
+            key={opt.value}
+            id={`typeahead-opt-${i}`}
+            role="option"
+            aria-selected={i === highlightedIndex}
+            className={cn(
+              'px-3 py-2 text-sm cursor-pointer',
+              i === highlightedIndex ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50',
+            )}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              selectOption(opt);
+            }}
+            onMouseEnter={() => setHighlightedIndex(i)}
+          >
+            {opt.label}
+          </div>
+        ))}
+
+      {!loading && !error && showCreate && (
+        <div
+          id={`typeahead-opt-${options.length}`}
+          role="option"
+          aria-selected={highlightedIndex === options.length}
+          className={cn(
+            'flex items-center gap-2 px-3 py-2 text-sm cursor-pointer text-primary',
+            highlightedIndex === options.length ? 'bg-accent text-primary' : 'hover:bg-accent/50',
+          )}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            createValue(trimmedInput);
+          }}
+          onMouseEnter={() => setHighlightedIndex(options.length)}
+        >
+          <Plus className="w-4 h-4" aria-hidden="true" />
+          {trimmedInput}
+        </div>
+      )}
+
+      {!loading && !error && options.length === 0 && !showCreate && noResults}
+    </div>
+  );
+
+  // --- Input element (shared) ---
+  const inputElement = (
+    <Input
+      ref={inputRef}
+      value={inputValue}
+      onChange={handleInputChange}
+      onFocus={handleFocus}
+      onKeyDownCapture={handleKeyDown}
+      placeholder={placeholder}
+      disabled={disabled}
+      role="combobox"
+      aria-expanded={showDropdown}
+      aria-haspopup="listbox"
+      aria-controls={showDropdown ? LISTBOX_ID : undefined}
+      aria-activedescendant={
+        highlightedIndex >= 0 ? `typeahead-opt-${highlightedIndex}` : undefined
+      }
+      aria-label={ariaLabel ?? placeholder}
+      autoComplete="off"
+      className={
+        cellEditorMode
+          ? 'border-0 shadow-none bg-transparent focus-visible:ring-0 focus-visible:border-transparent h-full'
+          : undefined
+      }
+    />
+  );
+
   return (
     <div
       ref={wrapperRef}
@@ -277,6 +385,7 @@ export function TypeaheadInput({
       data-state={open ? 'open' : 'closed'}
       data-loading={loading || undefined}
       data-disabled={disabled || undefined}
+      data-cell-editor={cellEditorMode || undefined}
       {...rest}
     >
       {/* Live region for screen readers */}
@@ -284,99 +393,18 @@ export function TypeaheadInput({
         {statusMessage}
       </div>
 
-      <Input
-        ref={inputRef}
-        value={inputValue}
-        onChange={handleInputChange}
-        onFocus={handleFocus}
-        onKeyDownCapture={handleKeyDown}
-        placeholder={placeholder}
-        disabled={disabled}
-        role="combobox"
-        aria-expanded={showDropdown}
-        aria-haspopup="listbox"
-        aria-controls={showDropdown ? LISTBOX_ID : undefined}
-        aria-activedescendant={
-          highlightedIndex >= 0 ? `typeahead-opt-${highlightedIndex}` : undefined
-        }
-        aria-label={ariaLabel ?? placeholder}
-        autoComplete="off"
-      />
-
-      {showDropdown && (
-        <div
-          ref={listRef}
-          id={LISTBOX_ID}
-          role="listbox"
-          className="absolute z-50 top-full left-0 right-0 mt-1 max-h-52 overflow-auto rounded-md border border-border bg-popover text-popover-foreground shadow-md"
+      <Popover open={showDropdown}>
+        <PopoverAnchor asChild>{inputElement}</PopoverAnchor>
+        <PopoverContent
+          align="start"
+          sideOffset={4}
+          className="w-(--radix-popover-trigger-width) p-0 max-h-52 overflow-auto"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          onCloseAutoFocus={(e) => e.preventDefault()}
         >
-          {/* Loading */}
-          {loading && loadingIndicator}
-
-          {/* Error */}
-          {error && (
-            <button
-              type="button"
-              className="flex items-center gap-2 w-full px-3 py-2 text-sm text-destructive hover:bg-accent cursor-pointer"
-              onClick={() => doSearch(inputValue)}
-            >
-              <AlertCircle className="w-4 h-4" aria-hidden="true" />
-              Failed to load. Click to retry.
-            </button>
-          )}
-
-          {/* Options */}
-          {!loading &&
-            !error &&
-            options.map((opt, i) => (
-              <div
-                key={opt.value}
-                id={`typeahead-opt-${i}`}
-                role="option"
-                aria-selected={i === highlightedIndex}
-                className={cn(
-                  'px-3 py-2 text-sm cursor-pointer',
-                  i === highlightedIndex
-                    ? 'bg-accent text-accent-foreground'
-                    : 'hover:bg-accent/50',
-                )}
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  selectOption(opt);
-                }}
-                onMouseEnter={() => setHighlightedIndex(i)}
-              >
-                {opt.label}
-              </div>
-            ))}
-
-          {/* Create new */}
-          {!loading && !error && showCreate && (
-            <div
-              id={`typeahead-opt-${options.length}`}
-              role="option"
-              aria-selected={highlightedIndex === options.length}
-              className={cn(
-                'flex items-center gap-2 px-3 py-2 text-sm cursor-pointer',
-                highlightedIndex === options.length
-                  ? 'bg-accent text-accent-foreground'
-                  : 'hover:bg-accent/50',
-              )}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                createValue(trimmedInput);
-              }}
-              onMouseEnter={() => setHighlightedIndex(options.length)}
-            >
-              <Plus className="w-4 h-4" aria-hidden="true" />
-              New: {trimmedInput}
-            </div>
-          )}
-
-          {/* Empty state */}
-          {!loading && !error && options.length === 0 && !showCreate && noResults}
-        </div>
-      )}
+          {dropdownList}
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }
