@@ -23,6 +23,7 @@ export interface ColorPickerProps extends Omit<React.ComponentProps<'div'>, 'onC
  * ColorPicker — compact color selector with a popover palette.
  *
  * Shows a small swatch button. Clicking opens a popover with the full palette.
+ * Palette supports arrow-key navigation between swatches.
  */
 export function ColorPicker({
   value,
@@ -33,6 +34,8 @@ export function ColorPicker({
   ...rest
 }: ColorPickerProps) {
   const [open, setOpen] = React.useState(false);
+  const [focusedIndex, setFocusedIndex] = React.useState(-1);
+  const paletteRef = React.useRef<HTMLDivElement>(null);
 
   const selectedHex = colors[value]?.hex ?? colors.GRAY?.hex ?? '#6B7280';
   const colorEntries = Object.entries(colors);
@@ -41,6 +44,63 @@ export function ColorPicker({
     onValueChange(key);
     setOpen(false);
   };
+
+  // Focus the selected swatch when palette opens
+  React.useEffect(() => {
+    if (!open) return;
+    const selectedIdx = colorEntries.findIndex(([key]) => key === value);
+    setFocusedIndex(selectedIdx >= 0 ? selectedIdx : 0);
+    // Focus after popover renders
+    requestAnimationFrame(() => {
+      const buttons = paletteRef.current?.querySelectorAll<HTMLButtonElement>('[role="radio"]');
+      const target = buttons?.[selectedIdx >= 0 ? selectedIdx : 0];
+      target?.focus();
+    });
+  }, [open]);
+
+  const handleKeyDown = React.useCallback(
+    (e: React.KeyboardEvent) => {
+      const len = colorEntries.length;
+      let next = focusedIndex;
+
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'ArrowDown':
+          e.preventDefault();
+          next = (focusedIndex + 1) % len;
+          break;
+        case 'ArrowLeft':
+        case 'ArrowUp':
+          e.preventDefault();
+          next = (focusedIndex - 1 + len) % len;
+          break;
+        case 'Home':
+          e.preventDefault();
+          next = 0;
+          break;
+        case 'End':
+          e.preventDefault();
+          next = len - 1;
+          break;
+        case 'Enter':
+        case ' ':
+          e.preventDefault();
+          if (focusedIndex >= 0 && focusedIndex < len) {
+            handleSelect(
+              (colorEntries[focusedIndex] as [string, { hex: string; name: string }])[0],
+            );
+          }
+          return;
+        default:
+          return;
+      }
+
+      setFocusedIndex(next);
+      const buttons = paletteRef.current?.querySelectorAll<HTMLButtonElement>('[role="radio"]');
+      buttons?.[next]?.focus();
+    },
+    [focusedIndex, colorEntries, handleSelect],
+  );
 
   return (
     <div
@@ -55,7 +115,7 @@ export function ColorPicker({
           <button
             type="button"
             disabled={disabled}
-            className="flex-shrink-0 cursor-pointer rounded-lg border border-input bg-background p-[7px] shadow-xs focus-ring disabled:opacity-50 disabled:pointer-events-none"
+            className="relative flex-shrink-0 cursor-pointer rounded-lg border border-input bg-background p-[7px] shadow-xs focus-ring disabled:opacity-50 disabled:pointer-events-none min-h-11 min-w-11 flex items-center justify-center"
             aria-label={`Color: ${colors[value]?.name ?? value}. Click to change.`}
           >
             <div
@@ -66,23 +126,36 @@ export function ColorPicker({
         </PopoverTrigger>
         <PopoverContent
           align="start"
-          sideOffset={4}
+          sideOffset={-44}
           className="flex gap-1.5 items-center w-auto p-[7px] rounded-lg"
+          onOpenAutoFocus={(e) => e.preventDefault()}
         >
-          {colorEntries.map(([key, { hex, name }]) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => handleSelect(key)}
-              className={cn(
-                'size-[22px] rounded-sm shadow-[0.5px_0.5px_1.5px_0.5px_rgba(0,0,0,0.12)] cursor-pointer',
-                key === value && 'ring-2 ring-ring ring-offset-1',
-              )}
-              style={{ backgroundColor: hex }}
-              aria-label={name}
-              aria-pressed={key === value}
-            />
-          ))}
+          <div
+            ref={paletteRef}
+            role="radiogroup"
+            aria-label="Color palette"
+            className="flex gap-1.5 items-center"
+            onKeyDown={handleKeyDown}
+          >
+            {colorEntries.map(([key, { hex, name }], i) => (
+              <button
+                key={key}
+                type="button"
+                role="radio"
+                aria-checked={key === value}
+                aria-label={name}
+                tabIndex={i === focusedIndex ? 0 : -1}
+                onClick={() => handleSelect(key)}
+                className={cn(
+                  'relative size-[22px] rounded-sm shadow-[0.5px_0.5px_1.5px_0.5px_rgba(0,0,0,0.12)] cursor-pointer',
+                  'before:absolute before:inset-[-4px] before:rounded-md',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
+                  key === value && 'ring-2 ring-ring ring-offset-1',
+                )}
+                style={{ backgroundColor: hex }}
+              />
+            ))}
+          </div>
         </PopoverContent>
       </Popover>
     </div>
