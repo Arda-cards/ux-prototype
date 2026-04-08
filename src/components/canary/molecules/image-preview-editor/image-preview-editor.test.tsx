@@ -8,13 +8,16 @@ vi.mock('react-easy-crop', () => ({
   default: ({
     onCropComplete,
     image,
+    mediaProps,
   }: {
     onCropComplete?: (croppedArea: unknown, croppedAreaPixels: unknown) => void;
     image?: string;
+    mediaProps?: Record<string, string>;
   }) => (
     <div
       data-testid="mock-cropper"
       data-image={image}
+      data-cross-origin={mediaProps?.crossOrigin ?? ''}
       onClick={() =>
         onCropComplete?.(
           { x: 0, y: 0, width: 100, height: 100 },
@@ -108,6 +111,26 @@ describe('ImagePreviewEditor', () => {
 
     await user.click(screen.getByRole('button', { name: /reset/i }));
     expect(onReset).toHaveBeenCalledOnce();
+  });
+
+  describe('crossOrigin for CDN URLs (FD-17)', () => {
+    it('sets crossOrigin="use-credentials" for CDN URLs', () => {
+      renderEditor({ imageData: 'https://dev.alpha002.assets.arda.cards/images/item/123.jpg' });
+      const cropper = screen.getByTestId('mock-cropper');
+      expect(cropper).toHaveAttribute('data-cross-origin', 'use-credentials');
+    });
+
+    it('does not set crossOrigin for non-CDN URLs', () => {
+      renderEditor({ imageData: 'https://picsum.photos/seed/test/400/400' });
+      const cropper = screen.getByTestId('mock-cropper');
+      expect(cropper).toHaveAttribute('data-cross-origin', '');
+    });
+
+    it('does not set crossOrigin for blob URLs', () => {
+      renderEditor({ imageData: 'blob:http://localhost/fake-uuid' });
+      const cropper = screen.getByTestId('mock-cropper');
+      expect(cropper).toHaveAttribute('data-cross-origin', '');
+    });
   });
 
   describe('File to object URL conversion', () => {
