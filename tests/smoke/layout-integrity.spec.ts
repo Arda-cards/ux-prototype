@@ -27,12 +27,14 @@ const SIDEBAR_STORIES = [
   { name: 'Order Queue',  id: 'dev-witness-transactions-orders-order-queue--default' },
   { name: 'Receiving',    id: 'dev-witness-transactions-receiving--default' },
   { name: 'Suppliers',    id: 'use-cases-reference-business-affiliates-pages-suppliers-list-view--default' },
+  { name: 'Suppliers (Canary)', id: 'use-cases-reference-business-affiliates-ba-0001-browse-and-search-view-suppliers-list-canary--default' },
 ] as const;
 
 // Stories that render an AG Grid with expected data rows.
 const GRID_STORIES = [
   { name: 'Items Grid',     id: 'dev-witness-reference-items-items-grid--default',  minRows: 1 },
   { name: 'Suppliers Grid', id: 'use-cases-reference-business-affiliates-pages-suppliers-list-view--default', minRows: 1 },
+  { name: 'Suppliers Grid (Canary)', id: 'use-cases-reference-business-affiliates-ba-0001-browse-and-search-view-suppliers-list-canary--default', minRows: 1 },
 ] as const;
 
 test.describe('Sidebar visibility', () => {

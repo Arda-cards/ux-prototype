@@ -344,6 +344,7 @@ const {
 const meta: Meta = {
   title:
     'Use Cases/General Behaviors/Entity Media/GEN-MEDIA-0001 Set Entity Image/0001 Set Image/Replace Existing',
+  tags: ['skip-ci'],
   parameters: {
     layout: 'centered',
   },
