@@ -6,6 +6,15 @@ import type {
 } from '@/types/canary/utilities/image-field-config';
 import { ImageUploadDialog } from '@/components/canary/organisms/shared/image-upload-dialog/image-upload-dialog';
 
+/** Configuration for the image cell editor factory (FD-01 / FD-15). */
+export interface ImageCellEditorConfig {
+  config: ImageFieldConfig;
+  /** Hook returning the upload mutation — required (FD-15). */
+  useImageUpload: () => { mutateAsync: (file: Blob) => Promise<string>; isPending: boolean };
+  /** Hook returning the reachability check — required (FD-15). */
+  useCheckReachability: () => { mutateAsync: (url: string) => Promise<boolean> };
+}
+
 // --- Interfaces ---
 
 /** Design-time configuration for ImageCellEditor (no static props). */
@@ -30,6 +39,10 @@ export type ImageCellEditorProps = ImageCellEditorStaticProps &
   ImageCellEditorRuntimeProps & {
     /** Curried by createImageCellEditor — not passed by AG Grid directly. */
     config: ImageFieldConfig;
+    /** Upload hook — returns mutateAsync for the upload flow. */
+    useImageUpload?: () => { mutateAsync: (file: Blob) => Promise<string>; isPending: boolean };
+    /** Reachability hook — returns mutateAsync for URL checking. */
+    useCheckReachability?: () => { mutateAsync: (url: string) => Promise<boolean> };
   };
 
 /** Ref handle exposing getValue and isPopup for AG Grid. */
@@ -61,9 +74,13 @@ export interface ImageCellEditorHandle {
  * ```
  */
 export const ImageCellEditor = forwardRef<ImageCellEditorHandle, ImageCellEditorProps>(
-  ({ value: initialValue, stopEditing, config }, ref) => {
+  ({ value: initialValue, stopEditing, config, useImageUpload, useCheckReachability }, ref) => {
     const [currentValue, setCurrentValue] = useState<string | null>(initialValue);
     const [dialogOpen, setDialogOpen] = useState(true);
+
+    // Invoke hooks at the top level (Rules of Hooks) — only when provided
+    const uploadHook = useImageUpload?.();
+    const reachabilityHook = useCheckReachability?.();
 
     useImperativeHandle(ref, () => ({
       getValue: () => currentValue,
@@ -96,6 +113,10 @@ export const ImageCellEditor = forwardRef<ImageCellEditorHandle, ImageCellEditor
           open={dialogOpen}
           onConfirm={handleConfirm}
           onCancel={handleCancel}
+          {...(uploadHook ? { onUpload: (file: Blob) => uploadHook.mutateAsync(file) } : {})}
+          {...(reachabilityHook
+            ? { onCheckReachability: (url: string) => reachabilityHook.mutateAsync(url) }
+            : {})}
         />
       </>
     );
@@ -105,11 +126,27 @@ export const ImageCellEditor = forwardRef<ImageCellEditorHandle, ImageCellEditor
 ImageCellEditor.displayName = 'ImageCellEditor';
 
 /**
- * Factory helper for creating an image cell editor with a curried config.
+ * Factory helper for creating an image cell editor with curried config and hooks.
+ *
+ * Accepts either the legacy `ImageFieldConfig` (Storybook/default handlers) or
+ * the full `ImageCellEditorConfig` with required typed provider hooks (FD-15).
  */
-export function createImageCellEditor(config: ImageFieldConfig) {
+export function createImageCellEditor(configOrFull: ImageFieldConfig | ImageCellEditorConfig) {
+  const isFullConfig = 'useImageUpload' in configOrFull;
+  const config = isFullConfig ? configOrFull.config : configOrFull;
+  const useImageUpload = isFullConfig ? configOrFull.useImageUpload : undefined;
+  const useCheckReachability = isFullConfig ? configOrFull.useCheckReachability : undefined;
+
   const WrappedEditor = forwardRef<ImageCellEditorHandle, ImageCellEditorRuntimeProps>(
-    (props, editorRef) => <ImageCellEditor {...props} config={config} ref={editorRef} />,
+    (props, editorRef) => (
+      <ImageCellEditor
+        {...props}
+        config={config}
+        {...(useImageUpload ? { useImageUpload } : {})}
+        {...(useCheckReachability ? { useCheckReachability } : {})}
+        ref={editorRef}
+      />
+    ),
   );
   WrappedEditor.displayName = `ImageCellEditor(${config.entityTypeDisplayName})`;
   return WrappedEditor;

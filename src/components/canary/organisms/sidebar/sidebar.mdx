@@ -149,7 +149,7 @@ function AppSidebar() {
 
 ## Consumer responsibilities
 
-- **Destructive actions** &#8212; The `destructive` flag on `UserMenuAction` applies red styling but does not show a confirmation dialog. Wrap destructive `onClick` handlers with `ArdaConfirmDialog` at the app level.
+- **Destructive actions** &#8212; The `destructive` flag on `UserMenuAction` applies red styling but does not show a confirmation dialog. Wrap destructive `onClick` handlers with `ConfirmDialog` at the app level.
 - **Disabled nav items** &#8212; No `disabled` prop exists on `SidebarNavItem`. Conditionally omit the item or style via `className`.
 - **Reduced motion** &#8212; Nav item badge transitions and group chevron rotation respect `prefers-reduced-motion`. The sidebar collapse/expand animation is an upstream limitation in the shadcn primitives.
 

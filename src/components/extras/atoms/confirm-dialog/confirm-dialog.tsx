@@ -3,7 +3,7 @@ import { useCallback, useEffect, useId, useRef } from 'react';
 import { cn } from '@/types/canary/utilities/utils';
 
 /** Design-time configuration. */
-export interface ArdaConfirmDialogStaticConfig {
+export interface ConfirmDialogStaticConfig {
   /* --- Model / Data Binding --- */
   /** Dialog title. */
   title: string;
@@ -20,7 +20,7 @@ export interface ArdaConfirmDialogStaticConfig {
 }
 
 /** Runtime configuration. */
-export interface ArdaConfirmDialogRuntimeConfig {
+export interface ConfirmDialogRuntimeConfig {
   /* --- Model / Data Binding --- */
   /** Called when the user confirms. */
   onConfirm: () => void;
@@ -32,10 +32,16 @@ export interface ArdaConfirmDialogRuntimeConfig {
   open: boolean;
 }
 
-export interface ArdaConfirmDialogProps
-  extends ArdaConfirmDialogStaticConfig, ArdaConfirmDialogRuntimeConfig {}
+export interface ConfirmDialogProps extends ConfirmDialogStaticConfig, ConfirmDialogRuntimeConfig {}
 
-export function ArdaConfirmDialog({
+/** @deprecated Use `ConfirmDialogStaticConfig` instead. */
+export type ArdaConfirmDialogStaticConfig = ConfirmDialogStaticConfig;
+/** @deprecated Use `ConfirmDialogRuntimeConfig` instead. */
+export type ArdaConfirmDialogRuntimeConfig = ConfirmDialogRuntimeConfig;
+/** @deprecated Use `ConfirmDialogProps` instead. */
+export type ArdaConfirmDialogProps = ConfirmDialogProps;
+
+export function ConfirmDialog({
   title,
   message,
   confirmLabel = 'Confirm',
@@ -44,7 +50,7 @@ export function ArdaConfirmDialog({
   open,
   onConfirm,
   onCancel,
-}: ArdaConfirmDialogProps) {
+}: ConfirmDialogProps) {
   const titleId = useId();
   const descId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -155,3 +161,6 @@ export function ArdaConfirmDialog({
     </div>
   );
 }
+
+/** @deprecated Use `ConfirmDialog` instead. */
+export const ArdaConfirmDialog = ConfirmDialog;

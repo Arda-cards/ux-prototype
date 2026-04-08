@@ -5,7 +5,7 @@ import type { Item } from '@/types/extras';
 import { TypeaheadCellEditor, type TypeaheadOption } from './typeahead-cell-editor';
 import { SelectCellEditor } from '../../atoms/grid/select/select-cell-editor';
 import { DragHeader } from './drag-header';
-import { ImageCellDisplay } from '../../atoms/grid/image';
+import { ImageCellDisplay, createImageCellEditor } from '../../atoms/grid/image';
 import type { ImageFieldConfig } from '@/types/canary/utilities/image-field-config';
 
 // --- Local image config (no mock dependency) ---
@@ -231,6 +231,21 @@ const tabularNumsStyle = { fontVariantNumeric: 'tabular-nums' };
 export interface ItemGridLookups {
   supplier?: (search: string) => Promise<TypeaheadOption[]>;
   classificationType?: (search: string) => Promise<TypeaheadOption[]>;
+  classificationSubType?: (search: string) => Promise<TypeaheadOption[]>;
+  useCase?: (search: string) => Promise<TypeaheadOption[]>;
+  facility?: (search: string) => Promise<TypeaheadOption[]>;
+  department?: (search: string) => Promise<TypeaheadOption[]>;
+  location?: (search: string) => Promise<TypeaheadOption[]>;
+  sublocation?: (search: string) => Promise<TypeaheadOption[]>;
+  unit?: (search: string) => Promise<TypeaheadOption[]>;
+}
+
+/** Typed provider hooks for grid cell editors (FD-01 / FD-15). */
+export interface ItemGridEditorHooks {
+  /** Hook returning the upload mutation — required (FD-15). */
+  useImageUpload: () => { mutateAsync: (file: Blob) => Promise<string>; isPending: boolean };
+  /** Hook returning the reachability check — required (FD-15). */
+  useCheckReachability: () => { mutateAsync: (url: string) => Promise<boolean> };
 }
 
 // --- Defaults ---
@@ -248,11 +263,13 @@ export const itemGridDefaultColDef: ColDef<Item> = {
 /** Static columns (no lookups needed). Used as default. */
 export const itemGridColumnDefs: ColDef<Item>[] = createItemGridColumnDefs();
 
-/** Factory — pass lookups and callbacks to get fully-configured columns. */
+/** Factory — pass lookups, editor hooks, and callbacks to get fully-configured columns. */
 export function createItemGridColumnDefs(
   lookups?: ItemGridLookups,
-  options?: { onNotesClick?: (item: Item) => void },
+  options?: { onNotesClick?: (item: Item) => void; editorHooks?: ItemGridEditorHooks },
 ): ColDef<Item>[] {
+  const editorHooks = options?.editorHooks;
+
   return [
     {
       headerName: 'Image',
@@ -261,9 +278,19 @@ export function createItemGridColumnDefs(
       width: 60,
       sortable: false,
       resizable: false,
-      editable: false,
+      editable: !!editorHooks,
       cellRenderer: ImageCellDisplay,
       cellRendererParams: { config: ITEM_IMAGE_CONFIG },
+      ...(editorHooks
+        ? {
+            cellEditor: createImageCellEditor({
+              config: ITEM_IMAGE_CONFIG,
+              useImageUpload: editorHooks.useImageUpload,
+              useCheckReachability: editorHooks.useCheckReachability,
+            }),
+            cellEditorPopup: true,
+          }
+        : {}),
     },
     {
       headerName: 'Name',

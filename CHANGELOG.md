@@ -18,7 +18,7 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
-## [4.7.1] - 2026-04-07
+## [4.9.0] - 2026-04-07
 
 ### Fixed
 
@@ -34,14 +34,60 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   across components.
 - Clickable focus state on `ImageDropZone` to signal paste readiness.
 - PR workflow rule in `CLAUDE.md`: always ask about changelog before PRs.
+- `TypeaheadInput` molecule: standalone async typeahead with debounced search,
+  keyboard navigation, allow-create, and MSW-backed unit lookup matching the
+  production API. Wired into `ItemCardEditor` units fields.
+
+## [4.8.0] - 2026-04-08
+
+### Added
+
+- Edit Lifecycle framework types: `FieldError`, `ValidationResult`, `Validator<T>`,
+  `EditPhase`, `EditLifecycleCallbacks<T>`, `EditableComponentProps<T>`
+- `useDraft<T>` hook for managing edit draft state, validation, and lifecycle phases
+- `setNestedField` utility for immutable dot-path field updates
+- `UploadError` phase in `ImageUploadDialog` with retry and discard actions
+- `contextErrors` prop on `ImageFormField` for parent-injected validation errors
+- `initialValue` prop on `ImageFormField` as canonical data source
+  (`imageUrl` deprecated)
+- `ImageCellEditorConfig` interface with required typed provider hooks
+  (`useImageUpload`, `useCheckReachability`) for FD-01/FD-15 compliance
+- `ItemGridEditorHooks` interface with required typed provider hooks
+- `ItemGridLookups` expanded to 9 lookup fields (was 2)
+- `crossOrigin="use-credentials"` on `ImagePreviewEditor` crop canvas for
+  CDN-hosted images (FD-17, requires infrastructure#439)
+
+### Fixed
+
+- `ImageUploadDialog` now shows an indeterminate spinner instead of a
+  simulated progress percentage during upload (FD-04)
+- `ImageUploadDialog` triggers upload directly on confirm instead of
+  after a simulated delay
+
+### Deprecated
+
+- `ImageFormField.imageUrl` prop — use `initialValue` instead
 
 ## [4.7.0] - 2026-04-06
 
 ### Added
 
-- `TypeaheadInput` molecule: standalone async typeahead with debounced search,
-  keyboard navigation, allow-create, and MSW-backed unit lookup matching the
-  production API. Wired into `ItemCardEditor` units fields.
+- Canary variants for all Business Affiliates use-case stories: 13 new story
+  files covering Browse & Search, Create Supplier, Edit Supplier, Delete
+  Supplier, and Affiliate Typeahead — each self-contained with canary
+  components (Sidebar, AppHeader, createEntityDataGrid, ItemDetails) and no
+  extras/vendored dependencies
+- Play function parity: 21 additional story variants added to canary files to
+  match original coverage (EmptyState, LoadingState, ErrorState, NoResults,
+  HideAll, SelectAll, MinimalData, CloseDrawer, SectionCollapse,
+  NetworkError, DuplicateNameError, CancelDiscards, BulkDelete, CancelDelete,
+  KeyboardNavigation, EscapeDismiss, and more)
+- Layout integrity smoke tests for canary suppliers page (sidebar visibility
+  and AG Grid data visibility)
+
+### Fixed
+
+- Renamed `ArdaConfirmDialog` to `ConfirmDialog` for consistency with other canary library components. The old names (`ArdaConfirmDialog`, `ArdaConfirmDialogProps`, `ArdaConfirmDialogStaticConfig`, `ArdaConfirmDialogRuntimeConfig`) are still exported as deprecated aliases.
 
 ## [4.6.0] - 2026-04-06
 
