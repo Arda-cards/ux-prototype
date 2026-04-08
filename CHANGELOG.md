@@ -18,6 +18,13 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.9.1] - 2026-04-09
+
+### Fixed
+
+- Republish: `ColorPicker` export was missing from 4.9.0 due to publish race
+  condition (package was published before the export PR merged).
+
 ## [4.9.0] - 2026-04-08
 ### Added
 
