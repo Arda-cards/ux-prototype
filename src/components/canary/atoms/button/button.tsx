@@ -21,11 +21,14 @@ const buttonVariants = cva(
         outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
       },
       size: {
+        xs: "h-6 gap-1 rounded-md px-2 text-xs has-[>svg]:px-1.5 [&_svg:not([class*='size-'])]:size-3",
         sm: 'h-8 gap-1.5 rounded-md px-3 text-sm',
         md: 'h-9 px-4 py-2',
         lg: 'h-10 rounded-md px-6',
         icon: 'size-9',
+        'icon-xs': "size-6 rounded-md [&_svg:not([class*='size-'])]:size-3",
         'icon-sm': 'size-8 rounded-md',
+        'icon-lg': 'size-14 rounded-lg',
       },
     },
     defaultVariants: {
