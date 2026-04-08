@@ -122,6 +122,8 @@ export function ItemCardEditor({
     setDialogOpen(false);
   }, []);
 
+  const accentHex = getColorHex(fields.accentColor);
+
   const attributeSections = [
     {
       icon: PackageMinus,
@@ -166,10 +168,7 @@ export function ItemCardEditor({
         </div>
 
         {/* Accent Divider */}
-        <div
-          className="w-full h-1 transition-colors"
-          style={{ backgroundColor: getColorHex(fields.accentColor) }}
-        />
+        <div className="w-full h-1 transition-colors" style={{ backgroundColor: accentHex }} />
 
         {/* Attribute Blocks — editable inputs */}
         <div className="space-y-2">
@@ -248,10 +247,7 @@ export function ItemCardEditor({
             value={fields.accentColor}
             onValueChange={(color) => updateField('accentColor', color)}
           />
-          <div
-            className="flex-1 h-[10px] transition-colors"
-            style={{ backgroundColor: getColorHex(fields.accentColor) }}
-          />
+          <div className="flex-1 h-2.5 transition-colors" style={{ backgroundColor: accentHex }} />
         </div>
 
         {/* Footer Branding */}

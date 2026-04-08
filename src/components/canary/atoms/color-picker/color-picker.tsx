@@ -1,21 +1,39 @@
 import * as React from 'react';
 
-import { cn } from '@/types/canary/utilities/utils';
 import { DEFAULT_COLOR_MAP } from '@/components/canary/atoms/grid/color/color-cell-display';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/canary/primitives/popover';
 
 // --- Types ---
 
-export interface ColorPickerProps extends Omit<React.ComponentProps<'div'>, 'onChange'> {
+/** Design-time configuration for ColorPicker. */
+export interface ColorPickerStaticConfig {
+  /** Custom color map. Defaults to the standard 10-color palette. */
+  colors?: Record<string, { hex: string; name: string }>;
+}
+
+/** Init configuration for ColorPicker. */
+export interface ColorPickerInitConfig {
+  /** Disable the picker. */
+  disabled?: boolean;
+}
+
+/** Runtime props for ColorPicker. */
+export interface ColorPickerRuntimeConfig {
   /** Selected color key (e.g. "GRAY"). */
   value: string;
   /** Called when a color is selected. */
   onValueChange: (color: string) => void;
-  /** Custom color map. Defaults to the standard 10-color palette. */
-  colors?: Record<string, { hex: string; name: string }>;
-  /** Disable the picker. */
-  disabled?: boolean;
 }
+
+/** Combined props for ColorPicker. */
+export interface ColorPickerProps
+  extends
+    ColorPickerStaticConfig,
+    ColorPickerInitConfig,
+    ColorPickerRuntimeConfig,
+    Omit<React.ComponentProps<'div'>, 'onChange'> {}
+
+const noop = () => {};
 
 // --- Component ---
 
@@ -36,43 +54,48 @@ export function ColorPicker({
   const [open, setOpen] = React.useState(false);
   const [focusedIndex, setFocusedIndex] = React.useState(-1);
   const paletteRef = React.useRef<HTMLDivElement>(null);
+  const focusedRef = React.useRef(focusedIndex);
+  focusedRef.current = focusedIndex;
 
+  const colorEntries = React.useMemo(() => Object.entries(colors), [colors]);
   const selectedHex = colors[value]?.hex ?? colors.GRAY?.hex ?? '#6B7280';
-  const colorEntries = Object.entries(colors);
 
-  const handleSelect = (key: string) => {
-    onValueChange(key);
-    setOpen(false);
-  };
+  const handleSelect = React.useCallback(
+    (key: string) => {
+      onValueChange(key);
+      setOpen(false);
+    },
+    [onValueChange],
+  );
 
-  // Focus the selected swatch when palette opens
+  // Set focused index and focus the swatch when palette opens
   React.useEffect(() => {
     if (!open) return;
     const selectedIdx = colorEntries.findIndex(([key]) => key === value);
     setFocusedIndex(selectedIdx >= 0 ? selectedIdx : 0);
-    // Focus after popover renders
     requestAnimationFrame(() => {
       const buttons = paletteRef.current?.querySelectorAll<HTMLButtonElement>('[role="radio"]');
       const target = buttons?.[selectedIdx >= 0 ? selectedIdx : 0];
       target?.focus();
     });
-  }, [open]);
+  }, [open, colorEntries, value]);
 
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent) => {
       const len = colorEntries.length;
-      let next = focusedIndex;
+      const fi = focusedRef.current;
+      let next = fi;
 
       switch (e.key) {
         case 'ArrowRight':
         case 'ArrowDown':
           e.preventDefault();
-          next = (focusedIndex + 1) % len;
+          next = (fi + 1) % len;
           break;
         case 'ArrowLeft':
         case 'ArrowUp':
           e.preventDefault();
-          next = (focusedIndex - 1 + len) % len;
+          next = (fi - 1 + len) % len;
           break;
         case 'Home':
           e.preventDefault();
@@ -85,10 +108,8 @@ export function ColorPicker({
         case 'Enter':
         case ' ':
           e.preventDefault();
-          if (focusedIndex >= 0 && focusedIndex < len) {
-            handleSelect(
-              (colorEntries[focusedIndex] as [string, { hex: string; name: string }])[0],
-            );
+          if (fi >= 0 && fi < len) {
+            handleSelect((colorEntries[fi] as [string, { hex: string; name: string }])[0]);
           }
           return;
         default:
@@ -99,7 +120,7 @@ export function ColorPicker({
       const buttons = paletteRef.current?.querySelectorAll<HTMLButtonElement>('[role="radio"]');
       buttons?.[next]?.focus();
     },
-    [focusedIndex, colorEntries, handleSelect],
+    [colorEntries, handleSelect],
   );
 
   return (
@@ -107,10 +128,10 @@ export function ColorPicker({
       data-slot="color-picker"
       data-state={open ? 'open' : 'closed'}
       data-disabled={disabled || undefined}
-      className={cn(className)}
+      className={className}
       {...rest}
     >
-      <Popover open={open} onOpenChange={disabled ? () => {} : setOpen}>
+      <Popover open={open} onOpenChange={disabled ? noop : setOpen}>
         <PopoverTrigger asChild>
           <button
             type="button"
@@ -146,11 +167,11 @@ export function ColorPicker({
                 aria-label={name}
                 tabIndex={i === focusedIndex ? 0 : -1}
                 onClick={() => handleSelect(key)}
-                onKeyDown={handleKeyDown}
-                className={cn(
-                  'min-h-11 min-w-11 flex items-center justify-center rounded-md cursor-pointer outline-none',
-                  i === focusedIndex && 'ring-2 ring-ring ring-offset-1',
-                )}
+                className={
+                  i === focusedIndex
+                    ? 'min-h-11 min-w-11 flex items-center justify-center rounded-md cursor-pointer outline-none ring-2 ring-ring ring-offset-1'
+                    : 'min-h-11 min-w-11 flex items-center justify-center rounded-md cursor-pointer outline-none'
+                }
               >
                 <span
                   className="size-[22px] rounded-sm shadow-[0.5px_0.5px_1.5px_0.5px_rgba(0,0,0,0.12)] pointer-events-none"
