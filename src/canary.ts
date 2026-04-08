@@ -216,6 +216,7 @@ export {
 export type {
   ImageCellDisplayProps,
   ImageCellEditorProps,
+  ImageCellEditorConfig,
   ImageCellEditorHandle,
 } from './components/canary/atoms/grid/image';
 
@@ -306,7 +307,10 @@ export {
   itemGridDefaultColDef,
   createItemGridColumnDefs,
 } from './components/canary/molecules/item-grid/item-grid-columns';
-export type { ItemGridLookups } from './components/canary/molecules/item-grid/item-grid-columns';
+export type {
+  ItemGridLookups,
+  ItemGridEditorHooks,
+} from './components/canary/molecules/item-grid/item-grid-columns';
 
 export { itemGridFixtures } from './components/canary/molecules/item-grid/item-grid-fixtures';
 

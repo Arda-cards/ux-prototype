@@ -18,6 +18,7 @@ import type {
   ImageFieldConfig,
   ImageUploadResult,
 } from '@/types/canary/utilities/image-field-config';
+import type { FieldError } from '@/types/canary/utilities/edit-lifecycle';
 
 // --- Interfaces ---
 
@@ -32,10 +33,20 @@ export interface ImageFormFieldInitProps {
 
 /** Runtime configuration for ImageFormField (live data and callbacks). */
 export interface ImageFormFieldRuntimeProps {
-  /** Current image URL. Null means no image is set. */
-  imageUrl: string | null;
+  /**
+   * Initial value — canonical prop per EditableComponentProps<string | null>.
+   * Takes precedence over `imageUrl` when both are provided.
+   */
+  initialValue?: string | null;
+  /**
+   * Current image URL. Null means no image is set.
+   * @deprecated Use `initialValue` instead.
+   */
+  imageUrl?: string | null;
   /** Called when the image is changed. Pass `null` to remove the image. */
   onChange: (imageUrl: string | null) => void;
+  /** Contextual errors injected by the parent after its own validation. */
+  contextErrors?: FieldError[];
   /** When true the field is read-only and no actions are available. */
   disabled?: boolean;
 }
@@ -67,10 +78,13 @@ export type ImageFormFieldProps = ImageFormFieldStaticProps &
  */
 export function ImageFormField({
   config,
+  initialValue,
   imageUrl,
   onChange,
+  contextErrors,
   disabled = false,
 }: ImageFormFieldProps) {
+  const resolvedImageUrl = initialValue ?? imageUrl ?? null;
   const { entityTypeDisplayName, propertyDisplayName } = config;
 
   const [inspectorOpen, setInspectorOpen] = React.useState(false);
@@ -101,7 +115,7 @@ export function ImageFormField({
         {/* Interactive ImageDisplay — double-click/Enter opens upload dialog */}
         <div className="w-full h-full rounded-lg">
           <ImageDisplay
-            imageUrl={imageUrl}
+            imageUrl={resolvedImageUrl}
             entityTypeDisplayName={entityTypeDisplayName}
             propertyDisplayName={propertyDisplayName}
             config={config}
@@ -119,7 +133,7 @@ export function ImageFormField({
           )}
         >
           {/* Eye icon — opens inspector (suppressed when no image) */}
-          {imageUrl !== null && (
+          {resolvedImageUrl !== null && (
             <button
               type="button"
               aria-label="Inspect image"
@@ -135,7 +149,7 @@ export function ImageFormField({
           )}
 
           {/* Trash icon — opens remove confirmation (hidden when no image) */}
-          {imageUrl !== null && (
+          {resolvedImageUrl !== null && (
             <button
               type="button"
               aria-label="Remove image"
@@ -155,10 +169,21 @@ export function ImageFormField({
       {/* Label */}
       <span className="text-sm text-muted-foreground">{propertyDisplayName}</span>
 
+      {/* Contextual errors */}
+      {contextErrors && contextErrors.length > 0 && (
+        <div className="flex flex-col gap-0.5" role="alert">
+          {contextErrors.map((err) => (
+            <span key={`${err.field}:${err.message}`} className="text-xs text-destructive">
+              {err.message}
+            </span>
+          ))}
+        </div>
+      )}
+
       {/* ImageInspectorOverlay — controlled by eye icon button */}
-      {imageUrl !== null && (
+      {resolvedImageUrl !== null && (
         <ImageInspectorOverlay
-          imageUrl={imageUrl}
+          imageUrl={resolvedImageUrl}
           open={inspectorOpen}
           onClose={() => setInspectorOpen(false)}
           onEdit={() => {

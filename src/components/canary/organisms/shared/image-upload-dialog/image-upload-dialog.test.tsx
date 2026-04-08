@@ -212,12 +212,84 @@ describe('ImageUploadDialog', () => {
   });
 
   it('calls onConfirm with result on confirm (mock the upload)', async () => {
-    vi.useFakeTimers();
-    try {
+    const { defaultUploadHandler } = await import('@/types/canary/utilities/image-upload-handlers');
+    (defaultUploadHandler as ReturnType<typeof vi.fn>).mockResolvedValue(
+      'https://cdn.example.com/images/mock-uploaded.jpg',
+    );
+    const onConfirm = vi.fn();
+    renderDialog({ onConfirm });
+
+    fireEvent.click(screen.getByText('drop file'));
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+
+    await waitFor(() => {
+      expect(onConfirm).toHaveBeenCalledWith(
+        expect.objectContaining({ imageUrl: 'https://cdn.example.com/images/mock-uploaded.jpg' }),
+      );
+    });
+  });
+
+  it('shows indeterminate indicator during upload (no progress percentage)', async () => {
+    // Make onUpload hang so we can inspect the Uploading state
+    const { defaultUploadHandler } = await import('@/types/canary/utilities/image-upload-handlers');
+    (defaultUploadHandler as ReturnType<typeof vi.fn>).mockReturnValue(new Promise(() => {}));
+    renderDialog();
+
+    fireEvent.click(screen.getByText('drop file'));
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('status')).toBeInTheDocument();
+      expect(screen.getByText('Uploading image\u2026')).toBeInTheDocument();
+      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+    });
+  });
+
+  // --- UploadError state tests ---
+
+  describe('UploadError state', () => {
+    async function enterUploadError() {
       const { defaultUploadHandler } =
         await import('@/types/canary/utilities/image-upload-handlers');
-      (defaultUploadHandler as ReturnType<typeof vi.fn>).mockResolvedValue(
-        'https://cdn.example.com/images/mock-uploaded.jpg',
+      (defaultUploadHandler as ReturnType<typeof vi.fn>).mockRejectedValue(
+        new Error('Network failure'),
+      );
+      renderDialog();
+
+      fireEvent.click(screen.getByText('drop file'));
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toBeInTheDocument();
+      });
+    }
+
+    it('renders error message on upload failure', async () => {
+      await enterUploadError();
+      expect(screen.getByRole('alert')).toHaveTextContent('Network failure');
+    });
+
+    it('retry transitions back to Uploading', async () => {
+      const { defaultUploadHandler } =
+        await import('@/types/canary/utilities/image-upload-handlers');
+      (defaultUploadHandler as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+        new Error('Network failure'),
+      );
+      // On retry, succeed
+      (defaultUploadHandler as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+        'https://cdn.example.com/retried.jpg',
       );
       const onConfirm = vi.fn();
       renderDialog({ onConfirm });
@@ -226,47 +298,30 @@ describe('ImageUploadDialog', () => {
       await act(async () => {
         await Promise.resolve();
       });
-
       fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
 
-      // Advance timers to complete the progress simulation
-      await act(async () => {
-        vi.advanceTimersByTime(2000);
-        await Promise.resolve();
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toHaveTextContent('Network failure');
       });
 
-      await act(async () => {
-        await Promise.resolve();
+      fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+
+      await waitFor(() => {
+        expect(onConfirm).toHaveBeenCalledWith(
+          expect.objectContaining({ imageUrl: 'https://cdn.example.com/retried.jpg' }),
+        );
       });
+    });
 
-      expect(onConfirm).toHaveBeenCalledWith(
-        expect.objectContaining({ imageUrl: 'https://cdn.example.com/images/mock-uploaded.jpg' }),
-      );
-    } finally {
-      vi.useRealTimers();
-    }
-  });
+    it('discard transitions to EmptyImage', async () => {
+      await enterUploadError();
 
-  it('shows progress bar during upload', async () => {
-    vi.useFakeTimers();
-    try {
-      renderDialog();
-      fireEvent.click(screen.getByText('drop file'));
-      await act(async () => {
-        await Promise.resolve();
+      fireEvent.click(screen.getByRole('button', { name: 'Discard' }));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('image-drop-zone')).toBeInTheDocument();
       });
-
-      fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
-
-      await act(async () => {
-        vi.advanceTimersByTime(100);
-        await Promise.resolve();
-      });
-
-      expect(screen.getByRole('progressbar')).toBeInTheDocument();
-    } finally {
-      vi.useRealTimers();
-    }
+    });
   });
 
   it('comparison layout shown when existingImageUrl set and new image provided', async () => {
@@ -342,57 +397,40 @@ describe('ImageUploadDialog', () => {
     });
 
     it('"Confirm" in EditExisting triggers upload (enters Uploading state)', async () => {
-      vi.useFakeTimers();
-      try {
-        renderDialog({ existingImageUrl: EXISTING_URL });
+      const { defaultUploadHandler } =
+        await import('@/types/canary/utilities/image-upload-handlers');
+      (defaultUploadHandler as ReturnType<typeof vi.fn>).mockReturnValue(new Promise(() => {}));
+      renderDialog({ existingImageUrl: EXISTING_URL });
 
-        await act(async () => {
-          fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
-          await Promise.resolve();
-        });
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
+        await Promise.resolve();
+      });
 
-        await act(async () => {
-          vi.advanceTimersByTime(100);
-          await Promise.resolve();
-        });
-
-        expect(screen.getByRole('progressbar')).toBeInTheDocument();
-      } finally {
-        vi.useRealTimers();
-      }
+      await waitFor(() => {
+        expect(screen.getByRole('status')).toBeInTheDocument();
+      });
     });
 
     it('"Confirm" in EditExisting calls onConfirm after upload completes', async () => {
-      vi.useFakeTimers();
-      try {
-        const { defaultUploadHandler } =
-          await import('@/types/canary/utilities/image-upload-handlers');
-        (defaultUploadHandler as ReturnType<typeof vi.fn>).mockResolvedValue(
-          'https://cdn.example.com/images/mock-uploaded.jpg',
-        );
-        const onConfirm = vi.fn();
-        renderDialog({ existingImageUrl: EXISTING_URL, onConfirm });
+      const { defaultUploadHandler } =
+        await import('@/types/canary/utilities/image-upload-handlers');
+      (defaultUploadHandler as ReturnType<typeof vi.fn>).mockResolvedValue(
+        'https://cdn.example.com/images/mock-uploaded.jpg',
+      );
+      const onConfirm = vi.fn();
+      renderDialog({ existingImageUrl: EXISTING_URL, onConfirm });
 
-        await act(async () => {
-          fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
-          await Promise.resolve();
-        });
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
+        await Promise.resolve();
+      });
 
-        await act(async () => {
-          vi.advanceTimersByTime(2000);
-          await Promise.resolve();
-        });
-
-        await act(async () => {
-          await Promise.resolve();
-        });
-
+      await waitFor(() => {
         expect(onConfirm).toHaveBeenCalledWith(
           expect.objectContaining({ imageUrl: 'https://cdn.example.com/images/mock-uploaded.jpg' }),
         );
-      } finally {
-        vi.useRealTimers();
-      }
+      });
     });
 
     it('opens in EmptyImage state when existingImageUrl is null', () => {
