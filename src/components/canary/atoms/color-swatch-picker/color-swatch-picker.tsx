@@ -17,6 +17,10 @@ export interface ColorSwatchPickerProps {
 // --- Component ---
 
 /**
+ * @deprecated Use `ColorPicker` from `canary/atoms/color-picker` instead.
+ * This component couples the swatch button with a color bar. The new
+ * `ColorPicker` is just the swatch button — compose the bar separately.
+ *
  * ColorSwatchPicker — compact color selector with a popover palette.
  *
  * Default state shows a small swatch + accent bar. Clicking opens a popover

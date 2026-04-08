@@ -19,7 +19,7 @@ describe('ArdaDateTimeFieldDisplay', () => {
   });
 
   it('formats ISO datetime', () => {
-    render(<ArdaDateTimeFieldDisplay value="2024-12-31T23:59" />);
+    render(<ArdaDateTimeFieldDisplay value="2024-12-31T12:00" timezone="Etc/UTC" />);
     expect(screen.getByText(/12\/31\/2024/)).toBeInTheDocument();
   });
 
