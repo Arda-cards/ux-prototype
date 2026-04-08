@@ -5,6 +5,17 @@
 
 export { getInitials } from './types/canary/utilities/get-initials';
 export { getCroppedImage } from './types/canary/utilities/get-cropped-image';
+export { setNestedField } from './types/canary/utilities/set-nested-field';
+export { useDraft } from './types/canary/utilities/use-draft';
+export type { UseDraftOptions, DraftState } from './types/canary/utilities/use-draft';
+export type {
+  FieldError,
+  ValidationResult,
+  Validator,
+  EditPhase,
+  EditLifecycleCallbacks,
+  EditableComponentProps,
+} from './types/canary/utilities/edit-lifecycle';
 export type {
   ImageMimeType,
   ImageFieldStaticConfig,
