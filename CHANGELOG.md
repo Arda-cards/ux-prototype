@@ -18,8 +18,7 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
-## [4.8.0] - 2026-04-08
-
+## [4.9.0] - 2026-04-08
 ### Added
 
 - `ColorPicker` atom: standalone swatch button with popover palette, arrow-key
@@ -29,6 +28,36 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
 
 - `ColorSwatchPicker` — use `ColorPicker` instead. The old component coupled
   the swatch button with a color bar.
+
+## [4.8.0] - 2026-04-08
+
+### Added
+
+- Edit Lifecycle framework types: `FieldError`, `ValidationResult`, `Validator<T>`,
+  `EditPhase`, `EditLifecycleCallbacks<T>`, `EditableComponentProps<T>`
+- `useDraft<T>` hook for managing edit draft state, validation, and lifecycle phases
+- `setNestedField` utility for immutable dot-path field updates
+- `UploadError` phase in `ImageUploadDialog` with retry and discard actions
+- `contextErrors` prop on `ImageFormField` for parent-injected validation errors
+- `initialValue` prop on `ImageFormField` as canonical data source
+  (`imageUrl` deprecated)
+- `ImageCellEditorConfig` interface with required typed provider hooks
+  (`useImageUpload`, `useCheckReachability`) for FD-01/FD-15 compliance
+- `ItemGridEditorHooks` interface with required typed provider hooks
+- `ItemGridLookups` expanded to 9 lookup fields (was 2)
+- `crossOrigin="use-credentials"` on `ImagePreviewEditor` crop canvas for
+  CDN-hosted images (FD-17, requires infrastructure#439)
+
+### Fixed
+
+- `ImageUploadDialog` now shows an indeterminate spinner instead of a
+  simulated progress percentage during upload (FD-04)
+- `ImageUploadDialog` triggers upload directly on confirm instead of
+  after a simulated delay
+
+### Deprecated
+
+- `ImageFormField.imageUrl` prop — use `initialValue` instead
 
 ## [4.7.0] - 2026-04-06
 
