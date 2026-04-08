@@ -18,7 +18,7 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
 } from '@/components/canary/primitives/alert-dialog';
-import { Progress } from '@/components/canary/primitives/progress';
+import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/canary/primitives/button';
 import { ImageDropZone } from '@/components/canary/molecules/image-drop-zone/image-drop-zone';
 import { ImagePreviewEditor } from '@/components/canary/molecules/image-preview-editor/image-preview-editor';
@@ -44,7 +44,10 @@ export interface ImageUploadDialogInitProps {
   config: ImageFieldConfig;
 }
 
-/** Runtime props for ImageUploadDialog. */
+/**
+ * Runtime props for ImageUploadDialog.
+ * Confirm/cancel callbacks follow `EditLifecycleCallbacks<ImageUploadResult>`.
+ */
 export interface ImageUploadDialogRuntimeProps {
   existingImageUrl: string | null;
   onConfirm: (result: ImageUploadResult) => void;
@@ -74,7 +77,8 @@ type DialogPhase =
   | { name: 'EmptyImage' }
   | { name: 'ProvidedImage'; imageData: File | Blob | string }
   | { name: 'FailedValidation'; errorMessage: string }
-  | { name: 'Uploading'; imageData: File | Blob | string; progress: number }
+  | { name: 'Uploading'; imageData: File | Blob | string }
+  | { name: 'UploadError'; error: string; imageData: File | Blob | string }
   | { name: 'Warn'; imageData: File | Blob | string };
 
 type DialogAction =
@@ -83,7 +87,9 @@ type DialogAction =
   | { type: 'INPUT_ERROR'; message: string }
   | { type: 'CANCEL_CLICK' }
   | { type: 'CONFIRM_CLICK' }
-  | { type: 'UPLOAD_PROGRESS'; progress: number }
+  | { type: 'UPLOAD_ERROR'; error: string }
+  | { type: 'UPLOAD_RETRY' }
+  | { type: 'UPLOAD_DISCARD' }
   | { type: 'WARN_DISCARD' }
   | { type: 'WARN_GO_BACK' }
   | { type: 'EDIT_CONFIRM' }
@@ -106,13 +112,25 @@ function dialogReducer(state: DialogPhase, action: DialogAction): DialogPhase {
     }
     case 'CONFIRM_CLICK': {
       if (state.name === 'ProvidedImage') {
-        return { name: 'Uploading', imageData: state.imageData, progress: 0 };
+        return { name: 'Uploading', imageData: state.imageData };
       }
       return state;
     }
-    case 'UPLOAD_PROGRESS': {
+    case 'UPLOAD_ERROR': {
       if (state.name === 'Uploading') {
-        return { ...state, progress: action.progress };
+        return { name: 'UploadError', error: action.error, imageData: state.imageData };
+      }
+      return state;
+    }
+    case 'UPLOAD_RETRY': {
+      if (state.name === 'UploadError') {
+        return { name: 'Uploading', imageData: state.imageData };
+      }
+      return state;
+    }
+    case 'UPLOAD_DISCARD': {
+      if (state.name === 'UploadError') {
+        return { name: 'EmptyImage' };
       }
       return state;
     }
@@ -126,7 +144,7 @@ function dialogReducer(state: DialogPhase, action: DialogAction): DialogPhase {
     }
     case 'EDIT_CONFIRM': {
       if (state.name === 'EditExisting') {
-        return { name: 'Uploading', imageData: state.imageUrl, progress: 0 };
+        return { name: 'Uploading', imageData: state.imageUrl };
       }
       return state;
     }
@@ -178,34 +196,33 @@ export function ImageUploadDialog({
     }
   }, [open]); // Intentionally deps on open only — existingImageUrl is captured at open time
 
-  // Handle upload progress simulation
+  // Trigger upload when entering the Uploading phase
   React.useEffect(() => {
     if (phase.name !== 'Uploading') return;
 
+    let cancelled = false;
     const imageData = phase.imageData;
-    const startTime = Date.now();
-    const duration = 1500;
+    const blob = typeof imageData === 'string' ? new Blob([]) : imageData;
 
-    const intervalId = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(100, Math.round((elapsed / duration) * 100));
-      dispatch({ type: 'UPLOAD_PROGRESS', progress });
-
-      if (progress >= 100) {
-        clearInterval(intervalId);
-        const blob = typeof imageData === 'string' ? new Blob([]) : imageData;
-        onUpload(blob).then((imageUrl) => {
-          onConfirm({
-            imageUrl,
-            wasCompressed: false,
-            originalSizeBytes: blob.size,
-            finalSizeBytes: blob.size,
-          });
+    onUpload(blob)
+      .then((imageUrl) => {
+        if (cancelled) return;
+        onConfirm({
+          imageUrl,
+          wasCompressed: false,
+          originalSizeBytes: blob.size,
+          finalSizeBytes: blob.size,
         });
-      }
-    }, 50);
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        const message = err instanceof Error ? err.message : 'Upload failed';
+        dispatch({ type: 'UPLOAD_ERROR', error: message });
+      });
 
-    return () => clearInterval(intervalId);
+    return () => {
+      cancelled = true;
+    };
   }, [phase.name]); // Intentionally deps on phase.name only — fires once on entering Uploading
 
   const handleInput = React.useCallback(
@@ -283,6 +300,7 @@ export function ImageUploadDialog({
   );
 
   const isUploading = phase.name === 'Uploading';
+  const isUploadError = phase.name === 'UploadError';
   const isProvidedOrUploading =
     phase.name === 'ProvidedImage' || phase.name === 'Uploading' || phase.name === 'Warn';
 
@@ -379,17 +397,39 @@ export function ImageUploadDialog({
             </div>
           )}
 
-          {/* Uploading state */}
+          {/* Uploading state — indeterminate spinner (FD-04) */}
           {phase.name === 'Uploading' && (
+            <div className="flex flex-col items-center gap-4 py-8" role="status">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
+              <p className="text-sm text-muted-foreground">Uploading image&#8230;</p>
+            </div>
+          )}
+
+          {/* UploadError state — error message with retry/discard */}
+          {phase.name === 'UploadError' && (
             <div className="flex flex-col gap-4">
-              <p className="text-sm text-muted-foreground text-center">Uploading image&#8230;</p>
-              <Progress value={phase.progress} className="bg-muted" />
+              <p className={cn('text-sm text-destructive')} role="alert">
+                {phase.error}
+              </p>
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => dispatch({ type: 'UPLOAD_DISCARD' })}
+                >
+                  Discard
+                </Button>
+                <Button type="button" onClick={() => dispatch({ type: 'UPLOAD_RETRY' })}>
+                  Retry
+                </Button>
+              </div>
             </div>
           )}
 
           {/* Footer — shown only for ProvidedImage */}
           {/* EditExisting footer is baked into ImageComparisonLayout above */}
           {!isUploading &&
+            !isUploadError &&
             phase.name !== 'EmptyImage' &&
             phase.name !== 'FailedValidation' &&
             phase.name !== 'EditExisting' &&

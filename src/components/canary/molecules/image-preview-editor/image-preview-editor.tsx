@@ -34,6 +34,11 @@ export type ImagePreviewEditorProps = ImagePreviewEditorStaticProps &
 
 // --- Helpers ---
 
+/** CDN URL pattern — matches `*.assets.arda.cards` domains (FD-17). */
+function isCdnUrl(src: string): boolean {
+  return src.includes('.assets.arda.cards');
+}
+
 const TOOLBAR_BUTTON_CLASS = cn(
   'inline-flex items-center justify-center rounded-md p-2',
   'text-muted-foreground hover:text-foreground bg-transparent hover:bg-accent',
@@ -136,6 +141,7 @@ export function ImagePreviewEditor({
             onZoomChange={setZoom}
             onRotationChange={setRotation}
             onCropComplete={handleCropComplete}
+            {...(isCdnUrl(imageSrc) ? { mediaProps: { crossOrigin: 'use-credentials' } } : {})}
           />
         )}
       </div>
