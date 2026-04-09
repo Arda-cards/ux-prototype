@@ -84,6 +84,7 @@ export function TypeaheadInput({
   const debounceRef = React.useRef<ReturnType<typeof setTimeout>>(undefined);
   const abortRef = React.useRef<AbortController>(undefined);
   const wrapperRef = React.useRef<HTMLDivElement>(null);
+  const popoverRef = React.useRef<HTMLDivElement>(null);
 
   // Refs for values used in stable callbacks
   const valueRef = React.useRef(value);
@@ -190,7 +191,13 @@ export function TypeaheadInput({
   React.useEffect(() => {
     if (!open) return;
     const handleClickOutside = (e: MouseEvent) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      // Check both the wrapper and the portaled Radix popover content.
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(target) &&
+        !popoverRef.current?.contains(target)
+      ) {
         setOpen(false);
         if (cellEditorMode) {
           // Cell editor: accept typed value on blur
@@ -397,6 +404,7 @@ export function TypeaheadInput({
       <Popover open={showDropdown}>
         <PopoverAnchor asChild>{inputElement}</PopoverAnchor>
         <PopoverContent
+          ref={popoverRef}
           align="start"
           sideOffset={4}
           className="w-(--radix-popover-trigger-width) p-0 max-h-52 overflow-auto"

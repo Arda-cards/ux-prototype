@@ -275,7 +275,7 @@ export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) 
         onInput({ type: 'error', message: `Invalid file type. Accepted formats: ${formats}` });
       }
     },
-    [dropzoneOnDrop, onInput],
+    [dropzoneOnDrop, onInput, acceptedFormats],
   );
 
   // Derive human-readable format list from accepted MIME types

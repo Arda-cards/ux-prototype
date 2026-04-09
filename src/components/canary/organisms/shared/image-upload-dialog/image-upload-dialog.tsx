@@ -185,6 +185,12 @@ export function ImageUploadDialog({
   // cropData tracks current crop/zoom/rotation for use in the real upload pipeline
   const cropDataRef = React.useRef<unknown>(null);
 
+  // Stable refs for callbacks used in effects to avoid stale closures.
+  const onConfirmRef = React.useRef(onConfirm);
+  onConfirmRef.current = onConfirm;
+  const onUploadRef = React.useRef(onUpload);
+  onUploadRef.current = onUpload;
+
   // Reset state when dialog opens/closes
   React.useEffect(() => {
     if (open) {
@@ -205,7 +211,7 @@ export function ImageUploadDialog({
 
     // EditExisting accept (skipUpload) — confirm directly with the existing URL.
     if (phase.skipUpload && typeof imageData === 'string') {
-      onConfirm({
+      onConfirmRef.current({
         imageUrl: imageData,
         wasCompressed: false,
         originalSizeBytes: 0,
@@ -219,10 +225,11 @@ export function ImageUploadDialog({
     // For new uploads: Blob goes to onUpload; string URLs create an empty blob
     // (URL-input flow — the server-side upload will fetch the URL content).
     const blob = typeof imageData === 'string' ? new Blob([]) : imageData;
-    onUpload(blob)
+    onUploadRef
+      .current(blob)
       .then((imageUrl) => {
         if (cancelled) return;
-        onConfirm({
+        onConfirmRef.current({
           imageUrl,
           wasCompressed: false,
           originalSizeBytes: blob.size,

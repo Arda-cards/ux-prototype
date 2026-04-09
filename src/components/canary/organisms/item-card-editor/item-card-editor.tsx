@@ -84,6 +84,14 @@ export function ItemCardEditor({
   const [confirmRemoveOpen, setConfirmRemoveOpen] = React.useState(false);
   const objectUrlRef = React.useRef<string | null>(null);
 
+  // Stable refs for values used in async callbacks to avoid stale closures.
+  const fieldsRef = React.useRef(fields);
+  fieldsRef.current = fields;
+  const onChangeRef = React.useRef(onChange);
+  onChangeRef.current = onChange;
+  const onImageConfirmedRef = React.useRef(onImageConfirmed);
+  onImageConfirmedRef.current = onImageConfirmed;
+
   // Revoke any object URL we created when the component unmounts.
   React.useEffect(() => {
     return () => {
@@ -93,72 +101,66 @@ export function ItemCardEditor({
 
   const updateField = React.useCallback(
     <K extends keyof ItemCardFields>(key: K, value: ItemCardFields[K]) => {
-      onChange({ ...fields, [key]: value });
+      onChangeRef.current({ ...fieldsRef.current, [key]: value });
     },
-    [fields, onChange],
+    [],
   );
 
   // New images go straight onto the card — no dialog.
   // For URLs (e.g. dragged from Google Images), fetch as blob first to avoid
   // referrer-restricted or short-lived URLs breaking the <img> tag.
-  const handleDropZoneInput = React.useCallback(
-    (input: ImageInput) => {
-      if (input.type === 'error') return;
+  const handleDropZoneInput = React.useCallback((input: ImageInput) => {
+    if (input.type === 'error') return;
 
-      // Revoke previous object URL before creating a new one.
-      if (objectUrlRef.current) {
-        URL.revokeObjectURL(objectUrlRef.current);
-        objectUrlRef.current = null;
-      }
+    // Revoke previous object URL before creating a new one.
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
 
-      if (input.type === 'file') {
-        const url = URL.createObjectURL(input.file);
-        objectUrlRef.current = url;
-        onChange({ ...fields, imageUrl: url });
-        onImageConfirmed?.(url);
-      } else if (input.type === 'url') {
-        // Fetch the image as a blob so it works even if the source URL
-        // is referrer-restricted (Google Images, CDNs with hotlink protection).
-        fetch(input.url, { mode: 'cors' })
-          .then((res) => {
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const ct = res.headers.get('content-type') ?? '';
-            if (!ct.startsWith('image/')) throw new Error(`Not an image: ${ct}`);
-            return res.blob();
-          })
-          .then((blob) => {
-            const url = URL.createObjectURL(blob);
-            objectUrlRef.current = url;
-            onChange({ ...fields, imageUrl: url });
-            onImageConfirmed?.(url);
-          })
-          .catch(() => {
-            // If fetch fails (CORS, not an image), fall back to using the URL directly.
-            // It may still work if the server allows <img> loading but blocks fetch.
-            onChange({ ...fields, imageUrl: input.url });
-            onImageConfirmed?.(input.url);
-          });
-      }
-    },
-    [fields, onChange, onImageConfirmed],
-  );
+    if (input.type === 'file') {
+      const url = URL.createObjectURL(input.file);
+      objectUrlRef.current = url;
+      onChangeRef.current({ ...fieldsRef.current, imageUrl: url });
+      onImageConfirmedRef.current?.(url);
+    } else if (input.type === 'url') {
+      // Fetch the image as a blob so it works even if the source URL
+      // is referrer-restricted (Google Images, CDNs with hotlink protection).
+      fetch(input.url, { mode: 'cors' })
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const ct = res.headers.get('content-type') ?? '';
+          if (!ct.startsWith('image/')) throw new Error(`Not an image: ${ct}`);
+          return res.blob();
+        })
+        .then((blob) => {
+          const url = URL.createObjectURL(blob);
+          objectUrlRef.current = url;
+          onChangeRef.current({ ...fieldsRef.current, imageUrl: url });
+          onImageConfirmedRef.current?.(url);
+        })
+        .catch(() => {
+          // If fetch fails (CORS, not an image), fall back to using the URL directly.
+          // It may still work if the server allows <img> loading but blocks fetch.
+          onChangeRef.current({ ...fieldsRef.current, imageUrl: input.url });
+          onImageConfirmedRef.current?.(input.url);
+        });
+    }
+  }, []);
 
   const handleRemoveImage = React.useCallback(() => {
     if (objectUrlRef.current) {
       URL.revokeObjectURL(objectUrlRef.current);
       objectUrlRef.current = null;
     }
-    onChange({ ...fields, imageUrl: null });
-  }, [fields, onChange]);
+    onChangeRef.current({ ...fieldsRef.current, imageUrl: null });
+  }, []);
 
-  const handleDialogConfirm = React.useCallback(
-    (result: ImageUploadResult) => {
-      onChange({ ...fields, imageUrl: result.imageUrl });
-      setDialogOpen(false);
-      onImageConfirmed?.(result.imageUrl);
-    },
-    [fields, onChange, onImageConfirmed],
-  );
+  const handleDialogConfirm = React.useCallback((result: ImageUploadResult) => {
+    onChangeRef.current({ ...fieldsRef.current, imageUrl: result.imageUrl });
+    setDialogOpen(false);
+    onImageConfirmedRef.current?.(result.imageUrl);
+  }, []);
 
   const handleDialogCancel = React.useCallback(() => {
     setDialogOpen(false);

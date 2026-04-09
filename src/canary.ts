@@ -387,6 +387,17 @@ export type {
   ItemDetailsTab,
 } from './components/canary/organisms/item-details/item-details';
 
+// --- Molecules — TypeaheadInput ---
+
+export { TypeaheadInput } from './components/canary/molecules/typeahead-input/typeahead-input';
+export type {
+  TypeaheadOption,
+  TypeaheadInputProps,
+} from './components/canary/molecules/typeahead-input/typeahead-input';
+
+export { createTypeaheadCellEditor } from './components/canary/molecules/typeahead-input/typeahead-cell-editor';
+export type { TypeaheadCellEditorConfig } from './components/canary/molecules/typeahead-input/typeahead-cell-editor';
+
 // --- Organisms — ItemCardEditor ---
 
 export {
