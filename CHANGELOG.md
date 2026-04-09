@@ -22,22 +22,6 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
 
 ### Added
 
-- Edit Lifecycle framework types: `FieldError`, `ValidationResult`, `Validator<T>`,
-  `EditPhase`, `EditLifecycleCallbacks<T>`, `EditableComponentProps<T>`
-- `useDraft<T>` hook for managing edit draft state, validation, and lifecycle phases
-- `setNestedField` utility for immutable dot-path field updates
-- `UploadError` phase in `ImageUploadDialog` with retry and discard actions
-- `contextErrors` prop on `ImageFormField` for parent-injected validation errors
-- `initialValue` prop on `ImageFormField` as canonical data source
-  (`imageUrl` deprecated)
-- `ImageCellEditorConfig` interface with required typed provider hooks
-  (`useImageUpload`, `useCheckReachability`) for FD-01/FD-15 compliance
-- `ItemGridEditorHooks` interface with required typed provider hooks
-- `ItemGridLookups` expanded to 9 lookup fields (was 2)
-- `crossOrigin="use-credentials"` on `ImagePreviewEditor` crop canvas for
-  CDN-hosted images (FD-17, requires infrastructure#439)
-- `ColorPicker` atom: standalone swatch button with popover palette, arrow-key
-  navigation, 44px touch targets, responsive wrapping for mobile
 - `ItemCardEditor` exported from canary barrel (`@arda-cards/design-system/canary`)
 - `ItemCardFields`, `ItemCardEditorProps`, `ItemCardEditorInitProps`, and
   `ItemCardEditorRuntimeProps` types exported; `EMPTY_ITEM_CARD_FIELDS`
@@ -55,17 +39,11 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   multiple typeaheads render on the same page
 - `focus-ring` Tailwind utility in `globals.css` for consistent focus styling
 - Clickable focus state on `ImageDropZone` to signal paste readiness (Ctrl+V)
-- Pull Request Upkeep workflow to auto-assign new PRs to the GitHub Project
-  board with the current iteration
 - GitHub Actions dependency updates: `actions/upload-artifact` v4 → v7,
   `github/codeql-action` v3 → v4, `actions/deploy-pages` v4 → v5
 
 ### Fixed
 
-- `ImageUploadDialog` now shows an indeterminate spinner instead of a
-  simulated progress percentage during upload (FD-04)
-- `ImageUploadDialog` triggers upload directly on confirm instead of
-  after a simulated delay
 - Drag-and-drop from Google Images now works — extracts image data from the
   HTML data URI the browser provides instead of using the unusable Google
   search result URL
@@ -73,12 +51,57 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   fallback path before showing an error
 - `ColorPicker` export was missing from 4.9.0 package due to publish race
   condition
+- `make ci` port mismatch — aligned to port 6006 matching CI workflow and
+  Playwright config
+
+## [4.10.0] - 2026-04-08
+
+### Added
+
+- Pull Request Upkeep workflow to auto-assign new PRs to the GitHub Project
+  board with the current iteration, matching arda-frontend-app and
+  accounts-component conventions
+
+## [4.9.0] - 2026-04-08
+### Added
+
+- `ColorPicker` atom: standalone swatch button with popover palette, arrow-key
+  navigation, 44px touch targets, responsive wrapping for mobile.
+
+### Deprecated
+
+- `ColorSwatchPicker` — use `ColorPicker` instead. The old component coupled
+  the swatch button with a color bar.
+
+## [4.8.0] - 2026-04-08
+
+### Added
+
+- Edit Lifecycle framework types: `FieldError`, `ValidationResult`, `Validator<T>`,
+  `EditPhase`, `EditLifecycleCallbacks<T>`, `EditableComponentProps<T>`
+- `useDraft<T>` hook for managing edit draft state, validation, and lifecycle phases
+- `setNestedField` utility for immutable dot-path field updates
+- `UploadError` phase in `ImageUploadDialog` with retry and discard actions
+- `contextErrors` prop on `ImageFormField` for parent-injected validation errors
+- `initialValue` prop on `ImageFormField` as canonical data source
+  (`imageUrl` deprecated)
+- `ImageCellEditorConfig` interface with required typed provider hooks
+  (`useImageUpload`, `useCheckReachability`) for FD-01/FD-15 compliance
+- `ItemGridEditorHooks` interface with required typed provider hooks
+- `ItemGridLookups` expanded to 9 lookup fields (was 2)
+- `crossOrigin="use-credentials"` on `ImagePreviewEditor` crop canvas for
+  CDN-hosted images (FD-17, requires infrastructure#439)
+
+### Fixed
+
+- `ImageUploadDialog` now shows an indeterminate spinner instead of a
+  simulated progress percentage during upload (FD-04)
+- `ImageUploadDialog` triggers upload directly on confirm instead of
+  after a simulated delay
 
 ### Deprecated
 
 - `ImageFormField.imageUrl` prop — use `initialValue` instead
-- `ColorSwatchPicker` — use `ColorPicker` instead. The old component coupled
-  the swatch button with a color bar.
 
 ## [4.7.0] - 2026-04-06
 
