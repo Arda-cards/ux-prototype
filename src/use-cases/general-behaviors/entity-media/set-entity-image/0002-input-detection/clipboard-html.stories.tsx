@@ -75,11 +75,7 @@ function ClipboardHtmlLive({ sampleHtml }: { sampleHtml: string }) {
         the raw image. The first <code>{'<img src>'}</code> URL is extracted and validated.
       </p>
 
-      <ImageDropZone
-        acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-        onInput={() => {}}
-        onDismiss={() => {}}
-      />
+      <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={() => {}} />
 
       <div className="rounded-lg border border-dashed border-border p-4 space-y-3">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -146,11 +142,7 @@ function ClipboardHtmlScene({
           <p className="text-sm text-muted-foreground">
             The drop zone is idle. The user is about to copy an image from a web page and paste it.
           </p>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
         </div>
       );
 

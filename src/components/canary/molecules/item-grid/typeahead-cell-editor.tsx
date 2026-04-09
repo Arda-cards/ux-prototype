@@ -11,6 +11,17 @@ export interface TypeaheadOption {
   value: string;
 }
 
+/**
+ * Props for TypeaheadCellEditor.
+ *
+ * The `lookup` callback is a typed data provider (FD-01 compliant) — the
+ * component is agnostic to the data source (TanStack Query, REST, static
+ * list). The promise-based interface was evaluated for hook conversion
+ * (Phase 3.3, decision #2) and retained because:
+ * - Already FD-01 compliant as a typed, TanStack-agnostic callback
+ * - Component correctly manages loading/error state from the promise
+ * - Debounce is a UI concern handled internally by the component
+ */
 export interface TypeaheadCellEditorProps {
   value: string | null;
   onValueChange: (value: string | null) => void;

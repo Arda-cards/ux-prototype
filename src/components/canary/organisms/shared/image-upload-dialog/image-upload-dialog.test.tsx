@@ -90,26 +90,6 @@ vi.mock('@/components/canary/molecules/image-drop-zone/image-drop-zone', () => (
   ),
 }));
 
-vi.mock('@/components/canary/atoms/copyright-acknowledgment/copyright-acknowledgment', () => ({
-  CopyrightAcknowledgment: ({
-    acknowledged,
-    onAcknowledge,
-  }: {
-    acknowledged: boolean;
-    onAcknowledge: (v: boolean) => void;
-  }) => (
-    <div data-testid="copyright-acknowledgment">
-      <input
-        type="checkbox"
-        data-testid="copyright-checkbox"
-        checked={acknowledged}
-        onChange={(e) => onAcknowledge(e.target.checked)}
-        aria-label="Copyright acknowledgment"
-      />
-    </div>
-  ),
-}));
-
 vi.mock('@/types/canary/utilities/get-cropped-image', () => ({
   getCroppedImage: vi.fn().mockResolvedValue(new Blob(['cropped'], { type: 'image/jpeg' })),
 }));
@@ -164,30 +144,11 @@ describe('ImageUploadDialog', () => {
     });
   });
 
-  it('shows CopyrightAcknowledgment in ProvidedImage state', async () => {
+  it('shows copyright subtext and enabled Confirm button in ProvidedImage state', async () => {
     renderDialog();
     fireEvent.click(screen.getByText('drop file'));
     await waitFor(() => {
-      expect(screen.getByTestId('copyright-acknowledgment')).toBeInTheDocument();
-    });
-  });
-
-  it('Confirm button is disabled when copyright unchecked', async () => {
-    renderDialog();
-    fireEvent.click(screen.getByText('drop file'));
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Confirm' })).toBeDisabled();
-    });
-  });
-
-  it('Confirm button is enabled when copyright checked', async () => {
-    renderDialog();
-    fireEvent.click(screen.getByText('drop file'));
-    await waitFor(() => {
-      expect(screen.getByTestId('copyright-checkbox')).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByTestId('copyright-checkbox'));
-    await waitFor(() => {
+      expect(screen.getByText(/you acknowledge that you own/i)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Confirm' })).not.toBeDisabled();
     });
   });
@@ -251,12 +212,84 @@ describe('ImageUploadDialog', () => {
   });
 
   it('calls onConfirm with result on confirm (mock the upload)', async () => {
-    vi.useFakeTimers();
-    try {
+    const { defaultUploadHandler } = await import('@/types/canary/utilities/image-upload-handlers');
+    (defaultUploadHandler as ReturnType<typeof vi.fn>).mockResolvedValue(
+      'https://cdn.example.com/images/mock-uploaded.jpg',
+    );
+    const onConfirm = vi.fn();
+    renderDialog({ onConfirm });
+
+    fireEvent.click(screen.getByText('drop file'));
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+
+    await waitFor(() => {
+      expect(onConfirm).toHaveBeenCalledWith(
+        expect.objectContaining({ imageUrl: 'https://cdn.example.com/images/mock-uploaded.jpg' }),
+      );
+    });
+  });
+
+  it('shows indeterminate indicator during upload (no progress percentage)', async () => {
+    // Make onUpload hang so we can inspect the Uploading state
+    const { defaultUploadHandler } = await import('@/types/canary/utilities/image-upload-handlers');
+    (defaultUploadHandler as ReturnType<typeof vi.fn>).mockReturnValue(new Promise(() => {}));
+    renderDialog();
+
+    fireEvent.click(screen.getByText('drop file'));
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('status')).toBeInTheDocument();
+      expect(screen.getByText('Uploading image\u2026')).toBeInTheDocument();
+      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+    });
+  });
+
+  // --- UploadError state tests ---
+
+  describe('UploadError state', () => {
+    async function enterUploadError() {
       const { defaultUploadHandler } =
         await import('@/types/canary/utilities/image-upload-handlers');
-      (defaultUploadHandler as ReturnType<typeof vi.fn>).mockResolvedValue(
-        'https://cdn.example.com/images/mock-uploaded.jpg',
+      (defaultUploadHandler as ReturnType<typeof vi.fn>).mockRejectedValue(
+        new Error('Network failure'),
+      );
+      renderDialog();
+
+      fireEvent.click(screen.getByText('drop file'));
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toBeInTheDocument();
+      });
+    }
+
+    it('renders error message on upload failure', async () => {
+      await enterUploadError();
+      expect(screen.getByRole('alert')).toHaveTextContent('Network failure');
+    });
+
+    it('retry transitions back to Uploading', async () => {
+      const { defaultUploadHandler } =
+        await import('@/types/canary/utilities/image-upload-handlers');
+      (defaultUploadHandler as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+        new Error('Network failure'),
+      );
+      // On retry, succeed
+      (defaultUploadHandler as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+        'https://cdn.example.com/retried.jpg',
       );
       const onConfirm = vi.fn();
       renderDialog({ onConfirm });
@@ -265,56 +298,30 @@ describe('ImageUploadDialog', () => {
       await act(async () => {
         await Promise.resolve();
       });
-      expect(screen.getByTestId('copyright-checkbox')).toBeInTheDocument();
-
-      fireEvent.click(screen.getByTestId('copyright-checkbox'));
-      await act(async () => {
-        await Promise.resolve();
-      });
-      expect(screen.getByRole('button', { name: 'Confirm' })).not.toBeDisabled();
-
       fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
 
-      // Advance timers to complete the progress simulation
-      await act(async () => {
-        vi.advanceTimersByTime(2000);
-        await Promise.resolve();
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toHaveTextContent('Network failure');
       });
 
-      await act(async () => {
-        await Promise.resolve();
+      fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+
+      await waitFor(() => {
+        expect(onConfirm).toHaveBeenCalledWith(
+          expect.objectContaining({ imageUrl: 'https://cdn.example.com/retried.jpg' }),
+        );
       });
+    });
 
-      expect(onConfirm).toHaveBeenCalledWith(
-        expect.objectContaining({ imageUrl: 'https://cdn.example.com/images/mock-uploaded.jpg' }),
-      );
-    } finally {
-      vi.useRealTimers();
-    }
-  });
+    it('discard transitions to EmptyImage', async () => {
+      await enterUploadError();
 
-  it('shows progress bar during upload', async () => {
-    vi.useFakeTimers();
-    try {
-      renderDialog();
-      fireEvent.click(screen.getByText('drop file'));
-      await act(async () => {
-        await Promise.resolve();
+      fireEvent.click(screen.getByRole('button', { name: 'Discard' }));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('image-drop-zone')).toBeInTheDocument();
       });
-      expect(screen.getByTestId('copyright-checkbox')).toBeInTheDocument();
-
-      fireEvent.click(screen.getByTestId('copyright-checkbox'));
-      fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
-
-      await act(async () => {
-        vi.advanceTimersByTime(100);
-        await Promise.resolve();
-      });
-
-      expect(screen.getByRole('progressbar')).toBeInTheDocument();
-    } finally {
-      vi.useRealTimers();
-    }
+    });
   });
 
   it('comparison layout shown when existingImageUrl set and new image provided', async () => {
@@ -356,9 +363,9 @@ describe('ImageUploadDialog', () => {
       expect(screen.getByTestId('preview-src')).toHaveTextContent(EXISTING_URL);
     });
 
-    it('does NOT show CopyrightAcknowledgment in EditExisting state', () => {
+    it('does NOT show copyright subtext in EditExisting state', () => {
       renderDialog({ existingImageUrl: EXISTING_URL });
-      expect(screen.queryByTestId('copyright-acknowledgment')).not.toBeInTheDocument();
+      expect(screen.queryByText(/you acknowledge that you own/i)).not.toBeInTheDocument();
     });
 
     it('shows "Upload New Image", "Dismiss", and "Accept" buttons in EditExisting state', () => {
@@ -390,57 +397,40 @@ describe('ImageUploadDialog', () => {
     });
 
     it('"Confirm" in EditExisting triggers upload (enters Uploading state)', async () => {
-      vi.useFakeTimers();
-      try {
-        renderDialog({ existingImageUrl: EXISTING_URL });
+      const { defaultUploadHandler } =
+        await import('@/types/canary/utilities/image-upload-handlers');
+      (defaultUploadHandler as ReturnType<typeof vi.fn>).mockReturnValue(new Promise(() => {}));
+      renderDialog({ existingImageUrl: EXISTING_URL });
 
-        await act(async () => {
-          fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
-          await Promise.resolve();
-        });
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
+        await Promise.resolve();
+      });
 
-        await act(async () => {
-          vi.advanceTimersByTime(100);
-          await Promise.resolve();
-        });
-
-        expect(screen.getByRole('progressbar')).toBeInTheDocument();
-      } finally {
-        vi.useRealTimers();
-      }
+      await waitFor(() => {
+        expect(screen.getByRole('status')).toBeInTheDocument();
+      });
     });
 
     it('"Confirm" in EditExisting calls onConfirm after upload completes', async () => {
-      vi.useFakeTimers();
-      try {
-        const { defaultUploadHandler } =
-          await import('@/types/canary/utilities/image-upload-handlers');
-        (defaultUploadHandler as ReturnType<typeof vi.fn>).mockResolvedValue(
-          'https://cdn.example.com/images/mock-uploaded.jpg',
-        );
-        const onConfirm = vi.fn();
-        renderDialog({ existingImageUrl: EXISTING_URL, onConfirm });
+      const { defaultUploadHandler } =
+        await import('@/types/canary/utilities/image-upload-handlers');
+      (defaultUploadHandler as ReturnType<typeof vi.fn>).mockResolvedValue(
+        'https://cdn.example.com/images/mock-uploaded.jpg',
+      );
+      const onConfirm = vi.fn();
+      renderDialog({ existingImageUrl: EXISTING_URL, onConfirm });
 
-        await act(async () => {
-          fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
-          await Promise.resolve();
-        });
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
+        await Promise.resolve();
+      });
 
-        await act(async () => {
-          vi.advanceTimersByTime(2000);
-          await Promise.resolve();
-        });
-
-        await act(async () => {
-          await Promise.resolve();
-        });
-
+      await waitFor(() => {
         expect(onConfirm).toHaveBeenCalledWith(
           expect.objectContaining({ imageUrl: 'https://cdn.example.com/images/mock-uploaded.jpg' }),
         );
-      } finally {
-        vi.useRealTimers();
-      }
+      });
     });
 
     it('opens in EmptyImage state when existingImageUrl is null', () => {

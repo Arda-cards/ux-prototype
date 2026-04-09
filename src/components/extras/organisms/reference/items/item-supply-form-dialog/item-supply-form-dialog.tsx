@@ -5,7 +5,7 @@ import { X } from 'lucide-react';
 
 import { cn } from '@/types/canary/utilities/utils';
 import { ArdaTypeahead, type TypeaheadOption } from '@/components/extras/atoms/typeahead/typeahead';
-import { ArdaConfirmDialog } from '@/components/extras/atoms/confirm-dialog/confirm-dialog';
+import { ConfirmDialog } from '@/components/extras/atoms/confirm-dialog/confirm-dialog';
 import type { Currency, TimeUnit, OrderMechanism, QuantityUnit, ItemSupply } from '@/types/extras';
 
 /* ------------------------------------------------------------------ */
@@ -498,7 +498,7 @@ export function ArdaItemSupplyFormDialog({
       </div>
 
       {/* Confirm discard dialog */}
-      <ArdaConfirmDialog
+      <ConfirmDialog
         open={confirmOpen}
         title="Discard changes?"
         message="You have unsaved changes that will be lost."

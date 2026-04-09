@@ -18,12 +18,11 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
 } from '@/components/canary/primitives/alert-dialog';
-import { Progress } from '@/components/canary/primitives/progress';
+import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/canary/primitives/button';
 import { ImageDropZone } from '@/components/canary/molecules/image-drop-zone/image-drop-zone';
 import { ImagePreviewEditor } from '@/components/canary/molecules/image-preview-editor/image-preview-editor';
 import { ImageComparisonLayout } from '@/components/canary/molecules/image-comparison-layout/image-comparison-layout';
-import { CopyrightAcknowledgment } from '@/components/canary/atoms/copyright-acknowledgment/copyright-acknowledgment';
 import {
   defaultUploadHandler,
   defaultReachabilityCheck,
@@ -45,7 +44,10 @@ export interface ImageUploadDialogInitProps {
   config: ImageFieldConfig;
 }
 
-/** Runtime props for ImageUploadDialog. */
+/**
+ * Runtime props for ImageUploadDialog.
+ * Confirm/cancel callbacks follow `EditLifecycleCallbacks<ImageUploadResult>`.
+ */
 export interface ImageUploadDialogRuntimeProps {
   existingImageUrl: string | null;
   onConfirm: (result: ImageUploadResult) => void;
@@ -75,7 +77,8 @@ type DialogPhase =
   | { name: 'EmptyImage' }
   | { name: 'ProvidedImage'; imageData: File | Blob | string }
   | { name: 'FailedValidation'; errorMessage: string }
-  | { name: 'Uploading'; imageData: File | Blob | string; progress: number }
+  | { name: 'Uploading'; imageData: File | Blob | string }
+  | { name: 'UploadError'; error: string; imageData: File | Blob | string }
   | { name: 'Warn'; imageData: File | Blob | string };
 
 type DialogAction =
@@ -84,7 +87,9 @@ type DialogAction =
   | { type: 'INPUT_ERROR'; message: string }
   | { type: 'CANCEL_CLICK' }
   | { type: 'CONFIRM_CLICK' }
-  | { type: 'UPLOAD_PROGRESS'; progress: number }
+  | { type: 'UPLOAD_ERROR'; error: string }
+  | { type: 'UPLOAD_RETRY' }
+  | { type: 'UPLOAD_DISCARD' }
   | { type: 'WARN_DISCARD' }
   | { type: 'WARN_GO_BACK' }
   | { type: 'EDIT_CONFIRM' }
@@ -107,13 +112,25 @@ function dialogReducer(state: DialogPhase, action: DialogAction): DialogPhase {
     }
     case 'CONFIRM_CLICK': {
       if (state.name === 'ProvidedImage') {
-        return { name: 'Uploading', imageData: state.imageData, progress: 0 };
+        return { name: 'Uploading', imageData: state.imageData };
       }
       return state;
     }
-    case 'UPLOAD_PROGRESS': {
+    case 'UPLOAD_ERROR': {
       if (state.name === 'Uploading') {
-        return { ...state, progress: action.progress };
+        return { name: 'UploadError', error: action.error, imageData: state.imageData };
+      }
+      return state;
+    }
+    case 'UPLOAD_RETRY': {
+      if (state.name === 'UploadError') {
+        return { name: 'Uploading', imageData: state.imageData };
+      }
+      return state;
+    }
+    case 'UPLOAD_DISCARD': {
+      if (state.name === 'UploadError') {
+        return { name: 'EmptyImage' };
       }
       return state;
     }
@@ -127,7 +144,7 @@ function dialogReducer(state: DialogPhase, action: DialogAction): DialogPhase {
     }
     case 'EDIT_CONFIRM': {
       if (state.name === 'EditExisting') {
-        return { name: 'Uploading', imageData: state.imageUrl, progress: 0 };
+        return { name: 'Uploading', imageData: state.imageUrl };
       }
       return state;
     }
@@ -165,7 +182,6 @@ export function ImageUploadDialog({
   onCheckReachability = defaultReachabilityCheck,
 }: ImageUploadDialogProps) {
   const [phase, dispatch] = React.useReducer(dialogReducer, { name: 'EmptyImage' });
-  const [copyrightAcked, setCopyrightAcked] = React.useState(false);
   // cropData tracks current crop/zoom/rotation for use in the real upload pipeline
   const cropDataRef = React.useRef<unknown>(null);
 
@@ -173,56 +189,51 @@ export function ImageUploadDialog({
   React.useEffect(() => {
     if (open) {
       dispatch({ type: 'RESET', existingImageUrl });
-      setCopyrightAcked(false);
       cropDataRef.current = null;
     } else {
       dispatch({ type: 'RESET', existingImageUrl: null });
-      setCopyrightAcked(false);
       cropDataRef.current = null;
     }
   }, [open]); // Intentionally deps on open only — existingImageUrl is captured at open time
 
-  // Handle upload progress simulation
+  // Trigger upload when entering the Uploading phase
   React.useEffect(() => {
     if (phase.name !== 'Uploading') return;
 
+    let cancelled = false;
     const imageData = phase.imageData;
-    const startTime = Date.now();
-    const duration = 1500;
+    const blob = typeof imageData === 'string' ? new Blob([]) : imageData;
 
-    const intervalId = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(100, Math.round((elapsed / duration) * 100));
-      dispatch({ type: 'UPLOAD_PROGRESS', progress });
-
-      if (progress >= 100) {
-        clearInterval(intervalId);
-        const blob = typeof imageData === 'string' ? new Blob([]) : imageData;
-        onUpload(blob).then((imageUrl) => {
-          onConfirm({
-            imageUrl,
-            wasCompressed: false,
-            originalSizeBytes: blob.size,
-            finalSizeBytes: blob.size,
-          });
+    onUpload(blob)
+      .then((imageUrl) => {
+        if (cancelled) return;
+        onConfirm({
+          imageUrl,
+          wasCompressed: false,
+          originalSizeBytes: blob.size,
+          finalSizeBytes: blob.size,
         });
-      }
-    }, 50);
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        const message = err instanceof Error ? err.message : 'Upload failed';
+        dispatch({ type: 'UPLOAD_ERROR', error: message });
+      });
 
-    return () => clearInterval(intervalId);
+    return () => {
+      cancelled = true;
+    };
   }, [phase.name]); // Intentionally deps on phase.name only — fires once on entering Uploading
 
   const handleInput = React.useCallback(
     (input: ImageInput) => {
       if (input.type === 'file') {
         dispatch({ type: 'INPUT_FILE', file: input.file });
-        setCopyrightAcked(false);
       } else if (input.type === 'url') {
         // Reachability check; transition optimistically
         onCheckReachability(input.url).then((reachable) => {
           if (reachable) {
             dispatch({ type: 'INPUT_URL', url: input.url });
-            setCopyrightAcked(false);
           } else {
             dispatch({ type: 'INPUT_ERROR', message: 'URL could not be reached' });
           }
@@ -243,10 +254,10 @@ export function ImageUploadDialog({
   }, [phase.name, onCancel]);
 
   const handleConfirmClick = React.useCallback(() => {
-    if (phase.name === 'ProvidedImage' && copyrightAcked) {
+    if (phase.name === 'ProvidedImage') {
       dispatch({ type: 'CONFIRM_CLICK' });
     }
-  }, [phase.name, copyrightAcked]);
+  }, [phase.name]);
 
   const handleEditConfirm = React.useCallback(async () => {
     if (phase.name !== 'EditExisting') return;
@@ -289,6 +300,7 @@ export function ImageUploadDialog({
   );
 
   const isUploading = phase.name === 'Uploading';
+  const isUploadError = phase.name === 'UploadError';
   const isProvidedOrUploading =
     phase.name === 'ProvidedImage' || phase.name === 'Uploading' || phase.name === 'Warn';
 
@@ -297,7 +309,9 @@ export function ImageUploadDialog({
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent
           data-slot="image-upload-dialog"
-          className={cn('bg-background border-border rounded-lg p-6 max-w-2xl w-full')}
+          className={cn(
+            'bg-background border-border rounded-lg p-4 sm:p-6 sm:max-w-2xl w-full overflow-hidden',
+          )}
           showCloseButton={false}
         >
           <DialogHeader>
@@ -335,11 +349,7 @@ export function ImageUploadDialog({
 
           {/* EmptyImage state */}
           {phase.name === 'EmptyImage' && (
-            <ImageDropZone
-              acceptedFormats={config.acceptedFormats}
-              onInput={handleInput}
-              onDismiss={onCancel}
-            />
+            <ImageDropZone acceptedFormats={config.acceptedFormats} onInput={handleInput} />
           )}
 
           {/* FailedValidation state */}
@@ -348,11 +358,7 @@ export function ImageUploadDialog({
               <p className={cn('text-sm text-destructive')} role="alert">
                 {phase.errorMessage}
               </p>
-              <ImageDropZone
-                acceptedFormats={config.acceptedFormats}
-                onInput={handleInput}
-                onDismiss={onCancel}
-              />
+              <ImageDropZone acceptedFormats={config.acceptedFormats} onInput={handleInput} />
             </div>
           )}
 
@@ -388,59 +394,65 @@ export function ImageUploadDialog({
                   }}
                 />
               )}
-              <CopyrightAcknowledgment
-                acknowledged={copyrightAcked}
-                onAcknowledge={setCopyrightAcked}
-              />
             </div>
           )}
 
-          {/* Uploading state */}
+          {/* Uploading state — indeterminate spinner (FD-04) */}
           {phase.name === 'Uploading' && (
-            <div className="flex flex-col gap-4">
-              <p className="text-sm text-muted-foreground text-center">Uploading image&#8230;</p>
-              <Progress value={phase.progress} className="bg-muted" />
+            <div className="flex flex-col items-center gap-4 py-8" role="status">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
+              <p className="text-sm text-muted-foreground">Uploading image&#8230;</p>
             </div>
           )}
 
-          {/* Footer — hidden during upload, shown for ProvidedImage/Warn */}
-          {/* EditExisting footer is baked into ImageComparisonLayout above */}
-          {!isUploading &&
-            phase.name !== 'EmptyImage' &&
-            phase.name !== 'FailedValidation' &&
-            phase.name !== 'EditExisting' && (
-              <DialogFooter>
+          {/* UploadError state — error message with retry/discard */}
+          {phase.name === 'UploadError' && (
+            <div className="flex flex-col gap-4">
+              <p className={cn('text-sm text-destructive')} role="alert">
+                {phase.error}
+              </p>
+              <div className="flex justify-end gap-2">
                 <Button
                   type="button"
                   variant="secondary"
-                  className="bg-secondary text-secondary-foreground"
-                  onClick={handleCancelClick}
+                  onClick={() => dispatch({ type: 'UPLOAD_DISCARD' })}
                 >
-                  Cancel
+                  Discard
                 </Button>
-                <Button
-                  type="button"
-                  className={cn(
-                    'bg-primary text-primary-foreground',
-                    'disabled:pointer-events-none disabled:opacity-50',
-                  )}
-                  disabled={!copyrightAcked}
-                  onClick={handleConfirmClick}
-                >
-                  Confirm
+                <Button type="button" onClick={() => dispatch({ type: 'UPLOAD_RETRY' })}>
+                  Retry
                 </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Footer — shown only for ProvidedImage */}
+          {/* EditExisting footer is baked into ImageComparisonLayout above */}
+          {!isUploading &&
+            !isUploadError &&
+            phase.name !== 'EmptyImage' &&
+            phase.name !== 'FailedValidation' &&
+            phase.name !== 'EditExisting' &&
+            phase.name !== 'Warn' && (
+              <DialogFooter className="flex flex-col gap-2">
+                <p className="text-xs text-muted-foreground text-center">
+                  By confirming, you acknowledge that you own or have a license to use this image.
+                </p>
+                <div className="flex justify-end gap-2">
+                  <Button type="button" variant="secondary" onClick={handleCancelClick}>
+                    Cancel
+                  </Button>
+                  <Button type="button" onClick={handleConfirmClick}>
+                    Confirm
+                  </Button>
+                </div>
               </DialogFooter>
             )}
 
           {/* Footer for empty/failed states — just dismiss */}
           {(phase.name === 'EmptyImage' || phase.name === 'FailedValidation') && (
             <DialogFooter>
-              <Button
-                type="button"
-                variant="secondary"
-                className="bg-secondary text-secondary-foreground"
-                onClick={onCancel}
-              >
+              <Button type="button" variant="secondary" onClick={onCancel}>
                 Cancel
               </Button>
             </DialogFooter>

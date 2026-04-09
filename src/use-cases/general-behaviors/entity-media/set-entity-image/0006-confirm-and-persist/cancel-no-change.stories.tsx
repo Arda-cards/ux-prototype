@@ -110,11 +110,7 @@ function DirectCancelScene({ sceneIndex }: { sceneIndex: number }) {
     case 0:
       return (
         <DialogFrame title="Add Product Image" footer={<Button variant="secondary">Cancel</Button>}>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
         </DialogFrame>
       );
 
@@ -140,11 +136,7 @@ function WarnOnDiscardScene({ sceneIndex }: { sceneIndex: number }) {
     case 0:
       return (
         <DialogFrame title="Add Product Image" footer={<Button variant="secondary">Cancel</Button>}>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
         </DialogFrame>
       );
 
@@ -332,10 +324,10 @@ const {
     });
     await userEvent.upload(fileInput, MOCK_FILE_JPEG);
 
-    // Wait for ProvidedImage state (copyright checkbox appears)
+    // Wait for ProvidedImage state (Confirm button appears)
     await waitFor(
       () => {
-        expect(screen.getByRole('checkbox', { name: /copyright acknowledgment/i })).toBeVisible();
+        expect(screen.getByRole('button', { name: /^cancel$/i })).toBeVisible();
       },
       { timeout: 5000 },
     );

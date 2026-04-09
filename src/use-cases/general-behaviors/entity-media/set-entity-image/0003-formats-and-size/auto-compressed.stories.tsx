@@ -62,11 +62,7 @@ function AutoCompressedLive() {
         optimization.
       </p>
 
-      <ImageDropZone
-        acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-        onInput={handleInput}
-        onDismiss={() => {}}
-      />
+      <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={handleInput} />
 
       {status === 'optimized' && fileInfo && (
         <div
@@ -133,11 +129,7 @@ function AutoCompressedSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
           <p className="text-sm text-muted-foreground mb-4">
             Drop or select a large image (above 500 KB) to see the optimization message.
           </p>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
         </div>
       );
 
@@ -151,11 +143,7 @@ function AutoCompressedSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
           <p className="text-sm text-muted-foreground mb-4">
             A large JPEG (above 500 KB) has been selected. Auto-compression is being applied.
           </p>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
           <p className="mt-3 text-xs text-muted-foreground font-mono">
             Processing: large-image.jpg (8.8 MB) — compressing to 80%&hellip;
           </p>
@@ -170,11 +158,7 @@ function AutoCompressedSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
           <h1 className="text-xl font-semibold tracking-tight mb-1">
             GEN-MEDIA-0001 — Formats and Size: Auto Compressed
           </h1>
-          <ImageDropZone
-            acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats}
-            onInput={noop}
-            onDismiss={noop}
-          />
+          <ImageDropZone acceptedFormats={ITEM_IMAGE_CONFIG.acceptedFormats} onInput={noop} />
           <div
             className="mt-4 rounded-lg border border-green-300 bg-green-50 p-4"
             data-testid="result-panel"

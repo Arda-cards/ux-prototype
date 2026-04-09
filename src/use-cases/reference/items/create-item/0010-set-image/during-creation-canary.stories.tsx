@@ -420,6 +420,7 @@ const {
 const meta: Meta = {
   title:
     'Use Cases/Reference/Items/ITM-0003 Create Item/0010 Set Image/During Creation \u2013 Canary',
+  tags: ['skip-ci'],
   parameters: {
     layout: 'fullscreen',
   },

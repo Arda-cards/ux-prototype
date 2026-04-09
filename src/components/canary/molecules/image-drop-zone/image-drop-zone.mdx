@@ -15,7 +15,7 @@ file picker, or URL entry &#8212; all from a single component.
 
 ## Playground
 
-Use the Controls panel to toggle accepted formats. The Actions panel logs `onInput` and `onDismiss` calls.
+Use the Controls panel to toggle accepted formats. The Actions panel logs `onInput` calls.
 
 <Canvas of={ImageDropZoneStories.Playground} />
 
@@ -119,7 +119,6 @@ Validation errors from either the file or URL path are rendered inline beneath t
 ### Events
 
 - `onInput` is called on every input attempt, including error variants. The caller receives a typed `ImageInput` discriminated union and is responsible for routing to the appropriate next state.
-- `onDismiss` is called when the user clicks the dedicated Dismiss button. This does not clear any error state &#8212; it signals to the parent that the user wants to abandon the input flow entirely.
 
 ---
 
@@ -161,13 +160,6 @@ are handled:
       <td><code>(input: ImageInput) =&#62; void</code></td>
       <td>Required</td>
       <td>Called with the classified input on every valid submission (or with an error variant on failure).</td>
-    </tr>
-    <tr>
-      <td><code>onDismiss</code></td>
-      <td>Runtime</td>
-      <td><code>() =&#62; void</code></td>
-      <td>Required</td>
-      <td>Called when the user clicks the Dismiss button.</td>
     </tr>
   </tbody>
 </table>

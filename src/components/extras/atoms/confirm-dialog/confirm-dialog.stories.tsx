@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
 
-import { ArdaConfirmDialog } from './confirm-dialog';
+import { ConfirmDialog } from './confirm-dialog';
 
-const meta: Meta<typeof ArdaConfirmDialog> = {
+const meta: Meta<typeof ConfirmDialog> = {
   title: 'Components/Extras/Atoms/Other/ConfirmDialog',
-  component: ArdaConfirmDialog,
+  component: ConfirmDialog,
   parameters: {
     docs: {
       description: {
@@ -65,7 +65,7 @@ const meta: Meta<typeof ArdaConfirmDialog> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof ArdaConfirmDialog>;
+type Story = StoryObj<typeof ConfirmDialog>;
 
 export const Default: Story = {};
 

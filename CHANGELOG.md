@@ -18,11 +18,98 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
-## [4.5.2] - 2026-04-02
+## [4.10.0] - 2026-04-08
+
+### Added
+
+- Pull Request Upkeep workflow to auto-assign new PRs to the GitHub Project
+  board with the current iteration, matching arda-frontend-app and
+  accounts-component conventions
+
+## [4.9.0] - 2026-04-08
+### Added
+
+- `ColorPicker` atom: standalone swatch button with popover palette, arrow-key
+  navigation, 44px touch targets, responsive wrapping for mobile.
+
+### Deprecated
+
+- `ColorSwatchPicker` — use `ColorPicker` instead. The old component coupled
+  the swatch button with a color bar.
+
+## [4.8.0] - 2026-04-08
+
+### Added
+
+- Edit Lifecycle framework types: `FieldError`, `ValidationResult`, `Validator<T>`,
+  `EditPhase`, `EditLifecycleCallbacks<T>`, `EditableComponentProps<T>`
+- `useDraft<T>` hook for managing edit draft state, validation, and lifecycle phases
+- `setNestedField` utility for immutable dot-path field updates
+- `UploadError` phase in `ImageUploadDialog` with retry and discard actions
+- `contextErrors` prop on `ImageFormField` for parent-injected validation errors
+- `initialValue` prop on `ImageFormField` as canonical data source
+  (`imageUrl` deprecated)
+- `ImageCellEditorConfig` interface with required typed provider hooks
+  (`useImageUpload`, `useCheckReachability`) for FD-01/FD-15 compliance
+- `ItemGridEditorHooks` interface with required typed provider hooks
+- `ItemGridLookups` expanded to 9 lookup fields (was 2)
+- `crossOrigin="use-credentials"` on `ImagePreviewEditor` crop canvas for
+  CDN-hosted images (FD-17, requires infrastructure#439)
 
 ### Fixed
 
-- Reserve project branch for button standardization work
+- `ImageUploadDialog` now shows an indeterminate spinner instead of a
+  simulated progress percentage during upload (FD-04)
+- `ImageUploadDialog` triggers upload directly on confirm instead of
+  after a simulated delay
+
+### Deprecated
+
+- `ImageFormField.imageUrl` prop — use `initialValue` instead
+
+## [4.7.0] - 2026-04-06
+
+### Added
+
+- Canary variants for all Business Affiliates use-case stories: 13 new story
+  files covering Browse & Search, Create Supplier, Edit Supplier, Delete
+  Supplier, and Affiliate Typeahead — each self-contained with canary
+  components (Sidebar, AppHeader, createEntityDataGrid, ItemDetails) and no
+  extras/vendored dependencies
+- Play function parity: 21 additional story variants added to canary files to
+  match original coverage (EmptyState, LoadingState, ErrorState, NoResults,
+  HideAll, SelectAll, MinimalData, CloseDrawer, SectionCollapse,
+  NetworkError, DuplicateNameError, CancelDiscards, BulkDelete, CancelDelete,
+  KeyboardNavigation, EscapeDismiss, and more)
+- Layout integrity smoke tests for canary suppliers page (sidebar visibility
+  and AG Grid data visibility)
+
+### Fixed
+
+- Renamed `ArdaConfirmDialog` to `ConfirmDialog` for consistency with other canary library components. The old names (`ArdaConfirmDialog`, `ArdaConfirmDialogProps`, `ArdaConfirmDialogStaticConfig`, `ArdaConfirmDialogRuntimeConfig`) are still exported as deprecated aliases.
+
+## [4.6.0] - 2026-04-06
+
+### Added
+
+- `ImageDropZone` redesign: upload icon, "Select file" outline button, simplified
+  URL input, gray-50 background, and passive copyright subtext replacing the
+  checkbox in `ImageUploadDialog`.
+- HEIC-to-JPEG client-side conversion via `heic2any` — Apple photos now preview
+  and store correctly across all browsers.
+- `ItemCardEditor` organism: reusable WYSIWYG card editor with inline image
+  upload (no dialog for new images, crop dialog for editing existing).
+- Loading spinner on "Select file" button during HEIC conversion.
+- Color swatch picker for `ItemCardEditor` — accent color selection for card
+  dividers and branding elements.
+
+### Fixed
+
+- `ImageUploadDialog` too wide on mobile — responsive `max-w`, removed fixed
+  `min-width` on crop area, wrapping action buttons.
+- 14 Storybook play functions updated for redesigned `ImageDropZone` selectors.
+- Global `heic2any` mock added to fix 6 test suite failures in jsdom.
+- Flaky VRT timeout resolved by using `waitUntil: 'load'`.
 
 ## [4.5.0] - 2026-03-31
 

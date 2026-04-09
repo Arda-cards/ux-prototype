@@ -7,6 +7,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
+      // heic2any eagerly instantiates a Web Worker on import, which is
+      // unavailable in jsdom.  Point the module at a lightweight stub so
+      // every test that transitively imports it can load without error.
+      heic2any: resolve(__dirname, './src/__mocks__/heic2any.ts'),
     },
   },
   test: {
