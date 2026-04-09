@@ -18,6 +18,14 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.10.0] - 2026-04-08
+
+### Added
+
+- Pull Request Upkeep workflow to auto-assign new PRs to the GitHub Project
+  board with the current iteration, matching arda-frontend-app and
+  accounts-component conventions
+
 ## [4.9.0] - 2026-04-08
 ### Added
 
