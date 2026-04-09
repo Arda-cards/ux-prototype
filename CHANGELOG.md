@@ -18,6 +18,17 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.11.0] - 2026-04-09
+
+### Added
+
+- `ItemCardEditor` exported from canary barrel (`@arda-cards/design-system/canary`)
+- `ItemCardFields`, `ItemCardEditorProps`, `ItemCardEditorInitProps`,
+  `ItemCardEditorRuntimeProps`, `EMPTY_ITEM_CARD_FIELDS` types exported
+- `onUpload` and `onCheckReachability` optional forwarding props on
+  `ItemCardEditor` for production upload hook injection (Option B bridge —
+  management#860)
+
 ## [4.10.0] - 2026-04-08
 
 ### Added

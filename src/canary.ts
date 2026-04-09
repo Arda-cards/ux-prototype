@@ -385,7 +385,10 @@ export type {
 
 // --- Organisms — ItemCardEditor ---
 
-export { ItemCardEditor, EMPTY_ITEM_CARD_FIELDS } from './components/canary/organisms/item-card-editor/item-card-editor';
+export {
+  ItemCardEditor,
+  EMPTY_ITEM_CARD_FIELDS,
+} from './components/canary/organisms/item-card-editor/item-card-editor';
 export type {
   ItemCardFields,
   ItemCardEditorProps,
