@@ -1,6 +1,6 @@
 import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, type Mock } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 
 import { ColorPicker, getColorHex } from './color-picker';
@@ -14,12 +14,12 @@ const SMALL_MAP = {
 function renderPicker(
   overrides: Partial<{
     value: string;
-    onValueChange: ReturnType<typeof vi.fn>;
+    onValueChange: Mock<(color: string) => void>;
     disabled: boolean;
     colors: Record<string, { hex: string; name: string }>;
   }> = {},
 ) {
-  const onValueChange = overrides.onValueChange ?? vi.fn();
+  const onValueChange = overrides.onValueChange ?? vi.fn<(color: string) => void>();
   const result = render(
     <ColorPicker
       value={overrides.value ?? 'RED'}

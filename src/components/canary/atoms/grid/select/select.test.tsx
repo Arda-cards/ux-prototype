@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi, beforeEach, beforeAll } from 'vitest';
+import { describe, expect, it, vi, beforeEach, beforeAll, type Mock } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 
 import { SelectCellDisplay } from './select-cell-display';
@@ -197,12 +197,12 @@ describe('SelectCellEditor rendering', () => {
 // ============================================================================
 
 describe('SelectCellEditor keyboard navigation', () => {
-  let onValueChange: ReturnType<typeof vi.fn>;
-  let stopEditing: ReturnType<typeof vi.fn>;
+  let onValueChange: Mock<(value: string | null) => void>;
+  let stopEditing: Mock<(cancel?: boolean) => void>;
 
   beforeEach(() => {
-    onValueChange = vi.fn();
-    stopEditing = vi.fn();
+    onValueChange = vi.fn<(value: string | null) => void>();
+    stopEditing = vi.fn<(cancel?: boolean) => void>();
   });
 
   it('Arrow Down moves highlight to next option', async () => {
