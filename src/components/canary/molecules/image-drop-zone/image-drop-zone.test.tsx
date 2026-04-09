@@ -106,7 +106,7 @@ describe('ImageDropZone', () => {
     });
   });
 
-  it('shows error for invalid file type', async () => {
+  it('defers error for invalid file type to allow URL fallback', async () => {
     const { onInput } = renderDropZone();
     const file = new File(['content'], 'document.pdf', { type: 'application/pdf' });
 
@@ -116,7 +116,10 @@ describe('ImageDropZone', () => {
       onDrop!([], [{ file, errors: [{ code: 'file-invalid-type' }] }]);
     });
 
-    expect(onInput).toHaveBeenCalledWith(expect.objectContaining({ type: 'error' }));
+    // onDrop no longer emits error directly — it defers to handleDrop
+    // so the URL fallback (e.g. Google Images drag) can be attempted first.
+    // The error is shown by handleDrop when no URL fallback is available.
+    expect(onInput).not.toHaveBeenCalled();
   });
 
   it('does not render a dismiss button (parent handles dismissal)', () => {

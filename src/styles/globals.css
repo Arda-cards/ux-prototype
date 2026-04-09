@@ -9,6 +9,15 @@
 @tailwind components;
 @tailwind utilities;
 
+@utility focus-ring {
+  outline: none;
+  &:focus-visible,
+  &:focus-within {
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px oklch(from var(--ring) l c h / 0.5);
+  }
+}
+
 @layer base, theme-override;
 
 :root {
