@@ -18,12 +18,20 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
-## [4.9.1] - 2026-04-09
+## [4.10.1] - 2026-04-09
 
 ### Fixed
 
 - Republish: `ColorPicker` export was missing from 4.9.0 due to publish race
   condition (package was published before the export PR merged).
+  
+## [4.10.0] - 2026-04-08
+
+### Added
+
+- Pull Request Upkeep workflow to auto-assign new PRs to the GitHub Project
+  board with the current iteration, matching arda-frontend-app and
+  accounts-component conventions
 
 ## [4.9.0] - 2026-04-08
 ### Added
