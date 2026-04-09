@@ -40,6 +40,18 @@ export interface ItemCardEditorRuntimeProps {
   onChange: (fields: ItemCardFields) => void;
   /** Called when an image is confirmed through the upload dialog. */
   onImageConfirmed?: (url: string) => void;
+  /**
+   * Upload handler — forwarded to ImageUploadDialog's onUpload prop.
+   * When omitted, the dialog uses its default stub (Storybook/dev).
+   * Bridge pattern (Option B) — will be replaced by ImageUploadContext
+   * (management#860) when the lifecycle framework (ux-prototype#77) lands.
+   */
+  onUpload?: (file: Blob) => Promise<string>;
+  /**
+   * Reachability check — forwarded to ImageUploadDialog's onCheckReachability.
+   * Same bridge pattern as onUpload.
+   */
+  onCheckReachability?: (url: string) => Promise<boolean>;
 }
 
 /** Combined props for ItemCardEditor. */
@@ -58,6 +70,8 @@ export function ItemCardEditor({
   fields,
   onChange,
   onImageConfirmed,
+  onUpload,
+  onCheckReachability,
 }: ItemCardEditorProps) {
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [confirmRemoveOpen, setConfirmRemoveOpen] = React.useState(false);
@@ -267,6 +281,8 @@ export function ItemCardEditor({
         open={dialogOpen}
         onConfirm={handleDialogConfirm}
         onCancel={handleDialogCancel}
+        {...(onUpload ? { onUpload } : {})}
+        {...(onCheckReachability ? { onCheckReachability } : {})}
       />
 
       {/* Confirm remove image */}
