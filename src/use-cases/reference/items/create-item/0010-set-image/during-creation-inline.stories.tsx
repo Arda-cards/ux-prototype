@@ -17,6 +17,8 @@ import {
   type ItemCardFields,
 } from '@/components/canary/organisms/item-card-editor/item-card-editor';
 import { ITEM_IMAGE_CONFIG } from '@/components/canary/__mocks__/image-story-data';
+import { lookupUnits } from '@/components/canary/__mocks__/unit-lookup';
+import { unitLookupHandler } from '@/components/canary/__mocks__/handlers/unit-lookup';
 
 // ---------------------------------------------------------------------------
 // Live page wrapper
@@ -35,7 +37,12 @@ function InlineCardCreationPage() {
           Fill in the card fields directly. Drop or select an image in the card&rsquo;s image area.
         </p>
       </div>
-      <ItemCardEditor imageConfig={ITEM_IMAGE_CONFIG} fields={fields} onChange={setFields} />
+      <ItemCardEditor
+        imageConfig={ITEM_IMAGE_CONFIG}
+        unitLookup={lookupUnits}
+        fields={fields}
+        onChange={setFields}
+      />
     </div>
   );
 }
@@ -163,6 +170,7 @@ const meta: Meta = {
   tags: ['skip-ci'],
   parameters: {
     layout: 'fullscreen',
+    msw: { handlers: [unitLookupHandler] },
   },
 };
 

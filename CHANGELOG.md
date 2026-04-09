@@ -95,6 +95,9 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   KeyboardNavigation, EscapeDismiss, and more)
 - Layout integrity smoke tests for canary suppliers page (sidebar visibility
   and AG Grid data visibility)
+- `TypeaheadInput` molecule: standalone async typeahead with debounced search,
+  keyboard navigation, allow-create, and MSW-backed unit lookup matching the
+  production API. Wired into `ItemCardEditor` units fields.
 
 ### Fixed
 

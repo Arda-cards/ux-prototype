@@ -7,6 +7,10 @@ import { ImageUploadDialog } from '@/components/canary/organisms/shared/image-up
 import { ArdaConfirmDialog } from '@/components/canary/atoms/confirm-dialog/confirm-dialog';
 import { Button } from '@/components/canary/primitives/button';
 import { Input } from '@/components/canary/primitives/input';
+import {
+  TypeaheadInput,
+  type TypeaheadOption,
+} from '@/components/canary/molecules/typeahead-input/typeahead-input';
 import type {
   ImageFieldConfig,
   ImageInput,
@@ -30,6 +34,8 @@ export interface ItemCardFields {
 export interface ItemCardEditorInitProps {
   /** Image field configuration (accepted formats, aspect ratio, etc.). */
   imageConfig: ImageFieldConfig;
+  /** Async lookup for unit typeahead fields. */
+  unitLookup: (search: string) => Promise<TypeaheadOption[]>;
 }
 
 /** Runtime props for ItemCardEditor. */
@@ -67,6 +73,7 @@ export type ItemCardEditorProps = ItemCardEditorInitProps & ItemCardEditorRuntim
  */
 export function ItemCardEditor({
   imageConfig,
+  unitLookup,
   fields,
   onChange,
   onImageConfirmed,
@@ -200,13 +207,15 @@ export function ItemCardEditor({
                   placeholder={section.qtyPlaceholder}
                   value={fields[section.qtyKey]}
                   onChange={(e) => updateField(section.qtyKey, e.target.value)}
-                  className="text-sm h-9 rounded-lg"
+                  className="text-sm h-9 rounded-lg w-[86px] flex-shrink-0"
                 />
-                <Input
-                  placeholder={section.unitPlaceholder}
+                <TypeaheadInput
                   value={fields[section.unitKey]}
-                  onChange={(e) => updateField(section.unitKey, e.target.value)}
-                  className="text-sm h-9 rounded-lg"
+                  onValueChange={(val) => updateField(section.unitKey, val)}
+                  lookup={unitLookup}
+                  allowCreate
+                  placeholder={section.unitPlaceholder}
+                  className="flex-1 min-w-0"
                 />
               </div>
             </div>
