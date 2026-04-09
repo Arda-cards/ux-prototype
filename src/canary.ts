@@ -383,6 +383,16 @@ export type {
   ItemDetailsTab,
 } from './components/canary/organisms/item-details/item-details';
 
+// --- Organisms — ItemCardEditor ---
+
+export { ItemCardEditor, EMPTY_ITEM_CARD_FIELDS } from './components/canary/organisms/item-card-editor/item-card-editor';
+export type {
+  ItemCardFields,
+  ItemCardEditorProps,
+  ItemCardEditorInitProps,
+  ItemCardEditorRuntimeProps,
+} from './components/canary/organisms/item-card-editor/item-card-editor';
+
 // --- Organisms — ItemGrid ---
 
 export { ItemGrid } from './components/canary/organisms/item-grid/item-grid';
