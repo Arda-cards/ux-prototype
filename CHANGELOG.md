@@ -23,8 +23,9 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
 ### Added
 
 - `ItemCardEditor` exported from canary barrel (`@arda-cards/design-system/canary`)
-- `ItemCardFields`, `ItemCardEditorProps`, `ItemCardEditorInitProps`,
-  `ItemCardEditorRuntimeProps`, `EMPTY_ITEM_CARD_FIELDS` types exported
+- `ItemCardFields`, `ItemCardEditorProps`, `ItemCardEditorInitProps`, and
+  `ItemCardEditorRuntimeProps` types exported; `EMPTY_ITEM_CARD_FIELDS`
+  exported as a value
 - `onUpload` and `onCheckReachability` optional forwarding props on
   `ItemCardEditor` for production upload hook injection (Option B bridge —
   management#860)
