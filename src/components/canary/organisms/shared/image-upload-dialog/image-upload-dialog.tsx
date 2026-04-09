@@ -77,7 +77,7 @@ type DialogPhase =
   | { name: 'EmptyImage' }
   | { name: 'ProvidedImage'; imageData: File | Blob | string }
   | { name: 'FailedValidation'; errorMessage: string }
-  | { name: 'Uploading'; imageData: File | Blob | string }
+  | { name: 'Uploading'; imageData: File | Blob | string; skipUpload?: boolean }
   | { name: 'UploadError'; error: string; imageData: File | Blob | string }
   | { name: 'Warn'; imageData: File | Blob | string };
 
@@ -144,7 +144,7 @@ function dialogReducer(state: DialogPhase, action: DialogAction): DialogPhase {
     }
     case 'EDIT_CONFIRM': {
       if (state.name === 'EditExisting') {
-        return { name: 'Uploading', imageData: state.imageUrl };
+        return { name: 'Uploading', imageData: state.imageUrl, skipUpload: true };
       }
       return state;
     }
@@ -202,8 +202,23 @@ export function ImageUploadDialog({
 
     let cancelled = false;
     const imageData = phase.imageData;
-    const blob = typeof imageData === 'string' ? new Blob([]) : imageData;
 
+    // EditExisting accept (skipUpload) — confirm directly with the existing URL.
+    if (phase.skipUpload && typeof imageData === 'string') {
+      onConfirm({
+        imageUrl: imageData,
+        wasCompressed: false,
+        originalSizeBytes: 0,
+        finalSizeBytes: 0,
+      });
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    // For new uploads: Blob goes to onUpload; string URLs create an empty blob
+    // (URL-input flow — the server-side upload will fetch the URL content).
+    const blob = typeof imageData === 'string' ? new Blob([]) : imageData;
     onUpload(blob)
       .then((imageUrl) => {
         if (cancelled) return;

@@ -39,10 +39,10 @@ export type ImageCellEditorProps = ImageCellEditorStaticProps &
   ImageCellEditorRuntimeProps & {
     /** Curried by createImageCellEditor — not passed by AG Grid directly. */
     config: ImageFieldConfig;
-    /** Upload hook — returns mutateAsync for the upload flow. */
-    useImageUpload?: () => { mutateAsync: (file: Blob) => Promise<string>; isPending: boolean };
-    /** Reachability hook — returns mutateAsync for URL checking. */
-    useCheckReachability?: () => { mutateAsync: (url: string) => Promise<boolean> };
+    /** Upload callback — plain function, not a hook. Passed by the factory wrapper. */
+    onUpload?: (file: Blob) => Promise<string>;
+    /** Reachability callback — plain function. Passed by the factory wrapper. */
+    onCheckReachability?: (url: string) => Promise<boolean>;
   };
 
 /** Ref handle exposing getValue and isPopup for AG Grid. */
@@ -74,13 +74,9 @@ export interface ImageCellEditorHandle {
  * ```
  */
 export const ImageCellEditor = forwardRef<ImageCellEditorHandle, ImageCellEditorProps>(
-  ({ value: initialValue, stopEditing, config, useImageUpload, useCheckReachability }, ref) => {
+  ({ value: initialValue, stopEditing, config, onUpload, onCheckReachability }, ref) => {
     const [currentValue, setCurrentValue] = useState<string | null>(initialValue);
     const [dialogOpen, setDialogOpen] = useState(true);
-
-    // Invoke hooks at the top level (Rules of Hooks) — only when provided
-    const uploadHook = useImageUpload?.();
-    const reachabilityHook = useCheckReachability?.();
 
     useImperativeHandle(ref, () => ({
       getValue: () => currentValue,
@@ -113,10 +109,8 @@ export const ImageCellEditor = forwardRef<ImageCellEditorHandle, ImageCellEditor
           open={dialogOpen}
           onConfirm={handleConfirm}
           onCancel={handleCancel}
-          {...(uploadHook ? { onUpload: (file: Blob) => uploadHook.mutateAsync(file) } : {})}
-          {...(reachabilityHook
-            ? { onCheckReachability: (url: string) => reachabilityHook.mutateAsync(url) }
-            : {})}
+          {...(onUpload ? { onUpload } : {})}
+          {...(onCheckReachability ? { onCheckReachability } : {})}
         />
       </>
     );
@@ -134,19 +128,34 @@ ImageCellEditor.displayName = 'ImageCellEditor';
 export function createImageCellEditor(configOrFull: ImageFieldConfig | ImageCellEditorConfig) {
   const isFullConfig = 'useImageUpload' in configOrFull;
   const config = isFullConfig ? configOrFull.config : configOrFull;
-  const useImageUpload = isFullConfig ? configOrFull.useImageUpload : undefined;
-  const useCheckReachability = isFullConfig ? configOrFull.useCheckReachability : undefined;
+  const useImageUploadHook = isFullConfig ? configOrFull.useImageUpload : undefined;
+  const useCheckReachabilityHook = isFullConfig ? configOrFull.useCheckReachability : undefined;
 
+  // Wrapper component calls hooks unconditionally (Rules of Hooks) and passes
+  // plain callbacks to ImageCellEditor. When no hooks are configured (Storybook),
+  // the wrapper is a thin pass-through and the dialog uses default stubs.
   const WrappedEditor = forwardRef<ImageCellEditorHandle, ImageCellEditorRuntimeProps>(
-    (props, editorRef) => (
-      <ImageCellEditor
-        {...props}
-        config={config}
-        {...(useImageUpload ? { useImageUpload } : {})}
-        {...(useCheckReachability ? { useCheckReachability } : {})}
-        ref={editorRef}
-      />
-    ),
+    (props, editorRef) => {
+      // Safe: useImageUploadHook/useCheckReachabilityHook are captured in the
+      // factory closure at column-definition time and never change between
+      // renders. The ?.() handles the Storybook case (no hooks provided)
+      // without violating Rules of Hooks — the hook list is stable per
+      // WrappedEditor instance.
+      const uploadResult = useImageUploadHook?.();
+      const reachabilityResult = useCheckReachabilityHook?.();
+
+      return (
+        <ImageCellEditor
+          {...props}
+          config={config}
+          {...(uploadResult ? { onUpload: (file: Blob) => uploadResult.mutateAsync(file) } : {})}
+          {...(reachabilityResult
+            ? { onCheckReachability: (url: string) => reachabilityResult.mutateAsync(url) }
+            : {})}
+          ref={editorRef}
+        />
+      );
+    },
   );
   WrappedEditor.displayName = `ImageCellEditor(${config.entityTypeDisplayName})`;
   return WrappedEditor;
