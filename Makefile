@@ -43,11 +43,11 @@ coverage-summary: ## Show coverage summary
 ci: lint typecheck test build ## Full CI pipeline: lint, typecheck, unit tests, Storybook build, play function tests, VRT
 	npx playwright install --with-deps chromium
 	npx concurrently -k -s first -n "SB,TEST" \
-		"npx http-server storybook-static --port 6008 --silent" \
-		"npx wait-on http://127.0.0.1:6008 && npx test-storybook --testTimeout 30000 --skipTags skip-ci"
+		"npx http-server storybook-static --port 6006 --silent" \
+		"npx wait-on http://127.0.0.1:6006 && npx test-storybook --testTimeout 30000 --skipTags skip-ci"
 	npx concurrently -k -s first -n "SB,VRT" \
-		"npx http-server storybook-static --port 6008 --silent" \
-		"npx wait-on http://127.0.0.1:6008 && npx playwright test --project=vrt"
+		"npx http-server storybook-static --port 6006 --silent" \
+		"npx wait-on http://127.0.0.1:6006 && npx playwright test --project=vrt"
 
 ## -- Serving & Publishing ----------------------------------------------------
 

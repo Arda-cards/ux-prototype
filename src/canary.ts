@@ -224,6 +224,10 @@ export type {
 export { CopyrightAcknowledgment } from './components/canary/atoms/copyright-acknowledgment';
 export type { CopyrightAcknowledgmentProps } from './components/canary/atoms/copyright-acknowledgment';
 
+// Atoms: ColorPicker
+export { ColorPicker, getColorHex } from './components/canary/atoms/color-picker/color-picker';
+export type { ColorPickerProps } from './components/canary/atoms/color-picker/color-picker';
+
 // Cell atoms: action
 export { ActionCellRenderer } from './components/canary/atoms/grid/action';
 export type {
@@ -382,6 +386,30 @@ export type {
   ArdaItemDetailsRuntimeConfig,
   ItemDetailsTab,
 } from './components/canary/organisms/item-details/item-details';
+
+// --- Molecules — TypeaheadInput ---
+
+export { TypeaheadInput } from './components/canary/molecules/typeahead-input/typeahead-input';
+export type {
+  TypeaheadOption,
+  TypeaheadInputProps,
+} from './components/canary/molecules/typeahead-input/typeahead-input';
+
+export { createTypeaheadCellEditor } from './components/canary/molecules/typeahead-input/typeahead-cell-editor';
+export type { TypeaheadCellEditorConfig } from './components/canary/molecules/typeahead-input/typeahead-cell-editor';
+
+// --- Organisms — ItemCardEditor ---
+
+export {
+  ItemCardEditor,
+  EMPTY_ITEM_CARD_FIELDS,
+} from './components/canary/organisms/item-card-editor/item-card-editor';
+export type {
+  ItemCardFields,
+  ItemCardEditorProps,
+  ItemCardEditorInitProps,
+  ItemCardEditorRuntimeProps,
+} from './components/canary/organisms/item-card-editor/item-card-editor';
 
 // --- Organisms — ItemGrid ---
 

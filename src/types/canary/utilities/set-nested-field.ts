@@ -5,7 +5,11 @@
  * Each level on the changed path is shallow-copied; sibling subtrees retain
  * referential identity (important for React.memo and dependency arrays).
  */
-export function setNestedField<T>(obj: T, path: string, value: unknown): T {
+export function setNestedField<T extends Record<string, unknown>>(
+  obj: T,
+  path: string,
+  value: unknown,
+): T {
   const segments = path.split('.');
   const head = segments[0] as string;
 
@@ -14,7 +18,11 @@ export function setNestedField<T>(obj: T, path: string, value: unknown): T {
   }
 
   const rest = segments.slice(1);
-  const child = (obj as Record<string, unknown>)[head] ?? {};
+  const currentChild = obj[head];
+  const child =
+    typeof currentChild === 'object' && currentChild !== null
+      ? (currentChild as Record<string, unknown>)
+      : {};
   return {
     ...obj,
     [head]: setNestedField(child, rest.join('.'), value),

@@ -412,12 +412,7 @@ describe('ImageUploadDialog', () => {
       });
     });
 
-    it('"Confirm" in EditExisting calls onConfirm after upload completes', async () => {
-      const { defaultUploadHandler } =
-        await import('@/types/canary/utilities/image-upload-handlers');
-      (defaultUploadHandler as ReturnType<typeof vi.fn>).mockResolvedValue(
-        'https://cdn.example.com/images/mock-uploaded.jpg',
-      );
+    it('"Confirm" in EditExisting calls onConfirm with existing URL (no upload)', async () => {
       const onConfirm = vi.fn();
       renderDialog({ existingImageUrl: EXISTING_URL, onConfirm });
 
@@ -427,9 +422,8 @@ describe('ImageUploadDialog', () => {
       });
 
       await waitFor(() => {
-        expect(onConfirm).toHaveBeenCalledWith(
-          expect.objectContaining({ imageUrl: 'https://cdn.example.com/images/mock-uploaded.jpg' }),
-        );
+        // String imageData bypasses upload — confirms directly with the URL
+        expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({ imageUrl: EXISTING_URL }));
       });
     });
 

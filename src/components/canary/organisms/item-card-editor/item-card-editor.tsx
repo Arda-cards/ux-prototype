@@ -7,6 +7,10 @@ import { ImageUploadDialog } from '@/components/canary/organisms/shared/image-up
 import { ArdaConfirmDialog } from '@/components/canary/atoms/confirm-dialog/confirm-dialog';
 import { Button } from '@/components/canary/primitives/button';
 import { Input } from '@/components/canary/primitives/input';
+import {
+  TypeaheadInput,
+  type TypeaheadOption,
+} from '@/components/canary/molecules/typeahead-input/typeahead-input';
 import type {
   ImageFieldConfig,
   ImageInput,
@@ -30,6 +34,8 @@ export interface ItemCardFields {
 export interface ItemCardEditorInitProps {
   /** Image field configuration (accepted formats, aspect ratio, etc.). */
   imageConfig: ImageFieldConfig;
+  /** Async lookup for unit typeahead fields. */
+  unitLookup: (search: string) => Promise<TypeaheadOption[]>;
 }
 
 /** Runtime props for ItemCardEditor. */
@@ -40,6 +46,18 @@ export interface ItemCardEditorRuntimeProps {
   onChange: (fields: ItemCardFields) => void;
   /** Called when an image is confirmed through the upload dialog. */
   onImageConfirmed?: (url: string) => void;
+  /**
+   * Upload handler — forwarded to ImageUploadDialog's onUpload prop.
+   * When omitted, the dialog uses its default stub (Storybook/dev).
+   * Bridge pattern (Option B) — will be replaced by ImageUploadContext
+   * (management#860) when the lifecycle framework (ux-prototype#77) lands.
+   */
+  onUpload?: (file: Blob) => Promise<string>;
+  /**
+   * Reachability check — forwarded to ImageUploadDialog's onCheckReachability.
+   * Same bridge pattern as onUpload.
+   */
+  onCheckReachability?: (url: string) => Promise<boolean>;
 }
 
 /** Combined props for ItemCardEditor. */
@@ -55,13 +73,24 @@ export type ItemCardEditorProps = ItemCardEditorInitProps & ItemCardEditorRuntim
  */
 export function ItemCardEditor({
   imageConfig,
+  unitLookup,
   fields,
   onChange,
   onImageConfirmed,
+  onUpload,
+  onCheckReachability,
 }: ItemCardEditorProps) {
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [confirmRemoveOpen, setConfirmRemoveOpen] = React.useState(false);
   const objectUrlRef = React.useRef<string | null>(null);
+
+  // Stable refs for values used in async callbacks to avoid stale closures.
+  const fieldsRef = React.useRef(fields);
+  fieldsRef.current = fields;
+  const onChangeRef = React.useRef(onChange);
+  onChangeRef.current = onChange;
+  const onImageConfirmedRef = React.useRef(onImageConfirmed);
+  onImageConfirmedRef.current = onImageConfirmed;
 
   // Revoke any object URL we created when the component unmounts.
   React.useEffect(() => {
@@ -72,51 +101,66 @@ export function ItemCardEditor({
 
   const updateField = React.useCallback(
     <K extends keyof ItemCardFields>(key: K, value: ItemCardFields[K]) => {
-      onChange({ ...fields, [key]: value });
+      onChangeRef.current({ ...fieldsRef.current, [key]: value });
     },
-    [fields, onChange],
+    [],
   );
 
   // New images go straight onto the card — no dialog.
-  const handleDropZoneInput = React.useCallback(
-    (input: ImageInput) => {
-      if (input.type === 'error') return;
+  // For URLs (e.g. dragged from Google Images), fetch as blob first to avoid
+  // referrer-restricted or short-lived URLs breaking the <img> tag.
+  const handleDropZoneInput = React.useCallback((input: ImageInput) => {
+    if (input.type === 'error') return;
 
-      // Revoke previous object URL before creating a new one.
-      if (objectUrlRef.current) {
-        URL.revokeObjectURL(objectUrlRef.current);
-        objectUrlRef.current = null;
-      }
+    // Revoke previous object URL before creating a new one.
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
 
-      if (input.type === 'file') {
-        const url = URL.createObjectURL(input.file);
-        objectUrlRef.current = url;
-        onChange({ ...fields, imageUrl: url });
-        onImageConfirmed?.(url);
-      } else if (input.type === 'url') {
-        onChange({ ...fields, imageUrl: input.url });
-        onImageConfirmed?.(input.url);
-      }
-    },
-    [fields, onChange, onImageConfirmed],
-  );
+    if (input.type === 'file') {
+      const url = URL.createObjectURL(input.file);
+      objectUrlRef.current = url;
+      onChangeRef.current({ ...fieldsRef.current, imageUrl: url });
+      onImageConfirmedRef.current?.(url);
+    } else if (input.type === 'url') {
+      // Fetch the image as a blob so it works even if the source URL
+      // is referrer-restricted (Google Images, CDNs with hotlink protection).
+      fetch(input.url, { mode: 'cors' })
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const ct = res.headers.get('content-type') ?? '';
+          if (!ct.startsWith('image/')) throw new Error(`Not an image: ${ct}`);
+          return res.blob();
+        })
+        .then((blob) => {
+          const url = URL.createObjectURL(blob);
+          objectUrlRef.current = url;
+          onChangeRef.current({ ...fieldsRef.current, imageUrl: url });
+          onImageConfirmedRef.current?.(url);
+        })
+        .catch(() => {
+          // If fetch fails (CORS, not an image), fall back to using the URL directly.
+          // It may still work if the server allows <img> loading but blocks fetch.
+          onChangeRef.current({ ...fieldsRef.current, imageUrl: input.url });
+          onImageConfirmedRef.current?.(input.url);
+        });
+    }
+  }, []);
 
   const handleRemoveImage = React.useCallback(() => {
     if (objectUrlRef.current) {
       URL.revokeObjectURL(objectUrlRef.current);
       objectUrlRef.current = null;
     }
-    onChange({ ...fields, imageUrl: null });
-  }, [fields, onChange]);
+    onChangeRef.current({ ...fieldsRef.current, imageUrl: null });
+  }, []);
 
-  const handleDialogConfirm = React.useCallback(
-    (result: ImageUploadResult) => {
-      onChange({ ...fields, imageUrl: result.imageUrl });
-      setDialogOpen(false);
-      onImageConfirmed?.(result.imageUrl);
-    },
-    [fields, onChange, onImageConfirmed],
-  );
+  const handleDialogConfirm = React.useCallback((result: ImageUploadResult) => {
+    onChangeRef.current({ ...fieldsRef.current, imageUrl: result.imageUrl });
+    setDialogOpen(false);
+    onImageConfirmedRef.current?.(result.imageUrl);
+  }, []);
 
   const handleDialogCancel = React.useCallback(() => {
     setDialogOpen(false);
@@ -186,13 +230,15 @@ export function ItemCardEditor({
                   placeholder={section.qtyPlaceholder}
                   value={fields[section.qtyKey]}
                   onChange={(e) => updateField(section.qtyKey, e.target.value)}
-                  className="text-sm h-9 rounded-lg"
+                  className="text-sm h-9 rounded-lg w-[86px] flex-shrink-0"
                 />
-                <Input
-                  placeholder={section.unitPlaceholder}
+                <TypeaheadInput
                   value={fields[section.unitKey]}
-                  onChange={(e) => updateField(section.unitKey, e.target.value)}
-                  className="text-sm h-9 rounded-lg"
+                  onValueChange={(val) => updateField(section.unitKey, val)}
+                  lookup={unitLookup}
+                  allowCreate
+                  placeholder={section.unitPlaceholder}
+                  className="flex-1 min-w-0"
                 />
               </div>
             </div>
@@ -267,6 +313,8 @@ export function ItemCardEditor({
         open={dialogOpen}
         onConfirm={handleDialogConfirm}
         onCancel={handleDialogCancel}
+        {...(onUpload ? { onUpload } : {})}
+        {...(onCheckReachability ? { onCheckReachability } : {})}
       />
 
       {/* Confirm remove image */}

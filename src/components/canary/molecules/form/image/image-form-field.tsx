@@ -84,7 +84,9 @@ export function ImageFormField({
   contextErrors,
   disabled = false,
 }: ImageFormFieldProps) {
-  const resolvedImageUrl = initialValue ?? imageUrl ?? null;
+  // initialValue takes precedence when explicitly provided (even if null).
+  // Fall back to deprecated imageUrl only when initialValue is undefined.
+  const resolvedImageUrl = initialValue !== undefined ? initialValue : (imageUrl ?? null);
   const { entityTypeDisplayName, propertyDisplayName } = config;
 
   const [inspectorOpen, setInspectorOpen] = React.useState(false);

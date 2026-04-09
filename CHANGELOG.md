@@ -18,6 +18,42 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.11.0] - 2026-04-09
+
+### Added
+
+- `ItemCardEditor` exported from canary barrel (`@arda-cards/design-system/canary`)
+- `ItemCardFields`, `ItemCardEditorProps`, `ItemCardEditorInitProps`, and
+  `ItemCardEditorRuntimeProps` types exported; `EMPTY_ITEM_CARD_FIELDS`
+  exported as a value
+- `onUpload` and `onCheckReachability` optional forwarding props on
+  `ItemCardEditor` for production upload hook injection (Option B bridge —
+  management#860)
+- `TypeaheadInput` molecule: standalone async typeahead with debounced search,
+  keyboard navigation, allow-create, and MSW-backed unit lookup matching the
+  production API. Wired into `ItemCardEditor` units fields.
+- `cellEditorMode` prop on `TypeaheadInput` for inline AG Grid editing
+  (borderless input, blur-accepts-value, Popover dropdown for both modes)
+- `createTypeaheadCellEditor` factory for AG Grid column definitions
+- Unique IDs per `TypeaheadInput` instance via `useId()` — fixes ARIA when
+  multiple typeaheads render on the same page
+- `focus-ring` Tailwind utility in `globals.css` for consistent focus styling
+- Clickable focus state on `ImageDropZone` to signal paste readiness (Ctrl+V)
+- GitHub Actions dependency updates: `actions/upload-artifact` v4 → v7,
+  `github/codeql-action` v3 → v4, `actions/deploy-pages` v4 → v5
+
+### Fixed
+
+- Drag-and-drop from Google Images now works — extracts image data from the
+  HTML data URI the browser provides instead of using the unusable Google
+  search result URL
+- Deferred file rejection errors in `ImageDropZone` to allow URL/data URI
+  fallback path before showing an error
+- `ColorPicker` export was missing from 4.9.0 package due to publish race
+  condition
+- `make ci` port mismatch — aligned to port 6006 matching CI workflow and
+  Playwright config
+
 ## [4.10.0] - 2026-04-08
 
 ### Added
@@ -27,6 +63,7 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   accounts-component conventions
 
 ## [4.9.0] - 2026-04-08
+
 ### Added
 
 - `ColorPicker` atom: standalone swatch button with popover palette, arrow-key

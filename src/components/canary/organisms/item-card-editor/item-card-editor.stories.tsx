@@ -3,6 +3,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { ItemCardEditor, EMPTY_ITEM_CARD_FIELDS, type ItemCardFields } from './item-card-editor';
 import { ITEM_IMAGE_CONFIG, MOCK_ITEM_IMAGE } from '@/components/canary/__mocks__/image-story-data';
+import { lookupUnits } from '@/components/canary/__mocks__/unit-lookup';
+import { unitLookupHandler } from '@/components/canary/__mocks__/handlers/unit-lookup';
 
 // ---------------------------------------------------------------------------
 // Wrapper for controlled state
@@ -16,7 +18,12 @@ function ItemCardEditorDemo({ initialFields }: { initialFields?: Partial<ItemCar
 
   return (
     <div className="flex items-center justify-center p-4 sm:p-8 bg-muted/30 min-h-[600px]">
-      <ItemCardEditor imageConfig={ITEM_IMAGE_CONFIG} fields={fields} onChange={setFields} />
+      <ItemCardEditor
+        imageConfig={ITEM_IMAGE_CONFIG}
+        unitLookup={lookupUnits}
+        fields={fields}
+        onChange={setFields}
+      />
     </div>
   );
 }
@@ -27,7 +34,10 @@ function ItemCardEditorDemo({ initialFields }: { initialFields?: Partial<ItemCar
 
 const meta: Meta = {
   title: 'Components/Canary/Organisms/ItemCardEditor',
-  parameters: { layout: 'fullscreen' },
+  parameters: {
+    layout: 'fullscreen',
+    msw: { handlers: [unitLookupHandler] },
+  },
 };
 
 export default meta;

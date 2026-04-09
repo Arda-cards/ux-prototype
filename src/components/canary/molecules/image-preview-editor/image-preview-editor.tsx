@@ -36,7 +36,13 @@ export type ImagePreviewEditorProps = ImagePreviewEditorStaticProps &
 
 /** CDN URL pattern — matches `*.assets.arda.cards` domains (FD-17). */
 function isCdnUrl(src: string): boolean {
-  return src.includes('.assets.arda.cards');
+  try {
+    const url = new URL(src);
+    if (url.protocol !== 'https:') return false;
+    return url.hostname === 'assets.arda.cards' || url.hostname.endsWith('.assets.arda.cards');
+  } catch {
+    return false;
+  }
 }
 
 const TOOLBAR_BUTTON_CLASS = cn(
