@@ -18,6 +18,15 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.11.1] - 2026-04-09
+
+### Fixed
+
+- Bump 13 dev dependencies: vitest 3→4, typescript 5.9→6.0, eslint 9→10,
+  jsdom 26→29, lucide-react 0.x→1.x, express 4→5, and others. Includes
+  compatibility fixes for vitest 4 mock types and @types/react title
+  property conflict.
+
 ## [4.11.0] - 2026-04-09
 
 ### Added
