@@ -1,5 +1,6 @@
 // server.js - serves built storybook (basic auth disabled)
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 // import basicAuth from 'express-basic-auth';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -20,21 +21,12 @@ const app = express();
 //   }),
 // );
 
+const limiter = rateLimit({ windowMs: 60_000, max: 300 });
+
 app.use(express.static(path.join(__dirname, '..', 'storybook-static')));
 
-// Simple rate limiter for the SPA fallback (satisfies CodeQL).
-const hits = new Map();
-setInterval(() => hits.clear(), 60_000);
-function rateLimit(req, res, next) {
-  const key = req.ip;
-  const count = (hits.get(key) ?? 0) + 1;
-  hits.set(key, count);
-  if (count > 300) return res.status(429).send('Too many requests');
-  next();
-}
-
 // Fallback to index.html for SPA routing
-app.get('/{*splat}', rateLimit, (_req, res) => {
+app.get('/{*splat}', limiter, (_req, res) => {
   res.sendFile(path.join(__dirname, '..', 'storybook-static', 'index.html'));
 });
 

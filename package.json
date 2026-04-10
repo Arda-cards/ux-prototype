@@ -154,6 +154,7 @@
     "eslint-plugin-unicorn": "^64.0.0",
     "express": "^5.2.1",
     "express-basic-auth": "^1.2.1",
+    "express-rate-limit": "^8.3.2",
     "http-server": "^14.1.1",
     "jsdom": "^29.0.1",
     "lucide-react": "^1.7.0",
