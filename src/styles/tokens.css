@@ -41,10 +41,19 @@
   --input: oklch(0.922 0 0);
   --ring: oklch(0.665 0.226 36.4);
 
-  /* ---------- Orange state ramp — all hue 29, contrast-safe ---------- */
-  --primary-hover: oklch(0.578 0.204 36.4);
-  --primary-active: oklch(0.498 0.174 36.4);
+  /* ---------- State ramps — hover shifts L by ~0.033, active by ~0.06 ---------- */
+  --primary-hover: oklch(0.632 0.220 36.4);
+  --primary-active: oklch(0.605 0.215 36.4);
   --primary-muted: oklch(0.98 0.016 36.4);
+
+  --secondary-hover: oklch(0.948 0 0);
+  --secondary-active: oklch(0.930 0 0);
+
+  --destructive-hover: oklch(0.544 0.238 27.325);
+  --destructive-active: oklch(0.517 0.232 27.325);
+
+  --accent-hover: oklch(0.948 0 0);
+  --accent-active: oklch(0.930 0 0);
 
   /* ---------- Chart colors ---------- */
   --chart-1: oklch(0.665 0.226 36.4);
@@ -107,10 +116,19 @@
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.665 0.226 36.4);
 
-  /* Orange state ramp — dark mode */
-  --primary-hover: oklch(0.748 0.184 36.4);
-  --primary-active: oklch(0.818 0.144 36.4);
+  /* State ramps — dark mode (lighter = more committed) */
+  --primary-hover: oklch(0.698 0.210 36.4);
+  --primary-active: oklch(0.725 0.195 36.4);
   --primary-muted: oklch(0.269 0.04 36.4);
+
+  --secondary-hover: oklch(0.300 0 0);
+  --secondary-active: oklch(0.330 0 0);
+
+  --destructive-hover: oklch(0.737 0.182 22.216);
+  --destructive-active: oklch(0.764 0.170 22.216);
+
+  --accent-hover: oklch(0.300 0 0);
+  --accent-active: oklch(0.330 0 0);
 
   --chart-1: oklch(0.665 0.226 36.4);
   --chart-2: oklch(0.696 0.17 162.48);
