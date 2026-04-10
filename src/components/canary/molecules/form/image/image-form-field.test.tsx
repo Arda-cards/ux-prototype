@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, type Mock } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 
 import { ITEM_IMAGE_CONFIG, MOCK_ITEM_IMAGE } from '@/components/canary/__mocks__/image-story-data';
@@ -10,17 +10,17 @@ import { ImageFormField } from './image-form-field';
 const defaultProps = {
   config: ITEM_IMAGE_CONFIG,
   imageUrl: MOCK_ITEM_IMAGE,
-  onChange: vi.fn(),
+  onChange: vi.fn<(imageUrl: string | null) => void>(),
 };
 
 function renderField(
   overrides: {
     imageUrl?: string | null;
-    onChange?: ReturnType<typeof vi.fn>;
+    onChange?: Mock<(imageUrl: string | null) => void>;
     disabled?: boolean;
   } = {},
 ) {
-  const onChange = overrides.onChange ?? vi.fn();
+  const onChange = overrides.onChange ?? vi.fn<(imageUrl: string | null) => void>();
   const disabledProp = overrides.disabled !== undefined ? { disabled: overrides.disabled } : {};
   const result = render(
     <ImageFormField

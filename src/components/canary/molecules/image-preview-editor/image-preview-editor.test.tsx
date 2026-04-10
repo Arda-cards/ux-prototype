@@ -1,7 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, vi, beforeAll, afterAll, type Mock } from 'vitest';
 import '@testing-library/jest-dom/vitest';
+import type { CropData } from '@/types/canary/utilities/image-field-config';
 
 // Mock react-easy-crop so tests do not rely on its internal DOM structure
 vi.mock('react-easy-crop', () => ({
@@ -36,12 +37,12 @@ function renderEditor(
   overrides: Partial<{
     aspectRatio: number;
     imageData: File | Blob | string;
-    onCropChange: ReturnType<typeof vi.fn>;
-    onReset: ReturnType<typeof vi.fn>;
+    onCropChange: Mock<(cropData: CropData) => void>;
+    onReset: Mock<() => void>;
   }> = {},
 ) {
-  const onCropChange = overrides.onCropChange ?? vi.fn();
-  const onReset = overrides.onReset ?? vi.fn();
+  const onCropChange = overrides.onCropChange ?? vi.fn<(cropData: CropData) => void>();
+  const onReset = overrides.onReset ?? vi.fn<() => void>();
   const aspectRatio = overrides.aspectRatio ?? 1;
   const imageData = overrides.imageData ?? MOCK_URL;
 

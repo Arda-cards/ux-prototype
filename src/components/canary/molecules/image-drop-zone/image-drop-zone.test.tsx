@@ -1,8 +1,8 @@
 import { render, screen, act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import '@testing-library/jest-dom/vitest';
-import type { ImageMimeType } from '@/types/canary/utilities/image-field-config';
+import type { ImageInput, ImageMimeType } from '@/types/canary/utilities/image-field-config';
 
 // ---- react-dropzone mock -----------------------------------------------
 // Use vi.hoisted so the captured callback reference survives vi.mock hoisting.
@@ -43,10 +43,10 @@ const ACCEPTED_FORMATS: ImageMimeType[] = ['image/jpeg', 'image/png', 'image/web
 function renderDropZone(
   overrides: Partial<{
     acceptedFormats: ImageMimeType[];
-    onInput: ReturnType<typeof vi.fn>;
+    onInput: Mock<(input: ImageInput) => void>;
   }> = {},
 ) {
-  const onInput = overrides.onInput ?? vi.fn();
+  const onInput = overrides.onInput ?? vi.fn<(input: ImageInput) => void>();
   const acceptedFormats = overrides.acceptedFormats ?? ACCEPTED_FORMATS;
 
   const result = render(<ImageDropZone acceptedFormats={acceptedFormats} onInput={onInput} />);

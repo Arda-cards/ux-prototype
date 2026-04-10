@@ -14,7 +14,9 @@ export interface ExtrasOrganismPlaceholderStaticConfig {
 
 /** Combined props for ExtrasOrganismPlaceholder. */
 export interface ExtrasOrganismPlaceholderProps
-  extends ExtrasOrganismPlaceholderStaticConfig, React.HTMLAttributes<HTMLDivElement> {}
+  extends
+    ExtrasOrganismPlaceholderStaticConfig,
+    Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {}
 
 export function ExtrasOrganismPlaceholder({
   title = 'Extras Organism Placeholder',
