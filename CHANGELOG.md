@@ -18,6 +18,14 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.11.2] - 2026-04-10
+
+### Fixed
+
+- Pin TypeScript to ~5.9.3 — TypeScript 6.0 causes `vite-plugin-dts` to
+  produce empty `.d.ts` files due to TS2882 errors on CSS side-effect
+  imports, breaking all type exports from the published package.
+
 ## [4.11.1] - 2026-04-09
 
 ### Fixed
