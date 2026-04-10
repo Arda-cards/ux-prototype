@@ -23,7 +23,7 @@ const app = express();
 app.use(express.static(path.join(__dirname, '..', 'storybook-static')));
 
 // Fallback to index.html for SPA routing
-app.get('*', (_req, res) => {
+app.get('/{*splat}', (_req, res) => {
   res.sendFile(path.join(__dirname, 'storybook-static', 'index.html'));
 });
 
