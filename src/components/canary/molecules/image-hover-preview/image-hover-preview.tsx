@@ -31,17 +31,18 @@ export type ImageHoverPreviewProps = ImageHoverPreviewStaticProps &
   ImageHoverPreviewRuntimeProps;
 
 const HOVER_DELAY_MS = 500;
+const EMPTY_STATE_CAPTION = 'No Image Available';
 
 /**
  * ImageHoverPreview &#8212; lightweight hover popover showing a larger image preview.
  *
  * Wraps any trigger element. After ~500 ms of hover, opens a Popover containing
- * an ImageDisplay at ~256&#215;256. On mouse-leave the timer is cancelled and the
- * popover closes immediately.
+ * either an ImageDisplay at ~256&#215;256 (when `imageUrl` is non-null) or a
+ * centered "No Image Available" caption (when `imageUrl` is null). On
+ * mouse-leave the timer is cancelled and the popover closes immediately.
  *
- * When `imageUrl` is null the popover is fully suppressed &#8212; no preview appears.
- * If the image enters an error state after open, the Popover remains visible showing
- * the ImageDisplay error placeholder (initials + badge).
+ * If the image enters an error state after open, the Popover remains visible
+ * showing the ImageDisplay error placeholder (initials + badge).
  *
  * Not a modal: no focus trap, no backdrop overlay.
  */
@@ -54,17 +55,6 @@ export function ImageHoverPreview({
   const [open, setOpen] = React.useState(false);
   const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Close popover and clear timer when imageUrl changes to null
-  React.useEffect(() => {
-    if (imageUrl === null) {
-      if (timerRef.current !== null) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
-      setOpen(false);
-    }
-  }, [imageUrl]);
-
   // Cleanup timer on unmount
   React.useEffect(() => {
     return () => {
@@ -75,7 +65,6 @@ export function ImageHoverPreview({
   }, []);
 
   const handleMouseEnter = () => {
-    if (imageUrl === null) return;
     timerRef.current = setTimeout(() => {
       setOpen(true);
     }, HOVER_DELAY_MS);
@@ -88,6 +77,12 @@ export function ImageHoverPreview({
     }
     setOpen(false);
   };
+
+  // Treat null, undefined, and empty-string alike as "no image". Callers
+  // feed this component row data from AG Grid, where an absent field shows
+  // up as undefined (TypeScript types lie at runtime). Normalizing here
+  // keeps consumers simple and prevents the "broken <img src=''>" state.
+  const hasImage = typeof imageUrl === 'string' && imageUrl.length > 0;
 
   return (
     <div
@@ -103,12 +98,22 @@ export function ImageHoverPreview({
           onOpenAutoFocus={(e) => e.preventDefault()}
           sideOffset={-4}
         >
-          {imageUrl !== null && (
+          {hasImage ? (
             <ImageDisplay
               imageUrl={imageUrl}
               entityTypeDisplayName={entityTypeDisplayName}
               propertyDisplayName={propertyDisplayName}
             />
+          ) : (
+            <div
+              data-slot="image-hover-preview-empty"
+              className={cn(
+                'flex h-full w-full items-center justify-center',
+                'text-muted-foreground text-sm select-none',
+              )}
+            >
+              {EMPTY_STATE_CAPTION}
+            </div>
           )}
         </PopoverContent>
       </Popover>
