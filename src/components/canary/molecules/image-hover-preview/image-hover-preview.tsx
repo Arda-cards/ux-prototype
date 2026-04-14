@@ -37,8 +37,9 @@ const EMPTY_STATE_CAPTION = 'No Image Available';
  * ImageHoverPreview &#8212; lightweight hover popover showing a larger image preview.
  *
  * Wraps any trigger element. After ~500 ms of hover, opens a Popover containing
- * either an ImageDisplay at ~256&#215;256 (when `imageUrl` is non-null) or a
- * centered "No Image Available" caption (when `imageUrl` is null). On
+ * either an ImageDisplay at ~256&#215;256 (when `imageUrl` is a non-empty string)
+ * or a centered "No Image Available" caption (when `imageUrl` is null,
+ * undefined, or an empty string). On
  * mouse-leave the timer is cancelled and the popover closes immediately.
  *
  * If the image enters an error state after open, the Popover remains visible
