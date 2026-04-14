@@ -32,23 +32,29 @@ export async function getCroppedImage(
   ctx.translate(-image.width / 2, -image.height / 2);
   ctx.drawImage(image, 0, 0);
 
-  // Extract the crop region
+  // Extract the crop region. When pixelCrop has zero dimensions (rotate-only
+  // or zoom-only edit), use the full rotated canvas as the crop area.
+  const effectiveCrop =
+    pixelCrop.width > 0 && pixelCrop.height > 0
+      ? pixelCrop
+      : { x: 0, y: 0, width: bBoxWidth, height: bBoxHeight };
+
   const croppedCanvas = document.createElement('canvas');
   const croppedCtx = croppedCanvas.getContext('2d');
   if (!croppedCtx) throw new Error('Failed to obtain 2D canvas context for crop');
-  croppedCanvas.width = pixelCrop.width;
-  croppedCanvas.height = pixelCrop.height;
+  croppedCanvas.width = effectiveCrop.width;
+  croppedCanvas.height = effectiveCrop.height;
 
   croppedCtx.drawImage(
     canvas,
-    pixelCrop.x,
-    pixelCrop.y,
-    pixelCrop.width,
-    pixelCrop.height,
+    effectiveCrop.x,
+    effectiveCrop.y,
+    effectiveCrop.width,
+    effectiveCrop.height,
     0,
     0,
-    pixelCrop.width,
-    pixelCrop.height,
+    effectiveCrop.width,
+    effectiveCrop.height,
   );
 
   return new Promise((resolve, reject) => {

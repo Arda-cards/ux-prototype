@@ -92,7 +92,7 @@ type DialogAction =
   | { type: 'UPLOAD_DISCARD' }
   | { type: 'WARN_DISCARD' }
   | { type: 'WARN_GO_BACK' }
-  | { type: 'EDIT_CONFIRM' }
+  | { type: 'EDIT_CONFIRM'; croppedBlob?: Blob }
   | { type: 'UPLOAD_NEW' }
   | { type: 'RESET'; existingImageUrl: string | null };
 
@@ -144,6 +144,11 @@ function dialogReducer(state: DialogPhase, action: DialogAction): DialogPhase {
     }
     case 'EDIT_CONFIRM': {
       if (state.name === 'EditExisting') {
+        // If the action carries a cropped blob, upload it as a new image.
+        // If no blob (crop failed or no edits), confirm with the original URL.
+        if (action.croppedBlob) {
+          return { name: 'Uploading', imageData: action.croppedBlob };
+        }
         return { name: 'Uploading', imageData: state.imageUrl, skipUpload: true };
       }
       return state;
@@ -285,17 +290,39 @@ export function ImageUploadDialog({
     if (phase.name !== 'EditExisting') return;
     const cropData = cropDataRef.current as {
       pixelCrop: { x: number; y: number; width: number; height: number };
+      zoom?: number;
       rotation?: number;
     } | null;
-    if (cropData !== null && cropData.pixelCrop.width > 0 && cropData.pixelCrop.height > 0) {
+
+    // Determine if the user made any edits (crop, rotate, or zoom).
+    // Rotate/zoom handlers in ImagePreviewEditor fire onCropChange with a
+    // zero-sized pixelCrop, so we can't rely on pixelCrop alone — also
+    // check rotation and zoom.
+    const hasCropArea =
+      cropData !== null && cropData.pixelCrop.width > 0 && cropData.pixelCrop.height > 0;
+    const hasRotation = cropData !== null && (cropData.rotation ?? 0) !== 0;
+    const hasZoom = cropData !== null && (cropData.zoom ?? 1) !== 1;
+    const hasEdits = hasCropArea || hasRotation || hasZoom;
+
+    if (hasEdits && cropData !== null) {
       try {
-        await getCroppedImage(phase.imageUrl, cropData.pixelCrop, cropData.rotation ?? 0);
-        // getCroppedImage result is not used directly — the upload effect handles the imageData
-        // from the EDIT_CONFIRM transition which passes the original URL as imageData
+        // getCroppedImage handles zero-sized pixelCrop (rotate/zoom-only
+        // edits) by using the full rotated canvas as the crop area.
+        const croppedBlob = await getCroppedImage(
+          phase.imageUrl,
+          cropData.pixelCrop,
+          cropData.rotation ?? 0,
+        );
+        // Upload the cropped/rotated image as a new file. The upload effect
+        // will call onUpload(blob) → S3 → return the new CDN URL.
+        dispatch({ type: 'EDIT_CONFIRM', croppedBlob });
+        return;
       } catch {
-        // Fall back to original URL if cropping fails
+        // Canvas crop failed (e.g. CORS taint on localhost without CloudFront
+        // CORS). Fall through to confirm with the original URL unchanged.
       }
     }
+    // No edits or crop failed — confirm with the original URL as-is.
     dispatch({ type: 'EDIT_CONFIRM' });
   }, [phase]);
 
