@@ -40,6 +40,14 @@ export type ImageCellDisplayProps = ImageCellDisplayStaticProps &
  * ```
  */
 export function ImageCellDisplay({ config, value }: ImageCellDisplayProps) {
+  // Normalize the AG Grid value to the `string | null` contract expected
+  // by the child components. At runtime the field may be undefined (no
+  // imageUrl on the row) or an empty string (legacy backend data); both
+  // must render as "no image" so the cell shows the initials placeholder
+  // and the hover popover shows the empty-state caption — not a broken
+  // <img src="">.
+  const normalizedImageUrl = typeof value === 'string' && value.length > 0 ? value : null;
+
   return (
     <div
       data-slot="image-cell-display"
@@ -47,13 +55,13 @@ export function ImageCellDisplay({ config, value }: ImageCellDisplayProps) {
       style={{ minHeight: 28 }}
     >
       <ImageHoverPreview
-        imageUrl={value}
+        imageUrl={normalizedImageUrl}
         entityTypeDisplayName={config.entityTypeDisplayName}
         propertyDisplayName={config.propertyDisplayName}
       >
         <div className="rounded" style={{ width: 28, height: 28 }}>
           <ImageDisplay
-            imageUrl={value}
+            imageUrl={normalizedImageUrl}
             entityTypeDisplayName={config.entityTypeDisplayName}
             propertyDisplayName={config.propertyDisplayName}
           />

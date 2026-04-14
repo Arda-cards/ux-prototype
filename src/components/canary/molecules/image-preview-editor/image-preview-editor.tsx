@@ -73,9 +73,20 @@ export function ImagePreviewEditor({
   const [imageSrc, setImageSrc] = React.useState<string>('');
 
   // Convert File/Blob to object URL; plain string passes through.
+  // Defensive: only call URL.createObjectURL when imageData is a Blob/File.
+  // FD-19 — runtime values may be null/undefined under unusual lifecycle
+  // paths (e.g. a transiently-mounted editor before its parent state
+  // settles); URL.createObjectURL throws "Overload resolution failed" in
+  // those cases. Treat anything that is not a string and not a Blob as a
+  // no-op rather than crashing the component tree.
   React.useEffect(() => {
     if (typeof imageData === 'string') {
       setImageSrc(imageData);
+      return;
+    }
+
+    if (!(imageData instanceof Blob)) {
+      setImageSrc('');
       return;
     }
 

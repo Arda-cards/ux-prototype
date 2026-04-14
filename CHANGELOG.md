@@ -18,6 +18,22 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.11.3] - 2026-04-14
+
+### Fixed
+
+- Flatten `createImageCellEditor` from double-forwardRef to single-forwardRef
+  (FD-19). AG Grid 34.3.1's `TooltipService.setupCellEditorTooltip` reads
+  `editor.isPopup?.()` synchronously; the nested forwardRef populated the
+  handle one tick late, causing a crash in `AgTooltipFeature.postConstruct`.
+- Add defensive `instanceof Blob` guard in `ImagePreviewEditor` before
+  `URL.createObjectURL`. Prevents "Overload resolution failed" when
+  `imageData` is null/undefined under transient lifecycle paths.
+- Show "No Image Available" caption in `ImageHoverPreview` popover when
+  the image URL is null, undefined, or empty string (Issue 2b).
+- Normalize empty-string image URLs to null in `ImageCellDisplay` so the
+  no-image state renders consistently across cell renderer and hover preview.
+
 ## [4.11.2] - 2026-04-10
 
 ### Fixed
