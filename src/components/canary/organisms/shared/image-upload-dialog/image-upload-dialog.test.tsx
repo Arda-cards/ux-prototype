@@ -35,6 +35,20 @@ vi.mock('@/components/canary/molecules/image-preview-editor/image-preview-editor
       >
         crop
       </button>
+      <button
+        onClick={() =>
+          onCropChange({ pixelCrop: { x: 0, y: 0, width: 0, height: 0 }, zoom: 1, rotation: 90 })
+        }
+      >
+        rotate
+      </button>
+      <button
+        onClick={() =>
+          onCropChange({ pixelCrop: { x: 0, y: 0, width: 0, height: 0 }, zoom: 2, rotation: 0 })
+        }
+      >
+        zoom
+      </button>
       <button onClick={onReset}>reset</button>
     </div>
   ),
@@ -412,17 +426,106 @@ describe('ImageUploadDialog', () => {
       });
     });
 
-    it('"Confirm" in EditExisting calls onConfirm with existing URL (no upload)', async () => {
+    it('"Accept" without edits confirms with existing URL (skipUpload)', async () => {
       const onConfirm = vi.fn();
       renderDialog({ existingImageUrl: EXISTING_URL, onConfirm });
 
+      // Don't crop/rotate — just accept immediately
       await act(async () => {
         fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
         await Promise.resolve();
       });
 
       await waitFor(() => {
-        // String imageData bypasses upload — confirms directly with the URL
+        expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({ imageUrl: EXISTING_URL }));
+      });
+    });
+
+    it('"Accept" after crop uploads cropped blob and returns new URL', async () => {
+      const onUpload = vi.fn().mockResolvedValue('https://cdn.example.com/cropped-new.jpg');
+      const onConfirm = vi.fn();
+      renderDialog({ existingImageUrl: EXISTING_URL, onConfirm, onUpload });
+
+      // Simulate crop edit (non-zero pixelCrop)
+      fireEvent.click(screen.getByText('crop'));
+
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+
+      await waitFor(() => {
+        expect(onUpload).toHaveBeenCalledWith(expect.any(Blob));
+        expect(onConfirm).toHaveBeenCalledWith(
+          expect.objectContaining({ imageUrl: 'https://cdn.example.com/cropped-new.jpg' }),
+        );
+      });
+    });
+
+    it('"Accept" after rotate-only uploads rotated blob (not skipUpload)', async () => {
+      const onUpload = vi.fn().mockResolvedValue('https://cdn.example.com/rotated-new.jpg');
+      const onConfirm = vi.fn();
+      renderDialog({ existingImageUrl: EXISTING_URL, onConfirm, onUpload });
+
+      // Simulate rotation-only edit (zero pixelCrop, rotation=90)
+      fireEvent.click(screen.getByText('rotate'));
+
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+
+      await waitFor(() => {
+        expect(onUpload).toHaveBeenCalledWith(expect.any(Blob));
+        expect(onConfirm).toHaveBeenCalledWith(
+          expect.objectContaining({ imageUrl: 'https://cdn.example.com/rotated-new.jpg' }),
+        );
+      });
+    });
+
+    it('"Accept" after zoom-only uploads zoomed blob (not skipUpload)', async () => {
+      const onUpload = vi.fn().mockResolvedValue('https://cdn.example.com/zoomed-new.jpg');
+      const onConfirm = vi.fn();
+      renderDialog({ existingImageUrl: EXISTING_URL, onConfirm, onUpload });
+
+      // Simulate zoom-only edit (zero pixelCrop, zoom=2)
+      fireEvent.click(screen.getByText('zoom'));
+
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+
+      await waitFor(() => {
+        expect(onUpload).toHaveBeenCalledWith(expect.any(Blob));
+        expect(onConfirm).toHaveBeenCalledWith(
+          expect.objectContaining({ imageUrl: 'https://cdn.example.com/zoomed-new.jpg' }),
+        );
+      });
+    });
+
+    it('"Accept" falls back to original URL when getCroppedImage fails', async () => {
+      const { getCroppedImage } = await import('@/types/canary/utilities/get-cropped-image');
+      (getCroppedImage as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('CORS taint'));
+      const onConfirm = vi.fn();
+      renderDialog({ existingImageUrl: EXISTING_URL, onConfirm });
+
+      // Simulate crop edit
+      fireEvent.click(screen.getByText('crop'));
+
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+
+      await waitFor(() => {
+        // Falls back to original URL (skipUpload path)
         expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({ imageUrl: EXISTING_URL }));
       });
     });

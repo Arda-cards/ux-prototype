@@ -18,6 +18,17 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.11.4] - 2026-04-14
+
+### Fixed
+
+- Wire `getCroppedImage` result into the upload path in `ImageUploadDialog`
+  edit-existing flow. Previously the cropped blob was discarded and the
+  original URL was confirmed unchanged (`skipUpload: true`). Now: if
+  crop/rotate produced a blob, it is uploaded as a new image; the new CDN
+  URL is returned via `onConfirm`. Falls back to original URL only if
+  canvas crop fails (e.g. CORS taint on non-production origins).
+
 ## [4.11.3] - 2026-04-14
 
 ### Fixed
