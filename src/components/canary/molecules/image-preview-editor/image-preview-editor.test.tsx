@@ -174,5 +174,46 @@ describe('ImagePreviewEditor', () => {
       unmount();
       expect(revokeObjectURLSpy).toHaveBeenCalledWith(mockUrl);
     });
+
+    it('does not call createObjectURL when imageData is not a Blob (FD-19 defensive guard)', () => {
+      // Regression guard: at runtime imageData may be null/undefined
+      // under unusual lifecycle paths (transient mount, parent state
+      // not yet settled). Calling URL.createObjectURL with such a value
+      // throws "Overload resolution failed" and crashes the tree. The
+      // guard converts that case to a safe no-op — imageSrc stays empty,
+      // so the Cropper is not rendered and no exception escapes.
+      createObjectURLSpy.mockClear();
+      const { container, unmount } = render(
+        <ImagePreviewEditor
+          aspectRatio={1}
+          imageData={null as unknown as File}
+          onCropChange={vi.fn()}
+          onReset={vi.fn()}
+        />,
+      );
+      expect(createObjectURLSpy).not.toHaveBeenCalled();
+      // Cropper must not render when imageSrc is empty (avoids passing
+      // an empty src to react-easy-crop, which would itself error).
+      expect(container.querySelector('[data-testid="mock-cropper"]')).toBeNull();
+      // Toolbar still renders so the component remains in the React
+      // tree without crashing.
+      expect(container.querySelector('[data-slot="image-preview-editor"]')).toBeInTheDocument();
+      unmount();
+    });
+
+    it('does not call createObjectURL when imageData is undefined (FD-19 defensive guard)', () => {
+      createObjectURLSpy.mockClear();
+      const { container, unmount } = render(
+        <ImagePreviewEditor
+          aspectRatio={1}
+          imageData={undefined as unknown as File}
+          onCropChange={vi.fn()}
+          onReset={vi.fn()}
+        />,
+      );
+      expect(createObjectURLSpy).not.toHaveBeenCalled();
+      expect(container.querySelector('[data-testid="mock-cropper"]')).toBeNull();
+      unmount();
+    });
   });
 });

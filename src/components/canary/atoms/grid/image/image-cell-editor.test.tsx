@@ -149,4 +149,48 @@ describe('ImageCellEditor', () => {
     expect(ref.current?.getValue()).toBeNull();
     expect(screen.getByTestId('dialog-existing-url')).toHaveTextContent('null');
   });
+
+  // FD-19 — single-forwardRef contract regression guards.
+  // AG Grid 34.3.1 reads `editor.isPopup?.()` synchronously when mounting
+  // the cell editor. The factory must expose the imperative handle on its
+  // OWN ref (not via an internal forwardRef wrapper around another
+  // forwardRef component) so the handle is populated by the time AG Grid
+  // checks. If these tests fail, the `setupCellEditorTooltip` early-return
+  // in AG Grid will not fire and the grid will crash with
+  // "Cannot read properties of undefined (reading 'get')" on every
+  // double-click of an image cell.
+  describe('createImageCellEditor — FD-19 single-forwardRef contract', () => {
+    it('returns a forwardRef component (object with $$typeof forward_ref)', () => {
+      const EditorComponent = createImageCellEditor(ITEM_IMAGE_CONFIG);
+      const symStr = String((EditorComponent as unknown as { $$typeof?: symbol }).$$typeof);
+      expect(symStr).toContain('forward_ref');
+    });
+
+    it('does not render a second <ImageCellEditor> (no nested forwardRef)', () => {
+      // A nested wrapper would render a second `data-slot="image-cell-editor"`
+      // element from the inner editor's body. The flattened factory owns
+      // the editor body directly, so only one placeholder should appear.
+      const EditorComponent = createImageCellEditor(ITEM_IMAGE_CONFIG);
+      const ref = React.createRef<ImageCellEditorHandle>();
+      const { container } = render(<EditorComponent ref={ref} value={null} data={{}} />);
+      expect(container.querySelectorAll('[data-slot="image-cell-editor"]')).toHaveLength(1);
+    });
+
+    it('exposes isPopup() => true on the outer ref synchronously after mount', () => {
+      const EditorComponent = createImageCellEditor(ITEM_IMAGE_CONFIG);
+      const ref = React.createRef<ImageCellEditorHandle>();
+      render(<EditorComponent ref={ref} value={null} data={{}} />);
+      // Critical AG Grid contract: isPopup must be reachable on the outer
+      // ref without traversing an inner forwardRef. If this is undefined,
+      // AG Grid 34.3.1 crashes during cell-editor mount.
+      expect(ref.current?.isPopup?.()).toBe(true);
+    });
+
+    it('exposes getValue() on the outer ref', () => {
+      const EditorComponent = createImageCellEditor(ITEM_IMAGE_CONFIG);
+      const ref = React.createRef<ImageCellEditorHandle>();
+      render(<EditorComponent ref={ref} value={MOCK_ITEM_IMAGE} data={{}} />);
+      expect(ref.current?.getValue()).toBe(MOCK_ITEM_IMAGE);
+    });
+  });
 });

@@ -124,6 +124,19 @@ ImageCellEditor.displayName = 'ImageCellEditor';
  *
  * Accepts either the legacy `ImageFieldConfig` (Storybook/default handlers) or
  * the full `ImageCellEditorConfig` with required typed provider hooks (FD-15).
+ *
+ * **Important — single forwardRef contract (FD-19).**
+ * The returned component is a single `forwardRef`, not a wrapper around the
+ * exported `ImageCellEditor` `forwardRef`. AG Grid 34.3.1's
+ * `TooltipService.setupCellEditorTooltip` checks `editor.isPopup?.()`
+ * synchronously to decide whether to construct the (broken)
+ * `AgTooltipFeature` bean. With a double `forwardRef` wrapper, the inner
+ * `useImperativeHandle` populates the ref one tick later than AG Grid
+ * looks, so `isPopup` reads as `undefined` and AG Grid proceeds into a
+ * codepath that crashes with "Cannot read properties of undefined
+ * (reading 'get')". Calling `useImperativeHandle` on the outer ref
+ * eliminates the indirection and AG Grid sees `isPopup() => true` in
+ * time, taking the early-return branch.
  */
 export function createImageCellEditor(configOrFull: ImageFieldConfig | ImageCellEditorConfig) {
   const isFullConfig = 'useImageUpload' in configOrFull;
@@ -131,32 +144,64 @@ export function createImageCellEditor(configOrFull: ImageFieldConfig | ImageCell
   const useImageUploadHook = isFullConfig ? configOrFull.useImageUpload : undefined;
   const useCheckReachabilityHook = isFullConfig ? configOrFull.useCheckReachability : undefined;
 
-  // Wrapper component calls hooks unconditionally (Rules of Hooks) and passes
-  // plain callbacks to ImageCellEditor. When no hooks are configured (Storybook),
-  // the wrapper is a thin pass-through and the dialog uses default stubs.
-  const WrappedEditor = forwardRef<ImageCellEditorHandle, ImageCellEditorRuntimeProps>(
-    (props, editorRef) => {
-      // Safe: useImageUploadHook/useCheckReachabilityHook are captured in the
-      // factory closure at column-definition time and never change between
-      // renders. The ?.() handles the Storybook case (no hooks provided)
-      // without violating Rules of Hooks — the hook list is stable per
-      // WrappedEditor instance.
+  const ImageCellEditorAdapter = forwardRef<ImageCellEditorHandle, ImageCellEditorRuntimeProps>(
+    ({ value: initialValue, stopEditing }, ref) => {
+      const [currentValue, setCurrentValue] = useState<string | null>(initialValue);
+      const [dialogOpen, setDialogOpen] = useState(true);
+
+      // Imperative handle on the outer ref (no second forwardRef
+      // indirection). See JSDoc above for why this matters.
+      useImperativeHandle(ref, () => ({
+        getValue: () => currentValue,
+        isPopup: () => true,
+      }));
+
+      // Hooks are called unconditionally per the Rules of Hooks. The
+      // `?.()` handles the Storybook case (no hooks provided) — the hook
+      // list itself is stable per component instance because the factory
+      // closure captures the same `useImageUploadHook` /
+      // `useCheckReachabilityHook` references for the lifetime of the
+      // column definition.
       const uploadResult = useImageUploadHook?.();
       const reachabilityResult = useCheckReachabilityHook?.();
+      const onUpload = uploadResult ? (file: Blob) => uploadResult.mutateAsync(file) : undefined;
+      const onCheckReachability = reachabilityResult
+        ? (url: string) => reachabilityResult.mutateAsync(url)
+        : undefined;
+
+      const handleConfirm = (result: ImageUploadResult) => {
+        setCurrentValue(result.imageUrl);
+        setDialogOpen(false);
+        setTimeout(() => stopEditing?.(false), 0);
+      };
+
+      const handleCancel = () => {
+        setDialogOpen(false);
+        setTimeout(() => stopEditing?.(true), 0);
+      };
 
       return (
-        <ImageCellEditor
-          {...props}
-          config={config}
-          {...(uploadResult ? { onUpload: (file: Blob) => uploadResult.mutateAsync(file) } : {})}
-          {...(reachabilityResult
-            ? { onCheckReachability: (url: string) => reachabilityResult.mutateAsync(url) }
-            : {})}
-          ref={editorRef}
-        />
+        <>
+          {/* Invisible placeholder in the grid cell */}
+          <div
+            data-slot="image-cell-editor"
+            aria-hidden="true"
+            style={{ width: 0, height: 0, overflow: 'hidden' }}
+          />
+          {/* Modal dialog overlay — renders via portal, not in the cell */}
+          <ImageUploadDialog
+            config={config}
+            existingImageUrl={initialValue}
+            open={dialogOpen}
+            onConfirm={handleConfirm}
+            onCancel={handleCancel}
+            {...(onUpload ? { onUpload } : {})}
+            {...(onCheckReachability ? { onCheckReachability } : {})}
+          />
+        </>
       );
     },
   );
-  WrappedEditor.displayName = `ImageCellEditor(${config.entityTypeDisplayName})`;
-  return WrappedEditor;
+  ImageCellEditorAdapter.displayName = `ImageCellEditor(${config.entityTypeDisplayName})`;
+  return ImageCellEditorAdapter;
 }
