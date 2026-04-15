@@ -585,7 +585,11 @@ describe('ImageUploadDialog', () => {
     it('5a: getCroppedImage receives the zoom value on zoom-only edit', async () => {
       const { getCroppedImage } = await import('@/types/canary/utilities/get-cropped-image');
       const EXISTING_URL = 'https://example.com/existing.jpg';
-      renderDialog({ existingImageUrl: EXISTING_URL, onConfirm: vi.fn(), onUpload: vi.fn().mockResolvedValue('x') });
+      renderDialog({
+        existingImageUrl: EXISTING_URL,
+        onConfirm: vi.fn(),
+        onUpload: vi.fn().mockResolvedValue('x'),
+      });
 
       fireEvent.click(screen.getByText('zoom'));
       await act(async () => {
@@ -600,7 +604,11 @@ describe('ImageUploadDialog', () => {
     it('5b: crop + rotate preserves pixelCrop (rotate does not overwrite crop)', async () => {
       const { getCroppedImage } = await import('@/types/canary/utilities/get-cropped-image');
       const EXISTING_URL = 'https://example.com/existing.jpg';
-      renderDialog({ existingImageUrl: EXISTING_URL, onConfirm: vi.fn(), onUpload: vi.fn().mockResolvedValue('x') });
+      renderDialog({
+        existingImageUrl: EXISTING_URL,
+        onConfirm: vi.fn(),
+        onUpload: vi.fn().mockResolvedValue('x'),
+      });
 
       // User drags crop area (sets non-zero pixelCrop), then rotates
       fireEvent.click(screen.getByText('crop'));

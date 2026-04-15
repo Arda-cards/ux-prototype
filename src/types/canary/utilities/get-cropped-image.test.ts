@@ -100,15 +100,18 @@ describe('getCroppedImage', () => {
     { zoom: 2, expected: 2, label: 'zoom > 1 (enlarge)' },
     { zoom: 0.5, expected: 0.5, label: 'zoom < 1 (shrink, Option A)' },
     { zoom: 1, expected: 1, label: 'zoom = 1 (no scaling)' },
-  ])('applies zoom ($label): drawImage receives scaled dimensions (5a)', async ({ zoom, expected }) => {
-    const { ctx } = installCanvasMock('image/jpeg');
-    await runCrop({ zoom });
-    // The source drawImage call uses scaled dimensions:
-    //   drawImage(image, 0, 0, scaledWidth, scaledHeight)
-    // With the mock image at 1x1, scaled dims equal the zoom factor.
-    const sourceDraw = ctx.drawImage.mock.calls[0];
-    expect(sourceDraw).toBeDefined();
-    expect(sourceDraw[3]).toBe(expected);
-    expect(sourceDraw[4]).toBe(expected);
-  });
+  ])(
+    'applies zoom ($label): drawImage receives scaled dimensions (5a)',
+    async ({ zoom, expected }) => {
+      const { ctx } = installCanvasMock('image/jpeg');
+      await runCrop({ zoom });
+      // The source drawImage call uses scaled dimensions:
+      //   drawImage(image, 0, 0, scaledWidth, scaledHeight)
+      // With the mock image at 1x1, scaled dims equal the zoom factor.
+      const sourceDraw = ctx.drawImage.mock.calls[0];
+      expect(sourceDraw).toBeDefined();
+      expect(sourceDraw[3]).toBe(expected);
+      expect(sourceDraw[4]).toBe(expected);
+    },
+  );
 });

@@ -192,7 +192,9 @@ export function ImageUploadDialog({
   // rotation changes don't clobber the last valid pixelCrop (#750 issue 5b).
   // pixelCropRef is updated only by onCropComplete (react-easy-crop's final
   // crop event); zoom and rotation refs by their own callbacks.
-  const pixelCropRef = React.useRef<{ x: number; y: number; width: number; height: number } | null>(null);
+  const pixelCropRef = React.useRef<{ x: number; y: number; width: number; height: number } | null>(
+    null,
+  );
   const zoomRef = React.useRef<number>(1);
   const rotationRef = React.useRef<number>(0);
 
@@ -351,7 +353,8 @@ export function ImageUploadDialog({
         // Accept before the prefetch effect's microtask resolved, await the
         // in-flight promise here so getCroppedImage never sees a raw CDN URL.
         const imageSource =
-          prefetchedImageUrl ?? (await (prefetchPromiseRef.current ?? Promise.resolve(phase.imageUrl)));
+          prefetchedImageUrl ??
+          (await (prefetchPromiseRef.current ?? Promise.resolve(phase.imageUrl)));
         // pixelCrop may be null if the user only zoomed/rotated — pass a
         // zero-sized rect to signal "use full canvas".
         const effectiveCrop = pixelCrop ?? { x: 0, y: 0, width: 0, height: 0 };
