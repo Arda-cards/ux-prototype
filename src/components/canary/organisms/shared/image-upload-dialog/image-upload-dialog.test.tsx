@@ -625,4 +625,125 @@ describe('ImageUploadDialog', () => {
       expect(opts.rotation).toBe(90);
     });
   });
+
+  // --- pendingInput entry point (#750 issue 1) -----------------------------
+  //
+  // Drop-zone inputs delivered by a parent component (e.g. ItemCardEditor)
+  // should land in the same ProvidedImage / FailedValidation / Loading flow
+  // as inputs from the dialog's own ImageDropZone.
+
+  describe('pendingInput entry point', () => {
+    it('dispatches a File pendingInput into ProvidedImage when opened', async () => {
+      const file = new File(['x'], 'pending.jpg', { type: 'image/jpeg' });
+      renderDialog({
+        open: true,
+        pendingInput: { type: 'file', file },
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
+      });
+      // The ImagePreviewEditor mock prints "file-blob" when imageData is a Blob/File.
+      expect(screen.getByTestId('preview-src')).toHaveTextContent('file-blob');
+    });
+
+    it('dispatches a URL pendingInput through reachability check into ProvidedImage', async () => {
+      renderDialog({
+        open: true,
+        pendingInput: { type: 'url', url: 'https://images.example.com/p.jpg' },
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
+      });
+      expect(screen.getByTestId('preview-src')).toHaveTextContent(
+        'https://images.example.com/p.jpg',
+      );
+    });
+
+    it('routes pendingInput error through the FailedValidation phase', async () => {
+      renderDialog({
+        open: true,
+        pendingInput: { type: 'error', message: 'File too large' },
+      });
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toHaveTextContent('File too large');
+      });
+    });
+
+    it('does not re-dispatch the same pendingInput on parent re-render', async () => {
+      const file = new File(['x'], 'pending.jpg', { type: 'image/jpeg' });
+      const pendingInput = { type: 'file' as const, file };
+
+      const { rerender } = render(
+        <ImageUploadDialog {...defaultProps} open={true} pendingInput={pendingInput} />,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
+      });
+
+      // User starts cropping and clicks Cancel — moves to Warn state.
+      fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+      await waitFor(() => {
+        expect(screen.getByText('Discard unsaved image?')).toBeInTheDocument();
+      });
+
+      // Parent re-renders with the SAME pendingInput reference. The dialog
+      // must not jump back into ProvidedImage — that would clobber the Warn
+      // dialog and silently drop the user's pending decision.
+      rerender(<ImageUploadDialog {...defaultProps} open={true} pendingInput={pendingInput} />);
+
+      expect(screen.getByText('Discard unsaved image?')).toBeInTheDocument();
+    });
+
+    it('re-enters ProvidedImage when pendingInput identity changes', async () => {
+      const fileA = new File(['a'], 'a.jpg', { type: 'image/jpeg' });
+      const fileB = new File(['b'], 'b.jpg', { type: 'image/jpeg' });
+
+      const { rerender } = render(
+        <ImageUploadDialog
+          {...defaultProps}
+          open={true}
+          pendingInput={{ type: 'file', file: fileA }}
+        />,
+      );
+      await waitFor(() => {
+        expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
+      });
+
+      rerender(
+        <ImageUploadDialog
+          {...defaultProps}
+          open={true}
+          pendingInput={{ type: 'file', file: fileB }}
+        />,
+      );
+
+      // Still in ProvidedImage, now with the new file.
+      await waitFor(() => {
+        expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
+      });
+    });
+
+    it('clears pendingInput state when open transitions to false', async () => {
+      const file = new File(['x'], 'pending.jpg', { type: 'image/jpeg' });
+      const { rerender } = render(
+        <ImageUploadDialog {...defaultProps} open={true} pendingInput={{ type: 'file', file }} />,
+      );
+      await waitFor(() => {
+        expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
+      });
+
+      // Close, then reopen with NO pendingInput — should land in EmptyImage,
+      // not retain the previous file.
+      rerender(<ImageUploadDialog {...defaultProps} open={false} />);
+      rerender(<ImageUploadDialog {...defaultProps} open={true} />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('image-drop-zone')).toBeInTheDocument();
+      });
+      expect(screen.queryByTestId('image-preview-editor')).not.toBeInTheDocument();
+    });
+  });
 });

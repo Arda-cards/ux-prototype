@@ -40,6 +40,20 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   valid pixelCrop with a zero-sized sentinel (Arda-cards/arda-frontend-app#750 issue 5b).
 - Extracted shared `isCdnUrl` helper and new `prefetchImageAsBlob` helper
   to `src/types/canary/utilities/cdn-url.ts`.
+- `ItemCardEditor` initial-image uploads now route through `ImageUploadDialog`
+  instead of being committed straight to the card, so the user can crop,
+  zoom, or rotate before the image is saved. Previously a drop or file
+  selection on the empty-state drop zone immediately mutated `fields.imageUrl`
+  and fired `onImageConfirmed`, with the user only able to access the
+  cropper via the secondary "Click to edit/replace" overlay
+  (Arda-cards/arda-frontend-app#750 issue 1). Adds a new optional
+  `pendingInput?: ImageInput` prop to `ImageUploadDialog`: the host can
+  forward an externally-supplied input (typically from its own drop zone)
+  through the dialog's existing state machine. File inputs land
+  synchronously in `ProvidedImage`; URL inputs go through the existing
+  reachability check; error inputs land in `FailedValidation`. Dispatch
+  is identity-tracked, so re-renders with the same `pendingInput` do not
+  re-enter the cropper.
 - `ItemCardEditor` now bundles its placeholder QR image as a Vite asset
   (co-located at `src/components/canary/organisms/item-card-editor/qr-code.png`)
   instead of pointing at the absolute path `/images/qr-code.png`, which

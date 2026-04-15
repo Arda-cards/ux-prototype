@@ -64,6 +64,19 @@ export interface ImageUploadDialogRuntimeProps {
    * Defaults to `defaultReachabilityCheck`.
    */
   onCheckReachability?: (url: string) => Promise<boolean>;
+  /**
+   * Externally-supplied image input &#8212; typically forwarded from the host's
+   * own drop zone (e.g. ItemCardEditor). When defined while `open` is true,
+   * the input is dispatched through the same state-machine path as the
+   * dialog's internal `ImageDropZone`: file inputs land synchronously in
+   * `ProvidedImage`; URL inputs go through reachability check first; error
+   * inputs land in `FailedValidation`.
+   *
+   * A new identity (referential inequality) is treated as a new dispatch.
+   * The host should clear this prop on confirm/cancel to avoid re-entry on
+   * the next open.
+   */
+  pendingInput?: ImageInput;
 }
 
 /** Combined props for ImageUploadDialog. */
@@ -186,6 +199,7 @@ export function ImageUploadDialog({
   onCancel,
   onUpload = defaultUploadHandler,
   onCheckReachability = defaultReachabilityCheck,
+  pendingInput,
 }: ImageUploadDialogProps) {
   const [phase, dispatch] = React.useReducer(dialogReducer, { name: 'EmptyImage' });
   // Independent refs for crop/zoom/rotation — kept separate so zoom and
@@ -317,6 +331,23 @@ export function ImageUploadDialog({
     },
     [onCheckReachability],
   );
+
+  // Forward externally-supplied pendingInput through the same state-machine
+  // path as the dialog's internal ImageDropZone. Tracked by referential
+  // identity: a new ImageInput object is treated as a new dispatch, the
+  // same object on re-render is ignored. Reset on `open` transitioning to
+  // false so the next open with a new pendingInput re-dispatches cleanly.
+  const lastDispatchedInputRef = React.useRef<ImageInput | undefined>(undefined);
+  React.useEffect(() => {
+    if (!open) {
+      lastDispatchedInputRef.current = undefined;
+      return;
+    }
+    if (pendingInput && pendingInput !== lastDispatchedInputRef.current) {
+      lastDispatchedInputRef.current = pendingInput;
+      handleInput(pendingInput);
+    }
+  }, [open, pendingInput, handleInput]);
 
   const handleCancelClick = React.useCallback(() => {
     if (phase.name === 'ProvidedImage') {
