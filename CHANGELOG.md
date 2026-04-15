@@ -34,6 +34,10 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   trims active series to the last 3 versions per dist-tag. Includes safety
   guards: never deletes stable versions, applies a 24h grace period since
   publish, and refuses to proceed if candidates fail the preview pattern.
+- Storybook docs: `src/docs/workflows/preview-publishing.mdx` brief
+  operational summary of the new preview publish + cleanup flows, with a
+  link to the canonical integration contract in the documentation site
+  (`https://arda-cards.github.io/documentation/process/design-system-integration/`).
 
 ## [5.0.0] - 2026-04-15
 
