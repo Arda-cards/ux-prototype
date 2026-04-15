@@ -224,30 +224,44 @@ describe('ItemCardEditor — drop-zone uploads directly, no dialog (#750 issue 1
     });
   });
 
-  it('surfaces a graceful error when onUpload is not configured', async () => {
-    const onUploadError = vi.fn();
+  it('falls back to the bundled defaultUploadHandler for file drops when onUpload is not supplied (Storybook/dev parity)', async () => {
     const onChange = vi.fn();
-    renderEditor({ onUploadError, onChange });
+    const onImageConfirmed = vi.fn();
+    // No onUpload — component defaults to defaultUploadHandler and commits
+    // its mock CDN URL. Storybook play functions rely on this.
+    renderEditor({ onChange, onImageConfirmed });
 
     fireEvent.click(screen.getByText('drop-file'));
 
-    const alert = await screen.findByRole('alert');
-    expect(alert).toHaveTextContent(/file upload is not configured/i);
-    expect(onUploadError).toHaveBeenCalledWith(expect.any(Error));
-    expect(onChange).not.toHaveBeenCalled();
+    await waitFor(
+      () => {
+        expect(onChange).toHaveBeenCalledWith(
+          expect.objectContaining({
+            imageUrl: expect.stringMatching(/^https:\/\/picsum\.photos\//),
+          }),
+        );
+      },
+      { timeout: 3000 },
+    );
+    expect(onImageConfirmed).toHaveBeenCalled();
   });
 
-  it('surfaces a graceful error when onUploadFromUrl is not configured', async () => {
-    const onUploadError = vi.fn();
+  it('falls back to defaultUrlUploadHandler for URL drops when onUploadFromUrl is not supplied', async () => {
     const onChange = vi.fn();
-    renderEditor({ onUploadError, onChange });
+    renderEditor({ onChange });
 
     fireEvent.click(screen.getByText('drop-url'));
 
-    const alert = await screen.findByRole('alert');
-    expect(alert).toHaveTextContent(/url upload is not configured/i);
-    expect(onUploadError).toHaveBeenCalledWith(expect.any(Error));
-    expect(onChange).not.toHaveBeenCalled();
+    await waitFor(
+      () => {
+        expect(onChange).toHaveBeenCalledWith(
+          expect.objectContaining({
+            imageUrl: expect.stringMatching(/^https:\/\/picsum\.photos\//),
+          }),
+        );
+      },
+      { timeout: 3000 },
+    );
   });
 
   it('ignores error inputs from the drop zone (ImageDropZone surfaces them inline itself)', () => {

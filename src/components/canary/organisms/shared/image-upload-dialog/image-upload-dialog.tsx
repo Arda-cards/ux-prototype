@@ -319,11 +319,14 @@ export function ImageUploadDialog({
       typeof imageData === 'string'
         ? onUploadFromUrlRef.current
           ? onUploadFromUrlRef.current(imageData)
-          : Promise.reject(
-              new Error(
-                'URL upload not supported: this dialog was not given an onUploadFromUrl handler.',
-              ),
-            )
+          : (() => {
+              // Log the detail for operators/devs; surface a short,
+              // user-readable message via the UploadError UI.
+              console.error(
+                'ImageUploadDialog URL upload requested without an onUploadFromUrl handler.',
+              );
+              return Promise.reject(new Error('URL upload not supported'));
+            })()
         : onUploadRef.current(imageData);
 
     const originalSize = typeof imageData === 'string' ? 0 : imageData.size;

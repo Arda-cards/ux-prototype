@@ -16,6 +16,10 @@ import type {
   ImageInput,
   ImageUploadResult,
 } from '@/types/canary/utilities/image-field-config';
+import {
+  defaultUploadHandler,
+  defaultUrlUploadHandler,
+} from '@/types/canary/utilities/image-upload-handlers';
 
 import qrCodeDefaultUrl from './qr-code.png';
 
@@ -55,6 +59,10 @@ export interface ItemCardEditorRuntimeProps {
    * card without opening the crop/edit dialog (#750 issue 1 completion:
    * rapid-batch UX). Also forwarded to ImageUploadDialog for the
    * edit-existing flow.
+   *
+   * When omitted, defaults to `defaultUploadHandler` (a Storybook/dev
+   * stub that returns a mock CDN URL after a 1.5s simulated upload).
+   * Production deployments must pass a real handler.
    */
   onUpload?: (file: Blob) => Promise<string>;
   /**
@@ -63,9 +71,10 @@ export interface ItemCardEditorRuntimeProps {
    * expected to fetch the URL server-side (bypassing browser CORS) and
    * upload the fetched bytes to the CDN, returning the CDN URL.
    *
-   * If omitted, URL inputs on the card's drop zone are ignored and the
-   * edit-existing dialog's URL uploads surface a clear error instead of
-   * silently uploading an empty blob.
+   * When omitted, defaults to `defaultUrlUploadHandler` (a Storybook/dev
+   * stub that returns a mock CDN URL). In production, a real handler is
+   * required whenever URL inputs are possible; otherwise the stub ships
+   * with the component and hides what would be a configuration error.
    */
   onUploadFromUrl?: (url: string) => Promise<string>;
   /** Reachability check — forwarded to ImageUploadDialog's onCheckReachability. */
@@ -121,8 +130,8 @@ export function ItemCardEditor({
   fields,
   onChange,
   onImageConfirmed,
-  onUpload,
-  onUploadFromUrl,
+  onUpload = defaultUploadHandler,
+  onUploadFromUrl = defaultUrlUploadHandler,
   onCheckReachability,
   onUploadError,
   qrCodeUrl,
@@ -185,25 +194,14 @@ export function ItemCardEditor({
       // `error` inputs are already surfaced inline by ImageDropZone.
       if (input.type === 'error') return;
 
-      let uploader: (() => Promise<string>) | null = null;
-      if (input.type === 'file') {
-        const fn = onUploadRef.current;
-        if (fn) uploader = () => fn(input.file);
-      } else {
-        const fn = onUploadFromUrlRef.current;
-        if (fn) uploader = () => fn(input.url);
-      }
-
-      if (!uploader) {
-        const message =
-          input.type === 'file'
-            ? 'File upload is not configured.'
-            : 'URL upload is not configured.';
-        const err = new Error(message);
-        setUploadState({ name: 'Error', message });
-        onUploadErrorRef.current?.(err);
-        return;
-      }
+      // Both handlers have defaults (Storybook/dev stubs), so `onUploadRef`
+      // and `onUploadFromUrlRef` always hold a function. Consumers that
+      // forget to pass a real handler in production will upload to the
+      // stub — a visible bug — rather than silently dropping inputs.
+      const uploader: () => Promise<string> =
+        input.type === 'file'
+          ? () => onUploadRef.current(input.file)
+          : () => onUploadFromUrlRef.current(input.url);
 
       setUploadState({ name: 'Uploading' });
       try {
@@ -409,8 +407,8 @@ export function ItemCardEditor({
         open={dialogOpen}
         onConfirm={handleDialogConfirm}
         onCancel={handleDialogCancel}
-        {...(onUpload ? { onUpload } : {})}
-        {...(onUploadFromUrl ? { onUploadFromUrl } : {})}
+        onUpload={onUpload}
+        onUploadFromUrl={onUploadFromUrl}
         {...(onCheckReachability ? { onCheckReachability } : {})}
       />
 
