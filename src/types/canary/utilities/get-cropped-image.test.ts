@@ -114,4 +114,27 @@ describe('getCroppedImage', () => {
       expect(sourceDraw[4]).toBe(expected);
     },
   );
+
+  it('rounds non-integer crop dimensions up to avoid canvas truncation (PR-96 review)', async () => {
+    installCanvasMock('image/jpeg');
+    // Use the toBlob spy to capture the croppedCanvas dimensions just before
+    // encoding. Replace the spy with one that records the canvas width/height.
+    let capturedWidth = -1;
+    let capturedHeight = -1;
+    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(function (
+      this: HTMLCanvasElement,
+      callback,
+    ) {
+      capturedWidth = this.width;
+      capturedHeight = this.height;
+      callback(new Blob(['x'], { type: 'image/jpeg' }));
+    });
+
+    // A pixelCrop with non-integer dimensions (the realistic case at zoom=1.7,
+    // rotation=37, etc.) — expect Math.ceil applied so canvas.width/height
+    // never truncate below the requested region.
+    await runCrop({ pixelCrop: { x: 0, y: 0, width: 100.4, height: 100.6 } });
+    expect(capturedWidth).toBe(101);
+    expect(capturedHeight).toBe(101);
+  });
 });

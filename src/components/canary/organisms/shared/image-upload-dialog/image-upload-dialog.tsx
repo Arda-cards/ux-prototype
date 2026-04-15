@@ -231,10 +231,16 @@ export function ImageUploadDialog({
     rotationRef.current = 0;
   }, []);
   React.useEffect(() => {
-    dispatch({ type: 'RESET', existingImageUrl: open ? existingImageUrl : null });
+    // When the dialog opens with a pendingInput already queued, skip the
+    // EditExisting initial state — the pendingInput effect will dispatch
+    // INPUT_FILE/INPUT_URL into ProvidedImage on the same render. Starting
+    // in EditExisting would kick off a CDN prefetch that immediately gets
+    // discarded, wasting a network round-trip.
+    const initialExistingUrl = open && !pendingInput ? existingImageUrl : null;
+    dispatch({ type: 'RESET', existingImageUrl: initialExistingUrl });
     resetEditRefs();
     setPrefetchedImageUrl(null);
-  }, [open]); // Intentionally deps on open only — existingImageUrl is captured at open time
+  }, [open]); // Intentionally deps on open only — existingImageUrl/pendingInput captured at open time
 
   // Prefetch CDN image as blob when entering EditExisting phase. The promise
   // is also kept in a ref so handleEditConfirm can await it deterministically

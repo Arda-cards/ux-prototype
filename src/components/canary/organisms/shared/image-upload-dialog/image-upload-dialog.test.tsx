@@ -726,6 +726,30 @@ describe('ImageUploadDialog', () => {
       });
     });
 
+    it('skips EditExisting CDN prefetch when opening with both existingImageUrl and pendingInput (PR-96 review)', async () => {
+      // When the dialog opens with both an existingImageUrl and a queued
+      // pendingInput, the RESET effect must not enter EditExisting first
+      // (which would kick off a CDN prefetch immediately discarded by the
+      // pendingInput effect's transition to ProvidedImage).
+      const { prefetchImageAsBlob } = await import('@/types/canary/utilities/cdn-url');
+      (prefetchImageAsBlob as ReturnType<typeof vi.fn>).mockClear();
+
+      const file = new File(['x'], 'pending.jpg', { type: 'image/jpeg' });
+      renderDialog({
+        open: true,
+        existingImageUrl: 'https://images.assets.arda.cards/items/abc.jpg',
+        pendingInput: { type: 'file', file },
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
+      });
+      // The Cropper must show the pending file, not the existing CDN image.
+      expect(screen.getByTestId('preview-src')).toHaveTextContent('file-blob');
+      // And the CDN prefetch must NOT have been kicked off.
+      expect(prefetchImageAsBlob).not.toHaveBeenCalled();
+    });
+
     it('clears pendingInput state when open transitions to false', async () => {
       const file = new File(['x'], 'pending.jpg', { type: 'image/jpeg' });
       const { rerender } = render(

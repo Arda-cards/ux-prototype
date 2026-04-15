@@ -58,9 +58,11 @@ export async function getCroppedImage(options: GetCroppedImageOptions): Promise<
   const sin = Math.abs(Math.sin(rotRad));
   const cos = Math.abs(Math.cos(rotRad));
 
-  // Bounding box of the rotated, scaled source
-  const bBoxWidth = scaledWidth * cos + scaledHeight * sin;
-  const bBoxHeight = scaledWidth * sin + scaledHeight * cos;
+  // Bounding box of the rotated, scaled source. Round up so non-integer
+  // dimensions (from zoom factors and trig) don't truncate when assigned to
+  // canvas.width/height — truncation can shave the last column/row of pixels.
+  const bBoxWidth = Math.ceil(scaledWidth * cos + scaledHeight * sin);
+  const bBoxHeight = Math.ceil(scaledWidth * sin + scaledHeight * cos);
 
   canvas.width = bBoxWidth;
   canvas.height = bBoxHeight;
@@ -75,9 +77,15 @@ export async function getCroppedImage(options: GetCroppedImageOptions): Promise<
 
   // Extract the crop region. When pixelCrop has zero dimensions (rotate-only
   // or zoom-only edit), use the full rotated+scaled canvas as the crop area.
+  // Round crop dimensions up for the same truncation reason as the bbox.
   const effectiveCrop =
     pixelCrop.width > 0 && pixelCrop.height > 0
-      ? pixelCrop
+      ? {
+          x: pixelCrop.x,
+          y: pixelCrop.y,
+          width: Math.ceil(pixelCrop.width),
+          height: Math.ceil(pixelCrop.height),
+        }
       : { x: 0, y: 0, width: bBoxWidth, height: bBoxHeight };
 
   const croppedCanvas = document.createElement('canvas');
@@ -113,6 +121,12 @@ export async function getCroppedImage(options: GetCroppedImageOptions): Promise<
 function createImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
+    // Always opt into anonymous CORS. For same-origin sources (blob: URLs
+    // from the dialog's CDN prefetch in #750/5c) the attribute is a no-op;
+    // for cross-origin https: sources whose server returns the right CORS
+    // headers, it prevents the canvas from being tainted so toBlob() can
+    // still produce output.
+    img.crossOrigin = 'anonymous';
     img.addEventListener('load', () => resolve(img));
     img.addEventListener('error', (err) => reject(err));
     img.src = src;

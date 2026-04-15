@@ -113,6 +113,17 @@ export function ImagePreviewEditor({
     [onZoomChange, zoom],
   );
 
+  // Cropper fires its own onZoomChange for wheel/pinch gestures. Without this
+  // wrapper those gestures would update local state but never the prop, so
+  // callers (e.g. ImageUploadDialog) would see a stale zoom on accept.
+  const handleCropperZoomChange = React.useCallback(
+    (newZoom: number) => {
+      setZoom(newZoom);
+      onZoomChange(newZoom);
+    },
+    [onZoomChange],
+  );
+
   const handleRotateCw = React.useCallback(() => {
     setRotation((prev) => {
       const next = (prev + 90) % 360;
@@ -150,7 +161,7 @@ export function ImagePreviewEditor({
             rotation={rotation}
             aspect={aspectRatio}
             onCropChange={setCrop}
-            onZoomChange={setZoom}
+            onZoomChange={handleCropperZoomChange}
             onRotationChange={setRotation}
             onCropComplete={handleCropComplete}
             {...(isCdnUrl(imageSrc) ? { mediaProps: { crossOrigin: 'use-credentials' } } : {})}

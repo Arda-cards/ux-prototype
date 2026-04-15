@@ -10,10 +10,12 @@ type PixelCrop = CropData['pixelCrop'];
 vi.mock('react-easy-crop', () => ({
   default: ({
     onCropComplete,
+    onZoomChange,
     image,
     mediaProps,
   }: {
     onCropComplete?: (croppedArea: unknown, croppedAreaPixels: unknown) => void;
+    onZoomChange?: (zoom: number) => void;
     image?: string;
     mediaProps?: Record<string, string>;
   }) => (
@@ -27,7 +29,18 @@ vi.mock('react-easy-crop', () => ({
           { x: 0, y: 0, width: 200, height: 200 },
         )
       }
-    />
+    >
+      <button
+        type="button"
+        data-testid="mock-cropper-gesture-zoom"
+        onClick={(e) => {
+          e.stopPropagation();
+          onZoomChange?.(1.75);
+        }}
+      >
+        gesture-zoom
+      </button>
+    </div>
   ),
 }));
 
@@ -115,6 +128,16 @@ describe('ImagePreviewEditor', () => {
 
     await user.click(screen.getByRole('button', { name: /reset/i }));
     expect(onReset).toHaveBeenCalledOnce();
+  });
+
+  it('forwards Cropper-driven zoom (wheel/pinch gesture) through onZoomChange prop', async () => {
+    // Without the wrapper around Cropper.onZoomChange, gesture-driven zoom
+    // updates only local state and never the prop, so callers (e.g.
+    // ImageUploadDialog) see a stale zoom on accept (#750 PR-96 review).
+    const user = userEvent.setup();
+    const { onZoomChange } = renderEditor();
+    await user.click(screen.getByTestId('mock-cropper-gesture-zoom'));
+    expect(onZoomChange).toHaveBeenCalledWith(1.75);
   });
 
   describe('crossOrigin for CDN URLs (FD-17)', () => {
