@@ -25,6 +25,7 @@ import { ImagePreviewEditor } from '@/components/canary/molecules/image-preview-
 import { ImageComparisonLayout } from '@/components/canary/molecules/image-comparison-layout/image-comparison-layout';
 import {
   defaultUploadHandler,
+  defaultUrlUploadHandler,
   defaultReachabilityCheck,
 } from '@/types/canary/utilities/image-upload-handlers';
 import { getCroppedImage } from '@/types/canary/utilities/get-cropped-image';
@@ -59,6 +60,13 @@ export interface ImageUploadDialogRuntimeProps {
    * Defaults to `defaultUploadHandler` (Storybook/dev stub).
    */
   onUpload?: (file: Blob) => Promise<string>;
+  /**
+   * Upload-from-URL handler &#8212; receives an external image URL, performs
+   * the server-side fetch + upload round-trip, and returns the CDN URL.
+   * Defaults to `defaultUrlUploadHandler` (Storybook/dev stub); production
+   * consumers must pass a real handler.
+   */
+  onUploadFromUrl?: (url: string) => Promise<string>;
   /**
    * URL reachability check &#8212; returns true if the URL is reachable.
    * Defaults to `defaultReachabilityCheck`.
@@ -198,6 +206,7 @@ export function ImageUploadDialog({
   open,
   onCancel,
   onUpload = defaultUploadHandler,
+  onUploadFromUrl = defaultUrlUploadHandler,
   onCheckReachability = defaultReachabilityCheck,
   pendingInput,
 }: ImageUploadDialogProps) {
@@ -223,6 +232,8 @@ export function ImageUploadDialog({
   onConfirmRef.current = onConfirm;
   const onUploadRef = React.useRef(onUpload);
   onUploadRef.current = onUpload;
+  const onUploadFromUrlRef = React.useRef(onUploadFromUrl);
+  onUploadFromUrlRef.current = onUploadFromUrl;
 
   // Reset state when dialog opens/closes
   const resetEditRefs = React.useCallback(() => {
@@ -293,18 +304,32 @@ export function ImageUploadDialog({
       };
     }
 
-    // For new uploads: Blob goes to onUpload; string URLs create an empty blob
-    // (URL-input flow — the server-side upload will fetch the URL content).
-    const blob = typeof imageData === 'string' ? new Blob([]) : imageData;
-    onUploadRef
-      .current(blob)
+    // For new uploads, the two input kinds take different paths:
+    //
+    // - Blob/File: send the bytes directly via `onUpload`.
+    // - string URL: route through `onUploadFromUrl`, which is expected to
+    //   fetch the external URL server-side (bypassing browser CORS) and
+    //   then upload the fetched bytes.
+    //
+    // Both handlers have bundled defaults (`defaultUploadHandler` and
+    // `defaultUrlUploadHandler`) so Storybook and dev harnesses work out
+    // of the box. Production consumers must pass real handlers to avoid
+    // shipping the stubs — the defaults return picsum.photos URLs that
+    // would be very visible in the rendered card.
+    const uploadPromise: Promise<string> =
+      typeof imageData === 'string'
+        ? onUploadFromUrlRef.current(imageData)
+        : onUploadRef.current(imageData);
+
+    const originalSize = typeof imageData === 'string' ? 0 : imageData.size;
+    uploadPromise
       .then((imageUrl) => {
         if (cancelled) return;
         onConfirmRef.current({
           imageUrl,
           wasCompressed: false,
-          originalSizeBytes: blob.size,
-          finalSizeBytes: blob.size,
+          originalSizeBytes: originalSize,
+          finalSizeBytes: originalSize,
         });
       })
       .catch((err: unknown) => {

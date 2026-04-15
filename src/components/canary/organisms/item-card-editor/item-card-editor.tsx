@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { PackageMinus, Package, Crop, Trash2 } from 'lucide-react';
+import { PackageMinus, Package, Crop, Trash2, Loader2 } from 'lucide-react';
 
 import { ColorPicker, getColorHex } from '@/components/canary/atoms/color-picker/color-picker';
 import { ImageDropZone } from '@/components/canary/molecules/image-drop-zone/image-drop-zone';
@@ -16,6 +16,10 @@ import type {
   ImageInput,
   ImageUploadResult,
 } from '@/types/canary/utilities/image-field-config';
+import {
+  defaultUploadHandler,
+  defaultUrlUploadHandler,
+} from '@/types/canary/utilities/image-upload-handlers';
 
 import qrCodeDefaultUrl from './qr-code.png';
 
@@ -46,20 +50,42 @@ export interface ItemCardEditorRuntimeProps {
   fields: ItemCardFields;
   /** Called when any field value changes. */
   onChange: (fields: ItemCardFields) => void;
-  /** Called when an image is confirmed through the upload dialog. */
+  /** Called when an image is confirmed (either via direct upload from the
+   * drop zone, or via Accept in the edit-existing dialog). */
   onImageConfirmed?: (url: string) => void;
   /**
-   * Upload handler — forwarded to ImageUploadDialog's onUpload prop.
-   * When omitted, the dialog uses its default stub (Storybook/dev).
-   * Bridge pattern (Option B) — will be replaced by ImageUploadContext
-   * (management#860) when the lifecycle framework (ux-prototype#77) lands.
+   * File-blob upload handler. Called directly when the user drops or selects
+   * a file via the empty-state drop zone — uploads proceed inline on the
+   * card without opening the crop/edit dialog (#750 issue 1 completion:
+   * rapid-batch UX). Also forwarded to ImageUploadDialog for the
+   * edit-existing flow.
+   *
+   * When omitted, defaults to `defaultUploadHandler` (a Storybook/dev
+   * stub that returns a mock CDN URL after a 1.5s simulated upload).
+   * Production deployments must pass a real handler.
    */
   onUpload?: (file: Blob) => Promise<string>;
   /**
-   * Reachability check — forwarded to ImageUploadDialog's onCheckReachability.
-   * Same bridge pattern as onUpload.
+   * External-URL upload handler. Called when the user drops or pastes an
+   * image URL from another tab (e.g. Google Images). The handler is
+   * expected to fetch the URL server-side (bypassing browser CORS) and
+   * upload the fetched bytes to the CDN, returning the CDN URL.
+   *
+   * When omitted, defaults to `defaultUrlUploadHandler` (a Storybook/dev
+   * stub that returns a mock CDN URL). In production, a real handler is
+   * required whenever URL inputs are possible; otherwise the stub ships
+   * with the component and hides what would be a configuration error.
    */
+  onUploadFromUrl?: (url: string) => Promise<string>;
+  /** Reachability check — forwarded to ImageUploadDialog's onCheckReachability. */
   onCheckReachability?: (url: string) => Promise<boolean>;
+  /**
+   * Optional callback invoked when a direct upload (file or URL) from the
+   * card's drop zone fails. Hosts can use this to raise a toast alongside
+   * the inline error that ItemCardEditor already shows in the drop-zone
+   * slot.
+   */
+  onUploadError?: (err: Error) => void;
   /**
    * Async resolver for the QR-code image shown in the card header.
    * When omitted (or when the promise rejects), a bundled default QR image
@@ -74,6 +100,10 @@ export interface ItemCardEditorRuntimeProps {
 /** Combined props for ItemCardEditor. */
 export type ItemCardEditorProps = ItemCardEditorInitProps & ItemCardEditorRuntimeProps;
 
+// --- Upload state (local to the drop-zone slot) ---
+
+type UploadState = { name: 'Idle' } | { name: 'Uploading' } | { name: 'Error'; message: string };
+
 // --- Component ---
 
 /**
@@ -81,6 +111,18 @@ export type ItemCardEditorProps = ItemCardEditorInitProps & ItemCardEditorRuntim
  *
  * Renders an editable card preview with inline image upload. The card layout
  * matches the printed card output so the user sees exactly what they'll get.
+ *
+ * Drop-zone upload flow (#750 issue 1 completion):
+ *
+ * - Drop a file → calls `onUpload(file)` directly, replaces drop zone with a
+ *   spinner until the CDN URL returns, then renders the image. No dialog.
+ * - Drop a URL → calls `onUploadFromUrl(url)` (same pattern).
+ * - On failure: inline error banner in the drop-zone slot with a "Try again"
+ *   affordance. Dropping another file also dismisses the error.
+ *
+ * The cropper/editor is reached via the hover overlay on an existing image
+ * ("Click to edit/replace"), which opens the `ImageUploadDialog` in its
+ * `EditExisting` phase.
  */
 export function ItemCardEditor({
   imageConfig,
@@ -88,16 +130,16 @@ export function ItemCardEditor({
   fields,
   onChange,
   onImageConfirmed,
-  onUpload,
+  onUpload = defaultUploadHandler,
+  onUploadFromUrl = defaultUrlUploadHandler,
   onCheckReachability,
+  onUploadError,
   qrCodeUrl,
 }: ItemCardEditorProps) {
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [confirmRemoveOpen, setConfirmRemoveOpen] = React.useState(false);
   const [resolvedQrSrc, setResolvedQrSrc] = React.useState<string>(qrCodeDefaultUrl);
-  // Pending input forwarded to ImageUploadDialog when the user drops/selects
-  // a new image via the card-side ImageDropZone. Cleared on confirm/cancel.
-  const [pendingInput, setPendingInput] = React.useState<ImageInput | undefined>(undefined);
+  const [uploadState, setUploadState] = React.useState<UploadState>({ name: 'Idle' });
 
   // Resolve the QR image when a callback is provided. Falls back to the
   // bundled default on rejection or when no callback is given.
@@ -126,6 +168,12 @@ export function ItemCardEditor({
   onChangeRef.current = onChange;
   const onImageConfirmedRef = React.useRef(onImageConfirmed);
   onImageConfirmedRef.current = onImageConfirmed;
+  const onUploadRef = React.useRef(onUpload);
+  onUploadRef.current = onUpload;
+  const onUploadFromUrlRef = React.useRef(onUploadFromUrl);
+  onUploadFromUrlRef.current = onUploadFromUrl;
+  const onUploadErrorRef = React.useRef(onUploadError);
+  onUploadErrorRef.current = onUploadError;
 
   const updateField = React.useCallback(
     <K extends keyof ItemCardFields>(key: K, value: ItemCardFields[K]) => {
@@ -134,14 +182,43 @@ export function ItemCardEditor({
     [],
   );
 
-  // Drop-zone inputs route through the ImageUploadDialog so the user can
-  // crop/zoom/rotate before committing (#750 issue 1). Error inputs are
-  // surfaced inline by the ImageDropZone itself; the card just no-ops.
-  // The dialog is responsible for any fetch/upload of the supplied input.
-  const handleDropZoneInput = React.useCallback((input: ImageInput) => {
-    if (input.type === 'error') return;
-    setPendingInput(input);
-    setDialogOpen(true);
+  const commitImageUrl = React.useCallback((url: string) => {
+    onChangeRef.current({ ...fieldsRef.current, imageUrl: url });
+    onImageConfirmedRef.current?.(url);
+  }, []);
+
+  // Direct upload: no dialog, no cropper. The user drops → we upload →
+  // image appears on the card. Errors surface inline in the drop-zone slot.
+  const handleDropZoneInput = React.useCallback(
+    async (input: ImageInput) => {
+      // `error` inputs are already surfaced inline by ImageDropZone.
+      if (input.type === 'error') return;
+
+      // Both handlers have defaults (Storybook/dev stubs), so `onUploadRef`
+      // and `onUploadFromUrlRef` always hold a function. Consumers that
+      // forget to pass a real handler in production will upload to the
+      // stub — a visible bug — rather than silently dropping inputs.
+      const uploader: () => Promise<string> =
+        input.type === 'file'
+          ? () => onUploadRef.current(input.file)
+          : () => onUploadFromUrlRef.current(input.url);
+
+      setUploadState({ name: 'Uploading' });
+      try {
+        const cdnUrl = await uploader();
+        setUploadState({ name: 'Idle' });
+        commitImageUrl(cdnUrl);
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error('Upload failed');
+        setUploadState({ name: 'Error', message: error.message });
+        onUploadErrorRef.current?.(error);
+      }
+    },
+    [commitImageUrl],
+  );
+
+  const handleTryAgain = React.useCallback(() => {
+    setUploadState({ name: 'Idle' });
   }, []);
 
   const handleRemoveImage = React.useCallback(() => {
@@ -151,13 +228,11 @@ export function ItemCardEditor({
   const handleDialogConfirm = React.useCallback((result: ImageUploadResult) => {
     onChangeRef.current({ ...fieldsRef.current, imageUrl: result.imageUrl });
     setDialogOpen(false);
-    setPendingInput(undefined);
     onImageConfirmedRef.current?.(result.imageUrl);
   }, []);
 
   const handleDialogCancel = React.useCallback(() => {
     setDialogOpen(false);
-    setPendingInput(undefined);
   }, []);
 
   const attributeSections = [
@@ -239,7 +314,7 @@ export function ItemCardEditor({
           ))}
         </div>
 
-        {/* Product Image Area — drop zone or image */}
+        {/* Product Image Area — image, drop zone, uploading spinner, or error */}
         <div className="w-full">
           {fields.imageUrl ? (
             <div
@@ -274,6 +349,29 @@ export function ItemCardEditor({
                 </span>
               </button>
             </div>
+          ) : uploadState.name === 'Uploading' ? (
+            <div
+              data-slot="item-card-editor-uploading"
+              role="status"
+              className="w-full flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-muted/50 py-8"
+              style={{ aspectRatio: imageConfig.aspectRatio }}
+            >
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
+              <span className="text-sm text-muted-foreground">Uploading image&#8230;</span>
+            </div>
+          ) : uploadState.name === 'Error' ? (
+            <div
+              data-slot="item-card-editor-upload-error"
+              className="w-full flex flex-col items-center justify-center gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-6 text-center"
+              style={{ aspectRatio: imageConfig.aspectRatio }}
+            >
+              <p className="text-sm text-destructive" role="alert">
+                Upload failed: {uploadState.message}
+              </p>
+              <Button type="button" variant="secondary" size="sm" onClick={handleTryAgain}>
+                Try again
+              </Button>
+            </div>
           ) : (
             <ImageDropZone
               acceptedFormats={imageConfig.acceptedFormats}
@@ -300,15 +398,17 @@ export function ItemCardEditor({
         </div>
       </div>
 
-      {/* Image Upload Dialog */}
+      {/* Image Upload Dialog — edit-existing flow only (cropper, replace via
+          Upload New Image, etc.). New-image uploads from the card's drop zone
+          bypass this dialog entirely (see handleDropZoneInput above). */}
       <ImageUploadDialog
         config={imageConfig}
         existingImageUrl={fields.imageUrl}
         open={dialogOpen}
         onConfirm={handleDialogConfirm}
         onCancel={handleDialogCancel}
-        {...(pendingInput ? { pendingInput } : {})}
-        {...(onUpload ? { onUpload } : {})}
+        onUpload={onUpload}
+        onUploadFromUrl={onUploadFromUrl}
         {...(onCheckReachability ? { onCheckReachability } : {})}
       />
 

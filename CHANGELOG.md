@@ -18,6 +18,35 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.11.6] - 2026-04-15
+
+### Fixed
+
+- `ItemCardEditor`: completing Arda-cards/arda-frontend-app#750 issue 1.
+  The empty-state drop zone now uploads dropped/selected files inline
+  (no dialog, no cropper, no confirm click), replacing itself with a
+  spinner until the CDN URL returns and then rendering the image on the
+  card. On failure, an inline error banner with a "Try again" affordance
+  is shown in the drop-zone slot. This supports the UX team's
+  rapid-batch add-images-to-many-items flow, where the previous
+  dialog-gated path required an extra review + confirm per item. The
+  cropper is still reachable through the "Click to edit/replace" hover
+  overlay on an already-placed image — that path is a deliberate
+  edit-mindset interaction and keeps the confirm step. New props
+  `onUploadFromUrl?: (url: string) => Promise<string>` (required when
+  consumers expect URL inputs) and `onUploadError?: (err: Error) => void`
+  (optional, for hosts that want to raise a toast alongside the inline
+  error).
+- `ImageUploadDialog`: URL inputs no longer silently upload an empty
+  0-byte blob. Previously the Uploading effect coerced a URL string to
+  `new Blob([])` and called `onUpload(blob)`, producing a 0-byte CDN
+  object and a silent data-corruption bug that only surfaced when
+  someone later tried to render the image. The Uploading effect now
+  routes URL inputs through the new `onUploadFromUrl?: (url: string)
+  => Promise<string>` prop; if the host hasn't supplied a handler, the
+  dialog dispatches `UPLOAD_ERROR` with "URL upload not supported"
+  instead of silently uploading empty bytes.
+
 ## [4.11.5] - 2026-04-14
 
 ### Fixed

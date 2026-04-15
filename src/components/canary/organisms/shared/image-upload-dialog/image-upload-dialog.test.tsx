@@ -11,6 +11,9 @@ vi.mock('@/types/canary/utilities/image-upload-handlers', () => ({
   defaultUploadHandler: vi
     .fn()
     .mockResolvedValue('https://cdn.example.com/images/mock-uploaded.jpg'),
+  defaultUrlUploadHandler: vi
+    .fn()
+    .mockResolvedValue('https://picsum.photos/seed/mock-url-upload/400/400'),
   defaultReachabilityCheck: vi.fn().mockResolvedValue(true),
 }));
 
@@ -768,6 +771,95 @@ describe('ImageUploadDialog', () => {
         expect(screen.getByTestId('image-drop-zone')).toBeInTheDocument();
       });
       expect(screen.queryByTestId('image-preview-editor')).not.toBeInTheDocument();
+    });
+  });
+
+  // --- URL-input upload path (#750 issue 1 completion / empty-blob bug) ----
+  //
+  // Historically the Uploading effect coerced URL inputs to `new Blob([])`
+  // and called onUpload with 0 bytes — silently producing an empty CDN
+  // object. Now the dialog routes URL inputs through a separate
+  // onUploadFromUrl handler, or surfaces UPLOAD_ERROR if the host hasn't
+  // supplied one.
+
+  describe('URL-input upload path', () => {
+    async function enterProvidedImageWithUrl() {
+      fireEvent.click(screen.getByText('drop url'));
+      await act(async () => {
+        await Promise.resolve();
+      });
+      await waitFor(() => {
+        expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
+      });
+    }
+
+    it('routes URL input through onUploadFromUrl on Confirm', async () => {
+      const onUploadFromUrl = vi
+        .fn<(url: string) => Promise<string>>()
+        .mockResolvedValue('https://cdn.example.com/from-url.jpg');
+      const onUpload = vi.fn<(blob: Blob) => Promise<string>>();
+      const onConfirm = vi.fn();
+      renderDialog({ onUploadFromUrl, onUpload, onConfirm });
+
+      await enterProvidedImageWithUrl();
+      fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+
+      await waitFor(() => {
+        expect(onUploadFromUrl).toHaveBeenCalledWith('https://example.com/image.jpg');
+        expect(onConfirm).toHaveBeenCalledWith(
+          expect.objectContaining({ imageUrl: 'https://cdn.example.com/from-url.jpg' }),
+        );
+      });
+      // The Blob-based onUpload is NOT called for URL input.
+      expect(onUpload).not.toHaveBeenCalled();
+    });
+
+    it('falls back to defaultUrlUploadHandler when the host does not supply onUploadFromUrl', async () => {
+      // Storybook/dev parity — both handlers have stub defaults. Previously
+      // URL confirms without a handler silently uploaded an empty blob
+      // (0-byte CDN object). Now the bundled stub fires and returns a
+      // visible mock URL.
+      const onUpload = vi.fn<(blob: Blob) => Promise<string>>();
+      const onConfirm = vi.fn();
+      renderDialog({ onUpload, onConfirm });
+
+      await enterProvidedImageWithUrl();
+      fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+
+      await waitFor(
+        () => {
+          expect(onConfirm).toHaveBeenCalledWith(
+            expect.objectContaining({
+              imageUrl: expect.stringMatching(/^https:\/\/picsum\.photos\//),
+            }),
+          );
+        },
+        { timeout: 3000 },
+      );
+      // File upload handler must not fire for URL input.
+      expect(onUpload).not.toHaveBeenCalled();
+    });
+
+    it('does not touch onUploadFromUrl for File input — Blob path still uses onUpload', async () => {
+      const { defaultUploadHandler } =
+        await import('@/types/canary/utilities/image-upload-handlers');
+      (defaultUploadHandler as ReturnType<typeof vi.fn>).mockResolvedValue(
+        'https://cdn.example.com/images/mock-uploaded.jpg',
+      );
+      const onUploadFromUrl = vi.fn<(url: string) => Promise<string>>();
+      const onConfirm = vi.fn();
+      renderDialog({ onUploadFromUrl, onConfirm });
+
+      fireEvent.click(screen.getByText('drop file'));
+      await act(async () => {
+        await Promise.resolve();
+      });
+      fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+
+      await waitFor(() => {
+        expect(onConfirm).toHaveBeenCalled();
+      });
+      expect(onUploadFromUrl).not.toHaveBeenCalled();
     });
   });
 });
