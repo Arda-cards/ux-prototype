@@ -60,6 +60,16 @@ export interface ImageUploadDialogRuntimeProps {
    */
   onUpload?: (file: Blob) => Promise<string>;
   /**
+   * Upload-from-URL handler &#8212; receives an external image URL, performs
+   * the server-side fetch + upload round-trip, and returns the CDN URL.
+   *
+   * Required when the user can supply URL inputs (paste or drag an image
+   * from another tab). If absent, URL inputs cannot be uploaded and the
+   * Uploading phase dispatches `UPLOAD_ERROR` instead of silently uploading
+   * an empty blob.
+   */
+  onUploadFromUrl?: (url: string) => Promise<string>;
+  /**
    * URL reachability check &#8212; returns true if the URL is reachable.
    * Defaults to `defaultReachabilityCheck`.
    */
@@ -198,6 +208,7 @@ export function ImageUploadDialog({
   open,
   onCancel,
   onUpload = defaultUploadHandler,
+  onUploadFromUrl,
   onCheckReachability = defaultReachabilityCheck,
   pendingInput,
 }: ImageUploadDialogProps) {
@@ -223,6 +234,8 @@ export function ImageUploadDialog({
   onConfirmRef.current = onConfirm;
   const onUploadRef = React.useRef(onUpload);
   onUploadRef.current = onUpload;
+  const onUploadFromUrlRef = React.useRef(onUploadFromUrl);
+  onUploadFromUrlRef.current = onUploadFromUrl;
 
   // Reset state when dialog opens/closes
   const resetEditRefs = React.useCallback(() => {
@@ -293,18 +306,35 @@ export function ImageUploadDialog({
       };
     }
 
-    // For new uploads: Blob goes to onUpload; string URLs create an empty blob
-    // (URL-input flow — the server-side upload will fetch the URL content).
-    const blob = typeof imageData === 'string' ? new Blob([]) : imageData;
-    onUploadRef
-      .current(blob)
+    // For new uploads, the two input kinds take different paths:
+    //
+    // - Blob/File: send the bytes directly via `onUpload`.
+    // - string URL: route through `onUploadFromUrl`, which is expected to
+    //   fetch the external URL server-side (bypassing browser CORS) and
+    //   then upload the fetched bytes. If the host has not supplied
+    //   `onUploadFromUrl`, we fail loud instead of silently uploading an
+    //   empty blob — which would produce a 0-byte CDN object and a silent
+    //   data-corruption bug (Arda-cards/arda-frontend-app#750 follow-up).
+    const uploadPromise: Promise<string> =
+      typeof imageData === 'string'
+        ? onUploadFromUrlRef.current
+          ? onUploadFromUrlRef.current(imageData)
+          : Promise.reject(
+              new Error(
+                'URL upload not supported: this dialog was not given an onUploadFromUrl handler.',
+              ),
+            )
+        : onUploadRef.current(imageData);
+
+    const originalSize = typeof imageData === 'string' ? 0 : imageData.size;
+    uploadPromise
       .then((imageUrl) => {
         if (cancelled) return;
         onConfirmRef.current({
           imageUrl,
           wasCompressed: false,
-          originalSizeBytes: blob.size,
-          finalSizeBytes: blob.size,
+          originalSizeBytes: originalSize,
+          finalSizeBytes: originalSize,
         });
       })
       .catch((err: unknown) => {

@@ -132,96 +132,148 @@ describe('ItemCardEditor — QR placeholder (#750 issue 3)', () => {
   });
 });
 
-describe('ItemCardEditor — drop-zone routes through dialog (#750 issue 1)', () => {
+describe('ItemCardEditor — drop-zone uploads directly, no dialog (#750 issue 1 completion)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     lastDialogProps = undefined;
   });
 
-  it('opens the upload dialog with the file as pendingInput on file drop', async () => {
+  it('uploads a dropped file via onUpload and commits the returned CDN URL', async () => {
     const onChange = vi.fn();
     const onImageConfirmed = vi.fn();
-    renderEditor({ onChange, onImageConfirmed });
+    const onUpload = vi.fn().mockResolvedValue('https://cdn.example.com/uploaded.jpg');
+    renderEditor({ onChange, onImageConfirmed, onUpload });
 
     fireEvent.click(screen.getByText('drop-file'));
 
-    await waitFor(() => {
-      expect(screen.getByTestId('image-upload-dialog')).toBeInTheDocument();
-    });
+    // Upload dialog must NOT be shown for the direct-upload flow.
+    expect(screen.queryByTestId('image-upload-dialog')).not.toBeInTheDocument();
 
-    // Dialog received the dropped file as pendingInput, did NOT receive the
-    // file as existingImageUrl, and the parent's fields.imageUrl was NOT
-    // touched yet (no commit until the user confirms in the dialog).
-    expect(lastDialogProps?.pendingInput?.type).toBe('file');
-    expect(lastDialogProps?.pendingInput?.file).toBeInstanceOf(File);
-    expect(lastDialogProps?.existingImageUrl).toBeNull();
-    expect(onChange).not.toHaveBeenCalled();
-    expect(onImageConfirmed).not.toHaveBeenCalled();
+    await waitFor(() => {
+      expect(onUpload).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith(
+        expect.objectContaining({ imageUrl: 'https://cdn.example.com/uploaded.jpg' }),
+      );
+      expect(onImageConfirmed).toHaveBeenCalledWith('https://cdn.example.com/uploaded.jpg');
+    });
   });
 
-  it('opens the upload dialog with the URL as pendingInput on URL drop', async () => {
+  it('uploads a dropped URL via onUploadFromUrl and commits the returned CDN URL', async () => {
     const onChange = vi.fn();
     const onImageConfirmed = vi.fn();
-    renderEditor({ onChange, onImageConfirmed });
+    const onUploadFromUrl = vi.fn().mockResolvedValue('https://cdn.example.com/from-url.jpg');
+    renderEditor({ onChange, onImageConfirmed, onUploadFromUrl });
 
     fireEvent.click(screen.getByText('drop-url'));
 
-    await waitFor(() => {
-      expect(screen.getByTestId('image-upload-dialog')).toBeInTheDocument();
-    });
+    expect(screen.queryByTestId('image-upload-dialog')).not.toBeInTheDocument();
 
-    expect(lastDialogProps?.pendingInput?.type).toBe('url');
-    expect(lastDialogProps?.pendingInput?.url).toBe('https://example.com/img.jpg');
+    await waitFor(() => {
+      expect(onUploadFromUrl).toHaveBeenCalledWith('https://example.com/img.jpg');
+      expect(onChange).toHaveBeenCalledWith(
+        expect.objectContaining({ imageUrl: 'https://cdn.example.com/from-url.jpg' }),
+      );
+      expect(onImageConfirmed).toHaveBeenCalledWith('https://cdn.example.com/from-url.jpg');
+    });
+  });
+
+  it('shows a spinner (role=status) while an upload is in flight', async () => {
+    const onUpload = vi.fn(
+      () => new Promise<string>(() => {}), // never resolves
+    );
+    renderEditor({ onUpload });
+
+    fireEvent.click(screen.getByText('drop-file'));
+
+    const status = await screen.findByRole('status');
+    expect(status).toHaveAttribute('data-slot', 'item-card-editor-uploading');
+    expect(status).toHaveTextContent(/uploading image/i);
+  });
+
+  it('shows an inline error banner and hides the drop zone on upload failure', async () => {
+    const onChange = vi.fn();
+    const onImageConfirmed = vi.fn();
+    const onUploadError = vi.fn();
+    const onUpload = vi.fn().mockRejectedValue(new Error('quota exceeded'));
+    renderEditor({ onChange, onImageConfirmed, onUpload, onUploadError });
+
+    fireEvent.click(screen.getByText('drop-file'));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/upload failed: quota exceeded/i);
+    expect(screen.queryByTestId('image-drop-zone')).not.toBeInTheDocument();
+    expect(onUploadError).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'quota exceeded' }),
+    );
     expect(onChange).not.toHaveBeenCalled();
     expect(onImageConfirmed).not.toHaveBeenCalled();
   });
 
-  it('does not open the dialog and ignores error inputs from the drop zone', () => {
+  it('Try again restores the drop zone so the user can drop another file', async () => {
+    const onUpload = vi.fn().mockRejectedValue(new Error('network down'));
+    renderEditor({ onUpload });
+
+    fireEvent.click(screen.getByText('drop-file'));
+    await screen.findByRole('alert');
+
+    fireEvent.click(screen.getByRole('button', { name: /try again/i }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('image-drop-zone')).toBeInTheDocument();
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+  });
+
+  it('surfaces a graceful error when onUpload is not configured', async () => {
+    const onUploadError = vi.fn();
     const onChange = vi.fn();
-    const onImageConfirmed = vi.fn();
-    renderEditor({ onChange, onImageConfirmed });
+    renderEditor({ onUploadError, onChange });
+
+    fireEvent.click(screen.getByText('drop-file'));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/file upload is not configured/i);
+    expect(onUploadError).toHaveBeenCalledWith(expect.any(Error));
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('surfaces a graceful error when onUploadFromUrl is not configured', async () => {
+    const onUploadError = vi.fn();
+    const onChange = vi.fn();
+    renderEditor({ onUploadError, onChange });
+
+    fireEvent.click(screen.getByText('drop-url'));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/url upload is not configured/i);
+    expect(onUploadError).toHaveBeenCalledWith(expect.any(Error));
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('ignores error inputs from the drop zone (ImageDropZone surfaces them inline itself)', () => {
+    const onChange = vi.fn();
+    const onUpload = vi.fn();
+    renderEditor({ onChange, onUpload });
 
     fireEvent.click(screen.getByText('drop-error'));
 
     expect(screen.queryByTestId('image-upload-dialog')).not.toBeInTheDocument();
+    expect(onUpload).not.toHaveBeenCalled();
     expect(onChange).not.toHaveBeenCalled();
-    expect(onImageConfirmed).not.toHaveBeenCalled();
   });
 
-  it('commits imageUrl and fires onImageConfirmed only after dialog confirms', async () => {
+  it('edit-existing flow still opens the dialog (overlay click triggers it)', async () => {
     const onChange = vi.fn();
-    const onImageConfirmed = vi.fn();
-    renderEditor({ onChange, onImageConfirmed });
+    renderEditor({
+      onChange,
+      fields: { ...EMPTY_ITEM_CARD_FIELDS, imageUrl: 'https://cdn.example.com/existing.jpg' },
+    });
 
-    fireEvent.click(screen.getByText('drop-file'));
+    fireEvent.click(screen.getByRole('button', { name: /replace image/i }));
+
     await waitFor(() => {
       expect(screen.getByTestId('image-upload-dialog')).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByText('dialog-confirm'));
-
-    await waitFor(() => {
-      expect(onChange).toHaveBeenCalledWith(
-        expect.objectContaining({ imageUrl: 'https://cdn.example.com/confirmed.jpg' }),
-      );
-      expect(onImageConfirmed).toHaveBeenCalledWith('https://cdn.example.com/confirmed.jpg');
-    });
-  });
-
-  it('does not commit imageUrl when the dialog cancels', async () => {
-    const onChange = vi.fn();
-    const onImageConfirmed = vi.fn();
-    renderEditor({ onChange, onImageConfirmed });
-
-    fireEvent.click(screen.getByText('drop-file'));
-    await waitFor(() => {
-      expect(screen.getByTestId('image-upload-dialog')).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByText('dialog-cancel'));
-
-    await waitFor(() => {
-      expect(screen.queryByTestId('image-upload-dialog')).not.toBeInTheDocument();
-    });
-    expect(onChange).not.toHaveBeenCalled();
-    expect(onImageConfirmed).not.toHaveBeenCalled();
+    expect(lastDialogProps?.existingImageUrl).toBe('https://cdn.example.com/existing.jpg');
   });
 });

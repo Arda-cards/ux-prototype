@@ -770,4 +770,84 @@ describe('ImageUploadDialog', () => {
       expect(screen.queryByTestId('image-preview-editor')).not.toBeInTheDocument();
     });
   });
+
+  // --- URL-input upload path (#750 issue 1 completion / empty-blob bug) ----
+  //
+  // Historically the Uploading effect coerced URL inputs to `new Blob([])`
+  // and called onUpload with 0 bytes — silently producing an empty CDN
+  // object. Now the dialog routes URL inputs through a separate
+  // onUploadFromUrl handler, or surfaces UPLOAD_ERROR if the host hasn't
+  // supplied one.
+
+  describe('URL-input upload path', () => {
+    async function enterProvidedImageWithUrl() {
+      fireEvent.click(screen.getByText('drop url'));
+      await act(async () => {
+        await Promise.resolve();
+      });
+      await waitFor(() => {
+        expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
+      });
+    }
+
+    it('routes URL input through onUploadFromUrl on Confirm', async () => {
+      const onUploadFromUrl = vi
+        .fn<(url: string) => Promise<string>>()
+        .mockResolvedValue('https://cdn.example.com/from-url.jpg');
+      const onUpload = vi.fn<(blob: Blob) => Promise<string>>();
+      const onConfirm = vi.fn();
+      renderDialog({ onUploadFromUrl, onUpload, onConfirm });
+
+      await enterProvidedImageWithUrl();
+      fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+
+      await waitFor(() => {
+        expect(onUploadFromUrl).toHaveBeenCalledWith('https://example.com/image.jpg');
+        expect(onConfirm).toHaveBeenCalledWith(
+          expect.objectContaining({ imageUrl: 'https://cdn.example.com/from-url.jpg' }),
+        );
+      });
+      // The Blob-based onUpload is NOT called for URL input.
+      expect(onUpload).not.toHaveBeenCalled();
+    });
+
+    it('dispatches UPLOAD_ERROR when URL input is confirmed without an onUploadFromUrl handler', async () => {
+      // Only onUpload is supplied. Previously this would silently upload an
+      // empty blob; now it must raise an error instead.
+      const onUpload = vi.fn<(blob: Blob) => Promise<string>>();
+      const onConfirm = vi.fn();
+      renderDialog({ onUpload, onConfirm });
+
+      await enterProvidedImageWithUrl();
+      fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toHaveTextContent(/URL upload not supported/i);
+      });
+      expect(onUpload).not.toHaveBeenCalled();
+      expect(onConfirm).not.toHaveBeenCalled();
+    });
+
+    it('does not touch onUploadFromUrl for File input — Blob path still uses onUpload', async () => {
+      const { defaultUploadHandler } =
+        await import('@/types/canary/utilities/image-upload-handlers');
+      (defaultUploadHandler as ReturnType<typeof vi.fn>).mockResolvedValue(
+        'https://cdn.example.com/images/mock-uploaded.jpg',
+      );
+      const onUploadFromUrl = vi.fn<(url: string) => Promise<string>>();
+      const onConfirm = vi.fn();
+      renderDialog({ onUploadFromUrl, onConfirm });
+
+      fireEvent.click(screen.getByText('drop file'));
+      await act(async () => {
+        await Promise.resolve();
+      });
+      fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+
+      await waitFor(() => {
+        expect(onConfirm).toHaveBeenCalled();
+      });
+      expect(onUploadFromUrl).not.toHaveBeenCalled();
+    });
+  });
 });
