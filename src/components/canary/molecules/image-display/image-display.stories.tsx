@@ -591,9 +591,12 @@ const {
     goToScene(6);
     await delay();
 
-    // Final assertion
+    // Final assertion. The URL-input path goes through defaultUrlUploadHandler
+    // (not the file-input defaultUploadHandler), which returns a distinct
+    // picsum seed ("arda-from-url-<len>"). Match the prefix the URL handler
+    // emits so the story doesn't depend on the seeded URL's exact length.
     await waitFor(() => {
-      expect(canvas.getByText(/arda-uploaded/i)).toBeInTheDocument();
+      expect(canvas.getByText(/arda-from-url/i)).toBeInTheDocument();
     });
   },
 });
