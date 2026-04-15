@@ -109,7 +109,7 @@ describe('getCroppedImage', () => {
       //   drawImage(image, 0, 0, scaledWidth, scaledHeight)
       // With the mock image at 1x1, scaled dims equal the zoom factor.
       const sourceDraw = ctx.drawImage.mock.calls[0];
-      expect(sourceDraw).toBeDefined();
+      if (!sourceDraw) throw new Error('drawImage was not called');
       expect(sourceDraw[3]).toBe(expected);
       expect(sourceDraw[4]).toBe(expected);
     },

@@ -17,6 +17,8 @@ import type {
   ImageUploadResult,
 } from '@/types/canary/utilities/image-field-config';
 
+import qrCodeDefaultUrl from './qr-code.png';
+
 // --- Interfaces ---
 
 /** Field values for the item card. */
@@ -58,6 +60,15 @@ export interface ItemCardEditorRuntimeProps {
    * Same bridge pattern as onUpload.
    */
   onCheckReachability?: (url: string) => Promise<boolean>;
+  /**
+   * Async resolver for the QR-code image shown in the card header.
+   * When omitted (or when the promise rejects), a bundled default QR image
+   * is used. The default is the static placeholder; consumers that have a
+   * real per-item QR URL should pass a callback here. The host application
+   * is responsible for determining which item's QR to fetch — typically by
+   * closing over an item identifier in scope.
+   */
+  qrCodeUrl?: () => Promise<string>;
 }
 
 /** Combined props for ItemCardEditor. */
@@ -79,10 +90,32 @@ export function ItemCardEditor({
   onImageConfirmed,
   onUpload,
   onCheckReachability,
+  qrCodeUrl,
 }: ItemCardEditorProps) {
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [confirmRemoveOpen, setConfirmRemoveOpen] = React.useState(false);
+  const [resolvedQrSrc, setResolvedQrSrc] = React.useState<string>(qrCodeDefaultUrl);
   const objectUrlRef = React.useRef<string | null>(null);
+
+  // Resolve the QR image when a callback is provided. Falls back to the
+  // bundled default on rejection or when no callback is given.
+  React.useEffect(() => {
+    if (!qrCodeUrl) {
+      setResolvedQrSrc(qrCodeDefaultUrl);
+      return;
+    }
+    let cancelled = false;
+    qrCodeUrl()
+      .then((url) => {
+        if (!cancelled) setResolvedQrSrc(url);
+      })
+      .catch(() => {
+        if (!cancelled) setResolvedQrSrc(qrCodeDefaultUrl);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [qrCodeUrl]);
 
   // Stable refs for values used in async callbacks to avoid stale closures.
   const fieldsRef = React.useRef(fields);
@@ -202,7 +235,7 @@ export function ItemCardEditor({
             />
           </div>
           <div className="flex flex-col items-center flex-shrink-0 h-10 justify-between">
-            <img src="/images/qr-code.png" alt="QR" className="w-7 h-7 object-contain" />
+            <img src={resolvedQrSrc} alt="QR" className="w-7 h-7 object-contain" />
             <span className="text-[9px] font-semibold text-muted-foreground leading-none">
               Arda
             </span>

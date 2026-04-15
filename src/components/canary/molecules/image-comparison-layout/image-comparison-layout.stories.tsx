@@ -52,7 +52,9 @@ export const DesktopSideBySide: Story = {
           <ImagePreviewEditor
             aspectRatio={ITEM_IMAGE_CONFIG.aspectRatio}
             imageData={MOCK_ITEM_IMAGE}
-            onCropChange={() => {}}
+            onCropComplete={() => {}}
+            onZoomChange={() => {}}
+            onRotationChange={() => {}}
             onReset={() => {}}
           />
         </ImageComparisonLayout>
@@ -86,7 +88,9 @@ export const MobileTabs: Story = {
       <ImagePreviewEditor
         aspectRatio={ITEM_IMAGE_CONFIG.aspectRatio}
         imageData={MOCK_ITEM_IMAGE}
-        onCropChange={() => {}}
+        onCropComplete={() => {}}
+        onZoomChange={() => {}}
+        onRotationChange={() => {}}
         onReset={() => {}}
       />
     </ImageComparisonLayout>
@@ -111,7 +115,9 @@ export const NoExistingImage: Story = {
         <ImagePreviewEditor
           aspectRatio={ITEM_IMAGE_CONFIG.aspectRatio}
           imageData="https://picsum.photos/seed/arda-new-image/400/400"
-          onCropChange={() => {}}
+          onCropComplete={() => {}}
+          onZoomChange={() => {}}
+          onRotationChange={() => {}}
           onReset={() => {}}
         />
       </ImageComparisonLayout>
@@ -137,7 +143,9 @@ export const ExistingImageBroken: Story = {
         <ImagePreviewEditor
           aspectRatio={ITEM_IMAGE_CONFIG.aspectRatio}
           imageData="https://picsum.photos/seed/arda-new-image/400/400"
-          onCropChange={() => {}}
+          onCropComplete={() => {}}
+          onZoomChange={() => {}}
+          onRotationChange={() => {}}
           onReset={() => {}}
         />
       </ImageComparisonLayout>
@@ -158,7 +166,9 @@ export const Playground: Story = {
         <ImagePreviewEditor
           aspectRatio={ITEM_IMAGE_CONFIG.aspectRatio}
           imageData={args.existingImageUrl ?? MOCK_ITEM_IMAGE}
-          onCropChange={() => {}}
+          onCropComplete={() => {}}
+          onZoomChange={() => {}}
+          onRotationChange={() => {}}
           onReset={() => {}}
         />
       </ImageComparisonLayout>

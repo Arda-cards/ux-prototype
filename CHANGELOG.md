@@ -40,6 +40,14 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   valid pixelCrop with a zero-sized sentinel (Arda-cards/arda-frontend-app#750 issue 5b).
 - Extracted shared `isCdnUrl` helper and new `prefetchImageAsBlob` helper
   to `src/types/canary/utilities/cdn-url.ts`.
+- `ItemCardEditor` now bundles its placeholder QR image as a Vite asset
+  (co-located at `src/components/canary/organisms/item-card-editor/qr-code.png`)
+  instead of pointing at the absolute path `/images/qr-code.png`, which
+  only resolved against Storybook's dev server and broke when the
+  component was published as part of the npm package. Adds an optional
+  `qrCodeUrl?: () => Promise<string>` prop so consumers can supply an
+  async resolver for a per-item QR URL; the bundled default is used when
+  no callback is provided or when it rejects (Arda-cards/arda-frontend-app#750 issue 3).
 
 ## [4.11.4] - 2026-04-14
 

@@ -18,7 +18,8 @@ import { MOCK_ITEM_IMAGE } from '@/use-cases/general-behaviors/entity-media/_sha
    ================================================================ */
 
 function CropZoomRotateLive() {
-  const [cropData, setCropData] = React.useState<object | null>(null);
+  const [touched, setTouched] = React.useState(false);
+  const markTouched = React.useCallback(() => setTouched(true), []);
 
   return (
     <div className="flex flex-col items-center gap-4 p-4">
@@ -26,11 +27,13 @@ function CropZoomRotateLive() {
         <ImagePreviewEditor
           aspectRatio={1}
           imageData={MOCK_ITEM_IMAGE}
-          onCropChange={(data) => setCropData(data)}
-          onReset={() => setCropData(null)}
+          onCropComplete={markTouched}
+          onZoomChange={markTouched}
+          onRotationChange={markTouched}
+          onReset={() => setTouched(false)}
         />
       </div>
-      {cropData && <p className="text-xs text-muted-foreground font-mono">Crop updated</p>}
+      {touched && <p className="text-xs text-muted-foreground font-mono">Crop updated</p>}
     </div>
   );
 }
@@ -51,7 +54,9 @@ function CropZoomRotateScene({ sceneIndex }: { sceneIndex: number }) {
             <ImagePreviewEditor
               aspectRatio={1}
               imageData={MOCK_ITEM_IMAGE}
-              onCropChange={noop}
+              onCropComplete={noop}
+              onZoomChange={noop}
+              onRotationChange={noop}
               onReset={noop}
             />
           </div>
@@ -69,7 +74,9 @@ function CropZoomRotateScene({ sceneIndex }: { sceneIndex: number }) {
             <ImagePreviewEditor
               aspectRatio={1}
               imageData={MOCK_ITEM_IMAGE}
-              onCropChange={noop}
+              onCropComplete={noop}
+              onZoomChange={noop}
+              onRotationChange={noop}
               onReset={noop}
             />
           </div>
@@ -85,7 +92,9 @@ function CropZoomRotateScene({ sceneIndex }: { sceneIndex: number }) {
             <ImagePreviewEditor
               aspectRatio={1}
               imageData={MOCK_ITEM_IMAGE}
-              onCropChange={noop}
+              onCropComplete={noop}
+              onZoomChange={noop}
+              onRotationChange={noop}
               onReset={noop}
             />
           </div>
@@ -101,7 +110,9 @@ function CropZoomRotateScene({ sceneIndex }: { sceneIndex: number }) {
             <ImagePreviewEditor
               aspectRatio={1}
               imageData={MOCK_ITEM_IMAGE}
-              onCropChange={noop}
+              onCropComplete={noop}
+              onZoomChange={noop}
+              onRotationChange={noop}
               onReset={noop}
             />
           </div>
@@ -117,7 +128,9 @@ function CropZoomRotateScene({ sceneIndex }: { sceneIndex: number }) {
             <ImagePreviewEditor
               aspectRatio={1}
               imageData={MOCK_ITEM_IMAGE}
-              onCropChange={noop}
+              onCropComplete={noop}
+              onZoomChange={noop}
+              onRotationChange={noop}
               onReset={noop}
             />
           </div>
@@ -133,7 +146,9 @@ function CropZoomRotateScene({ sceneIndex }: { sceneIndex: number }) {
             <ImagePreviewEditor
               aspectRatio={1}
               imageData={MOCK_ITEM_IMAGE}
-              onCropChange={noop}
+              onCropComplete={noop}
+              onZoomChange={noop}
+              onRotationChange={noop}
               onReset={noop}
             />
           </div>
@@ -150,7 +165,9 @@ function CropZoomRotateScene({ sceneIndex }: { sceneIndex: number }) {
             <ImagePreviewEditor
               aspectRatio={1}
               imageData={MOCK_ITEM_IMAGE}
-              onCropChange={noop}
+              onCropComplete={noop}
+              onZoomChange={noop}
+              onRotationChange={noop}
               onReset={noop}
             />
           </div>

@@ -57,9 +57,19 @@ const meta: Meta<typeof ImagePreviewEditor> = {
       description: 'Image source &#8212; select a preset URL.',
       table: { category: 'Runtime' },
     },
-    onCropChange: {
-      action: 'onCropChange',
-      description: 'Called with CropData whenever crop, zoom, or rotation changes.',
+    onCropComplete: {
+      action: 'onCropComplete',
+      description: 'Called with the final pixel crop when the crop area changes.',
+      table: { category: 'Runtime' },
+    },
+    onZoomChange: {
+      action: 'onZoomChange',
+      description: 'Called when the zoom slider changes.',
+      table: { category: 'Runtime' },
+    },
+    onRotationChange: {
+      action: 'onRotationChange',
+      description: 'Called when the user rotates clockwise or counter-clockwise.',
       table: { category: 'Runtime' },
     },
     onReset: {
@@ -69,7 +79,9 @@ const meta: Meta<typeof ImagePreviewEditor> = {
     },
   },
   args: {
-    onCropChange: fn(),
+    onCropComplete: fn(),
+    onZoomChange: fn(),
+    onRotationChange: fn(),
     onReset: fn(),
   },
   decorators: [
