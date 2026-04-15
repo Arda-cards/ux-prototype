@@ -28,6 +28,16 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   mismatch where the Cropper loaded with `crossOrigin: 'use-credentials'`
   but `getCroppedImage` re-fetched with `crossOrigin: 'anonymous'`, causing
   `canvas.toBlob()` to fail silently and the crop to no-op (Arda-cards/arda-frontend-app#750 issue 5c).
+- Zoom-out (zoom < 1) no longer produces a black-square output. `getCroppedImage`
+  now applies the zoom factor when drawing the source image; the output
+  matches the editor preview, including transparent/black padding around
+  the shrunken image (Option A semantics; Arda-cards/arda-frontend-app#750 issue 5a).
+  The new API takes an options object: `getCroppedImage({ imageSrc, pixelCrop, rotation?, zoom?, outputFormat?, quality? })`.
+- Zoom-only and rotation-only edits now produce visible changes. Refactored
+  `ImagePreviewEditor` to fire three independent callbacks
+  (`onCropComplete`, `onZoomChange`, `onRotationChange`) instead of a single
+  `onCropChange`, so zoom/rotate adjustments no longer clobber the last
+  valid pixelCrop with a zero-sized sentinel (Arda-cards/arda-frontend-app#750 issue 5b).
 - Extracted shared `isCdnUrl` helper and new `prefetchImageAsBlob` helper
   to `src/types/canary/utilities/cdn-url.ts`.
 
