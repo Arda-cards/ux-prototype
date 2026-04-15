@@ -11,6 +11,9 @@ vi.mock('@/types/canary/utilities/image-upload-handlers', () => ({
   defaultUploadHandler: vi
     .fn()
     .mockResolvedValue('https://cdn.example.com/images/mock-uploaded.jpg'),
+  defaultUrlUploadHandler: vi
+    .fn()
+    .mockResolvedValue('https://picsum.photos/seed/mock-url-upload/400/400'),
   defaultReachabilityCheck: vi.fn().mockResolvedValue(true),
 }));
 
@@ -811,9 +814,11 @@ describe('ImageUploadDialog', () => {
       expect(onUpload).not.toHaveBeenCalled();
     });
 
-    it('dispatches UPLOAD_ERROR when URL input is confirmed without an onUploadFromUrl handler', async () => {
-      // Only onUpload is supplied. Previously this would silently upload an
-      // empty blob; now it must raise an error instead.
+    it('falls back to defaultUrlUploadHandler when the host does not supply onUploadFromUrl', async () => {
+      // Storybook/dev parity — both handlers have stub defaults. Previously
+      // URL confirms without a handler silently uploaded an empty blob
+      // (0-byte CDN object). Now the bundled stub fires and returns a
+      // visible mock URL.
       const onUpload = vi.fn<(blob: Blob) => Promise<string>>();
       const onConfirm = vi.fn();
       renderDialog({ onUpload, onConfirm });
@@ -821,11 +826,18 @@ describe('ImageUploadDialog', () => {
       await enterProvidedImageWithUrl();
       fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
 
-      await waitFor(() => {
-        expect(screen.getByRole('alert')).toHaveTextContent(/URL upload not supported/i);
-      });
+      await waitFor(
+        () => {
+          expect(onConfirm).toHaveBeenCalledWith(
+            expect.objectContaining({
+              imageUrl: expect.stringMatching(/^https:\/\/picsum\.photos\//),
+            }),
+          );
+        },
+        { timeout: 3000 },
+      );
+      // File upload handler must not fire for URL input.
       expect(onUpload).not.toHaveBeenCalled();
-      expect(onConfirm).not.toHaveBeenCalled();
     });
 
     it('does not touch onUploadFromUrl for File input — Blob path still uses onUpload', async () => {

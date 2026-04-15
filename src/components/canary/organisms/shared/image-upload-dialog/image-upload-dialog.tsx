@@ -25,6 +25,7 @@ import { ImagePreviewEditor } from '@/components/canary/molecules/image-preview-
 import { ImageComparisonLayout } from '@/components/canary/molecules/image-comparison-layout/image-comparison-layout';
 import {
   defaultUploadHandler,
+  defaultUrlUploadHandler,
   defaultReachabilityCheck,
 } from '@/types/canary/utilities/image-upload-handlers';
 import { getCroppedImage } from '@/types/canary/utilities/get-cropped-image';
@@ -62,11 +63,8 @@ export interface ImageUploadDialogRuntimeProps {
   /**
    * Upload-from-URL handler &#8212; receives an external image URL, performs
    * the server-side fetch + upload round-trip, and returns the CDN URL.
-   *
-   * Required when the user can supply URL inputs (paste or drag an image
-   * from another tab). If absent, URL inputs cannot be uploaded and the
-   * Uploading phase dispatches `UPLOAD_ERROR` instead of silently uploading
-   * an empty blob.
+   * Defaults to `defaultUrlUploadHandler` (Storybook/dev stub); production
+   * consumers must pass a real handler.
    */
   onUploadFromUrl?: (url: string) => Promise<string>;
   /**
@@ -208,7 +206,7 @@ export function ImageUploadDialog({
   open,
   onCancel,
   onUpload = defaultUploadHandler,
-  onUploadFromUrl,
+  onUploadFromUrl = defaultUrlUploadHandler,
   onCheckReachability = defaultReachabilityCheck,
   pendingInput,
 }: ImageUploadDialogProps) {
@@ -311,22 +309,16 @@ export function ImageUploadDialog({
     // - Blob/File: send the bytes directly via `onUpload`.
     // - string URL: route through `onUploadFromUrl`, which is expected to
     //   fetch the external URL server-side (bypassing browser CORS) and
-    //   then upload the fetched bytes. If the host has not supplied
-    //   `onUploadFromUrl`, we fail loud instead of silently uploading an
-    //   empty blob — which would produce a 0-byte CDN object and a silent
-    //   data-corruption bug (Arda-cards/arda-frontend-app#750 follow-up).
+    //   then upload the fetched bytes.
+    //
+    // Both handlers have bundled defaults (`defaultUploadHandler` and
+    // `defaultUrlUploadHandler`) so Storybook and dev harnesses work out
+    // of the box. Production consumers must pass real handlers to avoid
+    // shipping the stubs — the defaults return picsum.photos URLs that
+    // would be very visible in the rendered card.
     const uploadPromise: Promise<string> =
       typeof imageData === 'string'
-        ? onUploadFromUrlRef.current
-          ? onUploadFromUrlRef.current(imageData)
-          : (() => {
-              // Log the detail for operators/devs; surface a short,
-              // user-readable message via the UploadError UI.
-              console.error(
-                'ImageUploadDialog URL upload requested without an onUploadFromUrl handler.',
-              );
-              return Promise.reject(new Error('URL upload not supported'));
-            })()
+        ? onUploadFromUrlRef.current(imageData)
         : onUploadRef.current(imageData);
 
     const originalSize = typeof imageData === 'string' ? 0 : imageData.size;
