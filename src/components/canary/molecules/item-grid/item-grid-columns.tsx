@@ -240,13 +240,10 @@ export interface ItemGridLookups {
   unit?: (search: string) => Promise<TypeaheadOption[]>;
 }
 
-/** Typed provider hooks for grid cell editors (FD-01 / FD-15). */
-export interface ItemGridEditorHooks {
-  /** Hook returning the upload mutation — required (FD-15). */
-  useImageUpload: () => { mutateAsync: (file: Blob) => Promise<string>; isPending: boolean };
-  /** Hook returning the reachability check — required (FD-15). */
-  useCheckReachability: () => { mutateAsync: (url: string) => Promise<boolean> };
-}
+// As of 5.0.0 the image column's cell editor reads its uploader from the
+// surrounding `ImageUploadProvider` Context; this grid no longer needs
+// typed hook references to be threaded through. The previous
+// `ItemGridEditorHooks` type is removed.
 
 // --- Defaults ---
 
@@ -263,12 +260,19 @@ export const itemGridDefaultColDef: ColDef<Item> = {
 /** Static columns (no lookups needed). Used as default. */
 export const itemGridColumnDefs: ColDef<Item>[] = createItemGridColumnDefs();
 
-/** Factory — pass lookups, editor hooks, and callbacks to get fully-configured columns. */
+/** Factory — pass lookups and callbacks to get fully-configured columns.
+ *
+ * As of 5.0.0, the image column's cell editor is always configured. The
+ * `editable` flag in `options` lets callers disable in-grid editing
+ * (e.g. read-only views); when enabled, the editor reads its uploader
+ * from the surrounding `ImageUploadProvider` Context. Mount
+ * `<ImageUploadProvider value={uploader}>` at or above the grid.
+ */
 export function createItemGridColumnDefs(
   lookups?: ItemGridLookups,
-  options?: { onNotesClick?: (item: Item) => void; editorHooks?: ItemGridEditorHooks },
+  options?: { onNotesClick?: (item: Item) => void; editable?: boolean },
 ): ColDef<Item>[] {
-  const editorHooks = options?.editorHooks;
+  const imageEditable = options?.editable ?? true;
 
   return [
     {
@@ -278,16 +282,12 @@ export function createItemGridColumnDefs(
       width: 60,
       sortable: false,
       resizable: false,
-      editable: !!editorHooks,
+      editable: imageEditable,
       cellRenderer: ImageCellDisplay,
       cellRendererParams: { config: ITEM_IMAGE_CONFIG },
-      ...(editorHooks
+      ...(imageEditable
         ? {
-            cellEditor: createImageCellEditor({
-              config: ITEM_IMAGE_CONFIG,
-              useImageUpload: editorHooks.useImageUpload,
-              useCheckReachability: editorHooks.useCheckReachability,
-            }),
+            cellEditor: createImageCellEditor(ITEM_IMAGE_CONFIG),
             cellEditorPopup: true,
           }
         : {}),

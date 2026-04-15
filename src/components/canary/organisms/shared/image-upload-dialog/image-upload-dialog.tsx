@@ -79,7 +79,17 @@ type DialogPhase =
   | { name: 'EditExisting'; imageUrl: string }
   | { name: 'EmptyImage' }
   | { name: 'FailedValidation'; errorMessage: string }
-  | { name: 'Uploading'; imageData: File | Blob | string; skipUpload?: boolean }
+  | {
+      name: 'Uploading';
+      imageData: File | Blob | string;
+      skipUpload?: boolean;
+      /** Monotonic nonce so two back-to-back Uploading transitions re-fire
+       *  the upload effect. Without it, a `pendingInput` identity change
+       *  while already in `Uploading` keeps `phase.name === 'Uploading'`
+       *  and the effect (keyed on name alone) never re-runs, stranding the
+       *  second upload. */
+      uploadId: number;
+    }
   | { name: 'UploadError'; error: string; imageData: File | Blob | string };
 
 type DialogAction =
@@ -93,12 +103,22 @@ type DialogAction =
   | { type: 'UPLOAD_NEW' }
   | { type: 'RESET'; existingImageUrl: string | null };
 
+// Monotonic counter to stamp every Uploading-phase transition with a
+// unique `uploadId`. See the DialogPhase.Uploading.uploadId docstring for
+// why this is needed; the counter lives at module scope so React Strict
+// Mode's double-dispatch doesn't produce duplicate ids within one render.
+let nextUploadId = 0;
+function makeUploadId(): number {
+  nextUploadId += 1;
+  return nextUploadId;
+}
+
 function dialogReducer(state: DialogPhase, action: DialogAction): DialogPhase {
   switch (action.type) {
     case 'INPUT_FILE':
-      return { name: 'Uploading', imageData: action.file };
+      return { name: 'Uploading', imageData: action.file, uploadId: makeUploadId() };
     case 'INPUT_URL':
-      return { name: 'Uploading', imageData: action.url };
+      return { name: 'Uploading', imageData: action.url, uploadId: makeUploadId() };
     case 'INPUT_ERROR':
       return { name: 'FailedValidation', errorMessage: action.message };
     case 'UPLOAD_ERROR': {
@@ -109,7 +129,7 @@ function dialogReducer(state: DialogPhase, action: DialogAction): DialogPhase {
     }
     case 'UPLOAD_RETRY': {
       if (state.name === 'UploadError') {
-        return { name: 'Uploading', imageData: state.imageData };
+        return { name: 'Uploading', imageData: state.imageData, uploadId: makeUploadId() };
       }
       return state;
     }
@@ -124,9 +144,18 @@ function dialogReducer(state: DialogPhase, action: DialogAction): DialogPhase {
         // If the action carries a cropped blob, upload it as a new image.
         // If no blob (crop failed or no edits), confirm with the original URL.
         if (action.croppedBlob) {
-          return { name: 'Uploading', imageData: action.croppedBlob };
+          return {
+            name: 'Uploading',
+            imageData: action.croppedBlob,
+            uploadId: makeUploadId(),
+          };
         }
-        return { name: 'Uploading', imageData: state.imageUrl, skipUpload: true };
+        return {
+          name: 'Uploading',
+          imageData: state.imageUrl,
+          skipUpload: true,
+          uploadId: makeUploadId(),
+        };
       }
       return state;
     }
@@ -293,20 +322,44 @@ export function ImageUploadDialog({
     return () => {
       cancelled = true;
     };
-  }, [phase.name]); // Intentionally deps on phase.name only — fires once on entering Uploading
+    // Depends on `phase.name` AND the Uploading-state `uploadId` nonce
+    // so back-to-back Uploading transitions (e.g. a new pendingInput
+    // identity arriving while a previous upload is still in flight)
+    // re-fire this effect and start the new upload. The stale-closure
+    // cancel flag guards against the first upload's late resolution.
+  }, [phase.name, phase.name === 'Uploading' ? phase.uploadId : 0]);
+
+  // Track `open` in a ref so async reachability resolutions don't
+  // dispatch into a closed dialog.
+  const isOpenRef = React.useRef(open);
+  React.useEffect(() => {
+    isOpenRef.current = open;
+  }, [open]);
 
   const handleInput = React.useCallback((input: ImageInput) => {
     if (input.type === 'file') {
       dispatch({ type: 'INPUT_FILE', file: input.file });
     } else if (input.type === 'url') {
-      // Reachability check; transition optimistically
-      uploaderRef.current.checkReachability(input.url).then((reachable) => {
-        if (reachable) {
-          dispatch({ type: 'INPUT_URL', url: input.url });
-        } else {
-          dispatch({ type: 'INPUT_ERROR', message: 'URL could not be reached' });
-        }
-      });
+      // Reachability check; transition optimistically on success, surface
+      // the reachability error through FailedValidation on failure.
+      uploaderRef.current
+        .checkReachability(input.url)
+        .then((reachable) => {
+          if (!isOpenRef.current) return;
+          if (reachable) {
+            dispatch({ type: 'INPUT_URL', url: input.url });
+          } else {
+            dispatch({ type: 'INPUT_ERROR', message: 'URL could not be reached' });
+          }
+        })
+        .catch((err: unknown) => {
+          if (!isOpenRef.current) return;
+          const message =
+            err instanceof Error && err.message
+              ? `Could not validate the URL: ${err.message}`
+              : 'Could not validate the URL';
+          dispatch({ type: 'INPUT_ERROR', message });
+        });
     } else {
       dispatch({ type: 'INPUT_ERROR', message: input.message });
     }

@@ -105,11 +105,7 @@ function renderEditor(
     />
   );
   return render(
-    uploader ? (
-      <ImageUploadProvider value={uploader as ImageUploader}>{wrapped}</ImageUploadProvider>
-    ) : (
-      wrapped
-    ),
+    uploader ? <ImageUploadProvider value={uploader}>{wrapped}</ImageUploadProvider> : wrapped,
   );
 }
 

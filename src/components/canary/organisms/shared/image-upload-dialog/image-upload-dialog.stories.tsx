@@ -33,7 +33,10 @@ const meta: Meta<typeof ImageUploadDialog> = {
       description: {
         component:
           'State-machine orchestrator for the full image upload flow. ' +
-          'Manages EmptyImage, ProvidedImage, FailedValidation, Uploading, and Warn states.',
+          'Manages EditExisting, EmptyImage, FailedValidation, Uploading, and ' +
+          'UploadError phases. As of 5.0.0 new uploads skip the cropper ' +
+          'review step and transition directly from input to Uploading; the ' +
+          'cropper is reachable only via the deliberate EditExisting path.',
       },
     },
   },
