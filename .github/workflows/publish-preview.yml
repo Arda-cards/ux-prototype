@@ -1,0 +1,95 @@
+---
+name: Publish Preview to GitHub Packages
+
+on:
+  push:
+    branches-ignore: [main]
+
+permissions: {}
+
+jobs:
+  publish-preview:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check if CHANGELOG.md was modified
+        id: changelog-check
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          if [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            DIFF_RANGE="origin/main...HEAD"
+          else
+            DIFF_RANGE="${BEFORE_SHA}..HEAD"
+          fi
+          if git diff --name-only "$DIFF_RANGE" | grep -q '^CHANGELOG.md$'; then
+            echo "modified=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "modified=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::CHANGELOG.md not modified — skipping preview publish"
+          fi
+
+      - name: Extract version from changelog
+        if: steps.changelog-check.outputs.modified == 'true'
+        uses: denisa/clq-action@v1
+        id: clq-extract
+        with:
+          changeMap: .github/clq/changemap.json
+
+      - name: Validate pre-release and derive dist-tag
+        if: steps.changelog-check.outputs.modified == 'true'
+        id: prerelease
+        env:
+          TAG: ${{ steps.clq-extract.outputs.tag }}
+          STATUS: ${{ steps.clq-extract.outputs.status }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          BASE="${TAG#v}"
+
+          if [ "$STATUS" != "prereleased" ]; then
+            echo "::notice::Changelog version ${BASE} is not a pre-release — skipping (stable releases publish from main)"
+            echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          DIST_TAG="${BASE#*-}"
+          if [ "$BASE" = "$DIST_TAG" ]; then
+            echo "::error::Pre-release status detected but no pre-release identifier in version ${BASE}"
+            exit 1
+          fi
+
+          VERSION="${BASE}-${RUN_NUMBER}"
+
+          echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "dist_tag=${DIST_TAG}" >> "$GITHUB_OUTPUT"
+          echo "Publishing ${VERSION} with dist-tag '${DIST_TAG}'"
+
+      - uses: actions/setup-node@v6
+        if: steps.prerelease.outputs.is_prerelease == 'true'
+        with:
+          node-version: 22
+          registry-url: https://npm.pkg.github.com
+          scope: '@arda-cards'
+
+      - if: steps.prerelease.outputs.is_prerelease == 'true'
+        run: npm ci
+
+      - name: Set package version
+        if: steps.prerelease.outputs.is_prerelease == 'true'
+        run: npm version "${{ steps.prerelease.outputs.version }}" --no-git-tag-version
+
+      - if: steps.prerelease.outputs.is_prerelease == 'true'
+        run: npm run build:lib
+
+      - name: Publish with dist-tag
+        if: steps.prerelease.outputs.is_prerelease == 'true'
+        run: npm publish --tag "${{ steps.prerelease.outputs.dist_tag }}"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
