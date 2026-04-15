@@ -5,6 +5,12 @@ on:
   push:
     branches-ignore: [main]
 
+# Cancel any in-flight publish for the same branch — last push wins, dist-tag
+# always points at the newest code rather than a slow-finishing older run.
+concurrency:
+  group: publish-preview-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions: {}
 
 jobs:

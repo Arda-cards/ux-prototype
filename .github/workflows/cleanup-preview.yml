@@ -24,7 +24,7 @@ jobs:
       PACKAGE: design-system
       RETENTION: 3
       GRACE_HOURS: 24
-      # Default to dry-run for scheduled runs unless explicitly disabled via dispatch
+      # Manual dispatch defaults to dry-run for safety; scheduled runs perform real deletions
       DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}
     steps:
       - name: Fetch all package versions
