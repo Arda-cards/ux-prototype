@@ -1,4 +1,4 @@
-# Image-upload architecture (ux-prototype, 4.11.7+)
+# Image-upload architecture (ux-prototype, 5.0.0+)
 
 Quick-reference map of the components, types, and interaction patterns that
 make up the image-upload surface. Read before touching any of:
@@ -80,7 +80,7 @@ skip to `Uploading` directly — the rapid-batch UX.
   (`cdn-url.ts`) to keep the cropper's `<img>` and the canvas on the
   same origin. Don't remove the prefetch without re-verifying CORS on
   canvas operations.
-- **Dialog state machine post-4.11.7** no longer has `ProvidedImage` or
+- **Dialog state machine post-5.0.0** no longer has `ProvidedImage` or
   `Warn` phases. `INPUT_FILE` / `INPUT_URL` now land directly in
   `Uploading`. If a regression asks to stage uploads for review, this is
   a policy change that should be discussed before reinstating those

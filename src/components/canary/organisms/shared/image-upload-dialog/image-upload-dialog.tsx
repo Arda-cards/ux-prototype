@@ -36,7 +36,7 @@ export interface ImageUploadDialogInitProps {
  * Runtime props for ImageUploadDialog.
  * Confirm/cancel callbacks follow `EditLifecycleCallbacks<ImageUploadResult>`.
  *
- * As of 4.11.7, upload/URL-upload/reachability are provided by the
+ * As of 5.0.0, upload/URL-upload/reachability are provided by the
  * `ImageUploader` on the surrounding `ImageUploadProvider` Context — no
  * longer wired per-callback here. See the `useImageUploader` hook and
  * the `ImageUploadProvider` component.
@@ -68,7 +68,7 @@ export type ImageUploadDialogProps = ImageUploadDialogStaticProps &
 
 // --- State machine ---
 //
-// As of 4.11.7 the dialog does NOT stop in a cropper review step on new
+// As of 5.0.0 the dialog does NOT stop in a cropper review step on new
 // uploads (completing the #750 issue 1 "rapid-batch" directive across
 // both ItemCardEditor and this dialog). File/URL inputs land directly
 // in `Uploading`. The cropper only appears in the `EditExisting` phase
@@ -151,7 +151,7 @@ function dialogReducer(state: DialogPhase, action: DialogAction): DialogPhase {
 /**
  * ImageUploadDialog — state-machine orchestrator for the full image upload flow.
  *
- * As of 4.11.7:
+ * As of 5.0.0:
  * - Uploader is consumed from `ImageUploadProvider` via `useImageUploader`.
  * - New file/URL inputs skip the cropper review step and go directly to
  *   `Uploading` (rapid-batch UX). The cropper is reachable only via

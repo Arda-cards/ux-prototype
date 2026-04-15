@@ -57,7 +57,7 @@ export interface ItemCardEditorRuntimeProps {
    * slot.
    *
    * Note: upload/URL-upload/reachability themselves are consumed from the
-   * surrounding `ImageUploadProvider` Context (4.11.7+) rather than as
+   * surrounding `ImageUploadProvider` Context (5.0.0+) rather than as
    * per-callback props. Mount an `<ImageUploadProvider value={uploader}>`
    * at or above this component.
    */

@@ -37,7 +37,7 @@ Symptoms that triggered the refactor:
   places (card-side drop zone AND dialog state machine) because both
   components owned parallel upload implementations.
 
-### Pattern (4.11.7+)
+### Pattern (5.0.0+)
 
 Single interface + Context provider:
 
@@ -81,7 +81,7 @@ consumption sites.
 ## State-machine-owned cropping vs. consumer-owned cropping
 
 `ImageUploadDialog`'s `EditExisting` phase is the deliberate edit-
-existing-image path — the only place the cropper appears as of 4.11.7.
+existing-image path — the only place the cropper appears as of 5.0.0.
 New uploads (file or URL) skip the cropper entirely and go straight to
 the `Uploading` phase. The user can still crop *after* the upload by
 opening the dialog on the now-existing image.

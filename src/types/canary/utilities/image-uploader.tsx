@@ -10,7 +10,7 @@ import {
  * Contract for the full image-upload pipeline.
  *
  * A single object instead of three separate callback props — before
- * 4.11.7 consumers had to wire `onUpload`, `onUploadFromUrl`, and
+ * 5.0.0 consumers had to wire `onUpload`, `onUploadFromUrl`, and
  * `onCheckReachability` separately on every component that needed them.
  * That shape made the application reverse-engineer which operations
  * the component performed and in what order, and duplicated the wiring
