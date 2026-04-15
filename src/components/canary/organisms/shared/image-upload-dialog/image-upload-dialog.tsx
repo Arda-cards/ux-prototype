@@ -28,6 +28,7 @@ import {
   defaultReachabilityCheck,
 } from '@/types/canary/utilities/image-upload-handlers';
 import { getCroppedImage } from '@/types/canary/utilities/get-cropped-image';
+import { prefetchImageAsBlob } from '@/types/canary/utilities/cdn-url';
 import type {
   ImageFieldConfig,
   ImageInput,
@@ -190,6 +191,12 @@ export function ImageUploadDialog({
   // cropData tracks current crop/zoom/rotation for use in the real upload pipeline
   const cropDataRef = React.useRef<unknown>(null);
 
+  // Prefetched blob URL for CDN images — eliminates CORS mismatch between
+  // the Cropper (use-credentials) and getCroppedImage (anonymous) by
+  // fetching the image once with credentials and using the same-origin
+  // blob URL for both display and canvas operations.
+  const [prefetchedImageUrl, setPrefetchedImageUrl] = React.useState<string | null>(null);
+
   // Stable refs for callbacks used in effects to avoid stale closures.
   const onConfirmRef = React.useRef(onConfirm);
   onConfirmRef.current = onConfirm;
@@ -201,11 +208,34 @@ export function ImageUploadDialog({
     if (open) {
       dispatch({ type: 'RESET', existingImageUrl });
       cropDataRef.current = null;
+      setPrefetchedImageUrl(null);
     } else {
       dispatch({ type: 'RESET', existingImageUrl: null });
       cropDataRef.current = null;
+      setPrefetchedImageUrl(null);
     }
   }, [open]); // Intentionally deps on open only — existingImageUrl is captured at open time
+
+  // Prefetch CDN image as blob when entering EditExisting phase
+  React.useEffect(() => {
+    if (phase.name !== 'EditExisting') {
+      return;
+    }
+    let revoke: string | null = null;
+    let cancelled = false;
+    prefetchImageAsBlob(phase.imageUrl).then((blobUrl) => {
+      if (cancelled) {
+        if (blobUrl !== phase.imageUrl) URL.revokeObjectURL(blobUrl);
+        return;
+      }
+      if (blobUrl !== phase.imageUrl) revoke = blobUrl;
+      setPrefetchedImageUrl(blobUrl);
+    });
+    return () => {
+      cancelled = true;
+      if (revoke) URL.revokeObjectURL(revoke);
+    };
+  }, [phase.name, phase.name === 'EditExisting' ? (phase as { imageUrl: string }).imageUrl : null]);
 
   // Trigger upload when entering the Uploading phase
   React.useEffect(() => {
@@ -306,10 +336,11 @@ export function ImageUploadDialog({
 
     if (hasEdits && cropData !== null) {
       try {
-        // getCroppedImage handles zero-sized pixelCrop (rotate/zoom-only
-        // edits) by using the full rotated canvas as the crop area.
+        // Use the prefetched blob URL (same-origin) instead of the raw CDN
+        // URL to avoid CORS mismatch between the Cropper and the canvas.
+        const imageSource = prefetchedImageUrl ?? phase.imageUrl;
         const croppedBlob = await getCroppedImage(
-          phase.imageUrl,
+          imageSource,
           cropData.pixelCrop,
           cropData.rotation ?? 0,
         );
@@ -324,7 +355,7 @@ export function ImageUploadDialog({
     }
     // No edits or crop failed — confirm with the original URL as-is.
     dispatch({ type: 'EDIT_CONFIRM' });
-  }, [phase]);
+  }, [phase, prefetchedImageUrl]);
 
   const handleWarnDiscard = React.useCallback(() => {
     dispatch({ type: 'WARN_DISCARD' });
@@ -385,7 +416,7 @@ export function ImageUploadDialog({
             >
               <ImagePreviewEditor
                 aspectRatio={config.aspectRatio}
-                imageData={phase.imageUrl}
+                imageData={prefetchedImageUrl ?? phase.imageUrl}
                 onCropChange={(d) => {
                   cropDataRef.current = d;
                 }}

@@ -18,6 +18,19 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.11.5-jmpicnic-FEED] - 2026-04-14
+
+### Fixed
+
+- `ImageUploadDialog` edit-existing flow now prefetches the CDN image as a
+  blob and uses the same-origin blob URL for both display (in the Cropper)
+  and canvas operations (in `getCroppedImage`). This eliminates the CORS
+  mismatch where the Cropper loaded with `crossOrigin: 'use-credentials'`
+  but `getCroppedImage` re-fetched with `crossOrigin: 'anonymous'`, causing
+  `canvas.toBlob()` to fail silently and the crop to no-op (Arda-cards/arda-frontend-app#750 issue 5c).
+- Extracted shared `isCdnUrl` helper and new `prefetchImageAsBlob` helper
+  to `src/types/canary/utilities/cdn-url.ts`.
+
 ## [4.11.4] - 2026-04-14
 
 ### Fixed

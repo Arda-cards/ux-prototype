@@ -108,6 +108,17 @@ vi.mock('@/types/canary/utilities/get-cropped-image', () => ({
   getCroppedImage: vi.fn().mockResolvedValue(new Blob(['cropped'], { type: 'image/jpeg' })),
 }));
 
+vi.mock('@/types/canary/utilities/cdn-url', () => ({
+  isCdnUrl: (src: string) => src.includes('.assets.arda.cards'),
+  prefetchImageAsBlob: vi.fn().mockImplementation(async (url: string) => {
+    // Simulate prefetch: CDN URLs get converted to blob URLs, others pass through
+    if (url.includes('.assets.arda.cards')) {
+      return 'blob:http://localhost/prefetched-cdn-image';
+    }
+    return url;
+  }),
+}));
+
 // --- Test config ---
 
 const CONFIG: ImageFieldConfig = {
@@ -534,6 +545,42 @@ describe('ImageUploadDialog', () => {
       renderDialog({ existingImageUrl: null });
       expect(screen.getByTestId('image-drop-zone')).toBeInTheDocument();
       expect(screen.queryByTestId('image-preview-editor')).not.toBeInTheDocument();
+    });
+
+    it('getCroppedImage receives a blob URL (prefetched), not the raw CDN URL', async () => {
+      const CDN_URL = 'https://dev.alpha002.assets.arda.cards/tenant/images/uuid.jpg';
+      const PREFETCHED_BLOB = 'blob:http://localhost/prefetched-cdn-image';
+      const { getCroppedImage } = await import('@/types/canary/utilities/get-cropped-image');
+      const onUpload = vi.fn().mockResolvedValue('https://cdn.example.com/cropped.jpg');
+      const onConfirm = vi.fn();
+      renderDialog({ existingImageUrl: CDN_URL, onConfirm, onUpload });
+
+      // Synchronization: wait for the prefetched blob URL to propagate through
+      // ImagePreviewEditor — its mock renders imageData in the preview-src node.
+      // Once the preview shows the blob URL, we know the prefetch effect has
+      // resolved and setPrefetchedImageUrl has flushed. No arbitrary waits.
+      await waitFor(() => {
+        expect(screen.getByTestId('preview-src')).toHaveTextContent(PREFETCHED_BLOB);
+      });
+
+      // Simulate crop edit
+      fireEvent.click(screen.getByText('crop'));
+
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
+      });
+
+      await waitFor(() => {
+        expect(getCroppedImage).toHaveBeenCalled();
+      });
+
+      // getCroppedImage should receive the prefetched blob URL, not the CDN URL
+      const mockFn = getCroppedImage as ReturnType<typeof vi.fn>;
+      const firstCall = mockFn.mock.calls[0];
+      if (!firstCall) throw new Error('getCroppedImage was not called');
+      const firstArg = firstCall[0] as string;
+      expect(firstArg).toBe(PREFETCHED_BLOB);
+      expect(firstArg).not.toBe(CDN_URL);
     });
   });
 });

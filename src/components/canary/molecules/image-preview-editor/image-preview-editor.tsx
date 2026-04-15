@@ -4,6 +4,7 @@ import { RotateCw, RotateCcw, Undo2 } from 'lucide-react';
 
 import { cn } from '@/types/canary/utilities/utils';
 import { Slider } from '@/components/canary/primitives/slider';
+import { isCdnUrl } from '@/types/canary/utilities/cdn-url';
 import type { CropData } from '@/types/canary/utilities/image-field-config';
 
 // --- Interfaces ---
@@ -33,17 +34,6 @@ export type ImagePreviewEditorProps = ImagePreviewEditorStaticProps &
   ImagePreviewEditorRuntimeProps;
 
 // --- Helpers ---
-
-/** CDN URL pattern — matches `*.assets.arda.cards` domains (FD-17). */
-function isCdnUrl(src: string): boolean {
-  try {
-    const url = new URL(src);
-    if (url.protocol !== 'https:') return false;
-    return url.hostname === 'assets.arda.cards' || url.hostname.endsWith('.assets.arda.cards');
-  } catch {
-    return false;
-  }
-}
 
 const TOOLBAR_BUTTON_CLASS = cn(
   'inline-flex items-center justify-center rounded-md p-2',
