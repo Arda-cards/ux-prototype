@@ -8,28 +8,14 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/canary/atoms/dialog/dialog';
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogAction,
-  AlertDialogCancel,
-} from '@/components/canary/primitives/alert-dialog';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/canary/primitives/button';
 import { ImageDropZone } from '@/components/canary/molecules/image-drop-zone/image-drop-zone';
 import { ImagePreviewEditor } from '@/components/canary/molecules/image-preview-editor/image-preview-editor';
 import { ImageComparisonLayout } from '@/components/canary/molecules/image-comparison-layout/image-comparison-layout';
-import {
-  defaultUploadHandler,
-  defaultUrlUploadHandler,
-  defaultReachabilityCheck,
-} from '@/types/canary/utilities/image-upload-handlers';
 import { getCroppedImage } from '@/types/canary/utilities/get-cropped-image';
 import { prefetchImageAsBlob } from '@/types/canary/utilities/cdn-url';
+import { useImageUploader } from '@/types/canary/utilities/image-uploader';
 import type {
   ImageFieldConfig,
   ImageInput,
@@ -49,6 +35,11 @@ export interface ImageUploadDialogInitProps {
 /**
  * Runtime props for ImageUploadDialog.
  * Confirm/cancel callbacks follow `EditLifecycleCallbacks<ImageUploadResult>`.
+ *
+ * As of 4.11.7, upload/URL-upload/reachability are provided by the
+ * `ImageUploader` on the surrounding `ImageUploadProvider` Context — no
+ * longer wired per-callback here. See the `useImageUploader` hook and
+ * the `ImageUploadProvider` component.
  */
 export interface ImageUploadDialogRuntimeProps {
   existingImageUrl: string | null;
@@ -56,29 +47,12 @@ export interface ImageUploadDialogRuntimeProps {
   open: boolean;
   onCancel: () => void;
   /**
-   * Upload handler &#8212; receives the image blob, returns the CDN URL.
-   * Defaults to `defaultUploadHandler` (Storybook/dev stub).
-   */
-  onUpload?: (file: Blob) => Promise<string>;
-  /**
-   * Upload-from-URL handler &#8212; receives an external image URL, performs
-   * the server-side fetch + upload round-trip, and returns the CDN URL.
-   * Defaults to `defaultUrlUploadHandler` (Storybook/dev stub); production
-   * consumers must pass a real handler.
-   */
-  onUploadFromUrl?: (url: string) => Promise<string>;
-  /**
-   * URL reachability check &#8212; returns true if the URL is reachable.
-   * Defaults to `defaultReachabilityCheck`.
-   */
-  onCheckReachability?: (url: string) => Promise<boolean>;
-  /**
    * Externally-supplied image input &#8212; typically forwarded from the host's
-   * own drop zone (e.g. ItemCardEditor). When defined while `open` is true,
-   * the input is dispatched through the same state-machine path as the
-   * dialog's internal `ImageDropZone`: file inputs land synchronously in
-   * `ProvidedImage`; URL inputs go through reachability check first; error
-   * inputs land in `FailedValidation`.
+   * own drop zone. When defined while `open` is true, the input is
+   * dispatched through the same state-machine path as the dialog's
+   * internal `ImageDropZone`: file inputs land directly in `Uploading`
+   * (no cropper review step — rapid-batch UX); URL inputs go through
+   * reachability check first; error inputs land in `FailedValidation`.
    *
    * A new identity (referential inequality) is treated as a new dispatch.
    * The host should clear this prop on confirm/cancel to avoid re-entry on
@@ -93,27 +67,28 @@ export type ImageUploadDialogProps = ImageUploadDialogStaticProps &
   ImageUploadDialogRuntimeProps;
 
 // --- State machine ---
+//
+// As of 4.11.7 the dialog does NOT stop in a cropper review step on new
+// uploads (completing the #750 issue 1 "rapid-batch" directive across
+// both ItemCardEditor and this dialog). File/URL inputs land directly
+// in `Uploading`. The cropper only appears in the `EditExisting` phase
+// — the deliberate edit-existing-image flow where the user has asked
+// to crop/zoom/rotate an already-placed image.
 
 type DialogPhase =
   | { name: 'EditExisting'; imageUrl: string }
   | { name: 'EmptyImage' }
-  | { name: 'ProvidedImage'; imageData: File | Blob | string }
   | { name: 'FailedValidation'; errorMessage: string }
   | { name: 'Uploading'; imageData: File | Blob | string; skipUpload?: boolean }
-  | { name: 'UploadError'; error: string; imageData: File | Blob | string }
-  | { name: 'Warn'; imageData: File | Blob | string };
+  | { name: 'UploadError'; error: string; imageData: File | Blob | string };
 
 type DialogAction =
   | { type: 'INPUT_FILE'; file: File }
   | { type: 'INPUT_URL'; url: string }
   | { type: 'INPUT_ERROR'; message: string }
-  | { type: 'CANCEL_CLICK' }
-  | { type: 'CONFIRM_CLICK' }
   | { type: 'UPLOAD_ERROR'; error: string }
   | { type: 'UPLOAD_RETRY' }
   | { type: 'UPLOAD_DISCARD' }
-  | { type: 'WARN_DISCARD' }
-  | { type: 'WARN_GO_BACK' }
   | { type: 'EDIT_CONFIRM'; croppedBlob?: Blob }
   | { type: 'UPLOAD_NEW' }
   | { type: 'RESET'; existingImageUrl: string | null };
@@ -121,23 +96,11 @@ type DialogAction =
 function dialogReducer(state: DialogPhase, action: DialogAction): DialogPhase {
   switch (action.type) {
     case 'INPUT_FILE':
-      return { name: 'ProvidedImage', imageData: action.file };
+      return { name: 'Uploading', imageData: action.file };
     case 'INPUT_URL':
-      return { name: 'ProvidedImage', imageData: action.url };
+      return { name: 'Uploading', imageData: action.url };
     case 'INPUT_ERROR':
       return { name: 'FailedValidation', errorMessage: action.message };
-    case 'CANCEL_CLICK': {
-      if (state.name === 'ProvidedImage') {
-        return { name: 'Warn', imageData: state.imageData };
-      }
-      return state;
-    }
-    case 'CONFIRM_CLICK': {
-      if (state.name === 'ProvidedImage') {
-        return { name: 'Uploading', imageData: state.imageData };
-      }
-      return state;
-    }
     case 'UPLOAD_ERROR': {
       if (state.name === 'Uploading') {
         return { name: 'UploadError', error: action.error, imageData: state.imageData };
@@ -153,14 +116,6 @@ function dialogReducer(state: DialogPhase, action: DialogAction): DialogPhase {
     case 'UPLOAD_DISCARD': {
       if (state.name === 'UploadError') {
         return { name: 'EmptyImage' };
-      }
-      return state;
-    }
-    case 'WARN_DISCARD':
-      return { name: 'EmptyImage' };
-    case 'WARN_GO_BACK': {
-      if (state.name === 'Warn') {
-        return { name: 'ProvidedImage', imageData: state.imageData };
       }
       return state;
     }
@@ -194,10 +149,13 @@ function dialogReducer(state: DialogPhase, action: DialogAction): DialogPhase {
 // --- Component ---
 
 /**
- * ImageUploadDialog &#8212; state-machine orchestrator for the full image upload flow.
+ * ImageUploadDialog — state-machine orchestrator for the full image upload flow.
  *
- * Manages the EditExisting / EmptyImage &#8594; ProvidedImage &#8594; Uploading lifecycle plus
- * FailedValidation and Warn guard states.
+ * As of 4.11.7:
+ * - Uploader is consumed from `ImageUploadProvider` via `useImageUploader`.
+ * - New file/URL inputs skip the cropper review step and go directly to
+ *   `Uploading` (rapid-batch UX). The cropper is reachable only via
+ *   `EditExisting` when an existing image is already on record.
  */
 export function ImageUploadDialog({
   config,
@@ -205,11 +163,9 @@ export function ImageUploadDialog({
   onConfirm,
   open,
   onCancel,
-  onUpload = defaultUploadHandler,
-  onUploadFromUrl = defaultUrlUploadHandler,
-  onCheckReachability = defaultReachabilityCheck,
   pendingInput,
 }: ImageUploadDialogProps) {
+  const uploader = useImageUploader();
   const [phase, dispatch] = React.useReducer(dialogReducer, { name: 'EmptyImage' });
   // Independent refs for crop/zoom/rotation — kept separate so zoom and
   // rotation changes don't clobber the last valid pixelCrop (#750 issue 5b).
@@ -227,13 +183,11 @@ export function ImageUploadDialog({
   // blob URL for both display and canvas operations.
   const [prefetchedImageUrl, setPrefetchedImageUrl] = React.useState<string | null>(null);
 
-  // Stable refs for callbacks used in effects to avoid stale closures.
+  // Stable refs for callbacks/uploader used in effects to avoid stale closures.
   const onConfirmRef = React.useRef(onConfirm);
   onConfirmRef.current = onConfirm;
-  const onUploadRef = React.useRef(onUpload);
-  onUploadRef.current = onUpload;
-  const onUploadFromUrlRef = React.useRef(onUploadFromUrl);
-  onUploadFromUrlRef.current = onUploadFromUrl;
+  const uploaderRef = React.useRef(uploader);
+  uploaderRef.current = uploader;
 
   // Reset state when dialog opens/closes
   const resetEditRefs = React.useCallback(() => {
@@ -244,7 +198,7 @@ export function ImageUploadDialog({
   React.useEffect(() => {
     // When the dialog opens with a pendingInput already queued, skip the
     // EditExisting initial state — the pendingInput effect will dispatch
-    // INPUT_FILE/INPUT_URL into ProvidedImage on the same render. Starting
+    // INPUT_FILE/INPUT_URL into Uploading on the same render. Starting
     // in EditExisting would kick off a CDN prefetch that immediately gets
     // discarded, wasting a network round-trip.
     const initialExistingUrl = open && !pendingInput ? existingImageUrl : null;
@@ -304,22 +258,20 @@ export function ImageUploadDialog({
       };
     }
 
-    // For new uploads, the two input kinds take different paths:
+    // For new uploads, the two input kinds take different paths on the
+    // ImageUploader interface:
     //
-    // - Blob/File: send the bytes directly via `onUpload`.
-    // - string URL: route through `onUploadFromUrl`, which is expected to
-    //   fetch the external URL server-side (bypassing browser CORS) and
-    //   then upload the fetched bytes.
+    // - Blob/File → `uploader.uploadFile(bytes)`.
+    // - string URL → `uploader.uploadFromUrl(url)`, which performs the
+    //   server-side fetch + upload round-trip.
     //
-    // Both handlers have bundled defaults (`defaultUploadHandler` and
-    // `defaultUrlUploadHandler`) so Storybook and dev harnesses work out
-    // of the box. Production consumers must pass real handlers to avoid
-    // shipping the stubs — the defaults return picsum.photos URLs that
-    // would be very visible in the rendered card.
+    // If no `ImageUploadProvider` is mounted, `useImageUploader` returns
+    // the bundled default stub — so stories and dev harnesses work out
+    // of the box. Production consumers must mount a real provider.
     const uploadPromise: Promise<string> =
       typeof imageData === 'string'
-        ? onUploadFromUrlRef.current(imageData)
-        : onUploadRef.current(imageData);
+        ? uploaderRef.current.uploadFromUrl(imageData)
+        : uploaderRef.current.uploadFile(imageData);
 
     const originalSize = typeof imageData === 'string' ? 0 : imageData.size;
     uploadPromise
@@ -343,25 +295,22 @@ export function ImageUploadDialog({
     };
   }, [phase.name]); // Intentionally deps on phase.name only — fires once on entering Uploading
 
-  const handleInput = React.useCallback(
-    (input: ImageInput) => {
-      if (input.type === 'file') {
-        dispatch({ type: 'INPUT_FILE', file: input.file });
-      } else if (input.type === 'url') {
-        // Reachability check; transition optimistically
-        onCheckReachability(input.url).then((reachable) => {
-          if (reachable) {
-            dispatch({ type: 'INPUT_URL', url: input.url });
-          } else {
-            dispatch({ type: 'INPUT_ERROR', message: 'URL could not be reached' });
-          }
-        });
-      } else {
-        dispatch({ type: 'INPUT_ERROR', message: input.message });
-      }
-    },
-    [onCheckReachability],
-  );
+  const handleInput = React.useCallback((input: ImageInput) => {
+    if (input.type === 'file') {
+      dispatch({ type: 'INPUT_FILE', file: input.file });
+    } else if (input.type === 'url') {
+      // Reachability check; transition optimistically
+      uploaderRef.current.checkReachability(input.url).then((reachable) => {
+        if (reachable) {
+          dispatch({ type: 'INPUT_URL', url: input.url });
+        } else {
+          dispatch({ type: 'INPUT_ERROR', message: 'URL could not be reached' });
+        }
+      });
+    } else {
+      dispatch({ type: 'INPUT_ERROR', message: input.message });
+    }
+  }, []);
 
   // Forward externally-supplied pendingInput through the same state-machine
   // path as the dialog's internal ImageDropZone. Tracked by referential
@@ -379,20 +328,6 @@ export function ImageUploadDialog({
       handleInput(pendingInput);
     }
   }, [open, pendingInput, handleInput]);
-
-  const handleCancelClick = React.useCallback(() => {
-    if (phase.name === 'ProvidedImage') {
-      dispatch({ type: 'CANCEL_CLICK' });
-    } else {
-      onCancel();
-    }
-  }, [phase.name, onCancel]);
-
-  const handleConfirmClick = React.useCallback(() => {
-    if (phase.name === 'ProvidedImage') {
-      dispatch({ type: 'CONFIRM_CLICK' });
-    }
-  }, [phase.name]);
 
   const handleEditConfirm = React.useCallback(async () => {
     if (phase.name !== 'EditExisting') return;
@@ -426,8 +361,8 @@ export function ImageUploadDialog({
           rotation,
           zoom,
         });
-        // Upload the cropped/rotated image as a new file. The upload effect
-        // will call onUpload(blob) → S3 → return the new CDN URL.
+        // Upload the cropped/rotated image as a new file via the
+        // uploader; the Uploading effect picks up the Blob imageData.
         dispatch({ type: 'EDIT_CONFIRM', croppedBlob });
         return;
       } catch {
@@ -439,231 +374,123 @@ export function ImageUploadDialog({
     dispatch({ type: 'EDIT_CONFIRM' });
   }, [phase, prefetchedImageUrl]);
 
-  const handleWarnDiscard = React.useCallback(() => {
-    dispatch({ type: 'WARN_DISCARD' });
-    onCancel();
-  }, [onCancel]);
-
-  const handleWarnGoBack = React.useCallback(() => {
-    dispatch({ type: 'WARN_GO_BACK' });
-  }, []);
-
   const handleOpenChange = React.useCallback(
     (isOpen: boolean) => {
-      if (!isOpen) {
-        if (phase.name === 'ProvidedImage') {
-          dispatch({ type: 'CANCEL_CLICK' });
-        } else {
-          onCancel();
-        }
-      }
+      if (!isOpen) onCancel();
     },
-    [phase.name, onCancel],
+    [onCancel],
   );
 
   const isUploading = phase.name === 'Uploading';
-  const isUploadError = phase.name === 'UploadError';
-  const isProvidedOrUploading =
-    phase.name === 'ProvidedImage' || phase.name === 'Uploading' || phase.name === 'Warn';
 
   return (
-    <>
-      <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent
-          data-slot="image-upload-dialog"
-          className={cn(
-            'bg-background border-border rounded-lg p-4 sm:p-6 sm:max-w-2xl w-full overflow-hidden',
-          )}
-          showCloseButton={false}
-        >
-          <DialogHeader>
-            <DialogTitle>
-              {phase.name === 'EditExisting'
-                ? `Edit ${config.propertyDisplayName}`
-                : isProvidedOrUploading
-                  ? `Edit ${config.propertyDisplayName}`
-                  : `Add ${config.propertyDisplayName}`}
-            </DialogTitle>
-          </DialogHeader>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent
+        data-slot="image-upload-dialog"
+        className={cn(
+          'bg-background border-border rounded-lg p-4 sm:p-6 sm:max-w-2xl w-full overflow-hidden',
+        )}
+        showCloseButton={false}
+      >
+        <DialogHeader>
+          <DialogTitle>
+            {phase.name === 'EditExisting'
+              ? `Edit ${config.propertyDisplayName}`
+              : phase.name === 'Uploading'
+                ? `Upload ${config.propertyDisplayName}`
+                : `Add ${config.propertyDisplayName}`}
+          </DialogTitle>
+        </DialogHeader>
 
-          {/* EditExisting state — side-by-side with baked-in action buttons */}
-          {phase.name === 'EditExisting' && (
-            <ImageComparisonLayout
-              existingImageUrl={phase.imageUrl}
-              entityTypeDisplayName={config.entityTypeDisplayName}
-              propertyDisplayName={config.propertyDisplayName}
-              onAccept={() => void handleEditConfirm()}
-              onDismiss={onCancel}
-              onUploadNew={() => dispatch({ type: 'UPLOAD_NEW' })}
-            >
-              <ImagePreviewEditor
-                aspectRatio={config.aspectRatio}
-                imageData={prefetchedImageUrl ?? phase.imageUrl}
-                onCropComplete={(pc) => {
-                  pixelCropRef.current = pc;
-                }}
-                onZoomChange={(z) => {
-                  zoomRef.current = z;
-                }}
-                onRotationChange={(r) => {
-                  rotationRef.current = r;
-                }}
-                onReset={resetEditRefs}
-              />
-            </ImageComparisonLayout>
-          )}
+        {/* EditExisting state — side-by-side with baked-in action buttons */}
+        {phase.name === 'EditExisting' && (
+          <ImageComparisonLayout
+            existingImageUrl={phase.imageUrl}
+            entityTypeDisplayName={config.entityTypeDisplayName}
+            propertyDisplayName={config.propertyDisplayName}
+            onAccept={() => void handleEditConfirm()}
+            onDismiss={onCancel}
+            onUploadNew={() => dispatch({ type: 'UPLOAD_NEW' })}
+          >
+            <ImagePreviewEditor
+              aspectRatio={config.aspectRatio}
+              imageData={prefetchedImageUrl ?? phase.imageUrl}
+              onCropComplete={(pc) => {
+                pixelCropRef.current = pc;
+              }}
+              onZoomChange={(z) => {
+                zoomRef.current = z;
+              }}
+              onRotationChange={(r) => {
+                rotationRef.current = r;
+              }}
+              onReset={resetEditRefs}
+            />
+          </ImageComparisonLayout>
+        )}
 
-          {/* EmptyImage state */}
-          {phase.name === 'EmptyImage' && (
+        {/* EmptyImage state */}
+        {phase.name === 'EmptyImage' && (
+          <ImageDropZone acceptedFormats={config.acceptedFormats} onInput={handleInput} />
+        )}
+
+        {/* FailedValidation state */}
+        {phase.name === 'FailedValidation' && (
+          <div className="flex flex-col gap-3">
+            <p className={cn('text-sm text-destructive')} role="alert">
+              {phase.errorMessage}
+            </p>
             <ImageDropZone acceptedFormats={config.acceptedFormats} onInput={handleInput} />
-          )}
+          </div>
+        )}
 
-          {/* FailedValidation state */}
-          {phase.name === 'FailedValidation' && (
-            <div className="flex flex-col gap-3">
-              <p className={cn('text-sm text-destructive')} role="alert">
-                {phase.errorMessage}
-              </p>
-              <ImageDropZone acceptedFormats={config.acceptedFormats} onInput={handleInput} />
-            </div>
-          )}
+        {/* Uploading state — indeterminate spinner (FD-04) */}
+        {phase.name === 'Uploading' && (
+          <div className="flex flex-col items-center gap-4 py-8" role="status">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
+            <p className="text-sm text-muted-foreground">Uploading image&#8230;</p>
+          </div>
+        )}
 
-          {/* ProvidedImage state */}
-          {phase.name === 'ProvidedImage' && (
-            <div className="flex flex-col gap-4">
-              {existingImageUrl ? (
-                <ImageComparisonLayout
-                  existingImageUrl={existingImageUrl}
-                  entityTypeDisplayName={config.entityTypeDisplayName}
-                  propertyDisplayName={config.propertyDisplayName}
-                >
-                  <ImagePreviewEditor
-                    aspectRatio={config.aspectRatio}
-                    imageData={phase.imageData}
-                    onCropComplete={(pc) => {
-                      pixelCropRef.current = pc;
-                    }}
-                    onZoomChange={(z) => {
-                      zoomRef.current = z;
-                    }}
-                    onRotationChange={(r) => {
-                      rotationRef.current = r;
-                    }}
-                    onReset={resetEditRefs}
-                  />
-                </ImageComparisonLayout>
-              ) : (
-                <ImagePreviewEditor
-                  aspectRatio={config.aspectRatio}
-                  imageData={phase.imageData}
-                  onCropComplete={(pc) => {
-                    pixelCropRef.current = pc;
-                  }}
-                  onZoomChange={(z) => {
-                    zoomRef.current = z;
-                  }}
-                  onRotationChange={(r) => {
-                    rotationRef.current = r;
-                  }}
-                  onReset={resetEditRefs}
-                />
-              )}
-            </div>
-          )}
-
-          {/* Uploading state — indeterminate spinner (FD-04) */}
-          {phase.name === 'Uploading' && (
-            <div className="flex flex-col items-center gap-4 py-8" role="status">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
-              <p className="text-sm text-muted-foreground">Uploading image&#8230;</p>
-            </div>
-          )}
-
-          {/* UploadError state — error message with retry/discard */}
-          {phase.name === 'UploadError' && (
-            <div className="flex flex-col gap-4">
-              <p className={cn('text-sm text-destructive')} role="alert">
-                {phase.error}
-              </p>
-              <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => dispatch({ type: 'UPLOAD_DISCARD' })}
-                >
-                  Discard
-                </Button>
-                <Button type="button" onClick={() => dispatch({ type: 'UPLOAD_RETRY' })}>
-                  Retry
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* Footer — shown only for ProvidedImage */}
-          {/* EditExisting footer is baked into ImageComparisonLayout above */}
-          {!isUploading &&
-            !isUploadError &&
-            phase.name !== 'EmptyImage' &&
-            phase.name !== 'FailedValidation' &&
-            phase.name !== 'EditExisting' &&
-            phase.name !== 'Warn' && (
-              <DialogFooter className="flex flex-col gap-2">
-                <p className="text-xs text-muted-foreground text-center">
-                  By confirming, you acknowledge that you own or have a license to use this image.
-                </p>
-                <div className="flex justify-end gap-2">
-                  <Button type="button" variant="secondary" onClick={handleCancelClick}>
-                    Cancel
-                  </Button>
-                  <Button type="button" onClick={handleConfirmClick}>
-                    Confirm
-                  </Button>
-                </div>
-              </DialogFooter>
-            )}
-
-          {/* Footer for empty/failed states — just dismiss */}
-          {(phase.name === 'EmptyImage' || phase.name === 'FailedValidation') && (
-            <DialogFooter>
-              <Button type="button" variant="secondary" onClick={onCancel}>
-                Cancel
+        {/* UploadError state — error message with retry/discard */}
+        {phase.name === 'UploadError' && (
+          <div className="flex flex-col gap-4">
+            <p className={cn('text-sm text-destructive')} role="alert">
+              {phase.error}
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => dispatch({ type: 'UPLOAD_DISCARD' })}
+              >
+                Discard
               </Button>
-            </DialogFooter>
-          )}
-
-          {/* Uploading footer */}
-          {isUploading && (
-            <DialogFooter>
-              <Button type="button" variant="secondary" disabled>
-                Uploading&#8230;
+              <Button type="button" onClick={() => dispatch({ type: 'UPLOAD_RETRY' })}>
+                Retry
               </Button>
-            </DialogFooter>
-          )}
-        </DialogContent>
-      </Dialog>
+            </div>
+          </div>
+        )}
 
-      {/* Warn AlertDialog */}
-      <AlertDialog open={phase.name === 'Warn'}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Discard unsaved image?</AlertDialogTitle>
-            <AlertDialogDescription>
-              You have an image staged that has not been saved. Discarding will remove it
-              permanently.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleWarnGoBack}>Go Back</AlertDialogCancel>
-            <AlertDialogAction
-              className={cn('bg-destructive text-destructive-foreground hover:bg-destructive/90')}
-              onClick={handleWarnDiscard}
-            >
-              Discard
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+        {/* Footer for empty/failed states — just dismiss */}
+        {(phase.name === 'EmptyImage' || phase.name === 'FailedValidation') && (
+          <DialogFooter>
+            <Button type="button" variant="secondary" onClick={onCancel}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        )}
+
+        {/* Uploading footer */}
+        {isUploading && (
+          <DialogFooter>
+            <Button type="button" variant="secondary" disabled>
+              Uploading&#8230;
+            </Button>
+          </DialogFooter>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -11,6 +11,18 @@ import {
   mockReachabilityCheck,
 } from '@/components/canary/__mocks__/image-story-data';
 import type { ImageUploadResult } from '@/types/canary/utilities/image-field-config';
+import { ImageUploadProvider, type ImageUploader } from '@/types/canary/utilities/image-uploader';
+
+/** Story-scope mock uploader — composes the existing mock file upload + a
+ *  simulated URL-upload round-trip + the reachability stub. */
+const mockImageUploader: ImageUploader = {
+  uploadFile: mockUpload,
+  uploadFromUrl: async (url: string) => {
+    await new Promise((r) => setTimeout(r, 1500));
+    return `https://picsum.photos/seed/arda-from-url-${url.length}/400/400`;
+  },
+  checkReachability: mockReachabilityCheck,
+};
 
 const meta: Meta<typeof ImageUploadDialog> = {
   title: 'Components/Canary/Organisms/Shared/ImageUploadDialog',
@@ -51,9 +63,17 @@ const meta: Meta<typeof ImageUploadDialog> = {
     config: ITEM_IMAGE_CONFIG,
     onConfirm: fn(),
     onCancel: fn(),
-    onUpload: mockUpload,
-    onCheckReachability: mockReachabilityCheck,
   },
+  decorators: [
+    // Provide the mock uploader via Context (4.11.7+). Previously stories
+    // passed `onUpload` / `onCheckReachability` as per-component callbacks;
+    // the new API consumes the uploader from the surrounding provider.
+    (Story) => (
+      <ImageUploadProvider value={mockImageUploader}>
+        <Story />
+      </ImageUploadProvider>
+    ),
+  ],
 };
 
 export default meta;

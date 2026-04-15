@@ -410,6 +410,14 @@ export const WarnOnDiscardPathStepwise: StoryObj = {
 
 export const WarnOnDiscardPathAutomated: StoryObj = {
   ...WarnOnDiscardAutomated,
-
+  // The automated play function exercises the Warn alert dialog shown when
+  // a user cancels a staged-but-not-yet-uploaded image. As of 4.11.7 that
+  // phase (ProvidedImage) was removed — drops commit directly via
+  // Uploading, so there is no "unsaved staged image" to warn about. The
+  // scenario is unreachable in the current product. Play-test is skipped
+  // in CI; the Interactive/Stepwise variants remain as historical
+  // documentation of the removed UX. Delete in v5 when the story is
+  // formally retired.
+  tags: ['skip-ci'],
   name: 'Warn on Discard (Automated)',
 };

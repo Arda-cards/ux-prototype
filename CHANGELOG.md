@@ -18,6 +18,51 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.11.7] - 2026-04-15
+
+### Changed
+
+- Image upload pipeline — consolidate three per-component callback props
+  (`onUpload`, `onUploadFromUrl`, `onCheckReachability`) into a single
+  `ImageUploader` interface consumed via React Context. Introduces the
+  new `<ImageUploadProvider value={uploader}>` component and
+  `useImageUploader()` hook; the default `defaultImageUploader` stub
+  (Storybook/dev parity) is returned when no provider is mounted.
+  Consumers no longer destructure three handlers from a bridge hook and
+  prop-drill them into every upload-capable component; instead they
+  mount one provider at the subtree root and components reach for the
+  uploader internally. Hard break — the three per-callback props are
+  removed from `ImageUploadDialog` and `ItemCardEditor`
+  (arda-frontend-app is the only known consumer and migrates in the
+  same release).
+- `ImageUploadDialog`: state-machine flow for new uploads skips the
+  cropper/review step entirely — file and URL inputs now land directly
+  in `Uploading` (rapid-batch UX, completing the product directive that
+  started on the card-side in 4.11.6). The cropper remains reachable
+  via the deliberate `EditExisting` path (user clicks "Click to
+  edit/replace" overlay on an already-placed image). The `ProvidedImage`
+  and `Warn` phases, the `CONFIRM_CLICK` / `WARN_DISCARD` /
+  `WARN_GO_BACK` actions, and the Warn alert-dialog render branch are
+  removed — they were the staging/review machinery for the dropped-but-
+  not-yet-uploaded case, which no longer exists.
+
+### Removed
+
+- `ImageUploadDialogRuntimeProps.onUpload` (was: `(file: Blob) => Promise<string>`,
+  default `defaultUploadHandler`).
+- `ImageUploadDialogRuntimeProps.onUploadFromUrl` (was: `(url: string) => Promise<string>`,
+  default `defaultUrlUploadHandler`).
+- `ImageUploadDialogRuntimeProps.onCheckReachability` (was: `(url: string) => Promise<boolean>`,
+  default `defaultReachabilityCheck`).
+- `ItemCardEditorRuntimeProps.onUpload`, `onUploadFromUrl`, and
+  `onCheckReachability` — same rationale.
+- `DialogPhase` variants `ProvidedImage` and `Warn`, and associated
+  reducer actions — unreachable after the state-machine change.
+
+All six removals are covered by mounting `<ImageUploadProvider>` once
+at the host; see `knowledge-base/component-abstractions.md` for the
+migration pattern.
+
 ## [4.11.6] - 2026-04-15
 
 ### Fixed
