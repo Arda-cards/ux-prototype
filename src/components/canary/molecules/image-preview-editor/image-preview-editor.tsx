@@ -4,6 +4,7 @@ import { RotateCw, RotateCcw, Undo2 } from 'lucide-react';
 
 import { cn } from '@/types/canary/utilities/utils';
 import { Slider } from '@/components/canary/primitives/slider';
+import { isCdnUrl } from '@/types/canary/utilities/cdn-url';
 import type { CropData } from '@/types/canary/utilities/image-field-config';
 
 // --- Interfaces ---
@@ -21,8 +22,15 @@ export interface ImagePreviewEditorInitProps {}
 export interface ImagePreviewEditorRuntimeProps {
   /** Image source — File, Blob, blob URL, or HTTPS URL. */
   imageData: File | Blob | string;
-  /** Called whenever crop position, zoom, or rotation changes. */
-  onCropChange: (cropData: CropData) => void;
+  /**
+   * Called when the crop area changes (drag to resize/move the crop box).
+   * Fires with the final crop coordinates; does not fire for zoom/rotate.
+   */
+  onCropComplete: (pixelCrop: CropData['pixelCrop']) => void;
+  /** Called when the zoom slider changes. */
+  onZoomChange: (zoom: number) => void;
+  /** Called when the user rotates CW or CCW. */
+  onRotationChange: (rotation: number) => void;
   /** Called when the user clicks Reset. */
   onReset: () => void;
 }
@@ -33,17 +41,6 @@ export type ImagePreviewEditorProps = ImagePreviewEditorStaticProps &
   ImagePreviewEditorRuntimeProps;
 
 // --- Helpers ---
-
-/** CDN URL pattern — matches `*.assets.arda.cards` domains (FD-17). */
-function isCdnUrl(src: string): boolean {
-  try {
-    const url = new URL(src);
-    if (url.protocol !== 'https:') return false;
-    return url.hostname === 'assets.arda.cards' || url.hostname.endsWith('.assets.arda.cards');
-  } catch {
-    return false;
-  }
-}
 
 const TOOLBAR_BUTTON_CLASS = cn(
   'inline-flex items-center justify-center rounded-md p-2',
@@ -64,7 +61,9 @@ const TOOLBAR_BUTTON_CLASS = cn(
 export function ImagePreviewEditor({
   aspectRatio,
   imageData,
-  onCropChange,
+  onCropComplete,
+  onZoomChange,
+  onRotationChange,
   onReset,
 }: ImagePreviewEditorProps) {
   const [crop, setCrop] = React.useState<Point>({ x: 0, y: 0 });
@@ -100,39 +99,46 @@ export function ImagePreviewEditor({
 
   const handleCropComplete = React.useCallback(
     (_croppedArea: Area, croppedAreaPixels: Area) => {
-      onCropChange({
-        pixelCrop: croppedAreaPixels,
-        zoom,
-        rotation,
-      });
+      onCropComplete(croppedAreaPixels);
     },
-    [onCropChange, zoom, rotation],
+    [onCropComplete],
   );
 
-  const handleZoomChange = React.useCallback(
+  const handleZoomSliderChange = React.useCallback(
     (values: number[]) => {
       const newZoom = values[0] ?? zoom;
       setZoom(newZoom);
-      onCropChange({ pixelCrop: { x: 0, y: 0, width: 0, height: 0 }, zoom: newZoom, rotation });
+      onZoomChange(newZoom);
     },
-    [onCropChange, zoom, rotation],
+    [onZoomChange, zoom],
+  );
+
+  // Cropper fires its own onZoomChange for wheel/pinch gestures. Without this
+  // wrapper those gestures would update local state but never the prop, so
+  // callers (e.g. ImageUploadDialog) would see a stale zoom on accept.
+  const handleCropperZoomChange = React.useCallback(
+    (newZoom: number) => {
+      setZoom(newZoom);
+      onZoomChange(newZoom);
+    },
+    [onZoomChange],
   );
 
   const handleRotateCw = React.useCallback(() => {
     setRotation((prev) => {
       const next = (prev + 90) % 360;
-      onCropChange({ pixelCrop: { x: 0, y: 0, width: 0, height: 0 }, zoom, rotation: next });
+      onRotationChange(next);
       return next;
     });
-  }, [onCropChange, zoom]);
+  }, [onRotationChange]);
 
   const handleRotateCcw = React.useCallback(() => {
     setRotation((prev) => {
       const next = (prev - 90 + 360) % 360;
-      onCropChange({ pixelCrop: { x: 0, y: 0, width: 0, height: 0 }, zoom, rotation: next });
+      onRotationChange(next);
       return next;
     });
-  }, [onCropChange, zoom]);
+  }, [onRotationChange]);
 
   const handleReset = React.useCallback(() => {
     setCrop({ x: 0, y: 0 });
@@ -155,7 +161,7 @@ export function ImagePreviewEditor({
             rotation={rotation}
             aspect={aspectRatio}
             onCropChange={setCrop}
-            onZoomChange={setZoom}
+            onZoomChange={handleCropperZoomChange}
             onRotationChange={setRotation}
             onCropComplete={handleCropComplete}
             {...(isCdnUrl(imageSrc) ? { mediaProps: { crossOrigin: 'use-credentials' } } : {})}
@@ -173,7 +179,7 @@ export function ImagePreviewEditor({
             max={3}
             step={0.1}
             value={[zoom]}
-            onValueChange={handleZoomChange}
+            onValueChange={handleZoomSliderChange}
             aria-label="Zoom"
             className="flex-1"
           />

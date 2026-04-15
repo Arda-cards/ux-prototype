@@ -18,6 +18,51 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [4.11.5] - 2026-04-14
+
+### Fixed
+
+- `ImageUploadDialog` edit-existing flow now prefetches the CDN image as a
+  blob and uses the same-origin blob URL for both display (in the Cropper)
+  and canvas operations (in `getCroppedImage`). This eliminates the CORS
+  mismatch where the Cropper loaded with `crossOrigin: 'use-credentials'`
+  but `getCroppedImage` re-fetched with `crossOrigin: 'anonymous'`, causing
+  `canvas.toBlob()` to fail silently and the crop to no-op (Arda-cards/arda-frontend-app#750 issue 5c).
+- Zoom-out (zoom < 1) no longer produces a black-square output. `getCroppedImage`
+  now applies the zoom factor when drawing the source image; the output
+  matches the editor preview, including transparent/black padding around
+  the shrunken image (Option A semantics; Arda-cards/arda-frontend-app#750 issue 5a).
+  The new API takes an options object: `getCroppedImage({ imageSrc, pixelCrop, rotation?, zoom?, outputFormat?, quality? })`.
+- Zoom-only and rotation-only edits now produce visible changes. Refactored
+  `ImagePreviewEditor` to fire three independent callbacks
+  (`onCropComplete`, `onZoomChange`, `onRotationChange`) instead of a single
+  `onCropChange`, so zoom/rotate adjustments no longer clobber the last
+  valid pixelCrop with a zero-sized sentinel (Arda-cards/arda-frontend-app#750 issue 5b).
+- Extracted shared `isCdnUrl` helper and new `prefetchImageAsBlob` helper
+  to `src/types/canary/utilities/cdn-url.ts`.
+- `ItemCardEditor` initial-image uploads now route through `ImageUploadDialog`
+  instead of being committed straight to the card, so the user can crop,
+  zoom, or rotate before the image is saved. Previously a drop or file
+  selection on the empty-state drop zone immediately mutated `fields.imageUrl`
+  and fired `onImageConfirmed`, with the user only able to access the
+  cropper via the secondary "Click to edit/replace" overlay
+  (Arda-cards/arda-frontend-app#750 issue 1). Adds a new optional
+  `pendingInput?: ImageInput` prop to `ImageUploadDialog`: the host can
+  forward an externally-supplied input (typically from its own drop zone)
+  through the dialog's existing state machine. File inputs land
+  synchronously in `ProvidedImage`; URL inputs go through the existing
+  reachability check; error inputs land in `FailedValidation`. Dispatch
+  is identity-tracked, so re-renders with the same `pendingInput` do not
+  re-enter the cropper.
+- `ItemCardEditor` now bundles its placeholder QR image as a Vite asset
+  (co-located at `src/components/canary/organisms/item-card-editor/qr-code.png`)
+  instead of pointing at the absolute path `/images/qr-code.png`, which
+  only resolved against Storybook's dev server and broke when the
+  component was published as part of the npm package. Adds an optional
+  `qrCodeUrl?: () => Promise<string>` prop so consumers can supply an
+  async resolver for a per-item QR URL; the bundled default is used when
+  no callback is provided or when it rejects (Arda-cards/arda-frontend-app#750 issue 3).
+
 ## [4.11.4] - 2026-04-14
 
 ### Fixed

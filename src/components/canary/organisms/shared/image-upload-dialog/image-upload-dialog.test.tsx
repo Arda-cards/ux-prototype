@@ -17,38 +17,24 @@ vi.mock('@/types/canary/utilities/image-upload-handlers', () => ({
 vi.mock('@/components/canary/molecules/image-preview-editor/image-preview-editor', () => ({
   ImagePreviewEditor: ({
     imageData,
-    onCropChange,
+    onCropComplete,
+    onZoomChange,
+    onRotationChange,
     onReset,
   }: {
     imageData: File | Blob | string;
-    onCropChange: (d: unknown) => void;
+    onCropComplete: (pc: { x: number; y: number; width: number; height: number }) => void;
+    onZoomChange: (z: number) => void;
+    onRotationChange: (r: number) => void;
     onReset: () => void;
   }) => (
     <div data-testid="image-preview-editor">
       <span data-testid="preview-src">
         {typeof imageData === 'string' ? imageData : 'file-blob'}
       </span>
-      <button
-        onClick={() =>
-          onCropChange({ pixelCrop: { x: 0, y: 0, width: 100, height: 100 }, zoom: 1, rotation: 0 })
-        }
-      >
-        crop
-      </button>
-      <button
-        onClick={() =>
-          onCropChange({ pixelCrop: { x: 0, y: 0, width: 0, height: 0 }, zoom: 1, rotation: 90 })
-        }
-      >
-        rotate
-      </button>
-      <button
-        onClick={() =>
-          onCropChange({ pixelCrop: { x: 0, y: 0, width: 0, height: 0 }, zoom: 2, rotation: 0 })
-        }
-      >
-        zoom
-      </button>
+      <button onClick={() => onCropComplete({ x: 0, y: 0, width: 100, height: 100 })}>crop</button>
+      <button onClick={() => onRotationChange(90)}>rotate</button>
+      <button onClick={() => onZoomChange(2)}>zoom</button>
       <button onClick={onReset}>reset</button>
     </div>
   ),
@@ -106,6 +92,17 @@ vi.mock('@/components/canary/molecules/image-drop-zone/image-drop-zone', () => (
 
 vi.mock('@/types/canary/utilities/get-cropped-image', () => ({
   getCroppedImage: vi.fn().mockResolvedValue(new Blob(['cropped'], { type: 'image/jpeg' })),
+}));
+
+vi.mock('@/types/canary/utilities/cdn-url', () => ({
+  isCdnUrl: (src: string) => src.includes('.assets.arda.cards'),
+  prefetchImageAsBlob: vi.fn().mockImplementation(async (url: string) => {
+    // Simulate prefetch: CDN URLs get converted to blob URLs, others pass through
+    if (url.includes('.assets.arda.cards')) {
+      return 'blob:http://localhost/prefetched-cdn-image';
+    }
+    return url;
+  }),
 }));
 
 // --- Test config ---
@@ -366,6 +363,20 @@ describe('ImageUploadDialog', () => {
   describe('EditExisting state (existingImageUrl provided)', () => {
     const EXISTING_URL = 'https://example.com/existing.jpg';
 
+    /** Extract the options object passed to getCroppedImage on its first call. */
+    async function firstCropCall() {
+      const { getCroppedImage } = await import('@/types/canary/utilities/get-cropped-image');
+      const mockFn = getCroppedImage as ReturnType<typeof vi.fn>;
+      const firstCall = mockFn.mock.calls[0];
+      if (!firstCall) throw new Error('getCroppedImage was not called');
+      return firstCall[0] as {
+        imageSrc: string;
+        pixelCrop: { x: number; y: number; width: number; height: number };
+        zoom?: number;
+        rotation?: number;
+      };
+    }
+
     it('opens in EditExisting state when existingImageUrl is provided', () => {
       renderDialog({ existingImageUrl: EXISTING_URL });
       expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
@@ -533,6 +544,229 @@ describe('ImageUploadDialog', () => {
     it('opens in EmptyImage state when existingImageUrl is null', () => {
       renderDialog({ existingImageUrl: null });
       expect(screen.getByTestId('image-drop-zone')).toBeInTheDocument();
+      expect(screen.queryByTestId('image-preview-editor')).not.toBeInTheDocument();
+    });
+
+    it('getCroppedImage receives a blob URL (prefetched), not the raw CDN URL', async () => {
+      const CDN_URL = 'https://dev.alpha002.assets.arda.cards/tenant/images/uuid.jpg';
+      const PREFETCHED_BLOB = 'blob:http://localhost/prefetched-cdn-image';
+      const { getCroppedImage } = await import('@/types/canary/utilities/get-cropped-image');
+      const onUpload = vi.fn().mockResolvedValue('https://cdn.example.com/cropped.jpg');
+      const onConfirm = vi.fn();
+      renderDialog({ existingImageUrl: CDN_URL, onConfirm, onUpload });
+
+      // Synchronization: wait for the prefetched blob URL to propagate through
+      // ImagePreviewEditor — its mock renders imageData in the preview-src node.
+      // Once the preview shows the blob URL, we know the prefetch effect has
+      // resolved and setPrefetchedImageUrl has flushed. No arbitrary waits.
+      await waitFor(() => {
+        expect(screen.getByTestId('preview-src')).toHaveTextContent(PREFETCHED_BLOB);
+      });
+
+      // Simulate crop edit
+      fireEvent.click(screen.getByText('crop'));
+
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
+      });
+
+      await waitFor(() => {
+        expect(getCroppedImage).toHaveBeenCalled();
+      });
+
+      // getCroppedImage should receive the prefetched blob URL, not the CDN URL
+      const opts = await firstCropCall();
+      expect(opts.imageSrc).toBe(PREFETCHED_BLOB);
+      expect(opts.imageSrc).not.toBe(CDN_URL);
+    });
+
+    // Issue 5a + 5b: zoom ignored in getCroppedImage; zoom/rotation-only
+    // handlers overwrite pixelCrop with zero-sized values.
+    it('5a: getCroppedImage receives the zoom value on zoom-only edit', async () => {
+      const { getCroppedImage } = await import('@/types/canary/utilities/get-cropped-image');
+      const EXISTING_URL = 'https://example.com/existing.jpg';
+      renderDialog({
+        existingImageUrl: EXISTING_URL,
+        onConfirm: vi.fn(),
+        onUpload: vi.fn().mockResolvedValue('x'),
+      });
+
+      fireEvent.click(screen.getByText('zoom'));
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
+      });
+      await waitFor(() => expect(getCroppedImage).toHaveBeenCalled());
+
+      const opts = await firstCropCall();
+      expect(opts.zoom).toBe(2);
+    });
+
+    it('5b: crop + rotate preserves pixelCrop (rotate does not overwrite crop)', async () => {
+      const { getCroppedImage } = await import('@/types/canary/utilities/get-cropped-image');
+      const EXISTING_URL = 'https://example.com/existing.jpg';
+      renderDialog({
+        existingImageUrl: EXISTING_URL,
+        onConfirm: vi.fn(),
+        onUpload: vi.fn().mockResolvedValue('x'),
+      });
+
+      // User drags crop area (sets non-zero pixelCrop), then rotates
+      fireEvent.click(screen.getByText('crop'));
+      fireEvent.click(screen.getByText('rotate'));
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
+      });
+      await waitFor(() => expect(getCroppedImage).toHaveBeenCalled());
+
+      const opts = await firstCropCall();
+      // pixelCrop preserved from the crop click; rotation captured from the rotate click
+      expect(opts.pixelCrop.width).toBeGreaterThan(0);
+      expect(opts.pixelCrop.height).toBeGreaterThan(0);
+      expect(opts.rotation).toBe(90);
+    });
+  });
+
+  // --- pendingInput entry point (#750 issue 1) -----------------------------
+  //
+  // Drop-zone inputs delivered by a parent component (e.g. ItemCardEditor)
+  // should land in the same ProvidedImage / FailedValidation / Loading flow
+  // as inputs from the dialog's own ImageDropZone.
+
+  describe('pendingInput entry point', () => {
+    it('dispatches a File pendingInput into ProvidedImage when opened', async () => {
+      const file = new File(['x'], 'pending.jpg', { type: 'image/jpeg' });
+      renderDialog({
+        open: true,
+        pendingInput: { type: 'file', file },
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
+      });
+      // The ImagePreviewEditor mock prints "file-blob" when imageData is a Blob/File.
+      expect(screen.getByTestId('preview-src')).toHaveTextContent('file-blob');
+    });
+
+    it('dispatches a URL pendingInput through reachability check into ProvidedImage', async () => {
+      renderDialog({
+        open: true,
+        pendingInput: { type: 'url', url: 'https://images.example.com/p.jpg' },
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
+      });
+      expect(screen.getByTestId('preview-src')).toHaveTextContent(
+        'https://images.example.com/p.jpg',
+      );
+    });
+
+    it('routes pendingInput error through the FailedValidation phase', async () => {
+      renderDialog({
+        open: true,
+        pendingInput: { type: 'error', message: 'File too large' },
+      });
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toHaveTextContent('File too large');
+      });
+    });
+
+    it('does not re-dispatch the same pendingInput on parent re-render', async () => {
+      const file = new File(['x'], 'pending.jpg', { type: 'image/jpeg' });
+      const pendingInput = { type: 'file' as const, file };
+
+      const { rerender } = render(
+        <ImageUploadDialog {...defaultProps} open={true} pendingInput={pendingInput} />,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
+      });
+
+      // User starts cropping and clicks Cancel — moves to Warn state.
+      fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+      await waitFor(() => {
+        expect(screen.getByText('Discard unsaved image?')).toBeInTheDocument();
+      });
+
+      // Parent re-renders with the SAME pendingInput reference. The dialog
+      // must not jump back into ProvidedImage — that would clobber the Warn
+      // dialog and silently drop the user's pending decision.
+      rerender(<ImageUploadDialog {...defaultProps} open={true} pendingInput={pendingInput} />);
+
+      expect(screen.getByText('Discard unsaved image?')).toBeInTheDocument();
+    });
+
+    it('re-enters ProvidedImage when pendingInput identity changes', async () => {
+      const fileA = new File(['a'], 'a.jpg', { type: 'image/jpeg' });
+      const fileB = new File(['b'], 'b.jpg', { type: 'image/jpeg' });
+
+      const { rerender } = render(
+        <ImageUploadDialog
+          {...defaultProps}
+          open={true}
+          pendingInput={{ type: 'file', file: fileA }}
+        />,
+      );
+      await waitFor(() => {
+        expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
+      });
+
+      rerender(
+        <ImageUploadDialog
+          {...defaultProps}
+          open={true}
+          pendingInput={{ type: 'file', file: fileB }}
+        />,
+      );
+
+      // Still in ProvidedImage, now with the new file.
+      await waitFor(() => {
+        expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
+      });
+    });
+
+    it('skips EditExisting CDN prefetch when opening with both existingImageUrl and pendingInput (PR-96 review)', async () => {
+      // When the dialog opens with both an existingImageUrl and a queued
+      // pendingInput, the RESET effect must not enter EditExisting first
+      // (which would kick off a CDN prefetch immediately discarded by the
+      // pendingInput effect's transition to ProvidedImage).
+      const { prefetchImageAsBlob } = await import('@/types/canary/utilities/cdn-url');
+      (prefetchImageAsBlob as ReturnType<typeof vi.fn>).mockClear();
+
+      const file = new File(['x'], 'pending.jpg', { type: 'image/jpeg' });
+      renderDialog({
+        open: true,
+        existingImageUrl: 'https://images.assets.arda.cards/items/abc.jpg',
+        pendingInput: { type: 'file', file },
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
+      });
+      // The Cropper must show the pending file, not the existing CDN image.
+      expect(screen.getByTestId('preview-src')).toHaveTextContent('file-blob');
+      // And the CDN prefetch must NOT have been kicked off.
+      expect(prefetchImageAsBlob).not.toHaveBeenCalled();
+    });
+
+    it('clears pendingInput state when open transitions to false', async () => {
+      const file = new File(['x'], 'pending.jpg', { type: 'image/jpeg' });
+      const { rerender } = render(
+        <ImageUploadDialog {...defaultProps} open={true} pendingInput={{ type: 'file', file }} />,
+      );
+      await waitFor(() => {
+        expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
+      });
+
+      // Close, then reopen with NO pendingInput — should land in EmptyImage,
+      // not retain the previous file.
+      rerender(<ImageUploadDialog {...defaultProps} open={false} />);
+      rerender(<ImageUploadDialog {...defaultProps} open={true} />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('image-drop-zone')).toBeInTheDocument();
+      });
       expect(screen.queryByTestId('image-preview-editor')).not.toBeInTheDocument();
     });
   });

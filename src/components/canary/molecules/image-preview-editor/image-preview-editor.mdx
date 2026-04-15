@@ -15,8 +15,8 @@ via a compact toolbar beneath the crop area.
 
 ## Playground
 
-Adjust `aspectRatio` and `imageData` in the Controls panel. The Actions panel logs every
-`onCropChange` call with the current `CropData`.
+Adjust `aspectRatio` and `imageData` in the Controls panel. The Actions panel logs each
+`onCropComplete`, `onZoomChange`, and `onRotationChange` call.
 
 <Canvas of={ImagePreviewEditorStories.Playground} />
 
@@ -61,8 +61,9 @@ Adjust `aspectRatio` and `imageData` in the Controls panel. The Actions panel lo
   </tbody>
 </table>
 
-Every state change (crop position, zoom, rotation) is emitted via `onCropChange` with
-a `CropData` object containing `pixelCrop`, `zoom`, and `rotation`.
+State changes are emitted on three independent callbacks: `onCropComplete` for the final
+pixel crop, `onZoomChange` for zoom slider movement, and `onRotationChange` for rotation
+button clicks.
 
 ---
 
@@ -76,7 +77,7 @@ The crop viewport is rendered by `react-easy-crop` and fills the available conta
 
 The zoom slider has a range of 0.5&#215; (minimum, zoomed out) to 3&#215; (maximum, zoomed in) with a step of 0.1. The initial zoom value on mount and after reset is 1&#215;, which positions the slider in the lower portion of its range. This allows users to zoom both in and out from the default view.
 
-Every slider change fires `onCropChange` synchronously with the updated zoom value embedded in the `CropData` payload.
+Every slider change fires `onZoomChange` synchronously with the updated zoom value.
 
 ### Rotation Buttons
 
@@ -85,7 +86,7 @@ Two rotation buttons sit in the toolbar row below the zoom slider:
 - **Clockwise** button: adds +90&#176; to the current rotation value, wrapping from 270&#176; back to 0&#176;.
 - **Counter-clockwise** button (rendered with the Undo2 icon): subtracts 90&#176; from the current rotation, wrapping from 0&#176; back to 270&#176;.
 
-Each button press fires `onCropChange` with the updated rotation.
+Each button press fires `onRotationChange` with the updated rotation.
 
 ### Reset
 
@@ -110,7 +111,11 @@ The toolbar below the crop area is arranged in two rows:
 
 ### Event Emission
 
-`onCropChange` is called on every interactive change &#8212; crop drag, zoom slider movement, or rotation button click. The `CropData` payload always contains the complete current state (`pixelCrop`, `zoom`, `rotation`), not just the field that changed.
+Three independent callbacks fire as the user interacts with the editor:
+`onCropComplete` is called when the user finishes resizing/repositioning the crop area,
+`onZoomChange` fires on every zoom slider movement, and `onRotationChange` fires on
+each rotate-CW or rotate-CCW button click. Each callback receives only the value that
+changed.
 
 ---
 
@@ -151,11 +156,25 @@ Use this to let users abandon edits and return to the original image.
       <td>Image source. <code>File</code> and <code>Blob</code> are converted to object URLs automatically and revoked on unmount. Strings are treated as URLs.</td>
     </tr>
     <tr>
-      <td><code>onCropChange</code></td>
+      <td><code>onCropComplete</code></td>
       <td>Runtime</td>
-      <td><code>(cropData: CropData) =&#62; void</code></td>
+      <td><code>(pixelCrop: PixelCrop) =&#62; void</code></td>
       <td>Required</td>
-      <td>Called on every crop, zoom, or rotation change with the complete current <code>CropData</code>.</td>
+      <td>Called with the final pixel crop (x, y, width, height) when the user finishes resizing or repositioning the crop area.</td>
+    </tr>
+    <tr>
+      <td><code>onZoomChange</code></td>
+      <td>Runtime</td>
+      <td><code>(zoom: number) =&#62; void</code></td>
+      <td>Required</td>
+      <td>Called on every zoom slider movement with the current zoom level (0.5&#8211;3).</td>
+    </tr>
+    <tr>
+      <td><code>onRotationChange</code></td>
+      <td>Runtime</td>
+      <td><code>(rotation: number) =&#62; void</code></td>
+      <td>Required</td>
+      <td>Called on each rotate-CW or rotate-CCW button click with the new rotation in degrees (0, 90, 180, or 270).</td>
     </tr>
     <tr>
       <td><code>onReset</code></td>
@@ -163,35 +182,6 @@ Use this to let users abandon edits and return to the original image.
       <td><code>() =&#62; void</code></td>
       <td>Required</td>
       <td>Called when the user clicks the Reset button, after internal state has been restored to defaults.</td>
-    </tr>
-  </tbody>
-</table>
-
-### CropData
-
-<table>
-  <thead>
-    <tr>
-      <th>Field</th>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>pixelCrop</code></td>
-      <td><code>PixelCrop</code></td>
-      <td>Pixel coordinates of the crop area (x, y, width, height).</td>
-    </tr>
-    <tr>
-      <td><code>zoom</code></td>
-      <td><code>number</code></td>
-      <td>Current zoom level (0.5&#8211;3). Initial and reset value is 1.</td>
-    </tr>
-    <tr>
-      <td><code>rotation</code></td>
-      <td><code>number</code></td>
-      <td>Current rotation in degrees (0, 90, 180, or 270).</td>
     </tr>
   </tbody>
 </table>

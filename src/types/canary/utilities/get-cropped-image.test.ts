@@ -60,34 +60,81 @@ beforeEach(() => {
   mockImageLoad();
 });
 
+/** Invoke getCroppedImage with test defaults merged with overrides. */
+async function runCrop(overrides: Partial<Parameters<typeof getCroppedImage>[0]> = {}) {
+  return getCroppedImage({ imageSrc: TEST_IMAGE_SRC, pixelCrop: DEFAULT_CROP, ...overrides });
+}
+
 describe('getCroppedImage', () => {
   it('returns a Blob', async () => {
     installCanvasMock('image/jpeg');
-    const result = await getCroppedImage(TEST_IMAGE_SRC, DEFAULT_CROP);
+    const result = await runCrop();
     expect(result).toBeInstanceOf(Blob);
   });
 
   it('output MIME type matches the outputFormat parameter', async () => {
     installCanvasMock('image/png');
-    const result = await getCroppedImage(TEST_IMAGE_SRC, DEFAULT_CROP, 0, 'image/png', 0.9);
+    const result = await runCrop({ outputFormat: 'image/png', quality: 0.9 });
     expect(result.type).toBe('image/png');
   });
 
   it('produces a Blob when using the default quality of 0.85 (smoke test)', async () => {
     installCanvasMock('image/jpeg');
-    const result = await getCroppedImage(TEST_IMAGE_SRC, DEFAULT_CROP);
+    const result = await runCrop();
     expect(result.size).toBeGreaterThan(0);
   });
 
   it('completes successfully with zero rotation', async () => {
     installCanvasMock('image/jpeg');
-    const result = await getCroppedImage(TEST_IMAGE_SRC, DEFAULT_CROP, 0);
+    const result = await runCrop({ rotation: 0 });
     expect(result).toBeInstanceOf(Blob);
   });
 
   it('completes successfully with 90-degree rotation', async () => {
     installCanvasMock('image/jpeg');
-    const result = await getCroppedImage(TEST_IMAGE_SRC, DEFAULT_CROP, 90);
+    const result = await runCrop({ rotation: 90 });
     expect(result).toBeInstanceOf(Blob);
+  });
+
+  it.each([
+    { zoom: 2, expected: 2, label: 'zoom > 1 (enlarge)' },
+    { zoom: 0.5, expected: 0.5, label: 'zoom < 1 (shrink, Option A)' },
+    { zoom: 1, expected: 1, label: 'zoom = 1 (no scaling)' },
+  ])(
+    'applies zoom ($label): drawImage receives scaled dimensions (5a)',
+    async ({ zoom, expected }) => {
+      const { ctx } = installCanvasMock('image/jpeg');
+      await runCrop({ zoom });
+      // The source drawImage call uses scaled dimensions:
+      //   drawImage(image, 0, 0, scaledWidth, scaledHeight)
+      // With the mock image at 1x1, scaled dims equal the zoom factor.
+      const sourceDraw = ctx.drawImage.mock.calls[0];
+      if (!sourceDraw) throw new Error('drawImage was not called');
+      expect(sourceDraw[3]).toBe(expected);
+      expect(sourceDraw[4]).toBe(expected);
+    },
+  );
+
+  it('rounds non-integer crop dimensions up to avoid canvas truncation (PR-96 review)', async () => {
+    installCanvasMock('image/jpeg');
+    // Use the toBlob spy to capture the croppedCanvas dimensions just before
+    // encoding. Replace the spy with one that records the canvas width/height.
+    let capturedWidth = -1;
+    let capturedHeight = -1;
+    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(function (
+      this: HTMLCanvasElement,
+      callback,
+    ) {
+      capturedWidth = this.width;
+      capturedHeight = this.height;
+      callback(new Blob(['x'], { type: 'image/jpeg' }));
+    });
+
+    // A pixelCrop with non-integer dimensions (the realistic case at zoom=1.7,
+    // rotation=37, etc.) — expect Math.ceil applied so canvas.width/height
+    // never truncate below the requested region.
+    await runCrop({ pixelCrop: { x: 0, y: 0, width: 100.4, height: 100.6 } });
+    expect(capturedWidth).toBe(101);
+    expect(capturedHeight).toBe(101);
   });
 });

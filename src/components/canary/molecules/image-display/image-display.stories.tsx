@@ -359,7 +359,9 @@ function ImageEditScene({ sceneIndex }: { sceneIndex: number }) {
             <ImagePreviewEditor
               aspectRatio={1}
               imageData={MOCK_ITEM_IMAGE}
-              onCropChange={noop}
+              onCropComplete={noop}
+              onZoomChange={noop}
+              onRotationChange={noop}
               onReset={noop}
             />
           </ImageComparisonLayout>
@@ -398,7 +400,9 @@ function ImageEditScene({ sceneIndex }: { sceneIndex: number }) {
           <ImagePreviewEditor
             aspectRatio={1}
             imageData={MOCK_NEW_IMAGE}
-            onCropChange={noop}
+            onCropComplete={noop}
+            onZoomChange={noop}
+            onRotationChange={noop}
             onReset={noop}
           />
           <div className="mt-4">
@@ -424,7 +428,9 @@ function ImageEditScene({ sceneIndex }: { sceneIndex: number }) {
           <ImagePreviewEditor
             aspectRatio={1}
             imageData={MOCK_NEW_IMAGE}
-            onCropChange={noop}
+            onCropComplete={noop}
+            onZoomChange={noop}
+            onRotationChange={noop}
             onReset={noop}
           />
           <div className="mt-4">

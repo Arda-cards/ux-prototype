@@ -28,6 +28,7 @@ import {
   defaultReachabilityCheck,
 } from '@/types/canary/utilities/image-upload-handlers';
 import { getCroppedImage } from '@/types/canary/utilities/get-cropped-image';
+import { prefetchImageAsBlob } from '@/types/canary/utilities/cdn-url';
 import type {
   ImageFieldConfig,
   ImageInput,
@@ -63,6 +64,19 @@ export interface ImageUploadDialogRuntimeProps {
    * Defaults to `defaultReachabilityCheck`.
    */
   onCheckReachability?: (url: string) => Promise<boolean>;
+  /**
+   * Externally-supplied image input &#8212; typically forwarded from the host's
+   * own drop zone (e.g. ItemCardEditor). When defined while `open` is true,
+   * the input is dispatched through the same state-machine path as the
+   * dialog's internal `ImageDropZone`: file inputs land synchronously in
+   * `ProvidedImage`; URL inputs go through reachability check first; error
+   * inputs land in `FailedValidation`.
+   *
+   * A new identity (referential inequality) is treated as a new dispatch.
+   * The host should clear this prop on confirm/cancel to avoid re-entry on
+   * the next open.
+   */
+  pendingInput?: ImageInput;
 }
 
 /** Combined props for ImageUploadDialog. */
@@ -185,10 +199,24 @@ export function ImageUploadDialog({
   onCancel,
   onUpload = defaultUploadHandler,
   onCheckReachability = defaultReachabilityCheck,
+  pendingInput,
 }: ImageUploadDialogProps) {
   const [phase, dispatch] = React.useReducer(dialogReducer, { name: 'EmptyImage' });
-  // cropData tracks current crop/zoom/rotation for use in the real upload pipeline
-  const cropDataRef = React.useRef<unknown>(null);
+  // Independent refs for crop/zoom/rotation — kept separate so zoom and
+  // rotation changes don't clobber the last valid pixelCrop (#750 issue 5b).
+  // pixelCropRef is updated only by onCropComplete (react-easy-crop's final
+  // crop event); zoom and rotation refs by their own callbacks.
+  const pixelCropRef = React.useRef<{ x: number; y: number; width: number; height: number } | null>(
+    null,
+  );
+  const zoomRef = React.useRef<number>(1);
+  const rotationRef = React.useRef<number>(0);
+
+  // Prefetched blob URL for CDN images — eliminates CORS mismatch between
+  // the Cropper (use-credentials) and getCroppedImage (anonymous) by
+  // fetching the image once with credentials and using the same-origin
+  // blob URL for both display and canvas operations.
+  const [prefetchedImageUrl, setPrefetchedImageUrl] = React.useState<string | null>(null);
 
   // Stable refs for callbacks used in effects to avoid stale closures.
   const onConfirmRef = React.useRef(onConfirm);
@@ -197,15 +225,53 @@ export function ImageUploadDialog({
   onUploadRef.current = onUpload;
 
   // Reset state when dialog opens/closes
+  const resetEditRefs = React.useCallback(() => {
+    pixelCropRef.current = null;
+    zoomRef.current = 1;
+    rotationRef.current = 0;
+  }, []);
   React.useEffect(() => {
-    if (open) {
-      dispatch({ type: 'RESET', existingImageUrl });
-      cropDataRef.current = null;
-    } else {
-      dispatch({ type: 'RESET', existingImageUrl: null });
-      cropDataRef.current = null;
+    // When the dialog opens with a pendingInput already queued, skip the
+    // EditExisting initial state — the pendingInput effect will dispatch
+    // INPUT_FILE/INPUT_URL into ProvidedImage on the same render. Starting
+    // in EditExisting would kick off a CDN prefetch that immediately gets
+    // discarded, wasting a network round-trip.
+    const initialExistingUrl = open && !pendingInput ? existingImageUrl : null;
+    dispatch({ type: 'RESET', existingImageUrl: initialExistingUrl });
+    resetEditRefs();
+    setPrefetchedImageUrl(null);
+  }, [open]); // Intentionally deps on open only — existingImageUrl/pendingInput captured at open time
+
+  // Prefetch CDN image as blob when entering EditExisting phase. The promise
+  // is also kept in a ref so handleEditConfirm can await it deterministically
+  // — protecting against the race where the user clicks Accept before the
+  // initial prefetch effect's microtask resolves.
+  const prefetchPromiseRef = React.useRef<Promise<string> | null>(null);
+  React.useEffect(() => {
+    if (phase.name !== 'EditExisting') {
+      return;
     }
-  }, [open]); // Intentionally deps on open only — existingImageUrl is captured at open time
+    let revoke: string | null = null;
+    let cancelled = false;
+    const promise = prefetchImageAsBlob(phase.imageUrl);
+    prefetchPromiseRef.current = promise;
+    promise.then((blobUrl) => {
+      if (cancelled) {
+        if (blobUrl !== phase.imageUrl) URL.revokeObjectURL(blobUrl);
+        return;
+      }
+      if (blobUrl !== phase.imageUrl) revoke = blobUrl;
+      setPrefetchedImageUrl(blobUrl);
+    });
+    return () => {
+      cancelled = true;
+      // Clear state alongside the revoke so a stale revoked URL never lingers
+      // in component state (and never gets re-rendered as a dead <img src>).
+      setPrefetchedImageUrl(null);
+      prefetchPromiseRef.current = null;
+      if (revoke) URL.revokeObjectURL(revoke);
+    };
+  }, [phase.name, phase.name === 'EditExisting' ? (phase as { imageUrl: string }).imageUrl : null]);
 
   // Trigger upload when entering the Uploading phase
   React.useEffect(() => {
@@ -272,6 +338,23 @@ export function ImageUploadDialog({
     [onCheckReachability],
   );
 
+  // Forward externally-supplied pendingInput through the same state-machine
+  // path as the dialog's internal ImageDropZone. Tracked by referential
+  // identity: a new ImageInput object is treated as a new dispatch, the
+  // same object on re-render is ignored. Reset on `open` transitioning to
+  // false so the next open with a new pendingInput re-dispatches cleanly.
+  const lastDispatchedInputRef = React.useRef<ImageInput | undefined>(undefined);
+  React.useEffect(() => {
+    if (!open) {
+      lastDispatchedInputRef.current = undefined;
+      return;
+    }
+    if (pendingInput && pendingInput !== lastDispatchedInputRef.current) {
+      lastDispatchedInputRef.current = pendingInput;
+      handleInput(pendingInput);
+    }
+  }, [open, pendingInput, handleInput]);
+
   const handleCancelClick = React.useCallback(() => {
     if (phase.name === 'ProvidedImage') {
       dispatch({ type: 'CANCEL_CLICK' });
@@ -288,43 +371,48 @@ export function ImageUploadDialog({
 
   const handleEditConfirm = React.useCallback(async () => {
     if (phase.name !== 'EditExisting') return;
-    const cropData = cropDataRef.current as {
-      pixelCrop: { x: number; y: number; width: number; height: number };
-      zoom?: number;
-      rotation?: number;
-    } | null;
 
-    // Determine if the user made any edits (crop, rotate, or zoom).
-    // Rotate/zoom handlers in ImagePreviewEditor fire onCropChange with a
-    // zero-sized pixelCrop, so we can't rely on pixelCrop alone — also
-    // check rotation and zoom.
-    const hasCropArea =
-      cropData !== null && cropData.pixelCrop.width > 0 && cropData.pixelCrop.height > 0;
-    const hasRotation = cropData !== null && (cropData.rotation ?? 0) !== 0;
-    const hasZoom = cropData !== null && (cropData.zoom ?? 1) !== 1;
-    const hasEdits = hasCropArea || hasRotation || hasZoom;
+    const pixelCrop = pixelCropRef.current;
+    const zoom = zoomRef.current;
+    const rotation = rotationRef.current;
 
-    if (hasEdits && cropData !== null) {
+    // Determine if the user made any edits. Each edit type has its own ref,
+    // so they never clobber each other.
+    const hasCropArea = pixelCrop !== null && pixelCrop.width > 0 && pixelCrop.height > 0;
+    const hasZoom = zoom !== 1;
+    const hasRotation = rotation !== 0;
+    const hasEdits = hasCropArea || hasZoom || hasRotation;
+
+    if (hasEdits) {
       try {
-        // getCroppedImage handles zero-sized pixelCrop (rotate/zoom-only
-        // edits) by using the full rotated canvas as the crop area.
-        const croppedBlob = await getCroppedImage(
-          phase.imageUrl,
-          cropData.pixelCrop,
-          cropData.rotation ?? 0,
-        );
+        // Use the prefetched blob URL (same-origin) to avoid the CORS
+        // mismatch between the Cropper and the canvas. If the user clicked
+        // Accept before the prefetch effect's microtask resolved, await the
+        // in-flight promise here so getCroppedImage never sees a raw CDN URL.
+        const imageSource =
+          prefetchedImageUrl ??
+          (await (prefetchPromiseRef.current ?? Promise.resolve(phase.imageUrl)));
+        // pixelCrop may be null if the user only zoomed/rotated — pass a
+        // zero-sized rect to signal "use full canvas".
+        const effectiveCrop = pixelCrop ?? { x: 0, y: 0, width: 0, height: 0 };
+        const croppedBlob = await getCroppedImage({
+          imageSrc: imageSource,
+          pixelCrop: effectiveCrop,
+          rotation,
+          zoom,
+        });
         // Upload the cropped/rotated image as a new file. The upload effect
         // will call onUpload(blob) → S3 → return the new CDN URL.
         dispatch({ type: 'EDIT_CONFIRM', croppedBlob });
         return;
       } catch {
-        // Canvas crop failed (e.g. CORS taint on localhost without CloudFront
-        // CORS). Fall through to confirm with the original URL unchanged.
+        // Canvas operation failed unexpectedly. Fall through to confirm with
+        // the original URL unchanged rather than silently losing the edit.
       }
     }
     // No edits or crop failed — confirm with the original URL as-is.
     dispatch({ type: 'EDIT_CONFIRM' });
-  }, [phase]);
+  }, [phase, prefetchedImageUrl]);
 
   const handleWarnDiscard = React.useCallback(() => {
     dispatch({ type: 'WARN_DISCARD' });
@@ -385,13 +473,17 @@ export function ImageUploadDialog({
             >
               <ImagePreviewEditor
                 aspectRatio={config.aspectRatio}
-                imageData={phase.imageUrl}
-                onCropChange={(d) => {
-                  cropDataRef.current = d;
+                imageData={prefetchedImageUrl ?? phase.imageUrl}
+                onCropComplete={(pc) => {
+                  pixelCropRef.current = pc;
                 }}
-                onReset={() => {
-                  cropDataRef.current = null;
+                onZoomChange={(z) => {
+                  zoomRef.current = z;
                 }}
+                onRotationChange={(r) => {
+                  rotationRef.current = r;
+                }}
+                onReset={resetEditRefs}
               />
             </ImageComparisonLayout>
           )}
@@ -423,24 +515,32 @@ export function ImageUploadDialog({
                   <ImagePreviewEditor
                     aspectRatio={config.aspectRatio}
                     imageData={phase.imageData}
-                    onCropChange={(d) => {
-                      cropDataRef.current = d;
+                    onCropComplete={(pc) => {
+                      pixelCropRef.current = pc;
                     }}
-                    onReset={() => {
-                      cropDataRef.current = null;
+                    onZoomChange={(z) => {
+                      zoomRef.current = z;
                     }}
+                    onRotationChange={(r) => {
+                      rotationRef.current = r;
+                    }}
+                    onReset={resetEditRefs}
                   />
                 </ImageComparisonLayout>
               ) : (
                 <ImagePreviewEditor
                   aspectRatio={config.aspectRatio}
                   imageData={phase.imageData}
-                  onCropChange={(d) => {
-                    cropDataRef.current = d;
+                  onCropComplete={(pc) => {
+                    pixelCropRef.current = pc;
                   }}
-                  onReset={() => {
-                    cropDataRef.current = null;
+                  onZoomChange={(z) => {
+                    zoomRef.current = z;
                   }}
+                  onRotationChange={(r) => {
+                    rotationRef.current = r;
+                  }}
+                  onReset={resetEditRefs}
                 />
               )}
             </div>

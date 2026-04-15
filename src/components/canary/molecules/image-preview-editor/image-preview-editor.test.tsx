@@ -4,14 +4,18 @@ import { describe, it, expect, vi, beforeAll, afterAll, type Mock } from 'vitest
 import '@testing-library/jest-dom/vitest';
 import type { CropData } from '@/types/canary/utilities/image-field-config';
 
+type PixelCrop = CropData['pixelCrop'];
+
 // Mock react-easy-crop so tests do not rely on its internal DOM structure
 vi.mock('react-easy-crop', () => ({
   default: ({
     onCropComplete,
+    onZoomChange,
     image,
     mediaProps,
   }: {
     onCropComplete?: (croppedArea: unknown, croppedAreaPixels: unknown) => void;
+    onZoomChange?: (zoom: number) => void;
     image?: string;
     mediaProps?: Record<string, string>;
   }) => (
@@ -25,7 +29,18 @@ vi.mock('react-easy-crop', () => ({
           { x: 0, y: 0, width: 200, height: 200 },
         )
       }
-    />
+    >
+      <button
+        type="button"
+        data-testid="mock-cropper-gesture-zoom"
+        onClick={(e) => {
+          e.stopPropagation();
+          onZoomChange?.(1.75);
+        }}
+      >
+        gesture-zoom
+      </button>
+    </div>
   ),
 }));
 
@@ -37,11 +52,15 @@ function renderEditor(
   overrides: Partial<{
     aspectRatio: number;
     imageData: File | Blob | string;
-    onCropChange: Mock<(cropData: CropData) => void>;
+    onCropComplete: Mock<(pc: PixelCrop) => void>;
+    onZoomChange: Mock<(z: number) => void>;
+    onRotationChange: Mock<(r: number) => void>;
     onReset: Mock<() => void>;
   }> = {},
 ) {
-  const onCropChange = overrides.onCropChange ?? vi.fn<(cropData: CropData) => void>();
+  const onCropComplete = overrides.onCropComplete ?? vi.fn<(pc: PixelCrop) => void>();
+  const onZoomChange = overrides.onZoomChange ?? vi.fn<(z: number) => void>();
+  const onRotationChange = overrides.onRotationChange ?? vi.fn<(r: number) => void>();
   const onReset = overrides.onReset ?? vi.fn<() => void>();
   const aspectRatio = overrides.aspectRatio ?? 1;
   const imageData = overrides.imageData ?? MOCK_URL;
@@ -50,12 +69,14 @@ function renderEditor(
     <ImagePreviewEditor
       aspectRatio={aspectRatio}
       imageData={imageData}
-      onCropChange={onCropChange}
+      onCropComplete={onCropComplete}
+      onZoomChange={onZoomChange}
+      onRotationChange={onRotationChange}
       onReset={onReset}
     />,
   );
 
-  return { ...result, onCropChange, onReset };
+  return { ...result, onCropComplete, onZoomChange, onRotationChange, onReset };
 }
 
 describe('ImagePreviewEditor', () => {
@@ -76,34 +97,29 @@ describe('ImagePreviewEditor', () => {
     expect(screen.getByRole('button', { name: /reset/i })).toBeInTheDocument();
   });
 
-  it('calls onCropChange when Cropper fires onCropComplete', () => {
-    const { onCropChange } = renderEditor();
-    const cropper = screen.getByTestId('mock-cropper');
-    fireEvent.click(cropper);
-
-    expect(onCropChange).toHaveBeenCalledWith(
-      expect.objectContaining({
-        pixelCrop: { x: 0, y: 0, width: 200, height: 200 },
-        zoom: expect.any(Number),
-        rotation: expect.any(Number),
-      }),
-    );
+  it('calls onCropComplete when Cropper fires its onCropComplete', () => {
+    const { onCropComplete } = renderEditor();
+    fireEvent.click(screen.getByTestId('mock-cropper'));
+    expect(onCropComplete).toHaveBeenCalledWith({ x: 0, y: 0, width: 200, height: 200 });
   });
 
-  it('clockwise rotate button increments rotation by 90 degrees', async () => {
+  it('clockwise rotate button calls onRotationChange with +90 (5b: independent of crop)', async () => {
     const user = userEvent.setup();
-    const { onCropChange } = renderEditor();
+    const { onRotationChange, onCropComplete } = renderEditor();
 
     await user.click(screen.getByRole('button', { name: /^rotate 90 degrees clockwise$/i }));
-    expect(onCropChange).toHaveBeenCalledWith(expect.objectContaining({ rotation: 90 }));
+    expect(onRotationChange).toHaveBeenCalledWith(90);
+    // Rotate must NOT fire onCropComplete (would clobber the last valid crop)
+    expect(onCropComplete).not.toHaveBeenCalled();
   });
 
-  it('counter-clockwise rotate button decrements rotation by 90 degrees', async () => {
+  it('counter-clockwise rotate button calls onRotationChange with 270 (5b: independent of crop)', async () => {
     const user = userEvent.setup();
-    const { onCropChange } = renderEditor();
+    const { onRotationChange, onCropComplete } = renderEditor();
 
     await user.click(screen.getByRole('button', { name: /counter-clockwise/i }));
-    expect(onCropChange).toHaveBeenCalledWith(expect.objectContaining({ rotation: 270 }));
+    expect(onRotationChange).toHaveBeenCalledWith(270);
+    expect(onCropComplete).not.toHaveBeenCalled();
   });
 
   it('reset button calls onReset', async () => {
@@ -112,6 +128,16 @@ describe('ImagePreviewEditor', () => {
 
     await user.click(screen.getByRole('button', { name: /reset/i }));
     expect(onReset).toHaveBeenCalledOnce();
+  });
+
+  it('forwards Cropper-driven zoom (wheel/pinch gesture) through onZoomChange prop', async () => {
+    // Without the wrapper around Cropper.onZoomChange, gesture-driven zoom
+    // updates only local state and never the prop, so callers (e.g.
+    // ImageUploadDialog) see a stale zoom on accept (#750 PR-96 review).
+    const user = userEvent.setup();
+    const { onZoomChange } = renderEditor();
+    await user.click(screen.getByTestId('mock-cropper-gesture-zoom'));
+    expect(onZoomChange).toHaveBeenCalledWith(1.75);
   });
 
   describe('crossOrigin for CDN URLs (FD-17)', () => {
@@ -160,7 +186,9 @@ describe('ImagePreviewEditor', () => {
         <ImagePreviewEditor
           aspectRatio={1}
           imageData={file}
-          onCropChange={vi.fn()}
+          onCropComplete={vi.fn()}
+          onZoomChange={vi.fn()}
+          onRotationChange={vi.fn()}
           onReset={vi.fn()}
         />,
       );
@@ -187,7 +215,9 @@ describe('ImagePreviewEditor', () => {
         <ImagePreviewEditor
           aspectRatio={1}
           imageData={null as unknown as File}
-          onCropChange={vi.fn()}
+          onCropComplete={vi.fn()}
+          onZoomChange={vi.fn()}
+          onRotationChange={vi.fn()}
           onReset={vi.fn()}
         />,
       );
@@ -207,7 +237,9 @@ describe('ImagePreviewEditor', () => {
         <ImagePreviewEditor
           aspectRatio={1}
           imageData={undefined as unknown as File}
-          onCropChange={vi.fn()}
+          onCropComplete={vi.fn()}
+          onZoomChange={vi.fn()}
+          onRotationChange={vi.fn()}
           onReset={vi.fn()}
         />,
       );

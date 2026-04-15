@@ -47,12 +47,16 @@ const meta: Meta<typeof ImagePreviewEditor> = {
       control: 'text',
       description: 'Image URL to load.',
     },
-    onCropChange: { action: 'onCropChange' },
+    onCropComplete: { action: 'onCropComplete' },
+    onZoomChange: { action: 'onZoomChange' },
+    onRotationChange: { action: 'onRotationChange' },
     onReset: { action: 'onReset' },
   },
   args: {
     aspectRatio: 1,
-    onCropChange: fn(),
+    onCropComplete: fn(),
+    onZoomChange: fn(),
+    onRotationChange: fn(),
     onReset: fn(),
   },
   decorators: [

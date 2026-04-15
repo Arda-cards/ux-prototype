@@ -17,6 +17,8 @@ import type {
   ImageUploadResult,
 } from '@/types/canary/utilities/image-field-config';
 
+import qrCodeDefaultUrl from './qr-code.png';
+
 // --- Interfaces ---
 
 /** Field values for the item card. */
@@ -58,6 +60,15 @@ export interface ItemCardEditorRuntimeProps {
    * Same bridge pattern as onUpload.
    */
   onCheckReachability?: (url: string) => Promise<boolean>;
+  /**
+   * Async resolver for the QR-code image shown in the card header.
+   * When omitted (or when the promise rejects), a bundled default QR image
+   * is used. The default is the static placeholder; consumers that have a
+   * real per-item QR URL should pass a callback here. The host application
+   * is responsible for determining which item's QR to fetch — typically by
+   * closing over an item identifier in scope.
+   */
+  qrCodeUrl?: () => Promise<string>;
 }
 
 /** Combined props for ItemCardEditor. */
@@ -79,10 +90,34 @@ export function ItemCardEditor({
   onImageConfirmed,
   onUpload,
   onCheckReachability,
+  qrCodeUrl,
 }: ItemCardEditorProps) {
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [confirmRemoveOpen, setConfirmRemoveOpen] = React.useState(false);
-  const objectUrlRef = React.useRef<string | null>(null);
+  const [resolvedQrSrc, setResolvedQrSrc] = React.useState<string>(qrCodeDefaultUrl);
+  // Pending input forwarded to ImageUploadDialog when the user drops/selects
+  // a new image via the card-side ImageDropZone. Cleared on confirm/cancel.
+  const [pendingInput, setPendingInput] = React.useState<ImageInput | undefined>(undefined);
+
+  // Resolve the QR image when a callback is provided. Falls back to the
+  // bundled default on rejection or when no callback is given.
+  React.useEffect(() => {
+    if (!qrCodeUrl) {
+      setResolvedQrSrc(qrCodeDefaultUrl);
+      return;
+    }
+    let cancelled = false;
+    qrCodeUrl()
+      .then((url) => {
+        if (!cancelled) setResolvedQrSrc(url);
+      })
+      .catch(() => {
+        if (!cancelled) setResolvedQrSrc(qrCodeDefaultUrl);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [qrCodeUrl]);
 
   // Stable refs for values used in async callbacks to avoid stale closures.
   const fieldsRef = React.useRef(fields);
@@ -92,13 +127,6 @@ export function ItemCardEditor({
   const onImageConfirmedRef = React.useRef(onImageConfirmed);
   onImageConfirmedRef.current = onImageConfirmed;
 
-  // Revoke any object URL we created when the component unmounts.
-  React.useEffect(() => {
-    return () => {
-      if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
-    };
-  }, []);
-
   const updateField = React.useCallback(
     <K extends keyof ItemCardFields>(key: K, value: ItemCardFields[K]) => {
       onChangeRef.current({ ...fieldsRef.current, [key]: value });
@@ -106,64 +134,30 @@ export function ItemCardEditor({
     [],
   );
 
-  // New images go straight onto the card — no dialog.
-  // For URLs (e.g. dragged from Google Images), fetch as blob first to avoid
-  // referrer-restricted or short-lived URLs breaking the <img> tag.
+  // Drop-zone inputs route through the ImageUploadDialog so the user can
+  // crop/zoom/rotate before committing (#750 issue 1). Error inputs are
+  // surfaced inline by the ImageDropZone itself; the card just no-ops.
+  // The dialog is responsible for any fetch/upload of the supplied input.
   const handleDropZoneInput = React.useCallback((input: ImageInput) => {
     if (input.type === 'error') return;
-
-    // Revoke previous object URL before creating a new one.
-    if (objectUrlRef.current) {
-      URL.revokeObjectURL(objectUrlRef.current);
-      objectUrlRef.current = null;
-    }
-
-    if (input.type === 'file') {
-      const url = URL.createObjectURL(input.file);
-      objectUrlRef.current = url;
-      onChangeRef.current({ ...fieldsRef.current, imageUrl: url });
-      onImageConfirmedRef.current?.(url);
-    } else if (input.type === 'url') {
-      // Fetch the image as a blob so it works even if the source URL
-      // is referrer-restricted (Google Images, CDNs with hotlink protection).
-      fetch(input.url, { mode: 'cors' })
-        .then((res) => {
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const ct = res.headers.get('content-type') ?? '';
-          if (!ct.startsWith('image/')) throw new Error(`Not an image: ${ct}`);
-          return res.blob();
-        })
-        .then((blob) => {
-          const url = URL.createObjectURL(blob);
-          objectUrlRef.current = url;
-          onChangeRef.current({ ...fieldsRef.current, imageUrl: url });
-          onImageConfirmedRef.current?.(url);
-        })
-        .catch(() => {
-          // If fetch fails (CORS, not an image), fall back to using the URL directly.
-          // It may still work if the server allows <img> loading but blocks fetch.
-          onChangeRef.current({ ...fieldsRef.current, imageUrl: input.url });
-          onImageConfirmedRef.current?.(input.url);
-        });
-    }
+    setPendingInput(input);
+    setDialogOpen(true);
   }, []);
 
   const handleRemoveImage = React.useCallback(() => {
-    if (objectUrlRef.current) {
-      URL.revokeObjectURL(objectUrlRef.current);
-      objectUrlRef.current = null;
-    }
     onChangeRef.current({ ...fieldsRef.current, imageUrl: null });
   }, []);
 
   const handleDialogConfirm = React.useCallback((result: ImageUploadResult) => {
     onChangeRef.current({ ...fieldsRef.current, imageUrl: result.imageUrl });
     setDialogOpen(false);
+    setPendingInput(undefined);
     onImageConfirmedRef.current?.(result.imageUrl);
   }, []);
 
   const handleDialogCancel = React.useCallback(() => {
     setDialogOpen(false);
+    setPendingInput(undefined);
   }, []);
 
   const attributeSections = [
@@ -202,7 +196,7 @@ export function ItemCardEditor({
             />
           </div>
           <div className="flex flex-col items-center flex-shrink-0 h-10 justify-between">
-            <img src="/images/qr-code.png" alt="QR" className="w-7 h-7 object-contain" />
+            <img src={resolvedQrSrc} alt="QR" className="w-7 h-7 object-contain" />
             <span className="text-[9px] font-semibold text-muted-foreground leading-none">
               Arda
             </span>
@@ -313,6 +307,7 @@ export function ItemCardEditor({
         open={dialogOpen}
         onConfirm={handleDialogConfirm}
         onCancel={handleDialogCancel}
+        {...(pendingInput ? { pendingInput } : {})}
         {...(onUpload ? { onUpload } : {})}
         {...(onCheckReachability ? { onCheckReachability } : {})}
       />

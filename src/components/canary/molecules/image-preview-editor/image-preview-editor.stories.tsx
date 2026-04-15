@@ -42,9 +42,19 @@ const meta: Meta<typeof ImagePreviewEditor> = {
       description: 'Image source &#8212; select a preset URL.',
       table: { category: 'Runtime' },
     },
-    onCropChange: {
-      action: 'onCropChange',
-      description: 'Called with CropData whenever crop, zoom, or rotation changes.',
+    onCropComplete: {
+      action: 'onCropComplete',
+      description: 'Called with the final pixel crop when the crop area changes.',
+      table: { category: 'Runtime' },
+    },
+    onZoomChange: {
+      action: 'onZoomChange',
+      description: 'Called when the zoom slider changes.',
+      table: { category: 'Runtime' },
+    },
+    onRotationChange: {
+      action: 'onRotationChange',
+      description: 'Called when the user rotates clockwise or counter-clockwise.',
       table: { category: 'Runtime' },
     },
     onReset: {
@@ -54,7 +64,9 @@ const meta: Meta<typeof ImagePreviewEditor> = {
     },
   },
   args: {
-    onCropChange: fn(),
+    onCropComplete: fn(),
+    onZoomChange: fn(),
+    onRotationChange: fn(),
     onReset: fn(),
   },
 };
@@ -73,19 +85,19 @@ export const DefaultView: Story = {
  */
 export const ZoomControl: Story = {
   render: (args) => {
-    const [cropData, setCropData] = useState<object | null>(null);
+    const [lastCrop, setLastCrop] = useState<object | null>(null);
     return (
       <div className="w-96 space-y-4">
         <ImagePreviewEditor
           {...args}
-          onCropChange={(data) => {
-            setCropData(data);
-            args.onCropChange(data);
+          onCropComplete={(pixelCrop) => {
+            setLastCrop(pixelCrop);
+            args.onCropComplete(pixelCrop);
           }}
         />
-        {cropData && (
+        {lastCrop && (
           <pre className="text-xs text-muted-foreground bg-muted rounded p-2 overflow-auto">
-            {JSON.stringify(cropData, null, 2)}
+            {JSON.stringify(lastCrop, null, 2)}
           </pre>
         )}
       </div>
