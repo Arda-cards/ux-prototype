@@ -17,38 +17,24 @@ vi.mock('@/types/canary/utilities/image-upload-handlers', () => ({
 vi.mock('@/components/canary/molecules/image-preview-editor/image-preview-editor', () => ({
   ImagePreviewEditor: ({
     imageData,
-    onCropChange,
+    onCropComplete,
+    onZoomChange,
+    onRotationChange,
     onReset,
   }: {
     imageData: File | Blob | string;
-    onCropChange: (d: unknown) => void;
+    onCropComplete: (pc: { x: number; y: number; width: number; height: number }) => void;
+    onZoomChange: (z: number) => void;
+    onRotationChange: (r: number) => void;
     onReset: () => void;
   }) => (
     <div data-testid="image-preview-editor">
       <span data-testid="preview-src">
         {typeof imageData === 'string' ? imageData : 'file-blob'}
       </span>
-      <button
-        onClick={() =>
-          onCropChange({ pixelCrop: { x: 0, y: 0, width: 100, height: 100 }, zoom: 1, rotation: 0 })
-        }
-      >
-        crop
-      </button>
-      <button
-        onClick={() =>
-          onCropChange({ pixelCrop: { x: 0, y: 0, width: 0, height: 0 }, zoom: 1, rotation: 90 })
-        }
-      >
-        rotate
-      </button>
-      <button
-        onClick={() =>
-          onCropChange({ pixelCrop: { x: 0, y: 0, width: 0, height: 0 }, zoom: 2, rotation: 0 })
-        }
-      >
-        zoom
-      </button>
+      <button onClick={() => onCropComplete({ x: 0, y: 0, width: 100, height: 100 })}>crop</button>
+      <button onClick={() => onRotationChange(90)}>rotate</button>
+      <button onClick={() => onZoomChange(2)}>zoom</button>
       <button onClick={onReset}>reset</button>
     </div>
   ),
@@ -377,6 +363,20 @@ describe('ImageUploadDialog', () => {
   describe('EditExisting state (existingImageUrl provided)', () => {
     const EXISTING_URL = 'https://example.com/existing.jpg';
 
+    /** Extract the options object passed to getCroppedImage on its first call. */
+    async function firstCropCall() {
+      const { getCroppedImage } = await import('@/types/canary/utilities/get-cropped-image');
+      const mockFn = getCroppedImage as ReturnType<typeof vi.fn>;
+      const firstCall = mockFn.mock.calls[0];
+      if (!firstCall) throw new Error('getCroppedImage was not called');
+      return firstCall[0] as {
+        imageSrc: string;
+        pixelCrop: { x: number; y: number; width: number; height: number };
+        zoom?: number;
+        rotation?: number;
+      };
+    }
+
     it('opens in EditExisting state when existingImageUrl is provided', () => {
       renderDialog({ existingImageUrl: EXISTING_URL });
       expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
@@ -575,12 +575,46 @@ describe('ImageUploadDialog', () => {
       });
 
       // getCroppedImage should receive the prefetched blob URL, not the CDN URL
-      const mockFn = getCroppedImage as ReturnType<typeof vi.fn>;
-      const firstCall = mockFn.mock.calls[0];
-      if (!firstCall) throw new Error('getCroppedImage was not called');
-      const firstArg = firstCall[0] as string;
-      expect(firstArg).toBe(PREFETCHED_BLOB);
-      expect(firstArg).not.toBe(CDN_URL);
+      const opts = await firstCropCall();
+      expect(opts.imageSrc).toBe(PREFETCHED_BLOB);
+      expect(opts.imageSrc).not.toBe(CDN_URL);
+    });
+
+    // Issue 5a + 5b: zoom ignored in getCroppedImage; zoom/rotation-only
+    // handlers overwrite pixelCrop with zero-sized values.
+    it('5a: getCroppedImage receives the zoom value on zoom-only edit', async () => {
+      const { getCroppedImage } = await import('@/types/canary/utilities/get-cropped-image');
+      const EXISTING_URL = 'https://example.com/existing.jpg';
+      renderDialog({ existingImageUrl: EXISTING_URL, onConfirm: vi.fn(), onUpload: vi.fn().mockResolvedValue('x') });
+
+      fireEvent.click(screen.getByText('zoom'));
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
+      });
+      await waitFor(() => expect(getCroppedImage).toHaveBeenCalled());
+
+      const opts = await firstCropCall();
+      expect(opts.zoom).toBe(2);
+    });
+
+    it('5b: crop + rotate preserves pixelCrop (rotate does not overwrite crop)', async () => {
+      const { getCroppedImage } = await import('@/types/canary/utilities/get-cropped-image');
+      const EXISTING_URL = 'https://example.com/existing.jpg';
+      renderDialog({ existingImageUrl: EXISTING_URL, onConfirm: vi.fn(), onUpload: vi.fn().mockResolvedValue('x') });
+
+      // User drags crop area (sets non-zero pixelCrop), then rotates
+      fireEvent.click(screen.getByText('crop'));
+      fireEvent.click(screen.getByText('rotate'));
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
+      });
+      await waitFor(() => expect(getCroppedImage).toHaveBeenCalled());
+
+      const opts = await firstCropCall();
+      // pixelCrop preserved from the crop click; rotation captured from the rotate click
+      expect(opts.pixelCrop.width).toBeGreaterThan(0);
+      expect(opts.pixelCrop.height).toBeGreaterThan(0);
+      expect(opts.rotation).toBe(90);
     });
   });
 });

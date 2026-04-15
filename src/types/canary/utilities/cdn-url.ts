@@ -14,8 +14,15 @@ export function isCdnUrl(src: string): boolean {
  * This eliminates CORS issues when the image is later drawn onto a canvas,
  * because the blob URL is same-origin.
  *
+ * **Memory management — caller responsibility:** When this function returns
+ * a `blob:` URL (created via `URL.createObjectURL`), the caller must release
+ * it with `URL.revokeObjectURL(returnedUrl)` once the URL is no longer
+ * needed. Failure to revoke leaks memory for the lifetime of the document.
+ *
  * Returns the original URL unchanged if the fetch fails or the URL is not
- * a CDN URL (e.g., a blob: URL from a fresh upload).
+ * a CDN URL (e.g., a blob: URL from a fresh upload). In those cases there
+ * is no object URL to revoke; calling `URL.revokeObjectURL` on a non-blob
+ * URL is a no-op, so callers can revoke unconditionally if simpler.
  */
 export async function prefetchImageAsBlob(imageUrl: string): Promise<string> {
   if (!isCdnUrl(imageUrl)) return imageUrl;
