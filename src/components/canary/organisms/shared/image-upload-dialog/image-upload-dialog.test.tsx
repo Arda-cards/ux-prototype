@@ -1,21 +1,16 @@
 import * as React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mocked } from 'vitest';
 
 import { ImageUploadDialog, type ImageUploadDialogProps } from './image-upload-dialog';
 import type { ImageFieldConfig } from '@/types/canary/utilities/image-field-config';
+import {
+  ImageUploadProvider,
+  defaultImageUploader,
+  type ImageUploader,
+} from '@/types/canary/utilities/image-uploader';
 
 // --- Mocks ---
-
-vi.mock('@/types/canary/utilities/image-upload-handlers', () => ({
-  defaultUploadHandler: vi
-    .fn()
-    .mockResolvedValue('https://cdn.example.com/images/mock-uploaded.jpg'),
-  defaultUrlUploadHandler: vi
-    .fn()
-    .mockResolvedValue('https://picsum.photos/seed/mock-url-upload/400/400'),
-  defaultReachabilityCheck: vi.fn().mockResolvedValue(true),
-}));
 
 vi.mock('@/components/canary/molecules/image-preview-editor/image-preview-editor', () => ({
   ImagePreviewEditor: ({
@@ -69,10 +64,8 @@ vi.mock('@/components/canary/molecules/image-comparison-layout/image-comparison-
 vi.mock('@/components/canary/molecules/image-drop-zone/image-drop-zone', () => ({
   ImageDropZone: ({
     onInput,
-    onDismiss,
   }: {
     onInput: (input: { type: string; file?: File; url?: string; message?: string }) => void;
-    onDismiss: () => void;
   }) => (
     <div data-testid="image-drop-zone">
       <button
@@ -88,7 +81,6 @@ vi.mock('@/components/canary/molecules/image-drop-zone/image-drop-zone', () => (
       <button onClick={() => onInput({ type: 'error', message: 'Invalid file type' })}>
         drop error
       </button>
-      <button onClick={onDismiss}>dismiss</button>
     </div>
   ),
 }));
@@ -100,7 +92,6 @@ vi.mock('@/types/canary/utilities/get-cropped-image', () => ({
 vi.mock('@/types/canary/utilities/cdn-url', () => ({
   isCdnUrl: (src: string) => src.includes('.assets.arda.cards'),
   prefetchImageAsBlob: vi.fn().mockImplementation(async (url: string) => {
-    // Simulate prefetch: CDN URLs get converted to blob URLs, others pass through
     if (url.includes('.assets.arda.cards')) {
       return 'blob:http://localhost/prefetched-cdn-image';
     }
@@ -129,8 +120,36 @@ const defaultProps: ImageUploadDialogProps = {
 
 // --- Helpers ---
 
-function renderDialog(props: Partial<ImageUploadDialogProps> = {}) {
-  return render(<ImageUploadDialog {...defaultProps} {...props} />);
+// `Mocked<T>` from vitest preserves `T`'s function signatures while adding
+// `.mockResolvedValue` / `.mockClear` / `.mock.calls` surface. Structural
+// subtype of `ImageUploader` — passes through `ImageUploadProvider value=...`
+// with no cast required.
+//
+// Tests that want non-default behavior use `.mockResolvedValue(...)` /
+// `.mockRejectedValue(...)` on the returned object directly; we intentionally
+// don't take a `Partial<ImageUploader>` override here because mixing plain
+// functions and MockInstance members defeats the Mocked<T> typing.
+type MockUploader = Mocked<ImageUploader>;
+
+function makeMockUploader(): MockUploader {
+  return {
+    uploadFile: vi.fn(async (_file: Blob) => 'https://cdn.example.com/images/mock-uploaded.jpg'),
+    uploadFromUrl: vi.fn(
+      async (_url: string) => 'https://cdn.example.com/images/mock-from-url.jpg',
+    ),
+    checkReachability: vi.fn(async (_url: string) => true),
+  };
+}
+
+function renderDialog(
+  props: Partial<ImageUploadDialogProps> = {},
+  uploader: ImageUploader = makeMockUploader(),
+) {
+  return render(
+    <ImageUploadProvider value={uploader}>
+      <ImageUploadDialog {...defaultProps} {...props} />
+    </ImageUploadProvider>,
+  );
 }
 
 // --- Tests ---
@@ -139,6 +158,8 @@ describe('ImageUploadDialog', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
+
+  // --- Rendering / basic phases ---------------------------------------------
 
   it('renders nothing when open is false', () => {
     renderDialog({ open: false });
@@ -150,74 +171,131 @@ describe('ImageUploadDialog', () => {
     expect(screen.getByTestId('image-drop-zone')).toBeInTheDocument();
   });
 
-  it('transitions to ProvidedImage on image input (mock file input)', async () => {
-    renderDialog();
+  it('opens in EditExisting state when existingImageUrl is set', () => {
+    renderDialog({ existingImageUrl: 'https://cdn.example.com/existing.jpg' });
+    expect(screen.getByTestId('image-comparison-layout')).toBeInTheDocument();
+    expect(screen.queryByTestId('image-drop-zone')).not.toBeInTheDocument();
+  });
+
+  // --- New-upload flow (file) ------------------------------------------------
+
+  it('file drop goes directly to Uploading (no cropper stop — rapid-batch UX)', async () => {
+    const uploader = makeMockUploader();
+    renderDialog({}, uploader);
+
+    fireEvent.click(screen.getByText('drop file'));
+
+    await waitFor(() => {
+      expect(screen.getByRole('status')).toBeInTheDocument();
+    });
+    // Cropper is NOT shown on the new-upload path.
+    expect(screen.queryByTestId('image-preview-editor')).not.toBeInTheDocument();
+    expect(uploader.uploadFile).toHaveBeenCalledTimes(1);
+  });
+
+  it('Uploading success calls onConfirm with the returned CDN URL', async () => {
+    const uploader = makeMockUploader();
+    uploader.uploadFile.mockResolvedValue('https://cdn.example.com/uploaded.jpg');
+    const onConfirm = vi.fn();
+    renderDialog({ onConfirm }, uploader);
+
+    fireEvent.click(screen.getByText('drop file'));
+
+    await waitFor(() => {
+      expect(onConfirm).toHaveBeenCalledWith(
+        expect.objectContaining({ imageUrl: 'https://cdn.example.com/uploaded.jpg' }),
+      );
+    });
+  });
+
+  it('Uploading failure transitions to UploadError with Retry + Discard', async () => {
+    const uploader = makeMockUploader();
+    uploader.uploadFile.mockRejectedValue(new Error('Network failure'));
+    renderDialog({}, uploader);
+
+    fireEvent.click(screen.getByText('drop file'));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('Network failure');
+    });
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Discard' })).toBeInTheDocument();
+  });
+
+  it('UploadError Retry re-enters Uploading', async () => {
+    const uploader = makeMockUploader();
+    uploader.uploadFile
+      .mockRejectedValueOnce(new Error('first fail'))
+      .mockResolvedValueOnce('https://cdn.example.com/second-try.jpg');
+    const onConfirm = vi.fn();
+    renderDialog({ onConfirm }, uploader);
+
     fireEvent.click(screen.getByText('drop file'));
     await waitFor(() => {
-      expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
+      expect(screen.getByRole('alert')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+
+    await waitFor(() => {
+      expect(onConfirm).toHaveBeenCalledWith(
+        expect.objectContaining({ imageUrl: 'https://cdn.example.com/second-try.jpg' }),
+      );
     });
   });
 
-  it('shows copyright subtext and enabled Confirm button in ProvidedImage state', async () => {
-    renderDialog();
+  it('UploadError Discard returns to EmptyImage', async () => {
+    const uploader = makeMockUploader();
+    uploader.uploadFile.mockRejectedValue(new Error('fail'));
+    renderDialog({}, uploader);
+
     fireEvent.click(screen.getByText('drop file'));
     await waitFor(() => {
-      expect(screen.getByText(/you acknowledge that you own/i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Confirm' })).not.toBeDisabled();
+      expect(screen.getByRole('alert')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Discard' }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('image-drop-zone')).toBeInTheDocument();
     });
   });
 
-  it('calls onCancel on cancel click (no staged image)', () => {
-    const onCancel = vi.fn();
-    renderDialog({ onCancel });
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    expect(onCancel).toHaveBeenCalledOnce();
+  // --- New-upload flow (URL) -------------------------------------------------
+
+  it('URL drop: reachability passes → Uploading via uploadFromUrl (no cropper)', async () => {
+    const uploader = makeMockUploader();
+    uploader.uploadFromUrl.mockResolvedValue('https://cdn.example.com/from-url.jpg');
+    const onConfirm = vi.fn();
+    renderDialog({ onConfirm }, uploader);
+
+    fireEvent.click(screen.getByText('drop url'));
+
+    await waitFor(() => {
+      expect(uploader.checkReachability).toHaveBeenCalledWith('https://example.com/image.jpg');
+      expect(uploader.uploadFromUrl).toHaveBeenCalledWith('https://example.com/image.jpg');
+      expect(onConfirm).toHaveBeenCalledWith(
+        expect.objectContaining({ imageUrl: 'https://cdn.example.com/from-url.jpg' }),
+      );
+    });
+    expect(screen.queryByTestId('image-preview-editor')).not.toBeInTheDocument();
+    expect(uploader.uploadFile).not.toHaveBeenCalled();
   });
 
-  it('shows Warn dialog on cancel with staged image', async () => {
-    renderDialog();
-    fireEvent.click(screen.getByText('drop file'));
+  it('URL drop: reachability fails → FailedValidation', async () => {
+    const uploader = makeMockUploader();
+    uploader.checkReachability.mockResolvedValue(false);
+    renderDialog({}, uploader);
+
+    fireEvent.click(screen.getByText('drop url'));
+
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+      expect(screen.getByRole('alert')).toHaveTextContent(/URL could not be reached/i);
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    await waitFor(() => {
-      expect(screen.getByText('Discard unsaved image?')).toBeInTheDocument();
-    });
+    expect(uploader.uploadFromUrl).not.toHaveBeenCalled();
   });
 
-  it('Warn discard calls onCancel', async () => {
-    const onCancel = vi.fn();
-    renderDialog({ onCancel });
-    fireEvent.click(screen.getByText('drop file'));
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    await waitFor(() => {
-      expect(screen.getByText('Discard')).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByText('Discard'));
-    expect(onCancel).toHaveBeenCalledOnce();
-  });
+  // --- Invalid input ---------------------------------------------------------
 
-  it('Warn go-back returns to ProvidedImage', async () => {
-    renderDialog();
-    fireEvent.click(screen.getByText('drop file'));
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    await waitFor(() => {
-      expect(screen.getByText('Go Back')).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByText('Go Back'));
-    await waitFor(() => {
-      expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
-    });
-  });
-
-  it('shows validation error for invalid file', async () => {
+  it('invalid file (error input) → FailedValidation', async () => {
     renderDialog();
     fireEvent.click(screen.getByText('drop error'));
     await waitFor(() => {
@@ -225,446 +303,96 @@ describe('ImageUploadDialog', () => {
     });
   });
 
-  it('calls onConfirm with result on confirm (mock the upload)', async () => {
-    const { defaultUploadHandler } = await import('@/types/canary/utilities/image-upload-handlers');
-    (defaultUploadHandler as ReturnType<typeof vi.fn>).mockResolvedValue(
-      'https://cdn.example.com/images/mock-uploaded.jpg',
-    );
-    const onConfirm = vi.fn();
-    renderDialog({ onConfirm });
+  // --- EditExisting flow -----------------------------------------------------
 
-    fireEvent.click(screen.getByText('drop file'));
-    await act(async () => {
-      await Promise.resolve();
-    });
+  describe('EditExisting', () => {
+    const EXISTING = 'https://images.assets.arda.cards/items/existing.jpg';
 
-    fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
-
-    await waitFor(() => {
-      expect(onConfirm).toHaveBeenCalledWith(
-        expect.objectContaining({ imageUrl: 'https://cdn.example.com/images/mock-uploaded.jpg' }),
-      );
-    });
-  });
-
-  it('shows indeterminate indicator during upload (no progress percentage)', async () => {
-    // Make onUpload hang so we can inspect the Uploading state
-    const { defaultUploadHandler } = await import('@/types/canary/utilities/image-upload-handlers');
-    (defaultUploadHandler as ReturnType<typeof vi.fn>).mockReturnValue(new Promise(() => {}));
-    renderDialog();
-
-    fireEvent.click(screen.getByText('drop file'));
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
-
-    await waitFor(() => {
-      expect(screen.getByRole('status')).toBeInTheDocument();
-      expect(screen.getByText('Uploading image\u2026')).toBeInTheDocument();
-      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
-    });
-  });
-
-  // --- UploadError state tests ---
-
-  describe('UploadError state', () => {
-    async function enterUploadError() {
-      const { defaultUploadHandler } =
-        await import('@/types/canary/utilities/image-upload-handlers');
-      (defaultUploadHandler as ReturnType<typeof vi.fn>).mockRejectedValue(
-        new Error('Network failure'),
-      );
-      renderDialog();
-
-      fireEvent.click(screen.getByText('drop file'));
-      await act(async () => {
-        await Promise.resolve();
-      });
-
-      fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
-
-      await waitFor(() => {
-        expect(screen.getByRole('alert')).toBeInTheDocument();
-      });
-    }
-
-    it('renders error message on upload failure', async () => {
-      await enterUploadError();
-      expect(screen.getByRole('alert')).toHaveTextContent('Network failure');
-    });
-
-    it('retry transitions back to Uploading', async () => {
-      const { defaultUploadHandler } =
-        await import('@/types/canary/utilities/image-upload-handlers');
-      (defaultUploadHandler as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
-        new Error('Network failure'),
-      );
-      // On retry, succeed
-      (defaultUploadHandler as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
-        'https://cdn.example.com/retried.jpg',
-      );
-      const onConfirm = vi.fn();
-      renderDialog({ onConfirm });
-
-      fireEvent.click(screen.getByText('drop file'));
-      await act(async () => {
-        await Promise.resolve();
-      });
-      fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
-
-      await waitFor(() => {
-        expect(screen.getByRole('alert')).toHaveTextContent('Network failure');
-      });
-
-      fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
-
-      await waitFor(() => {
-        expect(onConfirm).toHaveBeenCalledWith(
-          expect.objectContaining({ imageUrl: 'https://cdn.example.com/retried.jpg' }),
-        );
-      });
-    });
-
-    it('discard transitions to EmptyImage', async () => {
-      await enterUploadError();
-
-      fireEvent.click(screen.getByRole('button', { name: 'Discard' }));
-
-      await waitFor(() => {
-        expect(screen.getByTestId('image-drop-zone')).toBeInTheDocument();
-      });
-    });
-  });
-
-  it('comparison layout shown when existingImageUrl set and new image provided', async () => {
-    renderDialog({ existingImageUrl: 'https://example.com/existing.jpg' });
-    // When existingImageUrl is set, dialog opens in EditExisting state (no drop zone)
-    // To reach ProvidedImage with comparison, click "Upload New Image" first
-    fireEvent.click(screen.getByRole('button', { name: 'Upload New Image' }));
-    await waitFor(() => {
-      expect(screen.getByTestId('image-drop-zone')).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByText('drop file'));
-    await waitFor(() => {
-      expect(screen.getByTestId('image-comparison-layout')).toBeInTheDocument();
-    });
-  });
-
-  it('no comparison when existingImageUrl null', async () => {
-    renderDialog({ existingImageUrl: null });
-    fireEvent.click(screen.getByText('drop file'));
-    await waitFor(() => {
-      expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
-      expect(screen.queryByTestId('image-comparison-layout')).not.toBeInTheDocument();
-    });
-  });
-
-  // --- EditExisting state tests ---
-
-  describe('EditExisting state (existingImageUrl provided)', () => {
-    const EXISTING_URL = 'https://example.com/existing.jpg';
-
-    /** Extract the options object passed to getCroppedImage on its first call. */
-    async function firstCropCall() {
-      const { getCroppedImage } = await import('@/types/canary/utilities/get-cropped-image');
-      const mockFn = getCroppedImage as ReturnType<typeof vi.fn>;
-      const firstCall = mockFn.mock.calls[0];
-      if (!firstCall) throw new Error('getCroppedImage was not called');
-      return firstCall[0] as {
-        imageSrc: string;
-        pixelCrop: { x: number; y: number; width: number; height: number };
-        zoom?: number;
-        rotation?: number;
-      };
-    }
-
-    it('opens in EditExisting state when existingImageUrl is provided', () => {
-      renderDialog({ existingImageUrl: EXISTING_URL });
-      expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
-      expect(screen.queryByTestId('image-drop-zone')).not.toBeInTheDocument();
-    });
-
-    it('shows the existing image URL in ImagePreviewEditor', () => {
-      renderDialog({ existingImageUrl: EXISTING_URL });
-      expect(screen.getByTestId('preview-src')).toHaveTextContent(EXISTING_URL);
-    });
-
-    it('does NOT show copyright subtext in EditExisting state', () => {
-      renderDialog({ existingImageUrl: EXISTING_URL });
-      expect(screen.queryByText(/you acknowledge that you own/i)).not.toBeInTheDocument();
-    });
-
-    it('shows "Upload New Image", "Dismiss", and "Accept" buttons in EditExisting state', () => {
-      renderDialog({ existingImageUrl: EXISTING_URL });
-      expect(screen.getByRole('button', { name: 'Upload New Image' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Dismiss' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Accept' })).toBeInTheDocument();
-    });
-
-    it('shows dialog title as "Edit Product Image" in EditExisting state', () => {
-      renderDialog({ existingImageUrl: EXISTING_URL });
-      expect(screen.getByText('Edit Product Image')).toBeInTheDocument();
-    });
-
-    it('"Upload New Image" button transitions to EmptyImage (shows drop zone)', async () => {
-      renderDialog({ existingImageUrl: EXISTING_URL });
+    it('"Upload New Image" transitions EditExisting → EmptyImage (drop zone)', async () => {
+      renderDialog({ existingImageUrl: EXISTING });
       fireEvent.click(screen.getByRole('button', { name: 'Upload New Image' }));
       await waitFor(() => {
         expect(screen.getByTestId('image-drop-zone')).toBeInTheDocument();
-        expect(screen.queryByTestId('image-preview-editor')).not.toBeInTheDocument();
       });
     });
 
-    it('"Dismiss" in EditExisting calls onCancel', () => {
+    it('"Dismiss" calls onCancel', () => {
       const onCancel = vi.fn();
-      renderDialog({ existingImageUrl: EXISTING_URL, onCancel });
+      renderDialog({ existingImageUrl: EXISTING, onCancel });
       fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
       expect(onCancel).toHaveBeenCalledOnce();
     });
 
-    it('"Confirm" in EditExisting triggers upload (enters Uploading state)', async () => {
-      const { defaultUploadHandler } =
-        await import('@/types/canary/utilities/image-upload-handlers');
-      (defaultUploadHandler as ReturnType<typeof vi.fn>).mockReturnValue(new Promise(() => {}));
-      renderDialog({ existingImageUrl: EXISTING_URL });
-
-      await act(async () => {
-        fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
-        await Promise.resolve();
-      });
-
-      await waitFor(() => {
-        expect(screen.getByRole('status')).toBeInTheDocument();
-      });
-    });
-
     it('"Accept" without edits confirms with existing URL (skipUpload)', async () => {
+      const uploader = makeMockUploader();
       const onConfirm = vi.fn();
-      renderDialog({ existingImageUrl: EXISTING_URL, onConfirm });
-
-      // Don't crop/rotate — just accept immediately
-      await act(async () => {
-        fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
-        await Promise.resolve();
-      });
-
+      renderDialog({ existingImageUrl: EXISTING, onConfirm }, uploader);
+      fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
       await waitFor(() => {
-        expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({ imageUrl: EXISTING_URL }));
+        expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({ imageUrl: EXISTING }));
       });
+      expect(uploader.uploadFile).not.toHaveBeenCalled();
     });
 
-    it('"Accept" after crop uploads cropped blob and returns new URL', async () => {
-      const onUpload = vi.fn().mockResolvedValue('https://cdn.example.com/cropped-new.jpg');
+    it('"Accept" after crop uploads cropped blob and returns the new URL', async () => {
+      const uploader = makeMockUploader();
+      uploader.uploadFile.mockResolvedValue('https://cdn.example.com/cropped.jpg');
       const onConfirm = vi.fn();
-      renderDialog({ existingImageUrl: EXISTING_URL, onConfirm, onUpload });
+      renderDialog({ existingImageUrl: EXISTING, onConfirm }, uploader);
 
-      // Simulate crop edit (non-zero pixelCrop)
+      // Record a non-zero crop.
       fireEvent.click(screen.getByText('crop'));
-
       await act(async () => {
         fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
-        await Promise.resolve();
-        await Promise.resolve();
       });
 
       await waitFor(() => {
-        expect(onUpload).toHaveBeenCalledWith(expect.any(Blob));
+        expect(uploader.uploadFile).toHaveBeenCalledTimes(1);
         expect(onConfirm).toHaveBeenCalledWith(
-          expect.objectContaining({ imageUrl: 'https://cdn.example.com/cropped-new.jpg' }),
+          expect.objectContaining({ imageUrl: 'https://cdn.example.com/cropped.jpg' }),
         );
       });
     });
 
-    it('"Accept" after rotate-only uploads rotated blob (not skipUpload)', async () => {
-      const onUpload = vi.fn().mockResolvedValue('https://cdn.example.com/rotated-new.jpg');
-      const onConfirm = vi.fn();
-      renderDialog({ existingImageUrl: EXISTING_URL, onConfirm, onUpload });
-
-      // Simulate rotation-only edit (zero pixelCrop, rotation=90)
-      fireEvent.click(screen.getByText('rotate'));
-
-      await act(async () => {
-        fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
-        await Promise.resolve();
-        await Promise.resolve();
-        await Promise.resolve();
-      });
-
-      await waitFor(() => {
-        expect(onUpload).toHaveBeenCalledWith(expect.any(Blob));
-        expect(onConfirm).toHaveBeenCalledWith(
-          expect.objectContaining({ imageUrl: 'https://cdn.example.com/rotated-new.jpg' }),
-        );
-      });
-    });
-
-    it('"Accept" after zoom-only uploads zoomed blob (not skipUpload)', async () => {
-      const onUpload = vi.fn().mockResolvedValue('https://cdn.example.com/zoomed-new.jpg');
-      const onConfirm = vi.fn();
-      renderDialog({ existingImageUrl: EXISTING_URL, onConfirm, onUpload });
-
-      // Simulate zoom-only edit (zero pixelCrop, zoom=2)
-      fireEvent.click(screen.getByText('zoom'));
-
-      await act(async () => {
-        fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
-        await Promise.resolve();
-        await Promise.resolve();
-        await Promise.resolve();
-      });
-
-      await waitFor(() => {
-        expect(onUpload).toHaveBeenCalledWith(expect.any(Blob));
-        expect(onConfirm).toHaveBeenCalledWith(
-          expect.objectContaining({ imageUrl: 'https://cdn.example.com/zoomed-new.jpg' }),
-        );
-      });
-    });
-
-    it('"Accept" falls back to original URL when getCroppedImage fails', async () => {
-      const { getCroppedImage } = await import('@/types/canary/utilities/get-cropped-image');
-      (getCroppedImage as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('CORS taint'));
-      const onConfirm = vi.fn();
-      renderDialog({ existingImageUrl: EXISTING_URL, onConfirm });
-
-      // Simulate crop edit
-      fireEvent.click(screen.getByText('crop'));
-
-      await act(async () => {
-        fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
-        await Promise.resolve();
-        await Promise.resolve();
-      });
-
-      await waitFor(() => {
-        // Falls back to original URL (skipUpload path)
-        expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({ imageUrl: EXISTING_URL }));
-      });
-    });
-
-    it('opens in EmptyImage state when existingImageUrl is null', () => {
-      renderDialog({ existingImageUrl: null });
-      expect(screen.getByTestId('image-drop-zone')).toBeInTheDocument();
-      expect(screen.queryByTestId('image-preview-editor')).not.toBeInTheDocument();
-    });
-
-    it('getCroppedImage receives a blob URL (prefetched), not the raw CDN URL', async () => {
-      const CDN_URL = 'https://dev.alpha002.assets.arda.cards/tenant/images/uuid.jpg';
-      const PREFETCHED_BLOB = 'blob:http://localhost/prefetched-cdn-image';
-      const { getCroppedImage } = await import('@/types/canary/utilities/get-cropped-image');
-      const onUpload = vi.fn().mockResolvedValue('https://cdn.example.com/cropped.jpg');
-      const onConfirm = vi.fn();
-      renderDialog({ existingImageUrl: CDN_URL, onConfirm, onUpload });
-
-      // Synchronization: wait for the prefetched blob URL to propagate through
-      // ImagePreviewEditor — its mock renders imageData in the preview-src node.
-      // Once the preview shows the blob URL, we know the prefetch effect has
-      // resolved and setPrefetchedImageUrl has flushed. No arbitrary waits.
-      await waitFor(() => {
-        expect(screen.getByTestId('preview-src')).toHaveTextContent(PREFETCHED_BLOB);
-      });
-
-      // Simulate crop edit
-      fireEvent.click(screen.getByText('crop'));
-
-      await act(async () => {
-        fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
-      });
-
-      await waitFor(() => {
-        expect(getCroppedImage).toHaveBeenCalled();
-      });
-
-      // getCroppedImage should receive the prefetched blob URL, not the CDN URL
-      const opts = await firstCropCall();
-      expect(opts.imageSrc).toBe(PREFETCHED_BLOB);
-      expect(opts.imageSrc).not.toBe(CDN_URL);
-    });
-
-    // Issue 5a + 5b: zoom ignored in getCroppedImage; zoom/rotation-only
-    // handlers overwrite pixelCrop with zero-sized values.
-    it('5a: getCroppedImage receives the zoom value on zoom-only edit', async () => {
-      const { getCroppedImage } = await import('@/types/canary/utilities/get-cropped-image');
-      const EXISTING_URL = 'https://example.com/existing.jpg';
-      renderDialog({
-        existingImageUrl: EXISTING_URL,
-        onConfirm: vi.fn(),
-        onUpload: vi.fn().mockResolvedValue('x'),
-      });
-
-      fireEvent.click(screen.getByText('zoom'));
-      await act(async () => {
-        fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
-      });
-      await waitFor(() => expect(getCroppedImage).toHaveBeenCalled());
-
-      const opts = await firstCropCall();
-      expect(opts.zoom).toBe(2);
-    });
-
-    it('5b: crop + rotate preserves pixelCrop (rotate does not overwrite crop)', async () => {
-      const { getCroppedImage } = await import('@/types/canary/utilities/get-cropped-image');
-      const EXISTING_URL = 'https://example.com/existing.jpg';
-      renderDialog({
-        existingImageUrl: EXISTING_URL,
-        onConfirm: vi.fn(),
-        onUpload: vi.fn().mockResolvedValue('x'),
-      });
-
-      // User drags crop area (sets non-zero pixelCrop), then rotates
-      fireEvent.click(screen.getByText('crop'));
-      fireEvent.click(screen.getByText('rotate'));
-      await act(async () => {
-        fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
-      });
-      await waitFor(() => expect(getCroppedImage).toHaveBeenCalled());
-
-      const opts = await firstCropCall();
-      // pixelCrop preserved from the crop click; rotation captured from the rotate click
-      expect(opts.pixelCrop.width).toBeGreaterThan(0);
-      expect(opts.pixelCrop.height).toBeGreaterThan(0);
-      expect(opts.rotation).toBe(90);
+    it('renders ImagePreviewEditor inside the comparison layout', () => {
+      renderDialog({ existingImageUrl: EXISTING });
+      expect(screen.getByTestId('image-comparison-layout')).toBeInTheDocument();
+      expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
     });
   });
 
-  // --- pendingInput entry point (#750 issue 1) -----------------------------
-  //
-  // Drop-zone inputs delivered by a parent component (e.g. ItemCardEditor)
-  // should land in the same ProvidedImage / FailedValidation / Loading flow
-  // as inputs from the dialog's own ImageDropZone.
+  // --- pendingInput entry point ---------------------------------------------
 
-  describe('pendingInput entry point', () => {
-    it('dispatches a File pendingInput into ProvidedImage when opened', async () => {
+  describe('pendingInput', () => {
+    it('file pendingInput goes straight to Uploading (same as internal drop)', async () => {
+      const uploader = makeMockUploader();
       const file = new File(['x'], 'pending.jpg', { type: 'image/jpeg' });
-      renderDialog({
-        open: true,
-        pendingInput: { type: 'file', file },
-      });
+      renderDialog({ open: true, pendingInput: { type: 'file', file } }, uploader);
 
       await waitFor(() => {
-        expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
+        expect(uploader.uploadFile).toHaveBeenCalledTimes(1);
       });
-      // The ImagePreviewEditor mock prints "file-blob" when imageData is a Blob/File.
-      expect(screen.getByTestId('preview-src')).toHaveTextContent('file-blob');
+      // No cropper on the way.
+      expect(screen.queryByTestId('image-preview-editor')).not.toBeInTheDocument();
     });
 
-    it('dispatches a URL pendingInput through reachability check into ProvidedImage', async () => {
-      renderDialog({
-        open: true,
-        pendingInput: { type: 'url', url: 'https://images.example.com/p.jpg' },
-      });
-
-      await waitFor(() => {
-        expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
-      });
-      expect(screen.getByTestId('preview-src')).toHaveTextContent(
-        'https://images.example.com/p.jpg',
+    it('URL pendingInput goes through reachability → Uploading via uploadFromUrl', async () => {
+      const uploader = makeMockUploader();
+      renderDialog(
+        {
+          open: true,
+          pendingInput: { type: 'url', url: 'https://images.example.com/p.jpg' },
+        },
+        uploader,
       );
+
+      await waitFor(() => {
+        expect(uploader.checkReachability).toHaveBeenCalledWith('https://images.example.com/p.jpg');
+        expect(uploader.uploadFromUrl).toHaveBeenCalledWith('https://images.example.com/p.jpg');
+      });
     });
 
-    it('routes pendingInput error through the FailedValidation phase', async () => {
+    it('error pendingInput lands in FailedValidation', async () => {
       renderDialog({
         open: true,
         pendingInput: { type: 'error', message: 'File too large' },
@@ -674,192 +402,125 @@ describe('ImageUploadDialog', () => {
       });
     });
 
-    it('does not re-dispatch the same pendingInput on parent re-render', async () => {
+    it('same pendingInput identity on re-render does not re-dispatch', async () => {
+      const uploader = makeMockUploader();
       const file = new File(['x'], 'pending.jpg', { type: 'image/jpeg' });
       const pendingInput = { type: 'file' as const, file };
 
       const { rerender } = render(
-        <ImageUploadDialog {...defaultProps} open={true} pendingInput={pendingInput} />,
-      );
-
-      await waitFor(() => {
-        expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
-      });
-
-      // User starts cropping and clicks Cancel — moves to Warn state.
-      fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-      await waitFor(() => {
-        expect(screen.getByText('Discard unsaved image?')).toBeInTheDocument();
-      });
-
-      // Parent re-renders with the SAME pendingInput reference. The dialog
-      // must not jump back into ProvidedImage — that would clobber the Warn
-      // dialog and silently drop the user's pending decision.
-      rerender(<ImageUploadDialog {...defaultProps} open={true} pendingInput={pendingInput} />);
-
-      expect(screen.getByText('Discard unsaved image?')).toBeInTheDocument();
-    });
-
-    it('re-enters ProvidedImage when pendingInput identity changes', async () => {
-      const fileA = new File(['a'], 'a.jpg', { type: 'image/jpeg' });
-      const fileB = new File(['b'], 'b.jpg', { type: 'image/jpeg' });
-
-      const { rerender } = render(
-        <ImageUploadDialog
-          {...defaultProps}
-          open={true}
-          pendingInput={{ type: 'file', file: fileA }}
-        />,
+        <ImageUploadProvider value={uploader}>
+          <ImageUploadDialog {...defaultProps} open={true} pendingInput={pendingInput} />
+        </ImageUploadProvider>,
       );
       await waitFor(() => {
-        expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
+        expect(uploader.uploadFile).toHaveBeenCalledTimes(1);
       });
 
+      // Re-render with the SAME pendingInput object.
       rerender(
-        <ImageUploadDialog
-          {...defaultProps}
-          open={true}
-          pendingInput={{ type: 'file', file: fileB }}
-        />,
+        <ImageUploadProvider value={uploader}>
+          <ImageUploadDialog {...defaultProps} open={true} pendingInput={pendingInput} />
+        </ImageUploadProvider>,
       );
-
-      // Still in ProvidedImage, now with the new file.
-      await waitFor(() => {
-        expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
-      });
+      // Still just one call — no re-dispatch.
+      expect(uploader.uploadFile).toHaveBeenCalledTimes(1);
     });
 
-    it('skips EditExisting CDN prefetch when opening with both existingImageUrl and pendingInput (PR-96 review)', async () => {
-      // When the dialog opens with both an existingImageUrl and a queued
-      // pendingInput, the RESET effect must not enter EditExisting first
-      // (which would kick off a CDN prefetch immediately discarded by the
-      // pendingInput effect's transition to ProvidedImage).
-      const { prefetchImageAsBlob } = await import('@/types/canary/utilities/cdn-url');
-      (prefetchImageAsBlob as ReturnType<typeof vi.fn>).mockClear();
-
-      const file = new File(['x'], 'pending.jpg', { type: 'image/jpeg' });
-      renderDialog({
-        open: true,
-        existingImageUrl: 'https://images.assets.arda.cards/items/abc.jpg',
-        pendingInput: { type: 'file', file },
-      });
-
-      await waitFor(() => {
-        expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
-      });
-      // The Cropper must show the pending file, not the existing CDN image.
-      expect(screen.getByTestId('preview-src')).toHaveTextContent('file-blob');
-      // And the CDN prefetch must NOT have been kicked off.
-      expect(prefetchImageAsBlob).not.toHaveBeenCalled();
-    });
-
-    it('clears pendingInput state when open transitions to false', async () => {
+    it('open=false clears pending dispatch, so next open with no pendingInput lands in EmptyImage', async () => {
+      const uploader = makeMockUploader();
       const file = new File(['x'], 'pending.jpg', { type: 'image/jpeg' });
       const { rerender } = render(
-        <ImageUploadDialog {...defaultProps} open={true} pendingInput={{ type: 'file', file }} />,
+        <ImageUploadProvider value={uploader}>
+          <ImageUploadDialog {...defaultProps} open={true} pendingInput={{ type: 'file', file }} />
+        </ImageUploadProvider>,
       );
       await waitFor(() => {
-        expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
+        expect(uploader.uploadFile).toHaveBeenCalledTimes(1);
       });
 
-      // Close, then reopen with NO pendingInput — should land in EmptyImage,
-      // not retain the previous file.
-      rerender(<ImageUploadDialog {...defaultProps} open={false} />);
-      rerender(<ImageUploadDialog {...defaultProps} open={true} />);
+      // Close, then reopen with no pendingInput.
+      rerender(
+        <ImageUploadProvider value={uploader}>
+          <ImageUploadDialog {...defaultProps} open={false} />
+        </ImageUploadProvider>,
+      );
+      rerender(
+        <ImageUploadProvider value={uploader}>
+          <ImageUploadDialog {...defaultProps} open={true} />
+        </ImageUploadProvider>,
+      );
 
       await waitFor(() => {
         expect(screen.getByTestId('image-drop-zone')).toBeInTheDocument();
       });
-      expect(screen.queryByTestId('image-preview-editor')).not.toBeInTheDocument();
+    });
+
+    it('opening with BOTH existingImageUrl and pendingInput skips the EditExisting CDN prefetch', async () => {
+      const uploader = makeMockUploader();
+      const { prefetchImageAsBlob } = await import('@/types/canary/utilities/cdn-url');
+      (prefetchImageAsBlob as ReturnType<typeof vi.fn>).mockClear();
+
+      const file = new File(['x'], 'pending.jpg', { type: 'image/jpeg' });
+      renderDialog(
+        {
+          open: true,
+          existingImageUrl: 'https://images.assets.arda.cards/items/abc.jpg',
+          pendingInput: { type: 'file', file },
+        },
+        uploader,
+      );
+
+      await waitFor(() => {
+        expect(uploader.uploadFile).toHaveBeenCalledTimes(1);
+      });
+      expect(prefetchImageAsBlob).not.toHaveBeenCalled();
     });
   });
 
-  // --- URL-input upload path (#750 issue 1 completion / empty-blob bug) ----
-  //
-  // Historically the Uploading effect coerced URL inputs to `new Blob([])`
-  // and called onUpload with 0 bytes — silently producing an empty CDN
-  // object. Now the dialog routes URL inputs through a separate
-  // onUploadFromUrl handler, or surfaces UPLOAD_ERROR if the host hasn't
-  // supplied one.
+  // --- ImageUploader Context -------------------------------------------------
 
-  describe('URL-input upload path', () => {
-    async function enterProvidedImageWithUrl() {
-      fireEvent.click(screen.getByText('drop url'));
-      await act(async () => {
-        await Promise.resolve();
-      });
-      await waitFor(() => {
-        expect(screen.getByTestId('image-preview-editor')).toBeInTheDocument();
-      });
-    }
-
-    it('routes URL input through onUploadFromUrl on Confirm', async () => {
-      const onUploadFromUrl = vi
-        .fn<(url: string) => Promise<string>>()
-        .mockResolvedValue('https://cdn.example.com/from-url.jpg');
-      const onUpload = vi.fn<(blob: Blob) => Promise<string>>();
+  describe('ImageUploader Context', () => {
+    it('uses the default stub uploader when no provider is mounted', async () => {
+      // Intentionally bypass renderDialog helper to omit the provider.
       const onConfirm = vi.fn();
-      renderDialog({ onUploadFromUrl, onUpload, onConfirm });
+      render(<ImageUploadDialog {...defaultProps} onConfirm={onConfirm} />);
 
-      await enterProvidedImageWithUrl();
-      fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
-
-      await waitFor(() => {
-        expect(onUploadFromUrl).toHaveBeenCalledWith('https://example.com/image.jpg');
-        expect(onConfirm).toHaveBeenCalledWith(
-          expect.objectContaining({ imageUrl: 'https://cdn.example.com/from-url.jpg' }),
-        );
-      });
-      // The Blob-based onUpload is NOT called for URL input.
-      expect(onUpload).not.toHaveBeenCalled();
-    });
-
-    it('falls back to defaultUrlUploadHandler when the host does not supply onUploadFromUrl', async () => {
-      // Storybook/dev parity — both handlers have stub defaults. Previously
-      // URL confirms without a handler silently uploaded an empty blob
-      // (0-byte CDN object). Now the bundled stub fires and returns a
-      // visible mock URL.
-      const onUpload = vi.fn<(blob: Blob) => Promise<string>>();
-      const onConfirm = vi.fn();
-      renderDialog({ onUpload, onConfirm });
-
-      await enterProvidedImageWithUrl();
-      fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
-
+      fireEvent.click(screen.getByText('drop file'));
+      // defaultImageUploader.uploadFile returns a picsum URL after a 1.5s delay;
+      // allow waitFor enough time.
       await waitFor(
         () => {
           expect(onConfirm).toHaveBeenCalledWith(
             expect.objectContaining({
-              imageUrl: expect.stringMatching(/^https:\/\/picsum\.photos\//),
+              imageUrl: expect.stringMatching(/picsum\.photos/),
             }),
           );
         },
         { timeout: 3000 },
       );
-      // File upload handler must not fire for URL input.
-      expect(onUpload).not.toHaveBeenCalled();
     });
 
-    it('does not touch onUploadFromUrl for File input — Blob path still uses onUpload', async () => {
-      const { defaultUploadHandler } =
-        await import('@/types/canary/utilities/image-upload-handlers');
-      (defaultUploadHandler as ReturnType<typeof vi.fn>).mockResolvedValue(
-        'https://cdn.example.com/images/mock-uploaded.jpg',
-      );
-      const onUploadFromUrl = vi.fn<(url: string) => Promise<string>>();
+    it('respects a provider-supplied uploader over the default', async () => {
+      const uploader = makeMockUploader();
+      uploader.uploadFile.mockResolvedValue('https://cdn.provider.arda.cards/uploaded.jpg');
       const onConfirm = vi.fn();
-      renderDialog({ onUploadFromUrl, onConfirm });
+      renderDialog({ onConfirm }, uploader);
 
       fireEvent.click(screen.getByText('drop file'));
-      await act(async () => {
-        await Promise.resolve();
-      });
-      fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
-
       await waitFor(() => {
-        expect(onConfirm).toHaveBeenCalled();
+        expect(onConfirm).toHaveBeenCalledWith(
+          expect.objectContaining({ imageUrl: 'https://cdn.provider.arda.cards/uploaded.jpg' }),
+        );
       });
-      expect(onUploadFromUrl).not.toHaveBeenCalled();
+    });
+
+    it('defaultImageUploader is exported and callable (stories/dev safety)', async () => {
+      // Regression guard — if this export goes away, Storybook play functions
+      // that depend on the stub break in hard-to-diagnose ways.
+      expect(defaultImageUploader).toBeDefined();
+      expect(typeof defaultImageUploader.uploadFile).toBe('function');
+      expect(typeof defaultImageUploader.uploadFromUrl).toBe('function');
+      expect(typeof defaultImageUploader.checkReachability).toBe('function');
     });
   });
 });

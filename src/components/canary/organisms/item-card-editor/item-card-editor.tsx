@@ -16,10 +16,7 @@ import type {
   ImageInput,
   ImageUploadResult,
 } from '@/types/canary/utilities/image-field-config';
-import {
-  defaultUploadHandler,
-  defaultUrlUploadHandler,
-} from '@/types/canary/utilities/image-upload-handlers';
+import { useImageUploader } from '@/types/canary/utilities/image-uploader';
 
 import qrCodeDefaultUrl from './qr-code.png';
 
@@ -54,36 +51,15 @@ export interface ItemCardEditorRuntimeProps {
    * drop zone, or via Accept in the edit-existing dialog). */
   onImageConfirmed?: (url: string) => void;
   /**
-   * File-blob upload handler. Called directly when the user drops or selects
-   * a file via the empty-state drop zone — uploads proceed inline on the
-   * card without opening the crop/edit dialog (#750 issue 1 completion:
-   * rapid-batch UX). Also forwarded to ImageUploadDialog for the
-   * edit-existing flow.
-   *
-   * When omitted, defaults to `defaultUploadHandler` (a Storybook/dev
-   * stub that returns a mock CDN URL after a 1.5s simulated upload).
-   * Production deployments must pass a real handler.
-   */
-  onUpload?: (file: Blob) => Promise<string>;
-  /**
-   * External-URL upload handler. Called when the user drops or pastes an
-   * image URL from another tab (e.g. Google Images). The handler is
-   * expected to fetch the URL server-side (bypassing browser CORS) and
-   * upload the fetched bytes to the CDN, returning the CDN URL.
-   *
-   * When omitted, defaults to `defaultUrlUploadHandler` (a Storybook/dev
-   * stub that returns a mock CDN URL). In production, a real handler is
-   * required whenever URL inputs are possible; otherwise the stub ships
-   * with the component and hides what would be a configuration error.
-   */
-  onUploadFromUrl?: (url: string) => Promise<string>;
-  /** Reachability check — forwarded to ImageUploadDialog's onCheckReachability. */
-  onCheckReachability?: (url: string) => Promise<boolean>;
-  /**
    * Optional callback invoked when a direct upload (file or URL) from the
    * card's drop zone fails. Hosts can use this to raise a toast alongside
    * the inline error that ItemCardEditor already shows in the drop-zone
    * slot.
+   *
+   * Note: upload/URL-upload/reachability themselves are consumed from the
+   * surrounding `ImageUploadProvider` Context (5.0.0+) rather than as
+   * per-callback props. Mount an `<ImageUploadProvider value={uploader}>`
+   * at or above this component.
    */
   onUploadError?: (err: Error) => void;
   /**
@@ -130,12 +106,10 @@ export function ItemCardEditor({
   fields,
   onChange,
   onImageConfirmed,
-  onUpload = defaultUploadHandler,
-  onUploadFromUrl = defaultUrlUploadHandler,
-  onCheckReachability,
   onUploadError,
   qrCodeUrl,
 }: ItemCardEditorProps) {
+  const uploader = useImageUploader();
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [confirmRemoveOpen, setConfirmRemoveOpen] = React.useState(false);
   const [resolvedQrSrc, setResolvedQrSrc] = React.useState<string>(qrCodeDefaultUrl);
@@ -168,10 +142,8 @@ export function ItemCardEditor({
   onChangeRef.current = onChange;
   const onImageConfirmedRef = React.useRef(onImageConfirmed);
   onImageConfirmedRef.current = onImageConfirmed;
-  const onUploadRef = React.useRef(onUpload);
-  onUploadRef.current = onUpload;
-  const onUploadFromUrlRef = React.useRef(onUploadFromUrl);
-  onUploadFromUrlRef.current = onUploadFromUrl;
+  const uploaderRef = React.useRef(uploader);
+  uploaderRef.current = uploader;
   const onUploadErrorRef = React.useRef(onUploadError);
   onUploadErrorRef.current = onUploadError;
 
@@ -189,23 +161,23 @@ export function ItemCardEditor({
 
   // Direct upload: no dialog, no cropper. The user drops → we upload →
   // image appears on the card. Errors surface inline in the drop-zone slot.
+  //
+  // The `ImageUploader` is consumed from the surrounding
+  // `ImageUploadProvider` Context. If no provider is mounted, the default
+  // stub uploader is used — stories and dev harnesses work out of the box.
   const handleDropZoneInput = React.useCallback(
     async (input: ImageInput) => {
       // `error` inputs are already surfaced inline by ImageDropZone.
       if (input.type === 'error') return;
 
-      // Both handlers have defaults (Storybook/dev stubs), so `onUploadRef`
-      // and `onUploadFromUrlRef` always hold a function. Consumers that
-      // forget to pass a real handler in production will upload to the
-      // stub — a visible bug — rather than silently dropping inputs.
-      const uploader: () => Promise<string> =
+      const doUpload: () => Promise<string> =
         input.type === 'file'
-          ? () => onUploadRef.current(input.file)
-          : () => onUploadFromUrlRef.current(input.url);
+          ? () => uploaderRef.current.uploadFile(input.file)
+          : () => uploaderRef.current.uploadFromUrl(input.url);
 
       setUploadState({ name: 'Uploading' });
       try {
-        const cdnUrl = await uploader();
+        const cdnUrl = await doUpload();
         setUploadState({ name: 'Idle' });
         commitImageUrl(cdnUrl);
       } catch (err) {
@@ -400,16 +372,15 @@ export function ItemCardEditor({
 
       {/* Image Upload Dialog — edit-existing flow only (cropper, replace via
           Upload New Image, etc.). New-image uploads from the card's drop zone
-          bypass this dialog entirely (see handleDropZoneInput above). */}
+          bypass this dialog entirely (see handleDropZoneInput above).
+          The dialog consumes its uploader from the surrounding
+          ImageUploadProvider Context — no per-callback wiring needed. */}
       <ImageUploadDialog
         config={imageConfig}
         existingImageUrl={fields.imageUrl}
         open={dialogOpen}
         onConfirm={handleDialogConfirm}
         onCancel={handleDialogCancel}
-        onUpload={onUpload}
-        onUploadFromUrl={onUploadFromUrl}
-        {...(onCheckReachability ? { onCheckReachability } : {})}
       />
 
       {/* Confirm remove image */}

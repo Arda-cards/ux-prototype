@@ -303,27 +303,15 @@ const {
     });
     await userEvent.upload(fileInput, MOCK_FILE_JPEG);
 
-    // Wait for ProvidedImage state (Confirm is enabled, copyright is passive subtext)
-    await waitFor(
-      () => {
-        expect(screen.getByRole('button', { name: /confirm/i })).not.toBeDisabled();
-      },
-      { timeout: 5000 },
-    );
-
+    // 4.11.7 skips the cropper/review stop — the file input dispatches
+    // directly into Uploading, then onConfirm, then the dialog closes.
+    // No Confirm button appears.
     goToScene(1);
     await delay();
-
     goToScene(2);
     await delay();
-
-    // Click confirm
-    const confirmBtn = screen.getByRole('button', { name: /confirm/i });
-    await userEvent.click(confirmBtn);
-
     goToScene(3);
     await delay();
-
     goToScene(4);
     await delay();
 

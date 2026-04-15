@@ -1,17 +1,17 @@
 import * as React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mocked } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 
 import { ItemCardEditor, EMPTY_ITEM_CARD_FIELDS } from './item-card-editor';
 import type { ImageFieldConfig } from '@/types/canary/utilities/image-field-config';
+import { ImageUploadProvider, type ImageUploader } from '@/types/canary/utilities/image-uploader';
 
 // Capture the dialog's last props so tests can assert on them and drive the
 // confirm/cancel callbacks without rendering the real dialog state machine.
 type CapturedDialogProps = {
   open: boolean;
   existingImageUrl: string | null;
-  pendingInput: { type: string; file?: File; url?: string; message?: string } | undefined;
   onConfirm: (result: { imageUrl: string }) => void;
   onCancel: () => void;
 };
@@ -23,11 +23,7 @@ vi.mock('@/components/canary/organisms/shared/image-upload-dialog/image-upload-d
     lastDialogProps = props;
     if (!props.open) return null;
     return (
-      <div
-        data-testid="image-upload-dialog"
-        data-pending-type={props.pendingInput?.type ?? 'none'}
-        data-existing-url={props.existingImageUrl ?? 'null'}
-      >
+      <div data-testid="image-upload-dialog" data-existing-url={props.existingImageUrl ?? 'null'}>
         <button
           onClick={() => props.onConfirm({ imageUrl: 'https://cdn.example.com/confirmed.jpg' })}
         >
@@ -44,7 +40,7 @@ vi.mock('@/components/canary/molecules/typeahead-input/typeahead-input', () => (
 }));
 
 // Mock ImageDropZone so tests can synthesize file/url/error inputs without
-// having to drive the real drag-and-drop / file-input plumbing.
+// driving the real drag-and-drop / file-input plumbing.
 vi.mock('@/components/canary/molecules/image-drop-zone/image-drop-zone', () => ({
   ImageDropZone: ({
     onInput,
@@ -79,15 +75,37 @@ const CONFIG: ImageFieldConfig = {
   propertyDisplayName: 'Product Image',
 };
 
-function renderEditor(props: Partial<React.ComponentProps<typeof ItemCardEditor>> = {}) {
-  return render(
+// --- Uploader helpers ------------------------------------------------------
+
+// `Mocked<T>` from vitest preserves the ImageUploader signatures while
+// adding the .mockResolvedValue / .mock.calls surface. Tests that want
+// non-default behavior do `uploader.uploadFile.mockResolvedValue(...)`
+// on the returned object.
+type MockUploader = Mocked<ImageUploader>;
+
+function makeUploader(): MockUploader {
+  return {
+    uploadFile: vi.fn(async (_file: Blob) => 'https://cdn.example.com/uploaded.jpg'),
+    uploadFromUrl: vi.fn(async (_url: string) => 'https://cdn.example.com/from-url.jpg'),
+    checkReachability: vi.fn(async (_url: string) => true),
+  };
+}
+
+function renderEditor(
+  props: Partial<React.ComponentProps<typeof ItemCardEditor>> = {},
+  uploader?: ImageUploader,
+) {
+  const wrapped = (
     <ItemCardEditor
       imageConfig={CONFIG}
       unitLookup={async () => []}
       fields={EMPTY_ITEM_CARD_FIELDS}
       onChange={vi.fn()}
       {...props}
-    />,
+    />
+  );
+  return render(
+    uploader ? <ImageUploadProvider value={uploader}>{wrapped}</ImageUploadProvider> : wrapped,
   );
 }
 
@@ -100,9 +118,6 @@ describe('ItemCardEditor — QR placeholder (#750 issue 3)', () => {
   it('renders the bundled default QR image when qrCodeUrl prop is not provided', async () => {
     renderEditor();
     const qr = await screen.findByAltText('QR');
-    // The default URL should be a bundled asset, NOT the absolute path
-    // /images/qr-code.png (which only works in Storybook's dev server).
-    // In tests, Vite resolves the import to a file URL or data URL.
     const src = qr.getAttribute('src') ?? '';
     expect(src).not.toBe('/images/qr-code.png');
     expect(src).toBeTruthy();
@@ -122,8 +137,6 @@ describe('ItemCardEditor — QR placeholder (#750 issue 3)', () => {
     const qrCodeUrl = vi.fn().mockRejectedValue(new Error('lookup failed'));
     renderEditor({ qrCodeUrl });
     const qr = await screen.findByAltText('QR');
-    // After the rejection, the src should be the bundled default — not empty,
-    // not the failed callback's nonexistent URL, and not the absolute path.
     await waitFor(() => {
       const src = qr.getAttribute('src') ?? '';
       expect(src).not.toBe('/images/qr-code.png');
@@ -132,25 +145,26 @@ describe('ItemCardEditor — QR placeholder (#750 issue 3)', () => {
   });
 });
 
-describe('ItemCardEditor — drop-zone uploads directly, no dialog (#750 issue 1 completion)', () => {
+describe('ItemCardEditor — drop-zone direct upload via ImageUploader Context', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     lastDialogProps = undefined;
   });
 
-  it('uploads a dropped file via onUpload and commits the returned CDN URL', async () => {
+  it('uploads a dropped file via uploader.uploadFile and commits the returned CDN URL', async () => {
     const onChange = vi.fn();
     const onImageConfirmed = vi.fn();
-    const onUpload = vi.fn().mockResolvedValue('https://cdn.example.com/uploaded.jpg');
-    renderEditor({ onChange, onImageConfirmed, onUpload });
+    const uploader = makeUploader();
+    uploader.uploadFile.mockResolvedValue('https://cdn.example.com/uploaded.jpg');
+    renderEditor({ onChange, onImageConfirmed }, uploader);
 
     fireEvent.click(screen.getByText('drop-file'));
 
-    // Upload dialog must NOT be shown for the direct-upload flow.
+    // No dialog opens on the direct-upload flow.
     expect(screen.queryByTestId('image-upload-dialog')).not.toBeInTheDocument();
 
     await waitFor(() => {
-      expect(onUpload).toHaveBeenCalledTimes(1);
+      expect(uploader.uploadFile).toHaveBeenCalledTimes(1);
       expect(onChange).toHaveBeenCalledWith(
         expect.objectContaining({ imageUrl: 'https://cdn.example.com/uploaded.jpg' }),
       );
@@ -158,18 +172,19 @@ describe('ItemCardEditor — drop-zone uploads directly, no dialog (#750 issue 1
     });
   });
 
-  it('uploads a dropped URL via onUploadFromUrl and commits the returned CDN URL', async () => {
+  it('uploads a dropped URL via uploader.uploadFromUrl and commits the returned CDN URL', async () => {
     const onChange = vi.fn();
     const onImageConfirmed = vi.fn();
-    const onUploadFromUrl = vi.fn().mockResolvedValue('https://cdn.example.com/from-url.jpg');
-    renderEditor({ onChange, onImageConfirmed, onUploadFromUrl });
+    const uploader = makeUploader();
+    uploader.uploadFromUrl.mockResolvedValue('https://cdn.example.com/from-url.jpg');
+    renderEditor({ onChange, onImageConfirmed }, uploader);
 
     fireEvent.click(screen.getByText('drop-url'));
 
     expect(screen.queryByTestId('image-upload-dialog')).not.toBeInTheDocument();
 
     await waitFor(() => {
-      expect(onUploadFromUrl).toHaveBeenCalledWith('https://example.com/img.jpg');
+      expect(uploader.uploadFromUrl).toHaveBeenCalledWith('https://example.com/img.jpg');
       expect(onChange).toHaveBeenCalledWith(
         expect.objectContaining({ imageUrl: 'https://cdn.example.com/from-url.jpg' }),
       );
@@ -178,10 +193,9 @@ describe('ItemCardEditor — drop-zone uploads directly, no dialog (#750 issue 1
   });
 
   it('shows a spinner (role=status) while an upload is in flight', async () => {
-    const onUpload = vi.fn(
-      () => new Promise<string>(() => {}), // never resolves
-    );
-    renderEditor({ onUpload });
+    const uploader = makeUploader();
+    uploader.uploadFile.mockImplementation(() => new Promise<string>(() => {})); // never resolves
+    renderEditor({}, uploader);
 
     fireEvent.click(screen.getByText('drop-file'));
 
@@ -194,8 +208,9 @@ describe('ItemCardEditor — drop-zone uploads directly, no dialog (#750 issue 1
     const onChange = vi.fn();
     const onImageConfirmed = vi.fn();
     const onUploadError = vi.fn();
-    const onUpload = vi.fn().mockRejectedValue(new Error('quota exceeded'));
-    renderEditor({ onChange, onImageConfirmed, onUpload, onUploadError });
+    const uploader = makeUploader();
+    uploader.uploadFile.mockRejectedValue(new Error('quota exceeded'));
+    renderEditor({ onChange, onImageConfirmed, onUploadError }, uploader);
 
     fireEvent.click(screen.getByText('drop-file'));
 
@@ -210,8 +225,9 @@ describe('ItemCardEditor — drop-zone uploads directly, no dialog (#750 issue 1
   });
 
   it('Try again restores the drop zone so the user can drop another file', async () => {
-    const onUpload = vi.fn().mockRejectedValue(new Error('network down'));
-    renderEditor({ onUpload });
+    const uploader = makeUploader();
+    uploader.uploadFile.mockRejectedValue(new Error('network down'));
+    renderEditor({}, uploader);
 
     fireEvent.click(screen.getByText('drop-file'));
     await screen.findByRole('alert');
@@ -224,33 +240,12 @@ describe('ItemCardEditor — drop-zone uploads directly, no dialog (#750 issue 1
     });
   });
 
-  it('falls back to the bundled defaultUploadHandler for file drops when onUpload is not supplied (Storybook/dev parity)', async () => {
+  it('falls back to the bundled default uploader when no ImageUploadProvider is mounted', async () => {
     const onChange = vi.fn();
-    const onImageConfirmed = vi.fn();
-    // No onUpload — component defaults to defaultUploadHandler and commits
-    // its mock CDN URL. Storybook play functions rely on this.
-    renderEditor({ onChange, onImageConfirmed });
-
-    fireEvent.click(screen.getByText('drop-file'));
-
-    await waitFor(
-      () => {
-        expect(onChange).toHaveBeenCalledWith(
-          expect.objectContaining({
-            imageUrl: expect.stringMatching(/^https:\/\/picsum\.photos\//),
-          }),
-        );
-      },
-      { timeout: 3000 },
-    );
-    expect(onImageConfirmed).toHaveBeenCalled();
-  });
-
-  it('falls back to defaultUrlUploadHandler for URL drops when onUploadFromUrl is not supplied', async () => {
-    const onChange = vi.fn();
+    // No <ImageUploadProvider> wrapper — defaults to defaultImageUploader (stub).
     renderEditor({ onChange });
 
-    fireEvent.click(screen.getByText('drop-url'));
+    fireEvent.click(screen.getByText('drop-file'));
 
     await waitFor(
       () => {
@@ -266,13 +261,13 @@ describe('ItemCardEditor — drop-zone uploads directly, no dialog (#750 issue 1
 
   it('ignores error inputs from the drop zone (ImageDropZone surfaces them inline itself)', () => {
     const onChange = vi.fn();
-    const onUpload = vi.fn();
-    renderEditor({ onChange, onUpload });
+    const uploader = makeUploader();
+    renderEditor({ onChange }, uploader);
 
     fireEvent.click(screen.getByText('drop-error'));
 
     expect(screen.queryByTestId('image-upload-dialog')).not.toBeInTheDocument();
-    expect(onUpload).not.toHaveBeenCalled();
+    expect(uploader.uploadFile).not.toHaveBeenCalled();
     expect(onChange).not.toHaveBeenCalled();
   });
 

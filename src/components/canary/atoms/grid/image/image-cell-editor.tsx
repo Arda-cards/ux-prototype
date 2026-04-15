@@ -6,15 +6,6 @@ import type {
 } from '@/types/canary/utilities/image-field-config';
 import { ImageUploadDialog } from '@/components/canary/organisms/shared/image-upload-dialog/image-upload-dialog';
 
-/** Configuration for the image cell editor factory (FD-01 / FD-15). */
-export interface ImageCellEditorConfig {
-  config: ImageFieldConfig;
-  /** Hook returning the upload mutation — required (FD-15). */
-  useImageUpload: () => { mutateAsync: (file: Blob) => Promise<string>; isPending: boolean };
-  /** Hook returning the reachability check — required (FD-15). */
-  useCheckReachability: () => { mutateAsync: (url: string) => Promise<boolean> };
-}
-
 // --- Interfaces ---
 
 /** Design-time configuration for ImageCellEditor (no static props). */
@@ -39,10 +30,6 @@ export type ImageCellEditorProps = ImageCellEditorStaticProps &
   ImageCellEditorRuntimeProps & {
     /** Curried by createImageCellEditor — not passed by AG Grid directly. */
     config: ImageFieldConfig;
-    /** Upload callback — plain function, not a hook. Passed by the factory wrapper. */
-    onUpload?: (file: Blob) => Promise<string>;
-    /** Reachability callback — plain function. Passed by the factory wrapper. */
-    onCheckReachability?: (url: string) => Promise<boolean>;
   };
 
 /** Ref handle exposing getValue and isPopup for AG Grid. */
@@ -65,16 +52,22 @@ export interface ImageCellEditorHandle {
  * This prevents the grid from stopping editing when the Radix Dialog
  * portal moves focus to `document.body`.
  *
+ * **Upload wiring (5.0.0+).** The dialog consumes its uploader from the
+ * surrounding `ImageUploadProvider` Context — the cell editor no longer
+ * takes per-callback `onUpload` / `onCheckReachability` props. Mount
+ * `<ImageUploadProvider value={uploader}>` at or above the grid.
+ *
  * Usage in column definitions:
  * ```ts
  * {
  *   field: 'imageUrl',
  *   cellEditor: createImageCellEditor(ITEM_IMAGE_CONFIG),
+ *   cellEditorPopup: true,
  * }
  * ```
  */
 export const ImageCellEditor = forwardRef<ImageCellEditorHandle, ImageCellEditorProps>(
-  ({ value: initialValue, stopEditing, config, onUpload, onCheckReachability }, ref) => {
+  ({ value: initialValue, stopEditing, config }, ref) => {
     const [currentValue, setCurrentValue] = useState<string | null>(initialValue);
     const [dialogOpen, setDialogOpen] = useState(true);
 
@@ -109,8 +102,6 @@ export const ImageCellEditor = forwardRef<ImageCellEditorHandle, ImageCellEditor
           open={dialogOpen}
           onConfirm={handleConfirm}
           onCancel={handleCancel}
-          {...(onUpload ? { onUpload } : {})}
-          {...(onCheckReachability ? { onCheckReachability } : {})}
         />
       </>
     );
@@ -120,10 +111,12 @@ export const ImageCellEditor = forwardRef<ImageCellEditorHandle, ImageCellEditor
 ImageCellEditor.displayName = 'ImageCellEditor';
 
 /**
- * Factory helper for creating an image cell editor with curried config and hooks.
+ * Factory helper for creating an image cell editor with curried config.
  *
- * Accepts either the legacy `ImageFieldConfig` (Storybook/default handlers) or
- * the full `ImageCellEditorConfig` with required typed provider hooks (FD-15).
+ * As of 5.0.0, this factory takes only `ImageFieldConfig`. The uploader
+ * (file-blob upload, URL upload, reachability) is consumed from the
+ * surrounding `ImageUploadProvider` Context at render time, so callers
+ * no longer thread hook references through this factory.
  *
  * **Important — single forwardRef contract (FD-19).**
  * The returned component is a single `forwardRef`, not a wrapper around the
@@ -138,12 +131,7 @@ ImageCellEditor.displayName = 'ImageCellEditor';
  * eliminates the indirection and AG Grid sees `isPopup() => true` in
  * time, taking the early-return branch.
  */
-export function createImageCellEditor(configOrFull: ImageFieldConfig | ImageCellEditorConfig) {
-  const isFullConfig = 'useImageUpload' in configOrFull;
-  const config = isFullConfig ? configOrFull.config : configOrFull;
-  const useImageUploadHook = isFullConfig ? configOrFull.useImageUpload : undefined;
-  const useCheckReachabilityHook = isFullConfig ? configOrFull.useCheckReachability : undefined;
-
+export function createImageCellEditor(config: ImageFieldConfig) {
   const ImageCellEditorAdapter = forwardRef<ImageCellEditorHandle, ImageCellEditorRuntimeProps>(
     ({ value: initialValue, stopEditing }, ref) => {
       const [currentValue, setCurrentValue] = useState<string | null>(initialValue);
@@ -155,19 +143,6 @@ export function createImageCellEditor(configOrFull: ImageFieldConfig | ImageCell
         getValue: () => currentValue,
         isPopup: () => true,
       }));
-
-      // Hooks are called unconditionally per the Rules of Hooks. The
-      // `?.()` handles the Storybook case (no hooks provided) — the hook
-      // list itself is stable per component instance because the factory
-      // closure captures the same `useImageUploadHook` /
-      // `useCheckReachabilityHook` references for the lifetime of the
-      // column definition.
-      const uploadResult = useImageUploadHook?.();
-      const reachabilityResult = useCheckReachabilityHook?.();
-      const onUpload = uploadResult ? (file: Blob) => uploadResult.mutateAsync(file) : undefined;
-      const onCheckReachability = reachabilityResult
-        ? (url: string) => reachabilityResult.mutateAsync(url)
-        : undefined;
 
       const handleConfirm = (result: ImageUploadResult) => {
         setCurrentValue(result.imageUrl);
@@ -188,15 +163,14 @@ export function createImageCellEditor(configOrFull: ImageFieldConfig | ImageCell
             aria-hidden="true"
             style={{ width: 0, height: 0, overflow: 'hidden' }}
           />
-          {/* Modal dialog overlay — renders via portal, not in the cell */}
+          {/* Modal dialog overlay — renders via portal, not in the cell.
+              Uploader consumed from the surrounding ImageUploadProvider. */}
           <ImageUploadDialog
             config={config}
             existingImageUrl={initialValue}
             open={dialogOpen}
             onConfirm={handleConfirm}
             onCancel={handleCancel}
-            {...(onUpload ? { onUpload } : {})}
-            {...(onCheckReachability ? { onCheckReachability } : {})}
           />
         </>
       );

@@ -216,7 +216,6 @@ export {
 export type {
   ImageCellDisplayProps,
   ImageCellEditorProps,
-  ImageCellEditorConfig,
   ImageCellEditorHandle,
 } from './components/canary/atoms/grid/image';
 
@@ -311,10 +310,7 @@ export {
   itemGridDefaultColDef,
   createItemGridColumnDefs,
 } from './components/canary/molecules/item-grid/item-grid-columns';
-export type {
-  ItemGridLookups,
-  ItemGridEditorHooks,
-} from './components/canary/molecules/item-grid/item-grid-columns';
+export type { ItemGridLookups } from './components/canary/molecules/item-grid/item-grid-columns';
 
 export { itemGridFixtures } from './components/canary/molecules/item-grid/item-grid-fixtures';
 
@@ -343,6 +339,19 @@ export type {
 // Organisms: ImageUploadDialog
 export { ImageUploadDialog } from './components/canary/organisms/shared/image-upload-dialog';
 export type { ImageUploadDialogProps } from './components/canary/organisms/shared/image-upload-dialog';
+
+// Image upload abstraction (4.11.7+): single uploader interface + Context provider
+// replaces the previous per-callback props (onUpload/onUploadFromUrl/
+// onCheckReachability). See types/canary/utilities/image-uploader.
+export {
+  ImageUploadProvider,
+  useImageUploader,
+  defaultImageUploader,
+} from './types/canary/utilities/image-uploader';
+export type {
+  ImageUploader,
+  ImageUploadProviderProps,
+} from './types/canary/utilities/image-uploader';
 
 export { createEntityDataGridShim } from './components/canary/organisms/shared/entity-data-grid-shim';
 export type {

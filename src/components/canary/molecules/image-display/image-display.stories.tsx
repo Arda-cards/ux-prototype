@@ -552,31 +552,16 @@ const {
     goToScene(2);
     await delay();
 
-    // Step 3 → 4: Enter URL, press Enter, then adjust zoom
+    // Step 3 → 4: Enter URL and press Enter. As of 4.11.7 the dialog
+    // skips the cropper/review step for new uploads — URL inputs
+    // transition directly through reachability check into Uploading.
+    // No slider (cropper) appears, no Confirm button to click.
     const urlInput = within(document.body).getByPlaceholderText(/example\.com\/image/i);
     await userEvent.click(urlInput);
     await userEvent.type(urlInput, 'https://picsum.photos/seed/arda-new/400/400', { delay: 20 });
     await userEvent.keyboard('{Enter}');
-    await waitFor(
-      () => {
-        const slider = document.querySelector('[role="slider"]');
-        expect(slider).toBeTruthy();
-      },
-      { timeout: 5000 },
-    );
-    const slider = document.querySelector('[role="slider"]') as HTMLElement;
-    if (slider) {
-      slider.focus();
-      for (let i = 0; i < 5; i++) {
-        await userEvent.keyboard('{ArrowRight}');
-      }
-    }
     goToScene(3);
     await delay();
-
-    // Step 4 → 5: Click Confirm (copyright acknowledgment is now passive subtext)
-    const confirmBtn = within(document.body).getByRole('button', { name: /confirm/i });
-    await userEvent.click(confirmBtn);
     goToScene(5);
     await delay();
 
