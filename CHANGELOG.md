@@ -18,15 +18,16 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
-## [5.1.1] - 2026-04-16
+## [5.1.2] - 2026-04-16
 
 ### Fixed
 
-- Canvas export centers the image when zoom < 1. `getCroppedImage` now clamps
-  source coordinates to the available pixel bounds and offsets the destination
-  rectangle so the cropped output matches the editor preview. Previously,
-  `drawImage` silently clipped negative source coords to 0, pegging the
-  result to the top-left corner instead of centering it.
+- Canvas export centers the image when zoom < 1. Removed the zoom scaling
+  from `getCroppedImage` — react-easy-crop's `croppedAreaPixels` already
+  encodes zoom in the crop rect coordinates (natural pixel space), so
+  scaling the image by the zoom factor double-applied it. The image is now
+  drawn at natural size, and source coordinates are clamped to available
+  pixel bounds with the destination offset to center the result.
   (Arda-cards/arda-frontend-app#750).
 
 ## [5.1.0] - 2026-04-15
