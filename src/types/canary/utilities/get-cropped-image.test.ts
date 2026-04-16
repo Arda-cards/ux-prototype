@@ -96,24 +96,25 @@ describe('getCroppedImage', () => {
     expect(result).toBeInstanceOf(Blob);
   });
 
-  it.each([
-    { zoom: 2, expected: 2, label: 'zoom > 1 (enlarge)' },
-    { zoom: 0.5, expected: 0.5, label: 'zoom < 1 (shrink, Option A)' },
-    { zoom: 1, expected: 1, label: 'zoom = 1 (no scaling)' },
-  ])(
-    'applies zoom ($label): drawImage receives scaled dimensions (5a)',
-    async ({ zoom, expected }) => {
-      const { ctx } = installCanvasMock('image/jpeg');
-      await runCrop({ zoom });
-      // The source drawImage call uses scaled dimensions:
-      //   drawImage(image, 0, 0, scaledWidth, scaledHeight)
-      // With the mock image at 1x1, scaled dims equal the zoom factor.
-      const sourceDraw = ctx.drawImage.mock.calls[0];
-      if (!sourceDraw) throw new Error('drawImage was not called');
-      expect(sourceDraw[3]).toBe(expected);
-      expect(sourceDraw[4]).toBe(expected);
-    },
-  );
+  it('draws at natural size when pixelCrop is non-zero (zoom is in crop coords)', async () => {
+    const { ctx } = installCanvasMock('image/jpeg');
+    // Non-zero pixelCrop: zoom should NOT be applied to the canvas draw.
+    await runCrop({ pixelCrop: { x: 0, y: 0, width: 1, height: 1 }, zoom: 0.5 });
+    const sourceDraw = ctx.drawImage.mock.calls[0]!;
+    // drawImage(image, 0, 0, drawWidth, drawHeight) — drawWidth/Height = natural (1)
+    expect(sourceDraw[3]).toBe(1);
+    expect(sourceDraw[4]).toBe(1);
+  });
+
+  it('draws at scaled size when pixelCrop is zero-sized (zoom-only edit)', async () => {
+    const { ctx } = installCanvasMock('image/jpeg');
+    // Zero-sized pixelCrop: zoom MUST be applied so the output reflects the zoom.
+    await runCrop({ pixelCrop: { x: 0, y: 0, width: 0, height: 0 }, zoom: 0.5 });
+    const sourceDraw = ctx.drawImage.mock.calls[0]!;
+    // drawImage(image, 0, 0, drawWidth, drawHeight) — drawWidth/Height = 0.5 (scaled)
+    expect(sourceDraw[3]).toBe(0.5);
+    expect(sourceDraw[4]).toBe(0.5);
+  });
 
   it('rounds non-integer crop dimensions up to avoid canvas truncation (PR-96 review)', async () => {
     installCanvasMock('image/jpeg');
