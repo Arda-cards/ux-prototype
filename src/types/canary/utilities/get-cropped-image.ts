@@ -112,7 +112,13 @@ export async function getCroppedImage(options: GetCroppedImageOptions): Promise<
   const dx = sx - effectiveCrop.x;
   const dy = sy - effectiveCrop.y;
 
-  croppedCtx.drawImage(canvas, sx, sy, sw, sh, dx, dy, sw, sh);
+  // If the requested crop lies completely outside the rotated image bounds,
+  // there is nothing to draw. Leave the output canvas blank/transparent and
+  // still export it, rather than calling drawImage() with a zero source size
+  // (which throws IndexSizeError in browsers).
+  if (sw > 0 && sh > 0) {
+    croppedCtx.drawImage(canvas, sx, sy, sw, sh, dx, dy, sw, sh);
+  }
 
   return new Promise((resolve, reject) => {
     croppedCanvas.toBlob(
