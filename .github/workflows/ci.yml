@@ -146,6 +146,22 @@ jobs:
         with:
           mode: test
           tag: ${{ steps.clq-extract.outputs.tag }}
+      - name: Reject pre-release on PR to a release branch
+        if: |
+          github.event_name == 'pull_request'
+          && steps.changelog-check.outputs.modified == 'true'
+          && steps.clq-extract.outputs.status != 'released'
+        env:
+          TAG: ${{ steps.clq-extract.outputs.tag }}
+        run: |
+          {
+            echo "## Version Validation Error"
+            echo "PRs to a release branch must use a stable version, not a pre-release."
+            echo "Got: \`${TAG}\`"
+            echo "Swap the changelog entry to a stable \`x.y.z\` version before merging."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::error::PRs to a release branch require a stable version (got: ${TAG})"
+          exit 1
 
   tag:
     if: github.event_name == 'push' && needs.validate-release.outputs.changelog-modified == 'true'

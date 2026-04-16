@@ -18,6 +18,27 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [5.1.0] - 2026-04-15
+
+### Added
+
+- `publish-preview.yml` workflow publishes pre-release versions to GitHub
+  Packages from any branch when CHANGELOG.md is modified with a pre-release
+  version like `x.y.z-<author>-<id>`. Each push appends `github.run_number`
+  for uniqueness; consumers install via the dist-tag derived from the
+  changelog (e.g. `npm install @arda-cards/design-system@<author>-<id>`).
+  Stable releases continue to publish only from `main` via `publish.yml`.
+- `cleanup-preview.yml` workflow (daily 03:00 UTC cron, plus manual
+  dispatch with dry-run default) removes obsolete preview versions from
+  GitHub Packages: marks any preview whose stable base has shipped, and
+  trims active series to the last 3 versions per dist-tag. Includes safety
+  guards: never deletes stable versions, applies a 24h grace period since
+  publish, and refuses to proceed if candidates fail the preview pattern.
+- Storybook docs: `src/docs/workflows/preview-publishing.mdx` brief
+  operational summary of the new preview publish + cleanup flows, with a
+  link to the canonical integration contract in the documentation site
+  (`https://arda-cards.github.io/documentation/process/design-system-integration/`).
+
 ## [5.0.0] - 2026-04-15
 
 ### Changed
@@ -91,7 +112,6 @@ migration pattern.
   => Promise<string>` prop; if the host hasn't supplied a handler, the
   dialog dispatches `UPLOAD_ERROR` with "URL upload not supported"
   instead of silently uploading empty bytes.
-
 ## [4.11.5] - 2026-04-14
 
 ### Fixed

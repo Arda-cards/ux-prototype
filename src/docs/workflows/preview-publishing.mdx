@@ -1,0 +1,81 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Workflows/Preview Publishing" />
+
+# Preview Publishing
+
+`@arda-cards/design-system` supports publishing **preview** versions from any branch, in addition to stable releases from `main`. This page is a brief operational summary; for the full integration contract (consumer setup, cleanup, all workflows), see the canonical doc:
+
+📖 **[Design System Integration — full reference](https://arda-cards.github.io/documentation/process/design-system-integration/)**
+
+## What gets published, when
+
+| Workflow file | Trigger | What it publishes | dist-tag |
+| --- | --- | --- | --- |
+| `publish.yml` | push to `main` | Stable release (e.g. `4.12.0`) | `latest` |
+| `publish-preview.yml` | push to any branch, when CHANGELOG.md is modified with a pre-release entry | Preview build (e.g. `4.12.0-alice-FD42-7`) | derived from changelog (e.g. `alice-FD42`) |
+| `cleanup-preview.yml` | daily 03:00 UTC + manual dispatch | (deletes obsolete preview versions) | n/a |
+
+## How to publish a preview
+
+1. Branch off `main`.
+2. Add a CHANGELOG.md entry with a **pre-release** version of the form `x.y.z-<author>-<id>`:
+
+   ```markdown
+   ## [4.12.0-alice-FD42] - 2026-04-15
+
+   ### Added
+
+   - Short description of the change.
+   ```
+
+3. Push. The `publish-preview.yml` workflow:
+   - Detects CHANGELOG.md was modified.
+   - Validates the entry is a CLQ pre-release (otherwise skips).
+   - Publishes `4.12.0-alice-FD42-<github.run_number>` with dist-tag `alice-FD42`.
+4. The dist-tag advances with every push that modifies CHANGELOG.md.
+
+## How to consume a preview
+
+In the consuming app (e.g. `arda-frontend-app`), once the package registry is configured:
+
+```bash
+npm install @arda-cards/design-system@alice-FD42
+```
+
+Re-running this command picks up the latest push in the `alice-FD42` series.
+
+When the design-system PR ships stable and the consumer is ready, swap to:
+
+```bash
+npm install @arda-cards/design-system@latest
+```
+
+## Before merging the design-system PR
+
+Swap the changelog entry from the pre-release form (`4.12.0-alice-FD42`) to a stable form (`4.12.0`). Otherwise:
+
+- The `validate-release` job in `ci.yml` will **fail** the PR — by design, to prevent merging a preview as stable.
+- `publish-preview.yml` will keep republishing on every push (you don't want this once the change is final).
+
+After the swap:
+
+- `validate-release` passes.
+- `publish-preview.yml` correctly skips (the entry is no longer a pre-release).
+- On merge, `publish.yml` ships the stable version.
+
+## Cleanup
+
+Preview versions accumulate in GitHub Packages. The `cleanup-preview.yml` workflow runs nightly and:
+
+- **Deletes obsolete previews**: any `4.12.x-*-*` once stable `4.12.x` has shipped.
+- **Trims active series** to the last 3 versions per dist-tag.
+- **Never deletes stable versions** (hard refused — workflow fails if a stable would be deleted).
+- **24h grace period** since publish, to protect in-flight CI runs.
+
+For the manual-dispatch dry-run mode and operating procedure, see the [reference page](https://arda-cards.github.io/documentation/process/design-system-integration/reference/#cleanup-contract) of the canonical doc.
+
+## See also
+
+- [Publishing](?path=/docs/docs-workflows-publishing--docs) — the older stable-only publishing doc (still relevant for the `latest` dist-tag flow).
+- [Canonical doc](https://arda-cards.github.io/documentation/process/design-system-integration/) — full integration contract including consumer-side setup, all four supported workflows, and the cleanup contract.
