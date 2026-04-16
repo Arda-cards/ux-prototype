@@ -96,24 +96,16 @@ describe('getCroppedImage', () => {
     expect(result).toBeInstanceOf(Blob);
   });
 
-  it.each([
-    { zoom: 2, expected: 2, label: 'zoom > 1 (enlarge)' },
-    { zoom: 0.5, expected: 0.5, label: 'zoom < 1 (shrink, Option A)' },
-    { zoom: 1, expected: 1, label: 'zoom = 1 (no scaling)' },
-  ])(
-    'applies zoom ($label): drawImage receives scaled dimensions (5a)',
-    async ({ zoom, expected }) => {
-      const { ctx } = installCanvasMock('image/jpeg');
-      await runCrop({ zoom });
-      // The source drawImage call uses scaled dimensions:
-      //   drawImage(image, 0, 0, scaledWidth, scaledHeight)
-      // With the mock image at 1x1, scaled dims equal the zoom factor.
-      const sourceDraw = ctx.drawImage.mock.calls[0];
-      if (!sourceDraw) throw new Error('drawImage was not called');
-      expect(sourceDraw[3]).toBe(expected);
-      expect(sourceDraw[4]).toBe(expected);
-    },
-  );
+  it('draws the image at natural size regardless of zoom (zoom is in pixelCrop coords)', async () => {
+    const { ctx } = installCanvasMock('image/jpeg');
+    await runCrop({ zoom: 0.5 });
+    // The source drawImage call should use natural dimensions (1×1 mock image),
+    // NOT scaled by zoom. react-easy-crop encodes zoom in the pixelCrop coords.
+    const sourceDraw = ctx.drawImage.mock.calls[0];
+    if (!sourceDraw) throw new Error('drawImage was not called');
+    // drawImage(image, 0, 0) — only 3 args, no explicit width/height
+    expect(sourceDraw.length).toBe(3);
+  });
 
   it('rounds non-integer crop dimensions up to avoid canvas truncation (PR-96 review)', async () => {
     installCanvasMock('image/jpeg');

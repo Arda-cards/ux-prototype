@@ -18,10 +18,9 @@ export interface GetCroppedImageOptions {
   /** Rotation in degrees. Defaults to 0. */
   rotation?: number;
   /**
-   * Zoom factor from the editor (0.5..3). When != 1, the source image is
-   * scaled before being drawn onto the canvas, so the output matches what
-   * the user saw in the editor (Option A semantics: zoom < 1 produces
-   * visible padding in the output).
+   * @deprecated Ignored — zoom is encoded in pixelCrop coordinates by
+   * react-easy-crop. Retained for backward compatibility; callers may
+   * pass it without error but it has no effect.
    */
   zoom?: number;
   /** Output image MIME type. Defaults to 'image/jpeg'. */
@@ -39,7 +38,7 @@ export async function getCroppedImage(options: GetCroppedImageOptions): Promise<
     imageSrc,
     pixelCrop,
     rotation = 0,
-    zoom = 1,
+    // zoom is intentionally ignored — see interface JSDoc.
     outputFormat = 'image/jpeg',
     quality = 0.85,
   } = options;
@@ -49,31 +48,27 @@ export async function getCroppedImage(options: GetCroppedImageOptions): Promise<
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Failed to obtain 2D canvas context');
 
-  // Apply zoom by scaling the effective image dimensions. When zoom < 1,
-  // the scaled image is smaller than its natural size; when zoom > 1, larger.
-  const scaledWidth = image.width * zoom;
-  const scaledHeight = image.height * zoom;
-
+  // Draw at natural size — do NOT apply zoom here. react-easy-crop's
+  // croppedAreaPixels is in the image's natural pixel coordinate space;
+  // zoom is encoded in the crop rect itself (extending beyond the image
+  // bounds when zoom < 1, or covering a smaller sub-region when zoom > 1).
+  // Scaling the image here would create a coordinate space mismatch with
+  // the pixelCrop values, producing a double-zoom artefact.
   const rotRad = (rotation * Math.PI) / 180;
   const sin = Math.abs(Math.sin(rotRad));
   const cos = Math.abs(Math.cos(rotRad));
 
-  // Bounding box of the rotated, scaled source. Round up so non-integer
-  // dimensions (from zoom factors and trig) don't truncate when assigned to
-  // canvas.width/height — truncation can shave the last column/row of pixels.
-  const bBoxWidth = Math.ceil(scaledWidth * cos + scaledHeight * sin);
-  const bBoxHeight = Math.ceil(scaledWidth * sin + scaledHeight * cos);
+  // Bounding box of the rotated source at natural size.
+  const bBoxWidth = Math.ceil(image.width * cos + image.height * sin);
+  const bBoxHeight = Math.ceil(image.width * sin + image.height * cos);
 
   canvas.width = bBoxWidth;
   canvas.height = bBoxHeight;
 
   ctx.translate(bBoxWidth / 2, bBoxHeight / 2);
   ctx.rotate(rotRad);
-  ctx.translate(-scaledWidth / 2, -scaledHeight / 2);
-  // Draw the image at the scaled size (zoom applied). Canvas areas outside
-  // this rectangle remain transparent — they render as black in JPEG output
-  // when pixelCrop extends beyond the image bounds (zoom < 1 case).
-  ctx.drawImage(image, 0, 0, scaledWidth, scaledHeight);
+  ctx.translate(-image.width / 2, -image.height / 2);
+  ctx.drawImage(image, 0, 0);
 
   // Extract the crop region. When pixelCrop has zero dimensions (rotate-only
   // or zoom-only edit), use the full rotated+scaled canvas as the crop area.
