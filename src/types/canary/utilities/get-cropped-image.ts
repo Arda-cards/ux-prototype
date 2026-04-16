@@ -88,23 +88,37 @@ export async function getCroppedImage(options: GetCroppedImageOptions): Promise<
         }
       : { x: 0, y: 0, width: bBoxWidth, height: bBoxHeight };
 
+  // Extract the crop region.
+  // When zoom < 1 the crop area reported by react-easy-crop extends beyond
+  // the rotated image bounds (negative x/y or size > image). A plain
+  // drawImage clips to the available source pixels, pegging the result to
+  // the top-left corner. Clamp the source rect to the actual image and
+  // offset the destination so the image stays centered in the output.
   const croppedCanvas = document.createElement('canvas');
   const croppedCtx = croppedCanvas.getContext('2d');
   if (!croppedCtx) throw new Error('Failed to obtain 2D canvas context for crop');
   croppedCanvas.width = effectiveCrop.width;
   croppedCanvas.height = effectiveCrop.height;
 
-  croppedCtx.drawImage(
-    canvas,
-    effectiveCrop.x,
-    effectiveCrop.y,
-    effectiveCrop.width,
-    effectiveCrop.height,
-    0,
-    0,
-    effectiveCrop.width,
-    effectiveCrop.height,
-  );
+  // Clamp source coordinates to available pixels
+  const sx = Math.max(0, effectiveCrop.x);
+  const sy = Math.max(0, effectiveCrop.y);
+  const sRight = Math.min(bBoxWidth, effectiveCrop.x + effectiveCrop.width);
+  const sBottom = Math.min(bBoxHeight, effectiveCrop.y + effectiveCrop.height);
+  const sw = Math.max(0, sRight - sx);
+  const sh = Math.max(0, sBottom - sy);
+
+  // Offset destination so the drawn region is centered
+  const dx = sx - effectiveCrop.x;
+  const dy = sy - effectiveCrop.y;
+
+  // If the requested crop lies completely outside the rotated image bounds,
+  // there is nothing to draw. Leave the output canvas blank/transparent and
+  // still export it, rather than calling drawImage() with a zero source size
+  // (which throws IndexSizeError in browsers).
+  if (sw > 0 && sh > 0) {
+    croppedCtx.drawImage(canvas, sx, sy, sw, sh, dx, dy, sw, sh);
+  }
 
   return new Promise((resolve, reject) => {
     croppedCanvas.toBlob(

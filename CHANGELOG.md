@@ -18,6 +18,17 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [5.1.1] - 2026-04-16
+
+### Fixed
+
+- Canvas export centers the image when zoom < 1. `getCroppedImage` now clamps
+  source coordinates to the available pixel bounds and offsets the destination
+  rectangle so the cropped output matches the editor preview. Previously,
+  `drawImage` silently clipped negative source coords to 0, pegging the
+  result to the top-left corner instead of centering it.
+  (Arda-cards/arda-frontend-app#750).
+
 ## [5.1.0] - 2026-04-15
 
 ### Added

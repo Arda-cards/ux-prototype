@@ -137,4 +137,26 @@ describe('getCroppedImage', () => {
     expect(capturedWidth).toBe(101);
     expect(capturedHeight).toBe(101);
   });
+
+  it('centers the image when crop extends beyond bounds (zoom < 1)', async () => {
+    const { ctx } = installCanvasMock('image/jpeg');
+
+    // Simulate zoom < 1: crop area is larger than the 1×1 image, with
+    // negative offsets (crop extends beyond the rotated image bounds).
+    const oversizedCrop: PixelCrop = { x: -1, y: -1, width: 3, height: 3 };
+    await runCrop({ pixelCrop: oversizedCrop });
+
+    // The second drawImage call extracts the crop region.
+    // Source coords should be clamped (sx=0, sy=0) and destination offset
+    // by the clamped amount (dx=1, dy=1) to center the image.
+    const cropDraw = ctx.drawImage.mock.calls[1]!;
+    // drawImage(canvas, sx, sy, sw, sh, dx, dy, dw, dh)
+    const [, sx, sy, sw, sh, dx, dy] = cropDraw;
+    expect(sx).toBe(0); // clamped from -1
+    expect(sy).toBe(0); // clamped from -1
+    expect(dx).toBe(1); // offset = 0 - (-1) = 1
+    expect(dy).toBe(1); // offset = 0 - (-1) = 1
+    expect(sw).toBe(1); // clamped to available width
+    expect(sh).toBe(1); // clamped to available height
+  });
 });
