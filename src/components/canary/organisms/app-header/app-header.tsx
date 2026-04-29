@@ -4,7 +4,6 @@ import { cn } from '@/types/canary/utilities/utils';
 import { Button } from '@/components/canary/atoms/button';
 import { Separator } from '@/components/canary/primitives/separator';
 import { ArdaSearchInput } from '../../atoms/search-input/search-input';
-import { IconButton } from '../../atoms/icon-button/icon-button';
 
 // --- Types ---
 
@@ -75,7 +74,7 @@ export type ArdaAppHeaderProps = AppHeaderProps;
 /**
  * AppHeader — top navigation bar with search, labeled actions, and icon actions.
  *
- * Composes ArdaSearchInput and IconButton atoms with shadcn/ui Button and Separator.
+ * Composes ArdaSearchInput, Button, and Separator atoms.
  */
 export function AppHeader({
   buttonActions,
@@ -131,15 +130,31 @@ export function AppHeader({
         })}
 
         {/* Icon actions (e.g., Help, Notifications) */}
-        {visibleActions?.map((action) => (
-          <IconButton
-            key={action.key}
-            icon={action.icon}
-            label={action.label}
-            {...(action.badgeCount !== undefined ? { badgeCount: action.badgeCount } : {})}
-            {...(action.onClick ? { onClick: action.onClick } : {})}
-          />
-        ))}
+        {visibleActions?.map((action) => {
+          const Icon = action.icon;
+          return (
+            <Button
+              key={action.key}
+              variant="ghost"
+              size="icon"
+              tooltip={action.label}
+              aria-label={action.label}
+              className="relative"
+              {...(action.onClick ? { onClick: action.onClick } : {})}
+            >
+              <Icon className="size-5" />
+              {action.badgeCount !== undefined && action.badgeCount > 0 && (
+                <span
+                  className="absolute -top-1 -right-1 flex min-w-4 h-4 items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] font-semibold leading-none px-1"
+                  role="status"
+                  aria-label={`${action.badgeCount} notification${action.badgeCount === 1 ? '' : 's'}`}
+                >
+                  {action.badgeCount > 99 ? '99+' : action.badgeCount}
+                </span>
+              )}
+            </Button>
+          );
+        })}
       </div>
     </header>
   );

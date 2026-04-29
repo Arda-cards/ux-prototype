@@ -69,13 +69,52 @@ export type {
   ArdaDrawerRuntimeConfig,
 } from './components/canary/atoms/drawer/drawer';
 
+/** @deprecated Use Button with size="icon" and tooltip prop instead. */
 export { IconButton, ArdaIconButton } from './components/canary/atoms/icon-button/icon-button';
+/** @deprecated Use Button with size="icon" and tooltip prop instead. */
 export type {
   IconButtonProps,
   ArdaIconButtonProps,
   ArdaIconButtonStaticConfig,
   ArdaIconButtonRuntimeConfig,
 } from './components/canary/atoms/icon-button/icon-button';
+
+// Atoms: Toggle
+export { Toggle, toggleVariants } from './components/canary/atoms/toggle/toggle';
+export type {
+  ToggleProps,
+  ArdaToggleStaticConfig,
+  ArdaToggleRuntimeConfig,
+} from './components/canary/atoms/toggle/toggle';
+
+// Atoms: ToggleGroup
+export { ToggleGroup, ToggleGroupItem } from './components/canary/atoms/toggle-group/toggle-group';
+export type {
+  ToggleGroupProps,
+  ToggleGroupSingleProps,
+  ToggleGroupMultipleProps,
+  ToggleGroupItemProps,
+  ArdaToggleGroupStaticConfig,
+} from './components/canary/atoms/toggle-group/toggle-group';
+
+// Atoms: ButtonGroup
+export {
+  ButtonGroup,
+  ButtonGroupSeparator,
+} from './components/canary/atoms/button-group/button-group';
+export type {
+  ButtonGroupProps,
+  ButtonGroupSeparatorProps,
+  ArdaButtonGroupStaticConfig,
+} from './components/canary/atoms/button-group/button-group';
+
+// Atoms: SplitButton
+export { SplitButton } from './components/canary/atoms/split-button/split-button';
+export type {
+  SplitButtonProps,
+  ArdaSplitButtonStaticConfig,
+  ArdaSplitButtonRuntimeConfig,
+} from './components/canary/atoms/split-button/split-button';
 
 export { BrandLogo, BrandIcon } from './components/canary/atoms/brand-logo/brand-logo';
 export type {

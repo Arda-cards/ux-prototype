@@ -1,0 +1,153 @@
+{/* button-group.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as ButtonGroupStories from './button-group.stories';
+
+<Meta of={ButtonGroupStories} />
+
+# ButtonGroup
+
+Groups related action buttons with connected styling &#8212; collapsed borders and border-radius only on outer edges. Pure CSS layout component with no JavaScript state.
+
+**Atom** &#8212; Canary | Import: `import { ButtonGroup, ButtonGroupSeparator } from '@arda-cards/design-system/canary'`
+
+> Use **ButtonGroup** for buttons that perform actions. Use **ToggleGroup** for buttons that toggle state.
+
+---
+
+## Playground
+
+<Canvas of={ButtonGroupStories.Playground} />
+
+---
+
+## Showcase
+
+<Canvas of={ButtonGroupStories.Showcase} />
+
+---
+
+## Orientation
+
+<table>
+  <thead>
+    <tr>
+      <th>Value</th>
+      <th>Behavior</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>horizontal</code></td>
+      <td>Default. Buttons side-by-side, borders collapsed with <code>-ml-px</code>.</td>
+    </tr>
+    <tr>
+      <td><code>vertical</code></td>
+      <td>Buttons stacked, borders collapsed with <code>-mt-px</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Dividers
+
+Use `showDivider` to automatically insert separator lines between child buttons. Use `dividerClassName` to control the divider color &#8212; important for solid-background variants where the default `bg-border` would be invisible.
+
+```tsx
+{/* Outline buttons — default divider color works */}
+<ButtonGroup showDivider>
+  <Button variant="outline">Left</Button>
+  <Button variant="outline">Right</Button>
+</ButtonGroup>
+
+{/* Primary buttons — use a white divider */}
+<ButtonGroup showDivider dividerClassName="bg-white/30">
+  <Button variant="primary">Save</Button>
+  <Button variant="primary">Save &#38; Close</Button>
+</ButtonGroup>
+```
+
+You can also use `ButtonGroupSeparator` directly for manual placement if you need separators only between specific children.
+
+---
+
+## Props
+
+### ButtonGroup
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>orientation</code></td>
+      <td><code>'horizontal' | 'vertical'</code></td>
+      <td><code>'horizontal'</code></td>
+      <td>Layout direction.</td>
+    </tr>
+    <tr>
+      <td><code>showDivider</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Automatically insert divider lines between child buttons.</td>
+    </tr>
+    <tr>
+      <td><code>dividerClassName</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>CSS class for auto-inserted dividers (e.g., <code>'bg-white/30'</code> for primary).</td>
+    </tr>
+    <tr>
+      <td><code>aria-label</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Accessible label for the group.</td>
+    </tr>
+    <tr>
+      <td><code>className</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Additional CSS classes.</td>
+    </tr>
+  </tbody>
+</table>
+
+### ButtonGroupSeparator
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>className</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Override separator color (e.g., <code>bg-primary-foreground/20</code>).</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Accessibility
+
+- Renders with `role="group"` &#8212; provide `aria-label` to describe the group.
+- Focus rings on child buttons layer above siblings via `z-10`.
+
+---
+
+## Import
+
+```tsx
+import { ButtonGroup, ButtonGroupSeparator } from '@arda-cards/design-system/canary';
+```

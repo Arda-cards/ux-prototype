@@ -6,7 +6,7 @@ import * as ButtonStories from './button.stories';
 
 # Button
 
-Canonical action button for all Arda UI. Extends the shadcn Button primitive with a built-in loading state, `motion-reduce` support, and consistent focus rings mapped to Arda design-system color tokens.
+Canonical action button for all Arda UI. Built-in loading states, tooltip support, `motion-reduce` respect, and consistent focus rings mapped to Arda design tokens.
 
 **Atom** &#8212; Canary | Import: `import { Button } from '@arda-cards/design-system/canary'`
 
@@ -14,19 +14,15 @@ Canonical action button for all Arda UI. Extends the shadcn Button primitive wit
 
 ## Playground
 
-Use the controls panel below to interactively adjust variant, size, loading, and disabled states.
+Use the controls panel to interactively adjust variant, size, loading, tooltip, and disabled states.
 
 <Canvas of={ButtonStories.Playground} />
 
 ---
 
-## All Variants
+## Showcase
 
-<Canvas of={ButtonStories.AllVariants} />
-
-## All Sizes
-
-<Canvas of={ButtonStories.AllSizes} />
+<Canvas of={ButtonStories.Showcase} />
 
 ---
 
@@ -71,31 +67,9 @@ Five color variants control the button's visual emphasis and semantic meaning.
   </tbody>
 </table>
 
-### Primary
-
-<Canvas of={ButtonStories.Primary} />
-
-### Secondary
-
-<Canvas of={ButtonStories.Secondary} />
-
-### Ghost
-
-<Canvas of={ButtonStories.Ghost} />
-
-### Destructive
-
-<Canvas of={ButtonStories.Destructive} />
-
-### Outline
-
-<Canvas of={ButtonStories.Outline} />
-
 ---
 
 ## Size Variants
-
-Five size presets control height, padding, and icon dimensions.
 
 <table>
   <thead>
@@ -106,6 +80,11 @@ Five size presets control height, padding, and icon dimensions.
     </tr>
   </thead>
   <tbody>
+    <tr>
+      <td><code>xs</code></td>
+      <td>24px</td>
+      <td>Extremely compact contexts &#8212; badges, inline tags.</td>
+    </tr>
     <tr>
       <td><code>sm</code></td>
       <td>32px</td>
@@ -131,56 +110,69 @@ Five size presets control height, padding, and icon dimensions.
       <td>32&#215;32px</td>
       <td>Compact icon-only button.</td>
     </tr>
+    <tr>
+      <td><code>icon-xs</code></td>
+      <td>24&#215;24px</td>
+      <td>Minimal icon-only button.</td>
+    </tr>
+    <tr>
+      <td><code>icon-lg</code></td>
+      <td>40&#215;40px</td>
+      <td>Large icon-only button &#8212; matches <code>lg</code> text button height.</td>
+    </tr>
   </tbody>
 </table>
-
-### Small
-
-<Canvas of={ButtonStories.Small} />
-
-### Large
-
-<Canvas of={ButtonStories.Large} />
-
----
-
-## With Icon
-
-Icons are placed as children alongside text. SVG icons auto-size to 16&#215;16px via the `[&_svg]:size-4` utility.
-
-<Canvas of={ButtonStories.WithIcon} />
-
-## Icon Only
-
-Use `size="icon"` or `size="icon-sm"` for square icon-only buttons. Always provide an `aria-label` for accessibility.
-
-<Canvas of={ButtonStories.IconOnly} />
 
 ---
 
 ## Loading State
 
-When `loading` is `true`, a spinner replaces the leading icon slot and the button is disabled. The spinner respects `motion-reduce` (animation stops for users who prefer reduced motion).
+The `loading` prop accepts a **boolean** or a **string**:
 
-<Canvas of={ButtonStories.Loading} />
+- `loading={true}` &#8212; shows a spinner alongside the existing children text.
+- `loading="Downloading&#8230;"` &#8212; shows a spinner and replaces the children with the given text.
 
-## Disabled State
+Use `loadingPosition="end"` to place the spinner after the text instead of before it.
 
-Standard HTML `disabled` attribute. Pointer events are suppressed and opacity is reduced.
+For icon-only sizes, the spinner replaces the icon entirely regardless of position.
 
-<Canvas of={ButtonStories.Disabled} />
+### Async Action Pattern
+
+A realistic download button that toggles loading state on click:
+
+<Canvas of={ButtonStories.AsyncActionPattern} />
+
+---
+
+## Tooltip
+
+The `tooltip` prop wraps the button in a Radix Tooltip automatically. When the button is `disabled`, pointer events are handled internally so the tooltip still appears on hover.
+
+Use `tooltipSide` to control placement (`'top'` | `'bottom'` | `'left'` | `'right'`, defaults to `'top'`).
+
+Requires `TooltipProvider` in the app root (already present in Arda layouts).
 
 ---
 
 ## Composition: asChild
 
-Use `asChild` to render a different element (e.g., a link) with Button styling via Radix `Slot`:
+Sometimes you need something that *looks* like a button but *behaves* like a different element &#8212; most commonly a link. Instead of wrapping a link in a button (which is invalid HTML and breaks accessibility), `asChild` tells Button to transfer all of its styling and props onto its single child element.
+
+The `Button` component itself doesn't render a `<button>` tag. Instead, the child element becomes the rendered output, inheriting all variant classes, focus rings, and size styles.
 
 ```tsx
+{/* Renders an <a> tag that looks exactly like a ghost button */}
 <Button asChild variant="ghost">
   <a href="/items">View all items</a>
 </Button>
+
+{/* Works with Next.js Link */}
+<Button asChild variant="primary" size="lg">
+  <Link href="/onboarding">Get started</Link>
+</Button>
 ```
+
+**When to use:** Navigation that should look like a button. Without `asChild`, you'd need to duplicate button styles on the link or nest a `<button>` inside an `<a>` (which is invalid HTML).
 
 ---
 
@@ -204,21 +196,39 @@ Use `asChild` to render a different element (e.g., a link) with Button styling v
     </tr>
     <tr>
       <td><code>size</code></td>
-      <td><code>'sm' | 'md' | 'lg' | 'icon' | 'icon-sm'</code></td>
+      <td><code>'xs' | 'sm' | 'md' | 'lg' | 'icon' | 'icon-sm' | 'icon-xs' | 'icon-lg'</code></td>
       <td><code>'md'</code></td>
       <td>Size preset.</td>
     </tr>
     <tr>
       <td><code>loading</code></td>
-      <td><code>boolean</code></td>
+      <td><code>boolean | string</code></td>
       <td><code>false</code></td>
-      <td>Shows spinner overlay and disables interaction.</td>
+      <td>Shows spinner and disables. String value replaces children text.</td>
+    </tr>
+    <tr>
+      <td><code>loadingPosition</code></td>
+      <td><code>'start' | 'end'</code></td>
+      <td><code>'start'</code></td>
+      <td>Spinner placement relative to text.</td>
+    </tr>
+    <tr>
+      <td><code>tooltip</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Tooltip text shown on hover. Handles disabled buttons automatically.</td>
+    </tr>
+    <tr>
+      <td><code>tooltipSide</code></td>
+      <td><code>'top' | 'bottom' | 'left' | 'right'</code></td>
+      <td><code>'top'</code></td>
+      <td>Which side the tooltip appears on.</td>
     </tr>
     <tr>
       <td><code>asChild</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Render as child element via Radix Slot (link-as-button pattern).</td>
+      <td>Render as child element via Radix Slot.</td>
     </tr>
     <tr>
       <td><code>disabled</code></td>
@@ -231,12 +241,6 @@ Use `asChild` to render a different element (e.g., a link) with Button styling v
       <td><code>string</code></td>
       <td>&#8212;</td>
       <td>Additional CSS classes merged via <code>cn()</code>.</td>
-    </tr>
-    <tr>
-      <td><code>children</code></td>
-      <td><code>ReactNode</code></td>
-      <td>&#8212;</td>
-      <td>Button content &#8212; text, icons, or both.</td>
     </tr>
   </tbody>
 </table>
@@ -251,6 +255,7 @@ Also accepts all standard `React.ButtonHTMLAttributes` (`onClick`, `type`, `aria
 - Destructive variant uses `ring-destructive` for its focus indicator.
 - `motion-reduce`: loading spinner animation stops for users who prefer reduced motion.
 - Icon-only buttons require `aria-label`.
+- Tooltip on disabled buttons works automatically &#8212; no extra wrapper needed.
 
 ---
 
