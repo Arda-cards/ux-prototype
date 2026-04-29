@@ -58,6 +58,10 @@ The library has three entry points: main (`index.ts`), `canary` (experimental), 
 | `tools/` | Build scripts and helpers |
 
 
+## PR workflow
+
+Before creating a pull request, always ask the user if they want to add a new CHANGELOG version entry. Each PR should have its own version bump — do not add entries to an existing version that belongs to a different PR. Follow the categories in `.github/clq/changemap.json` (`Added` = minor, `Fixed` = patch, `Changed`/`Removed` = major).
+
 ## Knowledge base
 
 The `knowledge-base/` directory contains repository-specific knowledge — recommended practices, patterns, insights, and lessons learned that are useful for working in this repo. Agents should:

@@ -94,7 +94,7 @@ export function useDraft<T>(options: UseDraftOptions<T>): DraftState<T> {
 
   const isValid = intrinsicValidation.valid && !hasBlockingErrors(contextErrorsList);
 
-  const dirty = !Object.is(value, initialValue);
+  const dirty = isEqual ? !isEqual(value, initialValue) : !Object.is(value, initialValue);
 
   const update = useCallback(
     (updater: T | ((prev: T) => T)) => {
@@ -112,7 +112,7 @@ export function useDraft<T>(options: UseDraftOptions<T>): DraftState<T> {
   const updateField = useCallback(
     (path: string, fieldValue: unknown) => {
       setValue((prev) => {
-        const next = setNestedField(prev, path, fieldValue);
+        const next = setNestedField(prev as Record<string, unknown>, path, fieldValue) as T;
         const validation = validate(next);
         onChange?.(next, validation);
         return next;

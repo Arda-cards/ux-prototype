@@ -42,4 +42,27 @@ describe('ImageCellDisplay', () => {
     const buttons = container.querySelectorAll('button');
     expect(buttons.length).toBe(0);
   });
+
+  it('normalizes empty-string value to "no image" (no broken <img src="">)', () => {
+    // Regression guard: legacy backend rows may ship an empty string
+    // instead of null/undefined. The cell must still render as "no
+    // image" — no <img> tag with empty src, which would render as a
+    // broken image icon in most browsers.
+    const { container } = render(
+      <ImageCellDisplay {...defaultProps} value={'' as unknown as string} />,
+    );
+    expect(container.querySelector('img')).not.toBeInTheDocument();
+    expect(container.querySelector('[data-slot="image-cell-display"]')).toBeInTheDocument();
+  });
+
+  it('normalizes undefined value to "no image" (no broken <img src="">)', () => {
+    // AG Grid passes undefined when the row data has no imageUrl field.
+    // TypeScript types lie here: the static type says `string | null`
+    // but runtime reality includes undefined.
+    const { container } = render(
+      <ImageCellDisplay {...defaultProps} value={undefined as unknown as string | null} />,
+    );
+    expect(container.querySelector('img')).not.toBeInTheDocument();
+    expect(container.querySelector('[data-slot="image-cell-display"]')).toBeInTheDocument();
+  });
 });

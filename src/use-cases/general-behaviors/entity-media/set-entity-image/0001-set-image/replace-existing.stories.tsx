@@ -155,7 +155,9 @@ function ReplaceExistingSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
             <ImagePreviewEditor
               aspectRatio={1}
               imageData={MOCK_ITEM_IMAGE}
-              onCropChange={noop}
+              onCropComplete={noop}
+              onZoomChange={noop}
+              onRotationChange={noop}
               onReset={noop}
             />
           </ImageComparisonLayout>
@@ -197,7 +199,9 @@ function ReplaceExistingSceneRenderer({ sceneIndex }: { sceneIndex: number }) {
               <ImagePreviewEditor
                 aspectRatio={1}
                 imageData={MOCK_ITEM_IMAGE}
-                onCropChange={noop}
+                onCropComplete={noop}
+                onZoomChange={noop}
+                onRotationChange={noop}
                 onReset={noop}
               />
             </div>

@@ -255,13 +255,16 @@ export {
 export type {
   ImageCellDisplayProps,
   ImageCellEditorProps,
-  ImageCellEditorConfig,
   ImageCellEditorHandle,
 } from './components/canary/atoms/grid/image';
 
 // Atoms: CopyrightAcknowledgment
 export { CopyrightAcknowledgment } from './components/canary/atoms/copyright-acknowledgment';
 export type { CopyrightAcknowledgmentProps } from './components/canary/atoms/copyright-acknowledgment';
+
+// Atoms: ColorPicker
+export { ColorPicker, getColorHex } from './components/canary/atoms/color-picker/color-picker';
+export type { ColorPickerProps } from './components/canary/atoms/color-picker/color-picker';
 
 // Cell atoms: action
 export { ActionCellRenderer } from './components/canary/atoms/grid/action';
@@ -346,10 +349,7 @@ export {
   itemGridDefaultColDef,
   createItemGridColumnDefs,
 } from './components/canary/molecules/item-grid/item-grid-columns';
-export type {
-  ItemGridLookups,
-  ItemGridEditorHooks,
-} from './components/canary/molecules/item-grid/item-grid-columns';
+export type { ItemGridLookups } from './components/canary/molecules/item-grid/item-grid-columns';
 
 export { itemGridFixtures } from './components/canary/molecules/item-grid/item-grid-fixtures';
 
@@ -378,6 +378,19 @@ export type {
 // Organisms: ImageUploadDialog
 export { ImageUploadDialog } from './components/canary/organisms/shared/image-upload-dialog';
 export type { ImageUploadDialogProps } from './components/canary/organisms/shared/image-upload-dialog';
+
+// Image upload abstraction (4.11.7+): single uploader interface + Context provider
+// replaces the previous per-callback props (onUpload/onUploadFromUrl/
+// onCheckReachability). See types/canary/utilities/image-uploader.
+export {
+  ImageUploadProvider,
+  useImageUploader,
+  defaultImageUploader,
+} from './types/canary/utilities/image-uploader';
+export type {
+  ImageUploader,
+  ImageUploadProviderProps,
+} from './types/canary/utilities/image-uploader';
 
 export { createEntityDataGridShim } from './components/canary/organisms/shared/entity-data-grid-shim';
 export type {
@@ -421,6 +434,30 @@ export type {
   ArdaItemDetailsRuntimeConfig,
   ItemDetailsTab,
 } from './components/canary/organisms/item-details/item-details';
+
+// --- Molecules — TypeaheadInput ---
+
+export { TypeaheadInput } from './components/canary/molecules/typeahead-input/typeahead-input';
+export type {
+  TypeaheadOption,
+  TypeaheadInputProps,
+} from './components/canary/molecules/typeahead-input/typeahead-input';
+
+export { createTypeaheadCellEditor } from './components/canary/molecules/typeahead-input/typeahead-cell-editor';
+export type { TypeaheadCellEditorConfig } from './components/canary/molecules/typeahead-input/typeahead-cell-editor';
+
+// --- Organisms — ItemCardEditor ---
+
+export {
+  ItemCardEditor,
+  EMPTY_ITEM_CARD_FIELDS,
+} from './components/canary/organisms/item-card-editor/item-card-editor';
+export type {
+  ItemCardFields,
+  ItemCardEditorProps,
+  ItemCardEditorInitProps,
+  ItemCardEditorRuntimeProps,
+} from './components/canary/organisms/item-card-editor/item-card-editor';
 
 // --- Organisms — ItemGrid ---
 

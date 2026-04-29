@@ -1,0 +1,124 @@
+---
+name: Cleanup Preview Versions
+
+on:
+  schedule:
+    - cron: '0 3 * * *'  # 03:00 UTC daily
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'List candidates without deleting'
+        type: boolean
+        default: true
+
+permissions: {}
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    env:
+      ORG: Arda-cards
+      PACKAGE: design-system
+      RETENTION: 3
+      GRACE_HOURS: 24
+      # Manual dispatch defaults to dry-run for safety; scheduled runs perform real deletions
+      DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}
+    steps:
+      - name: Fetch all package versions
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api "/orgs/${ORG}/packages/npm/${PACKAGE}/versions" --paginate \
+            | jq -s 'add' > all-versions.json
+          echo "Fetched $(jq 'length' all-versions.json) versions total"
+
+      - name: Compute deletion candidates
+        run: |
+          NOW_EPOCH="$(date -u +%s)"
+
+          jq \
+            --argjson retention "$RETENTION" \
+            --argjson grace_hours "$GRACE_HOURS" \
+            --argjson now "$NOW_EPOCH" \
+            '
+            # Tag a version as preview if name matches X.Y.Z-<series>-<numeric uid>
+            def tag_preview:
+              if (.name | test("^[0-9]+\\.[0-9]+\\.[0-9]+-.+-[0-9]+$")) then
+                . + (.name | capture("^(?<base>[0-9]+\\.[0-9]+\\.[0-9]+)-(?<series>.+)-(?<uid>[0-9]+)$"))
+                  + {is_preview: true}
+              # Stable: pure X.Y.Z
+              elif (.name | test("^[0-9]+\\.[0-9]+\\.[0-9]+$")) then
+                . + {is_preview: false, base: .name}
+              # Anything else (e.g. unrelated pre-release format) — leave alone
+              else
+                . + {is_preview: null}
+              end;
+
+            map(tag_preview) as $all
+            | ($all | map(select(.is_preview == false) | .base) | unique) as $stable_bases
+            | ($all | map(select(.is_preview == true))) as $previews
+
+            # Pass 1: previews whose stable base shipped → obsolete
+            | ($previews | map(select(.base as $b | $stable_bases | index($b)))) as $obsolete
+
+            # Pass 2: active series (stable not yet shipped) → keep top N by uid
+            | ($previews | map(select(.base as $b | $stable_bases | index($b) | not))) as $active
+            | ($active
+                | group_by(.base + "|" + .series)
+                | map(sort_by(.uid | tonumber) | reverse | .[$retention:])
+                | flatten) as $excess
+
+            # Combine, dedupe, apply grace period, and sanity-check is_preview
+            | ($obsolete + $excess)
+            | unique_by(.id)
+            | map(select(.is_preview == true))
+            | map(select(($now - ((.created_at | fromdate))) > ($grace_hours * 3600)))
+            | .[] | [.id, .name] | @tsv
+            ' all-versions.json > to-delete.tsv
+
+          COUNT="$(wc -l < to-delete.tsv | tr -d ' ')"
+          echo "Marked ${COUNT} version(s) for deletion"
+          if [ "$COUNT" -gt 0 ]; then
+            echo "----- DELETION CANDIDATES -----"
+            cat to-delete.tsv
+            echo "-------------------------------"
+          fi
+
+      - name: Safety check — refuse to delete stable versions
+        run: |
+          # Any candidate whose name does NOT contain a "-" would be a stable version
+          if awk -F'\t' '$2 !~ /-/' to-delete.tsv | grep -q .; then
+            echo "::error::Candidate list contains stable versions (no pre-release suffix). Refusing to proceed."
+            awk -F'\t' '$2 !~ /-/' to-delete.tsv
+            exit 1
+          fi
+          # Any candidate whose name does not end in -<digits> isn't one of ours
+          if awk -F'\t' '$2 !~ /-[0-9]+$/' to-delete.tsv | grep -q .; then
+            echo "::error::Candidate list contains versions not matching our preview UID format. Refusing to proceed."
+            awk -F'\t' '$2 !~ /-[0-9]+$/' to-delete.tsv
+            exit 1
+          fi
+
+      - name: Delete versions
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "::notice::DRY_RUN=true — no deletions performed"
+            exit 0
+          fi
+
+          if [ ! -s to-delete.tsv ]; then
+            echo "Nothing to delete"
+            exit 0
+          fi
+
+          while IFS=$'\t' read -r id name; do
+            echo "Deleting ${name} (id=${id})"
+            gh api -X DELETE "/orgs/${ORG}/packages/npm/${PACKAGE}/versions/${id}"
+          done < to-delete.tsv
+
+          echo "::notice::Deleted $(wc -l < to-delete.tsv | tr -d ' ') version(s)"

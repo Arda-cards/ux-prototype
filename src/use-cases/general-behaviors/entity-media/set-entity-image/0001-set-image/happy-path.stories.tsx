@@ -253,27 +253,22 @@ const { Interactive, Stepwise, Automated } = createUseCaseStories<ImageFormData>
       return el;
     });
     await userEvent.upload(fileInput, MOCK_FILE_JPEG);
+    // As of 4.11.7 the dialog skips the cropper/review stop for new
+    // uploads — file input dispatches directly into Uploading (no
+    // intermediate ProvidedImage phase, no Confirm button). The narrative
+    // scenes 3 & 4 are retained for the wizard's step labels but the
+    // automated play function no longer needs to click Confirm.
     goToScene(2);
     await delay();
-
-    // Scene 3 — ProvidedImage state: Confirm is enabled (copyright is passive subtext)
     goToScene(3);
     await delay();
 
-    // Scene 4 — click Confirm to begin upload
-    const confirmBtn = await waitFor(() => {
-      const btn = screen.getByRole('button', { name: /^confirm$/i });
-      expect(btn).not.toBeDisabled();
-      return btn;
-    });
-    await userEvent.click(confirmBtn);
-
-    // Wait for the upload to complete (dialog closes, onConfirm fires)
+    // Scene 4/5 — wait for upload to complete (dialog closes, onConfirm fires)
     await waitFor(
       () => {
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       },
-      { timeout: 4000 },
+      { timeout: 6000 },
     );
 
     goToScene(4);

@@ -47,34 +47,29 @@ export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) 
   const [urlValue, setUrlValue] = React.useState('');
   const [error, setError] = React.useState<string | null>(null);
   const [converting, setConverting] = React.useState(false);
+  // Tracks drop outcome — read by handleDrop to decide URL fallback behavior.
+  const dropResultRef = React.useRef<string>('none');
 
   // --- File drop handler ---
   const onDrop = React.useCallback(
     async (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
       setError(null);
+      dropResultRef.current = 'none';
 
-      if (rejectedFiles.length > 0) {
-        const rejected = rejectedFiles[0];
-        if (rejected !== undefined) {
-          const mimeError = rejected.errors.find((e) => e.code === 'file-invalid-type');
-          if (mimeError) {
-            const formats = acceptedFormats.join(', ');
-            setError(`Invalid file type. Accepted formats: ${formats}`);
-            onInput({ type: 'error', message: `Invalid file type. Accepted formats: ${formats}` });
-            return;
-          }
-        }
+      if (rejectedFiles.length > 0 && acceptedFiles.length === 0) {
+        // All files rejected — defer to handleDrop for URL fallback or error.
+        dropResultRef.current = 'rejected';
+        return;
       }
 
       if (acceptedFiles.length > 0) {
         const file = acceptedFiles[0];
         if (file !== undefined) {
           if (!acceptedFormats.includes(file.type as ImageMimeType)) {
-            const formats = acceptedFormats.join(', ');
-            setError(`Invalid file type. Accepted formats: ${formats}`);
-            onInput({ type: 'error', message: `Invalid file type. Accepted formats: ${formats}` });
+            dropResultRef.current = 'rejected';
             return;
           }
+          dropResultRef.current = 'handled';
           setConverting(true);
           try {
             const converted = await maybeConvertHeic(file);
@@ -193,7 +188,7 @@ export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) 
   const rootProps = getRootProps();
   const dropzoneOnDrop = rootProps.onDrop;
   const handleDrop = React.useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
+    async (e: React.DragEvent<HTMLDivElement>) => {
       // Capture URL data before any handler can alter the event.
       // text/uri-list (RFC 2483) may have comment lines (#…) and multiple URLs.
       const parseFirstUrl = (raw: string): string | undefined =>
@@ -202,30 +197,85 @@ export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) 
           .map((l) => l.trim())
           .find((l) => l.length > 0 && !l.startsWith('#'));
 
+      // Extract the best image URL from the drop data.
+      // Priority: 1) data URI from text/html, 2) imgurl param from Google URLs,
+      // 3) direct image URL from text/uri-list or text/plain.
+      const html = e.dataTransfer?.getData('text/html') ?? '';
+      const uriList = e.dataTransfer?.getData('text/uri-list') ?? '';
+      const plainText = e.dataTransfer?.getData('text/plain') ?? '';
+
+      // Try to extract a data URI or src from an <img> tag in the HTML
+      const imgSrcMatch = html.match(/<img[^>]+src="([^"]+)"/);
+      const imgSrc = imgSrcMatch?.[1];
+
+      // Try to extract imgurl param from Google Images search URL
+      const extractImgUrl = (url: string): string | undefined => {
+        try {
+          const parsed = new URL(url);
+          const imgurl = parsed.searchParams.get('imgurl');
+          return imgurl ?? undefined;
+        } catch {
+          return undefined;
+        }
+      };
+
+      const rawUrl = parseFirstUrl(uriList) || parseFirstUrl(plainText);
+
+      // Pick the best source: data URI > extracted Google imgurl > direct URL
       const droppedUrl =
-        parseFirstUrl(e.dataTransfer?.getData('text/uri-list') ?? '') ||
-        parseFirstUrl(e.dataTransfer?.getData('text/plain') ?? '');
+        (imgSrc?.startsWith('data:image/') ? imgSrc : undefined) ||
+        (rawUrl ? extractImgUrl(rawUrl) : undefined) ||
+        (rawUrl?.match(/\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i) ? rawUrl : undefined) ||
+        (imgSrc?.startsWith('https://') ? imgSrc : undefined);
 
       // Let react-dropzone process file drops first.
+      dropResultRef.current = 'none';
       dropzoneOnDrop?.(e as unknown as React.DragEvent<HTMLElement>);
 
-      // When no files are present (URL-only drop from another browser window),
-      // populate the field and auto-submit valid HTTPS URLs.  The user already
-      // expressed intent by dragging-and-dropping, so there is no reason to make
-      // them also click "Go".
-      if ((e.dataTransfer?.files.length ?? 0) === 0 && droppedUrl) {
+      // Read result after react-dropzone's synchronous onDrop callback ran.
+      const result = dropResultRef.current;
+
+      // If a file was successfully handled, we're done.
+      if (result === 'handled') return;
+
+      // Fall back to extracted image data when react-dropzone had no valid file
+      // (URL-only drag, or files rejected due to wrong MIME like Google Images).
+      if (droppedUrl) {
         e.preventDefault();
         setError(null);
-        setUrlValue(droppedUrl);
 
+        // Data URIs (from Google Images drag) — convert to File
+        if (droppedUrl.startsWith('data:image/')) {
+          try {
+            const res = await fetch(droppedUrl);
+            const blob = await res.blob();
+            const ext = blob.type.split('/')[1] ?? 'jpg';
+            const file = new File([blob], `dropped-image.${ext}`, { type: blob.type });
+            onInput({ type: 'file', file });
+          } catch {
+            setError('Could not process the dropped image.');
+          }
+          return;
+        }
+
+        // HTTPS URLs — send as URL input
         if (droppedUrl.startsWith('https://')) {
+          setUrlValue(droppedUrl);
           onInput({ type: 'url', url: droppedUrl });
         } else {
           setError('URL must start with https://');
         }
+        return;
+      }
+
+      // No URL fallback and files were rejected — show error.
+      if (result === 'rejected') {
+        const formats = acceptedFormats.join(', ');
+        setError(`Invalid file type. Accepted formats: ${formats}`);
+        onInput({ type: 'error', message: `Invalid file type. Accepted formats: ${formats}` });
       }
     },
-    [dropzoneOnDrop, onInput],
+    [dropzoneOnDrop, onInput, acceptedFormats],
   );
 
   // Derive human-readable format list from accepted MIME types
@@ -237,8 +287,9 @@ export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) 
       {...rootProps}
       onDrop={handleDrop}
       onPaste={handlePaste}
+      tabIndex={0}
       className={cn(
-        'border-2 border-dashed rounded-lg p-8 transition-colors',
+        'border-2 border-dashed rounded-lg p-8 transition-colors focus-ring',
         isDragActive ? 'border-primary bg-accent' : 'border-border bg-muted',
       )}
     >

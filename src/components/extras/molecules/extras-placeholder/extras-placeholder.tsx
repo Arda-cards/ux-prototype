@@ -12,7 +12,9 @@ export interface ExtrasMoleculePlaceholderStaticConfig {
 
 /** Combined props for ExtrasMoleculePlaceholder. */
 export interface ExtrasMoleculePlaceholderProps
-  extends ExtrasMoleculePlaceholderStaticConfig, React.HTMLAttributes<HTMLDivElement> {}
+  extends
+    ExtrasMoleculePlaceholderStaticConfig,
+    Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {}
 
 export function ExtrasMoleculePlaceholder({
   title = 'Extras Molecule Placeholder',

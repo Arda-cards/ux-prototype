@@ -9,7 +9,6 @@ export type {
 export { ImageCellEditor, createImageCellEditor } from './image-cell-editor';
 export type {
   ImageCellEditorProps,
-  ImageCellEditorConfig,
   ImageCellEditorStaticProps,
   ImageCellEditorInitProps,
   ImageCellEditorRuntimeProps,

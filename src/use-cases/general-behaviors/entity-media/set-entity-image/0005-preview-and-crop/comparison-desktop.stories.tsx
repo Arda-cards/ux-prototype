@@ -26,7 +26,9 @@ interface ComparisonDesktopPageProps {
   existingImageUrl: string;
   newImageUrl: string;
   aspectRatio: number;
-  onCropChange: (cropData: CropData) => void;
+  onCropComplete: (pixelCrop: CropData['pixelCrop']) => void;
+  onZoomChange: (zoom: number) => void;
+  onRotationChange: (rotation: number) => void;
   onReset: () => void;
 }
 
@@ -34,7 +36,9 @@ function ComparisonDesktopPage({
   existingImageUrl,
   newImageUrl,
   aspectRatio,
-  onCropChange,
+  onCropComplete,
+  onZoomChange,
+  onRotationChange,
   onReset,
 }: ComparisonDesktopPageProps) {
   return (
@@ -55,7 +59,9 @@ function ComparisonDesktopPage({
         <ImagePreviewEditor
           aspectRatio={aspectRatio}
           imageData={newImageUrl}
-          onCropChange={onCropChange}
+          onCropComplete={onCropComplete}
+          onZoomChange={onZoomChange}
+          onRotationChange={onRotationChange}
           onReset={onReset}
         />
       </ImageComparisonLayout>
@@ -95,14 +101,18 @@ const meta: Meta<typeof ComparisonDesktopPage> = {
       control: { type: 'number', min: 0.25, max: 4, step: 0.25 },
       description: 'Locked aspect ratio for the crop area.',
     },
-    onCropChange: { action: 'onCropChange' },
+    onCropComplete: { action: 'onCropComplete' },
+    onZoomChange: { action: 'onZoomChange' },
+    onRotationChange: { action: 'onRotationChange' },
     onReset: { action: 'onReset' },
   },
   args: {
     existingImageUrl: MOCK_ITEM_IMAGE,
     newImageUrl: MOCK_ITEM_IMAGE_ALT,
     aspectRatio: 1,
-    onCropChange: fn(),
+    onCropComplete: fn(),
+    onZoomChange: fn(),
+    onRotationChange: fn(),
     onReset: fn(),
   },
 };

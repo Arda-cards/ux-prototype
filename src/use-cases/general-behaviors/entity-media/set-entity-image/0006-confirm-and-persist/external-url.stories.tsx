@@ -143,7 +143,9 @@ function ExternalUrlScene({ sceneIndex }: { sceneIndex: number }) {
           <ImagePreviewEditor
             aspectRatio={1}
             imageData={MOCK_ITEM_IMAGE}
-            onCropChange={noop}
+            onCropComplete={noop}
+            onZoomChange={noop}
+            onRotationChange={noop}
             onReset={noop}
           />
           <div className="mt-4">
@@ -257,37 +259,27 @@ const {
       { timeout: 5000 },
     );
 
-    // Type the URL and press Enter
+    // Type the URL and press Enter. 4.11.7 skips the cropper/review
+    // step for new uploads — the URL input dispatches directly through
+    // reachability check into Uploading, then onConfirm, then the
+    // dialog closes. No Confirm button to click.
     const urlInput = screen.getByPlaceholderText(/example\.com\/image/i);
     await userEvent.clear(urlInput);
     await userEvent.type(urlInput, MOCK_EXTERNAL_URL);
     goToScene(1);
     await userEvent.keyboard('{Enter}');
 
-    // Wait for ProvidedImage state (Confirm is enabled, copyright is passive subtext)
-    await waitFor(
-      () => {
-        expect(screen.getByRole('button', { name: /confirm/i })).not.toBeDisabled();
-      },
-      { timeout: 5000 },
-    );
-
     goToScene(2);
     await delay();
-
-    // Click confirm
-    const confirmBtn = screen.getByRole('button', { name: /confirm/i });
-    await userEvent.click(confirmBtn);
-
     goToScene(3);
     await delay();
 
-    // Wait for dialog to close
+    // Wait for dialog to close (Uploading → onConfirm → unmount).
     await waitFor(
       () => {
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       },
-      { timeout: 5000 },
+      { timeout: 6000 },
     );
 
     goToScene(4);

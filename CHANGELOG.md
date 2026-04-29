@@ -18,7 +18,7 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
-## [4.11.0-seb-button-family] - 2026-04-29
+## [5.2.0-seb-button-family] - 2026-04-29
 
 ### Added
 
@@ -42,6 +42,248 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
 - Streamlined all button family stories to Showcase + Playground + contextual examples pattern
 - Added MDX documentation pages for all new components
 
+## [5.1.2] - 2026-04-16
+
+### Fixed
+
+- Canvas export centers the image when zoom < 1. Removed the zoom scaling
+  from `getCroppedImage` — react-easy-crop's `croppedAreaPixels` already
+  encodes zoom in the crop rect coordinates (natural pixel space), so
+  scaling the image by the zoom factor double-applied it. The image is now
+  drawn at natural size, and source coordinates are clamped to available
+  pixel bounds with the destination offset to center the result.
+  (Arda-cards/arda-frontend-app#750).
+
+## [5.1.1] - 2026-04-16
+
+### Fixed
+
+- Canvas export centers the image when zoom < 1. `getCroppedImage` now clamps
+  source coordinates to the available pixel bounds and offsets the destination
+  rectangle so the cropped output matches the editor preview. Previously,
+  `drawImage` silently clipped negative source coords to 0, pegging the
+  result to the top-left corner instead of centering it.
+  (Arda-cards/arda-frontend-app#750).
+
+## [5.1.0] - 2026-04-15
+
+### Added
+
+- `publish-preview.yml` workflow publishes pre-release versions to GitHub
+  Packages from any branch when CHANGELOG.md is modified with a pre-release
+  version like `x.y.z-<author>-<id>`. Each push appends `github.run_number`
+  for uniqueness; consumers install via the dist-tag derived from the
+  changelog (e.g. `npm install @arda-cards/design-system@<author>-<id>`).
+  Stable releases continue to publish only from `main` via `publish.yml`.
+- `cleanup-preview.yml` workflow (daily 03:00 UTC cron, plus manual
+  dispatch with dry-run default) removes obsolete preview versions from
+  GitHub Packages: marks any preview whose stable base has shipped, and
+  trims active series to the last 3 versions per dist-tag. Includes safety
+  guards: never deletes stable versions, applies a 24h grace period since
+  publish, and refuses to proceed if candidates fail the preview pattern.
+- Storybook docs: `src/docs/workflows/preview-publishing.mdx` brief
+  operational summary of the new preview publish + cleanup flows, with a
+  link to the canonical integration contract in the documentation site
+  (`https://arda-cards.github.io/documentation/process/design-system-integration/`).
+
+## [5.0.0] - 2026-04-15
+
+### Changed
+
+- Image upload pipeline — consolidate three per-component callback props
+  (`onUpload`, `onUploadFromUrl`, `onCheckReachability`) into a single
+  `ImageUploader` interface consumed via React Context. Introduces the
+  new `<ImageUploadProvider value={uploader}>` component and
+  `useImageUploader()` hook; the default `defaultImageUploader` stub
+  (Storybook/dev parity) is returned when no provider is mounted.
+  Consumers no longer destructure three handlers from a bridge hook and
+  prop-drill them into every upload-capable component; instead they
+  mount one provider at the subtree root and components reach for the
+  uploader internally. Hard break — the three per-callback props are
+  removed from `ImageUploadDialog` and `ItemCardEditor`
+  (arda-frontend-app is the only known consumer and migrates in the
+  same release).
+- `ImageUploadDialog`: state-machine flow for new uploads skips the
+  cropper/review step entirely — file and URL inputs now land directly
+  in `Uploading` (rapid-batch UX, completing the product directive that
+  started on the card-side in 4.11.6). The cropper remains reachable
+  via the deliberate `EditExisting` path (user clicks "Click to
+  edit/replace" overlay on an already-placed image). The `ProvidedImage`
+  and `Warn` phases, the `CONFIRM_CLICK` / `WARN_DISCARD` /
+  `WARN_GO_BACK` actions, and the Warn alert-dialog render branch are
+  removed — they were the staging/review machinery for the dropped-but-
+  not-yet-uploaded case, which no longer exists.
+
+### Removed
+
+- `ImageUploadDialogRuntimeProps.onUpload` (was: `(file: Blob) => Promise<string>`,
+  default `defaultUploadHandler`).
+- `ImageUploadDialogRuntimeProps.onUploadFromUrl` (was: `(url: string) => Promise<string>`,
+  default `defaultUrlUploadHandler`).
+- `ImageUploadDialogRuntimeProps.onCheckReachability` (was: `(url: string) => Promise<boolean>`,
+  default `defaultReachabilityCheck`).
+- `ItemCardEditorRuntimeProps.onUpload`, `onUploadFromUrl`, and
+  `onCheckReachability` — same rationale.
+- `DialogPhase` variants `ProvidedImage` and `Warn`, and associated
+  reducer actions — unreachable after the state-machine change.
+
+All six removals are covered by mounting `<ImageUploadProvider>` once
+at the host; see `knowledge-base/component-abstractions.md` for the
+migration pattern.
+
+## [4.11.6] - 2026-04-15
+
+### Fixed
+
+- `ItemCardEditor`: completing Arda-cards/arda-frontend-app#750 issue 1.
+  The empty-state drop zone now uploads dropped/selected files inline
+  (no dialog, no cropper, no confirm click), replacing itself with a
+  spinner until the CDN URL returns and then rendering the image on the
+  card. On failure, an inline error banner with a "Try again" affordance
+  is shown in the drop-zone slot. This supports the UX team's
+  rapid-batch add-images-to-many-items flow, where the previous
+  dialog-gated path required an extra review + confirm per item. The
+  cropper is still reachable through the "Click to edit/replace" hover
+  overlay on an already-placed image — that path is a deliberate
+  edit-mindset interaction and keeps the confirm step. New props
+  `onUploadFromUrl?: (url: string) => Promise<string>` (required when
+  consumers expect URL inputs) and `onUploadError?: (err: Error) => void`
+  (optional, for hosts that want to raise a toast alongside the inline
+  error).
+- `ImageUploadDialog`: URL inputs no longer silently upload an empty
+  0-byte blob. Previously the Uploading effect coerced a URL string to
+  `new Blob([])` and called `onUpload(blob)`, producing a 0-byte CDN
+  object and a silent data-corruption bug that only surfaced when
+  someone later tried to render the image. The Uploading effect now
+  routes URL inputs through the new `onUploadFromUrl?: (url: string)
+  => Promise<string>` prop; if the host hasn't supplied a handler, the
+  dialog dispatches `UPLOAD_ERROR` with "URL upload not supported"
+  instead of silently uploading empty bytes.
+## [4.11.5] - 2026-04-14
+
+### Fixed
+
+- `ImageUploadDialog` edit-existing flow now prefetches the CDN image as a
+  blob and uses the same-origin blob URL for both display (in the Cropper)
+  and canvas operations (in `getCroppedImage`). This eliminates the CORS
+  mismatch where the Cropper loaded with `crossOrigin: 'use-credentials'`
+  but `getCroppedImage` re-fetched with `crossOrigin: 'anonymous'`, causing
+  `canvas.toBlob()` to fail silently and the crop to no-op (Arda-cards/arda-frontend-app#750 issue 5c).
+- Zoom-out (zoom < 1) no longer produces a black-square output. `getCroppedImage`
+  now applies the zoom factor when drawing the source image; the output
+  matches the editor preview, including transparent/black padding around
+  the shrunken image (Option A semantics; Arda-cards/arda-frontend-app#750 issue 5a).
+  The new API takes an options object: `getCroppedImage({ imageSrc, pixelCrop, rotation?, zoom?, outputFormat?, quality? })`.
+- Zoom-only and rotation-only edits now produce visible changes. Refactored
+  `ImagePreviewEditor` to fire three independent callbacks
+  (`onCropComplete`, `onZoomChange`, `onRotationChange`) instead of a single
+  `onCropChange`, so zoom/rotate adjustments no longer clobber the last
+  valid pixelCrop with a zero-sized sentinel (Arda-cards/arda-frontend-app#750 issue 5b).
+- Extracted shared `isCdnUrl` helper and new `prefetchImageAsBlob` helper
+  to `src/types/canary/utilities/cdn-url.ts`.
+- `ItemCardEditor` initial-image uploads now route through `ImageUploadDialog`
+  instead of being committed straight to the card, so the user can crop,
+  zoom, or rotate before the image is saved. Previously a drop or file
+  selection on the empty-state drop zone immediately mutated `fields.imageUrl`
+  and fired `onImageConfirmed`, with the user only able to access the
+  cropper via the secondary "Click to edit/replace" overlay
+  (Arda-cards/arda-frontend-app#750 issue 1). Adds a new optional
+  `pendingInput?: ImageInput` prop to `ImageUploadDialog`: the host can
+  forward an externally-supplied input (typically from its own drop zone)
+  through the dialog's existing state machine. File inputs land
+  synchronously in `ProvidedImage`; URL inputs go through the existing
+  reachability check; error inputs land in `FailedValidation`. Dispatch
+  is identity-tracked, so re-renders with the same `pendingInput` do not
+  re-enter the cropper.
+- `ItemCardEditor` now bundles its placeholder QR image as a Vite asset
+  (co-located at `src/components/canary/organisms/item-card-editor/qr-code.png`)
+  instead of pointing at the absolute path `/images/qr-code.png`, which
+  only resolved against Storybook's dev server and broke when the
+  component was published as part of the npm package. Adds an optional
+  `qrCodeUrl?: () => Promise<string>` prop so consumers can supply an
+  async resolver for a per-item QR URL; the bundled default is used when
+  no callback is provided or when it rejects (Arda-cards/arda-frontend-app#750 issue 3).
+
+## [4.11.4] - 2026-04-14
+
+### Fixed
+
+- Wire `getCroppedImage` result into the upload path in `ImageUploadDialog`
+  edit-existing flow. Previously the cropped blob was discarded and the
+  original URL was confirmed unchanged (`skipUpload: true`). Now: if
+  crop/rotate produced a blob, it is uploaded as a new image; the new CDN
+  URL is returned via `onConfirm`. Falls back to original URL only if
+  canvas crop fails (e.g. CORS taint on non-production origins).
+
+## [4.11.3] - 2026-04-14
+
+### Fixed
+
+- Flatten `createImageCellEditor` from double-forwardRef to single-forwardRef
+  (FD-19). AG Grid 34.3.1's `TooltipService.setupCellEditorTooltip` reads
+  `editor.isPopup?.()` synchronously; the nested forwardRef populated the
+  handle one tick late, causing a crash in `AgTooltipFeature.postConstruct`.
+- Add defensive `instanceof Blob` guard in `ImagePreviewEditor` before
+  `URL.createObjectURL`. Prevents "Overload resolution failed" when
+  `imageData` is null/undefined under transient lifecycle paths.
+- Show "No Image Available" caption in `ImageHoverPreview` popover when
+  the image URL is null, undefined, or empty string (Issue 2b).
+- Normalize empty-string image URLs to null in `ImageCellDisplay` so the
+  no-image state renders consistently across cell renderer and hover preview.
+
+## [4.11.2] - 2026-04-10
+
+### Fixed
+
+- Pin TypeScript to ~5.9.3 — TypeScript 6.0 causes `vite-plugin-dts` to
+  produce empty `.d.ts` files due to TS2882 errors on CSS side-effect
+  imports, breaking all type exports from the published package.
+
+## [4.11.1] - 2026-04-09
+
+### Fixed
+
+- Bump 13 dev dependencies: vitest 3→4, typescript 5.9→6.0, eslint 9→10,
+  jsdom 26→29, lucide-react 0.x→1.x, express 4→5, and others. Includes
+  compatibility fixes for vitest 4 mock types and @types/react title
+  property conflict.
+
+## [4.11.0] - 2026-04-09
+
+### Added
+
+- `ItemCardEditor` exported from canary barrel (`@arda-cards/design-system/canary`)
+- `ItemCardFields`, `ItemCardEditorProps`, `ItemCardEditorInitProps`, and
+  `ItemCardEditorRuntimeProps` types exported; `EMPTY_ITEM_CARD_FIELDS`
+  exported as a value
+- `onUpload` and `onCheckReachability` optional forwarding props on
+  `ItemCardEditor` for production upload hook injection (Option B bridge —
+  management#860)
+- `TypeaheadInput` molecule: standalone async typeahead with debounced search,
+  keyboard navigation, allow-create, and MSW-backed unit lookup matching the
+  production API. Wired into `ItemCardEditor` units fields.
+- `cellEditorMode` prop on `TypeaheadInput` for inline AG Grid editing
+  (borderless input, blur-accepts-value, Popover dropdown for both modes)
+- `createTypeaheadCellEditor` factory for AG Grid column definitions
+- Unique IDs per `TypeaheadInput` instance via `useId()` — fixes ARIA when
+  multiple typeaheads render on the same page
+- `focus-ring` Tailwind utility in `globals.css` for consistent focus styling
+- Clickable focus state on `ImageDropZone` to signal paste readiness (Ctrl+V)
+- GitHub Actions dependency updates: `actions/upload-artifact` v4 → v7,
+  `github/codeql-action` v3 → v4, `actions/deploy-pages` v4 → v5
+
+### Fixed
+
+- Drag-and-drop from Google Images now works — extracts image data from the
+  HTML data URI the browser provides instead of using the unusable Google
+  search result URL
+- Deferred file rejection errors in `ImageDropZone` to allow URL/data URI
+  fallback path before showing an error
+- `ColorPicker` export was missing from 4.9.0 package due to publish race
+  condition
+- `make ci` port mismatch — aligned to port 6006 matching CI workflow and
+  Playwright config
+
 ## [4.10.0] - 2026-04-08
 
 ### Added
@@ -51,6 +293,7 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   accounts-component conventions
 
 ## [4.9.0] - 2026-04-08
+
 ### Added
 
 - `ColorPicker` atom: standalone swatch button with popover palette, arrow-key
