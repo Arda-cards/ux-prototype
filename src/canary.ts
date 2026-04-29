@@ -127,6 +127,7 @@ export type { IconLabelProps } from './components/canary/atoms/icon-label/icon-l
 
 export {
   ReadOnlyField,
+  ReadOnlyField as ArdaDetailField,
   readOnlyFieldVariants,
 } from './components/canary/atoms/read-only-field/read-only-field';
 export type {

@@ -16,7 +16,7 @@
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
 
-  --primary: oklch(0.665 0.226 36.4);
+  --primary: #FC5A29;
   --primary-foreground: oklch(1 0 0);
 
   --secondary: oklch(0.97 0 0);
@@ -42,10 +42,11 @@
   --ring: oklch(0.665 0.226 36.4);
 
   /* ---------- State ramps — hover shifts L by ~0.033, active by ~0.06 ---------- */
-  --primary-hover: oklch(0.632 0.220 36.4);
+  --primary-hover: oklch(0.701 0.187 37.5);
   --primary-active: oklch(0.605 0.215 36.4);
   --primary-muted: oklch(0.98 0.016 36.4);
 
+  --secondary-light: oklch(0.985 0.003 247.858);
   --secondary-hover: oklch(0.948 0 0);
   --secondary-active: oklch(0.930 0 0);
 
@@ -91,7 +92,7 @@
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
 
-  --primary: oklch(0.665 0.226 36.4);
+  --primary: #FC5A29;
   --primary-foreground: oklch(1 0 0);
 
   --secondary: oklch(0.269 0 0);
@@ -121,6 +122,7 @@
   --primary-active: oklch(0.725 0.195 36.4);
   --primary-muted: oklch(0.269 0.04 36.4);
 
+  --secondary-light: oklch(0.22 0.03 260.031);
   --secondary-hover: oklch(0.300 0 0);
   --secondary-active: oklch(0.330 0 0);
 

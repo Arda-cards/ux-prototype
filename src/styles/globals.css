@@ -128,6 +128,7 @@
   --color-primary-hover: var(--primary-hover);
   --color-primary-active: var(--primary-active);
   --color-primary-muted: var(--primary-muted);
+  --color-secondary-light: var(--secondary-light);
   --color-secondary-hover: var(--secondary-hover);
   --color-secondary-active: var(--secondary-active);
   --color-destructive-hover: var(--destructive-hover);
