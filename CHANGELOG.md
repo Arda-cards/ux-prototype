@@ -18,7 +18,7 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
-## [5.2.0-seb-button-family] - 2026-04-29
+## [5.2.0-seb-button-family] - 2026-05-04
 
 ### Added
 
