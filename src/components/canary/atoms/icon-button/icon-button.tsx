@@ -44,6 +44,10 @@ export type ArdaIconButtonProps = IconButtonProps;
  * IconButton — an icon-only button with optional notification badge and tooltip.
  *
  * Wraps shadcn/ui Button (ghost variant, icon size) and Tooltip.
+ *
+ * @deprecated Use `Button` with `size="icon"` and the `tooltip` prop instead.
+ * Badge overlays should be composed at point of use. See the Button atom docs
+ * for migration examples.
  */
 export function IconButton({
   icon: Icon,

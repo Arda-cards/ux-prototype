@@ -1,0 +1,192 @@
+{/* split-button.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as SplitButtonStories from './split-button.stories';
+
+<Meta of={SplitButtonStories} />
+
+# SplitButton
+
+A two-part button: primary action on the left, dropdown trigger (chevron) on the right. Composes Button, ButtonGroup, and DropdownMenu. The left button fires `onClick`; the right chevron opens a dropdown menu with alternate actions.
+
+**Atom** &#8212; Canary | Import: `import { SplitButton } from '@arda-cards/design-system/canary'`
+
+---
+
+## Playground
+
+<Canvas of={SplitButtonStories.Playground} />
+
+---
+
+## Showcase
+
+<Canvas of={SplitButtonStories.Showcase} />
+
+---
+
+## Variants
+
+All five Button color variants are supported. The separator between the action and chevron is styled per variant &#8212; translucent white for solid backgrounds, `bg-border` for outline/ghost.
+
+## Sizes
+
+<table>
+  <thead>
+    <tr>
+      <th>Size</th>
+      <th>Action Button</th>
+      <th>Chevron Button</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>xs</code></td>
+      <td>24px height</td>
+      <td><code>icon-xs</code> (24&#215;24)</td>
+    </tr>
+    <tr>
+      <td><code>sm</code></td>
+      <td>32px height</td>
+      <td><code>icon-sm</code> (32&#215;32)</td>
+    </tr>
+    <tr>
+      <td><code>md</code></td>
+      <td>36px height</td>
+      <td><code>icon</code> (36&#215;36)</td>
+    </tr>
+    <tr>
+      <td><code>lg</code></td>
+      <td>40px height</td>
+      <td><code>icon-lg</code> (40&#215;40)</td>
+    </tr>
+  </tbody>
+</table>
+
+## Loading
+
+The `loading` prop disables both the action button and the chevron. When loading is a string, it replaces the action button's children text.
+
+---
+
+## Add to Order Example
+
+A real-world toolbar pattern from the Items Grid:
+
+<Canvas of={SplitButtonStories.AddToOrder} />
+
+---
+
+## Menu Content
+
+The `menuContent` prop accepts any `DropdownMenu` primitives &#8212; compose your menu items freely:
+
+```tsx
+<SplitButton
+  menuContent={
+    <>
+      <DropdownMenuItem>Save as draft</DropdownMenuItem>
+      <DropdownMenuItem>Save and close</DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem variant="destructive">Discard</DropdownMenuItem>
+    </>
+  }
+>
+  Save
+</SplitButton>
+```
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>variant</code></td>
+      <td><code>'primary' | 'secondary' | 'ghost' | 'destructive' | 'outline'</code></td>
+      <td><code>'primary'</code></td>
+      <td>Color variant for both buttons.</td>
+    </tr>
+    <tr>
+      <td><code>size</code></td>
+      <td><code>'xs' | 'sm' | 'md' | 'lg'</code></td>
+      <td><code>'md'</code></td>
+      <td>Size of the action button.</td>
+    </tr>
+    <tr>
+      <td><code>menuContent</code></td>
+      <td><code>ReactNode</code></td>
+      <td>&#8212; (required)</td>
+      <td>Dropdown menu items.</td>
+    </tr>
+    <tr>
+      <td><code>menuSide</code></td>
+      <td><code>'bottom' | 'top'</code></td>
+      <td><code>'bottom'</code></td>
+      <td>Dropdown placement.</td>
+    </tr>
+    <tr>
+      <td><code>menuAlign</code></td>
+      <td><code>'start' | 'center' | 'end'</code></td>
+      <td><code>'end'</code></td>
+      <td>Dropdown alignment.</td>
+    </tr>
+    <tr>
+      <td><code>menuLabel</code></td>
+      <td><code>string</code></td>
+      <td><code>'More options'</code></td>
+      <td>Accessible label for the chevron trigger.</td>
+    </tr>
+    <tr>
+      <td><code>showDivider</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Show a vertical divider line between the action and chevron buttons. Color adapts to the variant.</td>
+    </tr>
+    <tr>
+      <td><code>onClick</code></td>
+      <td><code>MouseEventHandler</code></td>
+      <td>&#8212;</td>
+      <td>Handler for the primary action button.</td>
+    </tr>
+    <tr>
+      <td><code>loading</code></td>
+      <td><code>boolean | string</code></td>
+      <td><code>false</code></td>
+      <td>Disables both buttons. String replaces action text.</td>
+    </tr>
+    <tr>
+      <td><code>disabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Disables both buttons.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Accessibility
+
+- The chevron trigger has `aria-haspopup="menu"` and `aria-expanded` managed by Radix.
+- Provide `menuLabel` for a descriptive `aria-label` on the chevron (defaults to "More options").
+- Keyboard: `Tab` moves between the two buttons; `Enter`/`Space` activates; `ArrowDown` on the trigger opens the menu.
+
+---
+
+## Import
+
+```tsx
+import { SplitButton } from '@arda-cards/design-system/canary';
+
+// For composing menu content:
+import { DropdownMenuItem, DropdownMenuSeparator } from '@arda-cards/design-system/canary';
+```
