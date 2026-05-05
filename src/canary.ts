@@ -116,6 +116,27 @@ export type {
   ArdaSplitButtonRuntimeConfig,
 } from './components/canary/atoms/split-button/split-button';
 
+// Primitives: Tooltip (for app-level TooltipProvider)
+export { TooltipProvider } from './components/canary/primitives/tooltip';
+
+// Primitives: DropdownMenu (for use with SplitButton menuContent)
+export {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuCheckboxItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+} from './components/canary/primitives/dropdown-menu';
+
 export { BrandLogo, BrandIcon } from './components/canary/atoms/brand-logo/brand-logo';
 export type {
   BrandLogoProps,

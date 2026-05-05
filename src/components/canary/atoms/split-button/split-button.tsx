@@ -49,6 +49,10 @@ export interface ArdaSplitButtonStaticConfig {
   menuLabel?: string;
   /** Show a vertical divider line between the action and chevron buttons. Defaults to `false`. */
   showDivider?: boolean;
+  /** Tooltip text shown on hover over the primary action button. */
+  tooltip?: string;
+  /** Side of the button the tooltip appears on. Defaults to `'top'`. */
+  tooltipSide?: 'top' | 'bottom' | 'left' | 'right';
 }
 
 /** Runtime configuration for SplitButton. */
@@ -85,6 +89,8 @@ export function SplitButton({
   menuAlign = 'end',
   menuLabel = 'More options',
   showDivider = false,
+  tooltip,
+  tooltipSide,
   onClick,
   loading,
   disabled,
@@ -107,6 +113,8 @@ export function SplitButton({
           {...(onClick ? { onClick } : {})}
           {...(loading !== undefined ? { loading } : {})}
           {...(disabled !== undefined ? { disabled } : {})}
+          {...(tooltip ? { tooltip } : {})}
+          {...(tooltipSide ? { tooltipSide } : {})}
         >
           {children}
         </Button>
