@@ -115,7 +115,7 @@ export function ColorPicker({
           <button
             type="button"
             disabled={disabled}
-            className="relative flex-shrink-0 cursor-pointer rounded-lg border border-input bg-background p-[7px] shadow-xs focus-ring disabled:opacity-50 disabled:pointer-events-none min-h-11 min-w-11 flex items-center justify-center"
+            className="relative flex-shrink-0 cursor-pointer rounded-lg border border-input bg-background shadow-xs focus-ring disabled:opacity-50 disabled:pointer-events-none h-9 w-9 flex items-center justify-center"
             aria-label={`Color: ${colors[value]?.name ?? value}. Click to change.`}
           >
             <div
@@ -126,7 +126,7 @@ export function ColorPicker({
         </PopoverTrigger>
         <PopoverContent
           align="start"
-          sideOffset={-44}
+          sideOffset={-36}
           className="w-auto max-w-[calc(100vw-2rem)] p-0 rounded-lg"
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
@@ -148,7 +148,7 @@ export function ColorPicker({
                 onClick={() => handleSelect(key)}
                 onKeyDown={handleKeyDown}
                 className={cn(
-                  'min-h-11 min-w-11 flex items-center justify-center rounded-md cursor-pointer outline-none',
+                  'h-9 w-9 flex items-center justify-center rounded-md cursor-pointer outline-none',
                   i === focusedIndex && 'ring-2 ring-ring ring-offset-1',
                 )}
               >
