@@ -37,3 +37,28 @@ export const Disabled: StoryObj = {
     </div>
   ),
 };
+
+function ColorPickerLabelDemo({ initialValue = 'RED' }: { initialValue?: string }) {
+  const [value, setValue] = useState(initialValue);
+
+  return (
+    <div className="p-8 flex flex-col gap-4 max-w-[200px]">
+      <ColorPicker value={value} onValueChange={setValue} displayLabel />
+      <p className="text-xs text-muted-foreground">
+        Selected: <code>{value}</code>
+      </p>
+    </div>
+  );
+}
+
+export const WithLabel: StoryObj = {
+  render: () => <ColorPickerLabelDemo />,
+};
+
+export const WithLabelDisabled: StoryObj = {
+  render: () => (
+    <div className="p-8 max-w-[200px]">
+      <ColorPicker value="BLUE" onValueChange={() => {}} displayLabel disabled />
+    </div>
+  ),
+};
