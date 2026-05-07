@@ -30,7 +30,13 @@ export interface ArdaToggleGroupStaticConfig {
 }
 
 /** Props for ToggleGroup with single selection. */
-export interface ToggleGroupSingleProps extends ArdaToggleGroupStaticConfig {
+export interface ToggleGroupSingleProps
+  extends
+    ArdaToggleGroupStaticConfig,
+    Omit<
+      React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Root>,
+      'type' | 'value' | 'defaultValue' | 'onValueChange' | 'orientation' | 'className'
+    > {
   type: 'single';
   /** Controlled selected value. */
   value?: string;
@@ -42,7 +48,13 @@ export interface ToggleGroupSingleProps extends ArdaToggleGroupStaticConfig {
 }
 
 /** Props for ToggleGroup with multiple selection. */
-export interface ToggleGroupMultipleProps extends ArdaToggleGroupStaticConfig {
+export interface ToggleGroupMultipleProps
+  extends
+    ArdaToggleGroupStaticConfig,
+    Omit<
+      React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Root>,
+      'type' | 'value' | 'defaultValue' | 'onValueChange' | 'orientation' | 'className'
+    > {
   type: 'multiple';
   /** Controlled selected values. */
   value?: string[];
@@ -57,15 +69,12 @@ export interface ToggleGroupMultipleProps extends ArdaToggleGroupStaticConfig {
 export type ToggleGroupProps = ToggleGroupSingleProps | ToggleGroupMultipleProps;
 
 /** Props for ToggleGroupItem. */
-export interface ToggleGroupItemProps {
-  /** Unique value identifying this item. */
-  value: string;
-  /** Whether this item is disabled. */
-  disabled?: boolean;
+export interface ToggleGroupItemProps extends Omit<
+  React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Item>,
+  'className'
+> {
   /** Additional CSS classes. */
   className?: string;
-  /** Accessible label. */
-  'aria-label'?: string;
   children: React.ReactNode;
 }
 

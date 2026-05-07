@@ -145,13 +145,7 @@ export function Button({
 
   // Disabled elements don't fire pointer/focus events — wrap in a span so
   // the tooltip still activates on hover.
-  const trigger = isDisabled ? (
-    <span className="inline-flex" tabIndex={0}>
-      {button}
-    </span>
-  ) : (
-    button
-  );
+  const trigger = isDisabled ? <span className="inline-flex">{button}</span> : button;
 
   return (
     <Tooltip>

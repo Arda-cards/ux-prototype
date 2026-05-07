@@ -119,8 +119,8 @@ describe('Button', () => {
       </TooltipProvider>,
     );
     const button = screen.getByRole('button', { name: 'Order' });
-    // The button's parent should be a span (pointer-event absorber)
+    // The button's parent should be a span (pointer-event absorber, hover-only)
     expect(button.parentElement?.tagName).toBe('SPAN');
-    expect(button.parentElement?.getAttribute('tabindex')).toBe('0');
+    expect(button.parentElement?.getAttribute('tabindex')).toBeNull();
   });
 });

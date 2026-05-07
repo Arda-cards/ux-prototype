@@ -34,13 +34,16 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
 
 - **IconButton** — use `Button` with `size="icon"` and `tooltip` prop instead
 
-### Changed
+### Fixed
 
-- Fixed `icon-lg` size from 56px to 40px to match `lg` text button height
+- `icon-lg` size corrected from 56px to 40px to match `lg` text button height
 - Removed orphaned `primitives/toggle.tsx` (replaced by canary Toggle atom)
+
+### Added
+
 - Migrated AppHeader off IconButton to use Button with tooltip
 - Streamlined all button family stories to Showcase + Playground + contextual examples pattern
-- Added MDX documentation pages for all new components
+- MDX documentation pages for all new components
 
 ## [5.1.2] - 2026-04-16
 

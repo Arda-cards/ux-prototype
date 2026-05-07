@@ -44,7 +44,7 @@ export function ColorPicker({
   const [search, setSearch] = React.useState('');
   const paletteRef = React.useRef<HTMLDivElement>(null);
   const searchRef = React.useRef<HTMLInputElement>(null);
-  const searchTimeoutRef = React.useRef<ReturnType<typeof setTimeout>>(undefined);
+  const searchTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const selectedHex = colors[value]?.hex ?? colors.GRAY?.hex ?? '#6B7280';
   const selectedName = colors[value]?.name ?? value;
