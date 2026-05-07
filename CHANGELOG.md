@@ -29,6 +29,9 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
 - Button `tooltip` prop — built-in Radix Tooltip wrapping with automatic disabled-button pointer-event handling
 - Button `loading` accepts `string` to replace label text (e.g., `loading="Downloading…"`)
 - Button `loadingPosition` prop (`'start'` | `'end'`) for spinner placement control
+- Migrated AppHeader off IconButton to use Button with tooltip
+- Streamlined all button family stories to Showcase + Playground + contextual examples pattern
+- MDX documentation pages for all new components
 
 ### Deprecated
 
@@ -38,12 +41,6 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
 
 - `icon-lg` size corrected from 56px to 40px to match `lg` text button height
 - Removed orphaned `primitives/toggle.tsx` (replaced by canary Toggle atom)
-
-### Added
-
-- Migrated AppHeader off IconButton to use Button with tooltip
-- Streamlined all button family stories to Showcase + Playground + contextual examples pattern
-- MDX documentation pages for all new components
 
 ## [5.1.2] - 2026-04-16
 
