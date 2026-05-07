@@ -1,0 +1,154 @@
+{/* toggle.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as ToggleStories from './toggle.stories';
+
+<Meta of={ToggleStories} />
+
+# Toggle
+
+A two-state button that can be on or off. Wraps Radix Toggle with Arda conventions &#8212; CVA variants aligned to the Button size scale, `motion-reduce` support, and consistent focus rings.
+
+**Atom** &#8212; Canary | Import: `import { Toggle } from '@arda-cards/design-system/canary'`
+
+---
+
+## Playground
+
+<Canvas of={ToggleStories.Playground} />
+
+---
+
+## Showcase
+
+<Canvas of={ToggleStories.Showcase} />
+
+---
+
+## Variants
+
+<table>
+  <thead>
+    <tr>
+      <th>Variant</th>
+      <th>Appearance</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>default</code></td>
+      <td>Transparent background, hover reveals muted fill. Pressed state uses accent colors.</td>
+    </tr>
+    <tr>
+      <td><code>outline</code></td>
+      <td>Border with transparent background, hover reveals accent fill.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Sizes
+
+<table>
+  <thead>
+    <tr>
+      <th>Size</th>
+      <th>Height</th>
+      <th>Use</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>sm</code></td>
+      <td>32px</td>
+      <td>Compact toolbars.</td>
+    </tr>
+    <tr>
+      <td><code>md</code></td>
+      <td>36px</td>
+      <td>Default.</td>
+    </tr>
+    <tr>
+      <td><code>lg</code></td>
+      <td>40px</td>
+      <td>Larger touch targets.</td>
+    </tr>
+    <tr>
+      <td><code>icon</code></td>
+      <td>36&#215;36px</td>
+      <td>Square icon-only toggle.</td>
+    </tr>
+    <tr>
+      <td><code>icon-sm</code></td>
+      <td>32&#215;32px</td>
+      <td>Compact icon-only toggle.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>variant</code></td>
+      <td><code>'default' | 'outline'</code></td>
+      <td><code>'default'</code></td>
+      <td>Visual style.</td>
+    </tr>
+    <tr>
+      <td><code>size</code></td>
+      <td><code>'sm' | 'md' | 'lg' | 'icon' | 'icon-sm'</code></td>
+      <td><code>'md'</code></td>
+      <td>Size preset.</td>
+    </tr>
+    <tr>
+      <td><code>pressed</code></td>
+      <td><code>boolean</code></td>
+      <td>&#8212;</td>
+      <td>Controlled pressed state.</td>
+    </tr>
+    <tr>
+      <td><code>defaultPressed</code></td>
+      <td><code>boolean</code></td>
+      <td>&#8212;</td>
+      <td>Default pressed state (uncontrolled).</td>
+    </tr>
+    <tr>
+      <td><code>onPressedChange</code></td>
+      <td><code>(pressed: boolean) =&#62; void</code></td>
+      <td>&#8212;</td>
+      <td>Called when pressed state changes.</td>
+    </tr>
+    <tr>
+      <td><code>disabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Disables the toggle.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Accessibility
+
+- Uses Radix Toggle primitive &#8212; `aria-pressed` is managed automatically.
+- Keyboard: `Space` and `Enter` toggle the pressed state.
+- Focus ring matches Button's 2px `ring` token.
+
+---
+
+## Import
+
+```tsx
+import { Toggle, toggleVariants } from '@arda-cards/design-system/canary';
+```

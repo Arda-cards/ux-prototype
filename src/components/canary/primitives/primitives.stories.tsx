@@ -18,7 +18,7 @@ import { Skeleton } from './skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './table';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from './tabs';
 import { Textarea } from './textarea';
-import { Toggle } from './toggle';
+import { Toggle } from '../atoms/toggle/toggle';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
 
 // Sidebar is excluded — it requires SidebarProvider context and is better

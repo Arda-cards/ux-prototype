@@ -1,0 +1,160 @@
+{/* toggle-group.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as ToggleGroupStories from './toggle-group.stories';
+
+<Meta of={ToggleGroupStories} />
+
+# ToggleGroup
+
+A set of two-state toggles with single or multiple selection. Wraps Radix ToggleGroup with Arda conventions &#8212; shared CVA variants passed via context, discriminated union types for single vs. multiple mode.
+
+**Atom** &#8212; Canary | Import: `import { ToggleGroup, ToggleGroupItem } from '@arda-cards/design-system/canary'`
+
+---
+
+## Playground
+
+<Canvas of={ToggleGroupStories.Playground} />
+
+---
+
+## Showcase
+
+<Canvas of={ToggleGroupStories.Showcase} />
+
+---
+
+## Selection Mode
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Behavior</th>
+      <th>Value Type</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>single</code></td>
+      <td>One item selected at a time (radio-like).</td>
+      <td><code>string</code></td>
+    </tr>
+    <tr>
+      <td><code>multiple</code></td>
+      <td>Multiple items can be selected (checkbox-like).</td>
+      <td><code>string[]</code></td>
+    </tr>
+  </tbody>
+</table>
+
+## Filter Pills Example
+
+A real-world pattern &#8212; controlled multiple selection for filtering:
+
+<Canvas of={ToggleGroupStories.FilterPills} />
+
+---
+
+## Props
+
+### ToggleGroup
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>type</code></td>
+      <td><code>'single' | 'multiple'</code></td>
+      <td>&#8212; (required)</td>
+      <td>Selection mode.</td>
+    </tr>
+    <tr>
+      <td><code>variant</code></td>
+      <td><code>'default' | 'outline'</code></td>
+      <td><code>'default'</code></td>
+      <td>Visual style applied to all items.</td>
+    </tr>
+    <tr>
+      <td><code>size</code></td>
+      <td><code>'sm' | 'md' | 'lg' | 'icon' | 'icon-sm'</code></td>
+      <td><code>'md'</code></td>
+      <td>Size applied to all items.</td>
+    </tr>
+    <tr>
+      <td><code>orientation</code></td>
+      <td><code>'horizontal' | 'vertical'</code></td>
+      <td><code>'horizontal'</code></td>
+      <td>Layout direction.</td>
+    </tr>
+    <tr>
+      <td><code>value</code></td>
+      <td><code>string | string[]</code></td>
+      <td>&#8212;</td>
+      <td>Controlled selected value(s).</td>
+    </tr>
+    <tr>
+      <td><code>defaultValue</code></td>
+      <td><code>string | string[]</code></td>
+      <td>&#8212;</td>
+      <td>Default selected value(s) (uncontrolled).</td>
+    </tr>
+    <tr>
+      <td><code>onValueChange</code></td>
+      <td><code>(value) =&#62; void</code></td>
+      <td>&#8212;</td>
+      <td>Called when selection changes.</td>
+    </tr>
+  </tbody>
+</table>
+
+### ToggleGroupItem
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>value</code></td>
+      <td><code>string</code></td>
+      <td>&#8212; (required)</td>
+      <td>Unique identifier for this item.</td>
+    </tr>
+    <tr>
+      <td><code>disabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Disables this item.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Accessibility
+
+- Single mode: items have `role="radio"` with `aria-checked`.
+- Multiple mode: items behave as independent toggles.
+- Keyboard: Arrow keys navigate between items, `Space`/`Enter` toggle selection.
+- Variant and size are passed via context &#8212; items are visually consistent automatically.
+
+---
+
+## Import
+
+```tsx
+import { ToggleGroup, ToggleGroupItem } from '@arda-cards/design-system/canary';
+```
