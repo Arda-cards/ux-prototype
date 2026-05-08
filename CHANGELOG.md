@@ -18,6 +18,14 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [5.2.1] - 2026-05-08
+
+### Fixed
+
+- Button `tooltipDelay` prop — controls delay in milliseconds before tooltip
+  appears, overriding the provider default per-button
+- SplitButton forwards `tooltipDelay` to its primary Button
+
 ## [5.2.0] - 2026-05-07
 
 ### Added

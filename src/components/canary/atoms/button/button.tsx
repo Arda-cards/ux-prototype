@@ -59,6 +59,8 @@ export interface ArdaButtonStaticConfig extends VariantProps<typeof buttonVarian
   tooltip?: string;
   /** Side of the button the tooltip appears on. Defaults to `'top'`. */
   tooltipSide?: 'top' | 'bottom' | 'left' | 'right';
+  /** Delay in milliseconds before the tooltip appears. Defaults to the provider's value (0). */
+  tooltipDelay?: number;
 }
 
 /** Runtime configuration for Button. */
@@ -104,6 +106,7 @@ export function Button({
   disabled,
   tooltip,
   tooltipSide = 'top',
+  tooltipDelay,
   ...props
 }: ButtonProps) {
   const Comp = asChild ? Slot.Root : 'button';
@@ -148,7 +151,7 @@ export function Button({
   const trigger = isDisabled ? <span className="inline-flex">{button}</span> : button;
 
   return (
-    <Tooltip>
+    <Tooltip {...(tooltipDelay !== undefined ? { delayDuration: tooltipDelay } : {})}>
       <TooltipTrigger asChild>{trigger}</TooltipTrigger>
       <TooltipContent side={tooltipSide}>{tooltip}</TooltipContent>
     </Tooltip>
