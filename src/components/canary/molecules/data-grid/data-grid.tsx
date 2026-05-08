@@ -27,10 +27,11 @@ import {
   type CellEditingStoppedEvent,
   type SelectionChangedEvent,
 } from 'ag-grid-community';
+import { RichSelectModule } from 'ag-grid-enterprise';
 import '@/styles/canary/ag-theme-arda.css';
 import { useDragToScroll } from './use-drag-to-scroll';
 
-ModuleRegistry.registerModules([AllCommunityModule]);
+ModuleRegistry.registerModules([AllCommunityModule, RichSelectModule]);
 
 // --- Theme ---
 
