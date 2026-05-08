@@ -20,9 +20,9 @@ const sampleData: SampleRow[] = Array.from({ length: 25 }, (_, i) => ({
   id: `row-${i + 1}`,
   name: `Contact ${i + 1}`,
   email: `contact${i + 1}@example.com`,
-  role: roles[i % roles.length]!,
-  city: cities[i % cities.length]!,
-  status: statuses[i % statuses.length]!,
+  role: roles[i % roles.length] ?? 'Vendor',
+  city: cities[i % cities.length] ?? 'Austin',
+  status: statuses[i % statuses.length] ?? 'Active',
 }));
 
 const columnDefs: ColDef[] = [

@@ -220,6 +220,36 @@ export const DataGrid = forwardRef(
       setGridApi(params.api);
     }, []);
 
+    // --- Escape key: two-stage behavior ---
+    // First Escape exits edit mode (AG Grid default). Second clears focus ring.
+    // We track whether editing just stopped so we don't clear focus on the same keypress.
+    const wasEditingRef = useRef(false);
+
+    const handleCellEditingStarted = useCallback(() => {
+      wasEditingRef.current = true;
+    }, []);
+
+    // Type uses any to satisfy AG Grid's CellKeyDownEvent | FullWidthCellKeyDownEvent union
+    // under exactOptionalPropertyTypes
+    const handleCellKeyDown = useCallback(
+      (event: { event: Event | null | undefined; api: { clearFocusedCell(): void } }) => {
+        if ((event.event as KeyboardEvent)?.key === 'Escape') {
+          if (wasEditingRef.current) {
+            // Just exited edit mode — consume this Escape, keep focus
+            wasEditingRef.current = false;
+          } else {
+            // Not editing — clear the focus ring
+            event.api.clearFocusedCell();
+          }
+        }
+      },
+      [],
+    );
+
+    const handleCellEditingStopped = useCallback(() => {
+      // wasEditingRef stays true until the next Escape clears it
+    }, []);
+
     // --- Search ---
 
     const [searchInput, setSearchInput] = useState('');
@@ -309,16 +339,13 @@ export const DataGrid = forwardRef(
 
     // --- Default col def ---
 
-    const mergedDefaultColDef = useMemo(
-      () =>
-        editable
-          ? { sortable: true, resizable: true, editable: true, ...defaultColDef }
-          : {
-              sortable: true,
-              resizable: true,
-              ...defaultColDef,
-              editable: false,
-            },
+    const mergedDefaultColDef: ColDef<T> = useMemo(
+      () => ({
+        sortable: true,
+        resizable: true,
+        ...(editable ? { editable: true } : { editable: false }),
+        ...defaultColDef,
+      }),
       [editable, defaultColDef],
     );
 
@@ -405,12 +432,21 @@ export const DataGrid = forwardRef(
             rowData={filteredRowData}
             loading={loading}
             onGridReady={handleGridReady}
+            onCellKeyDown={handleCellKeyDown as never}
+            onCellEditingStarted={handleCellEditingStarted as never}
             {...(rowSelection ? { rowSelection } : {})}
             {...(getRowClass ? { getRowClass } : {})}
             {...(enableRowSelection ? { onSelectionChanged: handleSelectionChanged } : {})}
             {...(onRowClick ? { onRowClicked: handleRowClicked } : {})}
             {...(onCellValueChanged ? { onCellValueChanged } : {})}
-            {...(onCellEditingStopped ? { onCellEditingStopped } : {})}
+            {...(onCellEditingStopped
+              ? {
+                  onCellEditingStopped: (e: CellEditingStoppedEvent) => {
+                    handleCellEditingStopped();
+                    onCellEditingStopped(e);
+                  },
+                }
+              : { onCellEditingStopped: handleCellEditingStopped })}
             loadingOverlayComponent={LoadingOverlay}
             noRowsOverlayComponent={noRowsOverlay}
             pagination={!!pageSize}
