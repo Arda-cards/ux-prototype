@@ -53,6 +53,8 @@ export interface ArdaSplitButtonStaticConfig {
   tooltip?: string;
   /** Side of the button the tooltip appears on. Defaults to `'top'`. */
   tooltipSide?: 'top' | 'bottom' | 'left' | 'right';
+  /** Delay in milliseconds before the tooltip appears. */
+  tooltipDelay?: number;
 }
 
 /** Runtime configuration for SplitButton. */
@@ -91,6 +93,7 @@ export function SplitButton({
   showDivider = false,
   tooltip,
   tooltipSide,
+  tooltipDelay,
   onClick,
   loading,
   disabled,
@@ -115,6 +118,7 @@ export function SplitButton({
           {...(disabled !== undefined ? { disabled } : {})}
           {...(tooltip ? { tooltip } : {})}
           {...(tooltipSide ? { tooltipSide } : {})}
+          {...(tooltipDelay !== undefined ? { tooltipDelay } : {})}
         >
           {children}
         </Button>

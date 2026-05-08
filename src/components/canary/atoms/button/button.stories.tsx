@@ -155,6 +155,7 @@ export const Playground: Story = {
     children: { control: 'text' },
     tooltip: { control: 'text' },
     tooltipSide: { control: 'select', options: ['top', 'bottom', 'left', 'right'] },
+    tooltipDelay: { control: 'number' },
     asChild: { table: { disable: true } },
   },
   args: {
