@@ -5,18 +5,19 @@ import { DataGrid } from './data-grid';
 import type { ColDef } from 'ag-grid-community';
 
 interface TestDataRow {
+  [key: string]: unknown;
   id: string;
   name: string;
   email: string;
 }
 
-const mockColumnDefs: ColDef<TestDataRow>[] = [
+const _mockColumnDefs: ColDef<TestDataRow>[] = [
   { field: 'id', headerName: 'ID' },
   { field: 'name', headerName: 'Name' },
   { field: 'email', headerName: 'Email' },
 ];
 
-const mockData: TestDataRow[] = [
+const _mockData: TestDataRow[] = [
   { id: '1', name: 'Alice', email: 'alice@example.com' },
   { id: '2', name: 'Bob', email: 'bob@example.com' },
 ];
@@ -54,7 +55,7 @@ describe('DataGrid', () => {
   });
 
   it('renders with column definitions and row data', async () => {
-    render(<DataGrid<TestDataRow> columnDefs={mockColumnDefs} rowData={mockData} height={400} />);
+    render(<DataGrid columnDefs={_mockColumnDefs} rowData={_mockData} height={400} />);
 
     // Check that grid container is rendered
     const container = document.querySelector('.arda-grid-container');
@@ -67,8 +68,8 @@ describe('DataGrid', () => {
 
   it('renders grid container when loading is true', () => {
     render(
-      <DataGrid<TestDataRow>
-        columnDefs={mockColumnDefs}
+      <DataGrid
+        columnDefs={_mockColumnDefs}
         rowData={[]}
         loading={true}
         height={400}
@@ -83,8 +84,8 @@ describe('DataGrid', () => {
   it('shows error overlay when error is provided', async () => {
     const errorMessage = 'Failed to load data';
     render(
-      <DataGrid<TestDataRow>
-        columnDefs={mockColumnDefs}
+      <DataGrid
+        columnDefs={_mockColumnDefs}
         rowData={[]}
         error={errorMessage}
         height={400}
@@ -101,8 +102,8 @@ describe('DataGrid', () => {
   it('shows empty state when no data and emptyStateComponent provided', async () => {
     const emptyStateText = 'No data available';
     render(
-      <DataGrid<TestDataRow>
-        columnDefs={mockColumnDefs}
+      <DataGrid
+        columnDefs={_mockColumnDefs}
         rowData={[]}
         emptyStateComponent={<div>{emptyStateText}</div>}
         height={400}
@@ -116,7 +117,7 @@ describe('DataGrid', () => {
   });
 
   it('shows default empty state when no data and no emptyStateComponent', async () => {
-    render(<DataGrid<TestDataRow> columnDefs={mockColumnDefs} rowData={[]} height={400} />);
+    render(<DataGrid columnDefs={_mockColumnDefs} rowData={[]} height={400} />);
 
     // Wait for default empty state to appear
     await waitFor(() => {
@@ -134,9 +135,9 @@ describe('DataGrid', () => {
     };
 
     render(
-      <DataGrid<TestDataRow>
-        columnDefs={mockColumnDefs}
-        rowData={mockData}
+      <DataGrid
+        columnDefs={_mockColumnDefs}
+        rowData={_mockData}
         paginationData={paginationData}
         height={400}
       />,
@@ -154,9 +155,9 @@ describe('DataGrid', () => {
     const onSelectionChanged = vi.fn();
 
     render(
-      <DataGrid<TestDataRow>
-        columnDefs={mockColumnDefs}
-        rowData={mockData}
+      <DataGrid
+        columnDefs={_mockColumnDefs}
+        rowData={_mockData}
         enableRowSelection
         onSelectionChanged={onSelectionChanged}
         height={400}
@@ -171,9 +172,9 @@ describe('DataGrid', () => {
   it('applies custom height', () => {
     const customHeight = 500;
     render(
-      <DataGrid<TestDataRow>
-        columnDefs={mockColumnDefs}
-        rowData={mockData}
+      <DataGrid
+        columnDefs={_mockColumnDefs}
+        rowData={_mockData}
         height={customHeight}
       />,
     );
@@ -185,9 +186,9 @@ describe('DataGrid', () => {
   it('applies custom className', () => {
     const customClass = 'my-custom-grid';
     render(
-      <DataGrid<TestDataRow>
-        columnDefs={mockColumnDefs}
-        rowData={mockData}
+      <DataGrid
+        columnDefs={_mockColumnDefs}
+        rowData={_mockData}
         className={customClass}
         height={400}
       />,
@@ -202,9 +203,9 @@ describe('DataGrid', () => {
       const persistenceKey = 'test-grid-state';
 
       render(
-        <DataGrid<TestDataRow>
-          columnDefs={mockColumnDefs}
-          rowData={mockData}
+        <DataGrid
+          columnDefs={_mockColumnDefs}
+          rowData={_mockData}
           persistenceKey={persistenceKey}
           height={400}
         />,
@@ -232,9 +233,9 @@ describe('DataGrid', () => {
       localStorage.setItem(persistenceKey, JSON.stringify(mockState));
 
       render(
-        <DataGrid<TestDataRow>
-          columnDefs={mockColumnDefs}
-          rowData={mockData}
+        <DataGrid
+          columnDefs={_mockColumnDefs}
+          rowData={_mockData}
           persistenceKey={persistenceKey}
           height={400}
         />,
@@ -254,10 +255,10 @@ describe('DataGrid', () => {
       const ref = { current: null } as React.MutableRefObject<null>;
 
       render(
-        <DataGrid<TestDataRow>
+        <DataGrid
           ref={ref}
-          columnDefs={mockColumnDefs}
-          rowData={mockData}
+          columnDefs={_mockColumnDefs}
+          rowData={_mockData}
           height={400}
         />,
       );
@@ -274,10 +275,10 @@ describe('DataGrid', () => {
       const ref = { current: null } as React.MutableRefObject<null>;
 
       render(
-        <DataGrid<TestDataRow>
+        <DataGrid
           ref={ref}
-          columnDefs={mockColumnDefs}
-          rowData={mockData}
+          columnDefs={_mockColumnDefs}
+          rowData={_mockData}
           height={400}
         />,
       );

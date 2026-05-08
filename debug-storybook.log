@@ -1,38 +1,32 @@
-[14:06:36.615] [INFO] storybook v10.2.17
-[14:06:36.939] [DEBUG] Getting package.json info for /Users/jmp/code/arda/ux-prototype/package.json...
-[14:06:37.122] [WARN] Using CommonJS in your main configuration file is deprecated with Vite.
-- Refer to the migration guide at https://github.com/storybookjs/storybook/blob/next/MIGRATION.md#commonjs-with-vite-is-deprecated
-[14:06:37.442] [INFO] Starting...
-[14:06:37.447] [WARN] No story files found for the specified pattern: src/canary-refactor/**/*.mdx
-[14:06:37.448] [WARN] No story files found for the specified pattern: src/dev-witness/**/*.mdx
-[14:06:37.452] [WARN] unable to find package.json for radix-ui
-[14:06:38.351] [DEBUG] Starting preview..
-[14:06:39.914] [WARN] 🚨 Unable to index files:
-- ./src/components/canary/molecules/item-details/item-details-card-preview.mdx: Invariant failed: Could not find or load CSF file at path "./item-details-card-preview.stories" referenced by `of={}` in docs file "src/components/canary/molecules/item-details/item-details-card-preview.mdx".
-
-- Does that file exist?
-- If so, is it a CSF file (`.stories.*`)?
-- If so, is it matched by the `stories` glob in `main.js`?
-- If so, has the file successfully loaded in Storybook and are its stories visible?
-- ./src/components/canary/molecules/item-details/item-details-card-preview.stories.tsx: Identifier 'Playground' has already been declared. (131:13)
-[14:06:39.917] [ERROR] Failed to build the preview
-[14:06:39.918] [ERROR] Error: [38;2;241;97;97mUnable to index files:
-- ./src/components/canary/molecules/item-details/item-details-card-preview.mdx: Invariant failed: Could not find or load CSF file at path "./item-details-card-preview.stories" referenced by `of={}` in docs file "src/components/canary/molecules/item-details/item-details-card-preview.mdx".
-
-- Does that file exist?
-- If so, is it a CSF file (`.stories.*`)?
-- If so, is it matched by the `stories` glob in `main.js`?
-- If so, has the file successfully loaded in Storybook and are its stories visible?
-- ./src/components/canary/molecules/item-details/item-details-card-preview.stories.tsx: Identifier 'Playground' has already been declared. (131:13)[39m
-    at _StoryIndexGenerator.getIndexAndStats (file://./node_modules/storybook/dist/core-server/index.js:6087:15)
-    at async _StoryIndexGenerator.getIndex (file://./node_modules/storybook/dist/core-server/index.js:6076:13)
-    at async getOptimizeDeps (file://./node_modules/@storybook/builder-vite/dist/index.js:1862:15)
-    at async createViteServer (file://./node_modules/@storybook/builder-vite/dist/index.js:1888:19)
-    at async Module.start (file://./node_modules/@storybook/builder-vite/dist/index.js:1923:17)
-    at async storybookDevServer (file://./node_modules/storybook/dist/core-server/index.js:7295:83)
-    at async buildOrThrow (file://./node_modules/storybook/dist/core-server/index.js:4506:12)
-    at async buildDevStandalone (file://./node_modules/storybook/dist/core-server/index.js:7710:41)
-    at async withTelemetry (file://./node_modules/storybook/dist/_node-chunks/chunk-FTTIUZEI.js:218:12)
-    at async dev (file://./node_modules/storybook/dist/bin/core.js:2734:3)
-[14:06:39.921] [WARN] Broken build, fix the error above.
+[19:08:01.876] [INFO] storybook v10.3.3
+[19:08:04.777] [DEBUG] Getting package.json info for /Users/sebrandwarren/Arda/ux-prototype/package.json...
+[19:08:06.254] [INFO] Starting...
+[19:08:06.311] [WARN] unable to find package.json for radix-ui
+[19:08:06.332] [WARN] unable to find package.json for express-rate-limit
+[19:08:06.347] [WARN] No story files found for the specified pattern: src/dev-witness/**/*.mdx
+[19:08:06.352] [WARN] No story files found for the specified pattern: src/canary-refactor/**/*.mdx
+[19:08:08.607] [DEBUG] Starting preview..
+[19:08:12.229] [DEBUG] Using tsconfig paths for react-docgen
+[19:08:12.435] [WARN] 🚨 Unable to index ./src/components/canary/molecules/data-grid/data-grid.mdx:
+  Error: Could not parse import/exports with acorn
+    at file:///Users/sebrandwarren/Arda/ux-prototype/node_modules/storybook/dist/core-server/index.js:6033:24
+    at async Promise.all (index 25)
+    at async Promise.all (index 2)
+    at async _StoryIndexGenerator.updateExtracted (file:///Users/sebrandwarren/Arda/ux-prototype/node_modules/storybook/dist/core-server/index.js:6016:5)
+    at async _StoryIndexGenerator.ensureExtracted (file:///Users/sebrandwarren/Arda/ux-prototype/node_modules/storybook/dist/core-server/index.js:6053:8)
+    at async _StoryIndexGenerator.initialize (file:///Users/sebrandwarren/Arda/ux-prototype/node_modules/storybook/dist/core-server/index.js:6012:5)
+    at async file:///Users/sebrandwarren/Arda/ux-prototype/node_modules/storybook/dist/core-server/presets/common-preset.js:1855:10
+[19:08:12.439] [ERROR] Failed to build the preview
+[19:08:12.450] [ERROR] Error: Unable to index ./src/components/canary/molecules/data-grid/data-grid.mdx
+    at _StoryIndexGenerator.getIndexAndStats (file://./node_modules/storybook/dist/core-server/index.js:6282:15)
+    at async _StoryIndexGenerator.getIndex (file://./node_modules/storybook/dist/core-server/index.js:6271:13)
+    at async config (file://./node_modules/@storybook/builder-vite/dist/_node-chunks/chunk-YEI2VLDL.js:184:19)
+    at async runConfigHook (file://./node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:49479:17)
+    at async resolveConfig (file://./node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:48785:12)
+    at async _createServer (file://./node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:38349:66)
+    at async Module.start (file://./node_modules/@storybook/builder-vite/dist/index.js:1557:17)
+    at async storybookDevServer (file://./node_modules/storybook/dist/core-server/index.js:7502:83)
+    at async buildOrThrow (file://./node_modules/storybook/dist/core-server/index.js:4508:12)
+    at async buildDevStandalone (file://./node_modules/storybook/dist/core-server/index.js:8029:41)
+[19:08:12.455] [WARN] Broken build, fix the error above.
 You may need to refresh the browser.

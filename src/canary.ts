@@ -366,14 +366,17 @@ export type { ImageComparisonLayoutProps } from './components/canary/molecules/i
 export { ImageFormField } from './components/canary/molecules/form/image';
 export type { ImageFormFieldProps } from './components/canary/molecules/form/image';
 
-export { DataGrid, GridImage, useColumnPersistence } from './components/canary/molecules/data-grid';
+export {
+  DataGrid,
+  GridImage,
+  useColumnPersistence,
+  useDragToScroll,
+} from './components/canary/molecules/data-grid';
 export type {
   DataGridRef,
   DataGridProps,
   DataGridStaticConfig,
-  DataGridInitConfig,
   DataGridRuntimeConfig,
-  PaginationData,
 } from './components/canary/molecules/data-grid';
 
 // --- Molecules — Sidebar ---

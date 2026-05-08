@@ -274,18 +274,18 @@ export function createEntityDataGrid<T extends Record<string, any>>(
       columnOrder,
       loading = false,
       enableCellEditing = false,
-      activeTab = 'default',
+      activeTab: _activeTab = 'default',
       onRowClick,
       onSelectionChange,
-      paginationData,
-      onNextPage,
-      onPreviousPage,
-      onFirstPage,
+      paginationData: _paginationData,
+      onNextPage: _onNextPage,
+      onPreviousPage: _onPreviousPage,
+      onFirstPage: _onFirstPage,
       emptyStateComponent,
       toolbar,
 
       // Tier 3a
-      enableMultiSort = false,
+      enableMultiSort: _enableMultiSort = false,
       onSortChanged: _onSortChanged,
       enableFiltering = false,
       onFilterChanged: _onFilterChanged,
@@ -589,14 +589,13 @@ export function createEntityDataGrid<T extends Record<string, any>>(
           className={config.autoHeight ? undefined : 'flex-1 min-h-0'}
           style={config.autoHeight ? undefined : { height: '100%' }}
         >
-          <DataGrid<T>
+          <DataGrid
             ref={gridRef}
             columnDefs={finalColumnDefs}
             defaultColDef={config.defaultColDef}
-            persistenceKey={`${config.persistenceKeyPrefix}-${activeTab}`}
             rowData={filteredData}
             loading={loading}
-            enableCellEditing={enableCellEditing}
+            editable={enableCellEditing}
             onCellValueChanged={handleCellValueChanged}
             {...(enableCellEditing
               ? {
@@ -606,40 +605,17 @@ export function createEntityDataGrid<T extends Record<string, any>>(
               : {})}
             {...(onRowClick !== undefined
               ? {
-                  onRowClicked: (event: any) => {
-                    if (event.data) onRowClick(event.data as T);
-                  },
+                  onRowClick: (entity: T) => onRowClick(entity),
                 }
               : {})}
             {...(onSelectionChange !== undefined
-              ? { onSelectionChanged: handleSelectionChange }
+              ? { onSelectionChange: handleSelectionChange }
               : {})}
-            {...((config.paginationMode === 'server' || config.paginationMode === undefined) &&
-            paginationData !== undefined
-              ? { paginationData }
-              : {})}
-            {...((config.paginationMode === 'server' || config.paginationMode === undefined) &&
-            onNextPage !== undefined
-              ? { onNextPage }
-              : {})}
-            {...((config.paginationMode === 'server' || config.paginationMode === undefined) &&
-            onPreviousPage !== undefined
-              ? { onPreviousPage }
-              : {})}
-            {...((config.paginationMode === 'server' || config.paginationMode === undefined) &&
-            onFirstPage !== undefined
-              ? { onFirstPage }
-              : {})}
-            {...(emptyStateComponent !== undefined ? { emptyStateComponent } : {})}
-            {...(enableMultiSort ? { enableSorting: true } : {})}
+            {...(emptyStateComponent !== undefined ? { emptyContent: emptyStateComponent } : {})}
             {...(config.paginationMode === 'client' && config.pageSize !== undefined
-              ? {
-                  pagination: true,
-                  paginationPageSize: config.pageSize,
-                  paginationPageSizeSelector: false,
-                }
+              ? { pageSize: config.pageSize }
               : {})}
-            {...(config.autoHeight ? { domLayout: 'autoHeight' as const } : {})}
+            {...(config.autoHeight ? { autoHeight: true } : {})}
             height="100%"
             className="h-full arda-hide-auto-selection"
           />
