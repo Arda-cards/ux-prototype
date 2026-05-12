@@ -296,7 +296,7 @@ export function ItemCardEditor({
               <img
                 src={fields.imageUrl}
                 alt={fields.title || 'Product'}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
               <Button
                 type="button"

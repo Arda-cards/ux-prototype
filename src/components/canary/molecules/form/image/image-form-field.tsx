@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Eye, Trash2 } from 'lucide-react';
 
 import { cn } from '@/types/canary/utilities/utils';
+import { Button } from '@/components/canary/atoms/button/button';
 import { ImageDisplay } from '@/components/canary/molecules/image-display/image-display';
 import { ImageInspectorOverlay } from '@/components/canary/molecules/image-inspector-overlay/image-inspector-overlay';
 import {
@@ -152,18 +153,15 @@ export function ImageFormField({
 
           {/* Trash icon — opens remove confirmation (hidden when no image) */}
           {resolvedImageUrl !== null && (
-            <button
-              type="button"
+            <Button
+              size="icon-sm"
+              variant="ghost"
               aria-label="Remove image"
-              className={cn(
-                'pointer-events-auto',
-                'text-white hover:text-white/80 bg-black/40 rounded-full p-1',
-                'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
-              )}
+              className="pointer-events-auto rounded-full bg-black/50 hover:bg-destructive text-white hover:text-white"
               onClick={() => setRemoveDialogOpen(true)}
             >
-              <Trash2 className="w-4 h-4" aria-hidden="true" />
-            </button>
+              <Trash2 aria-hidden="true" />
+            </Button>
           )}
         </div>
       </div>

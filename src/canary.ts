@@ -119,6 +119,17 @@ export type {
 // Primitives: Tooltip (for app-level TooltipProvider)
 export { TooltipProvider } from './components/canary/primitives/tooltip';
 
+// Primitives: Input
+export { Input } from './components/canary/primitives/input';
+
+// Primitives: Popover
+export {
+  Popover,
+  PopoverTrigger,
+  PopoverAnchor,
+  PopoverContent,
+} from './components/canary/primitives/popover';
+
 // Primitives: DropdownMenu (for use with SplitButton menuContent)
 export {
   DropdownMenu,
