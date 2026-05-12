@@ -6,6 +6,7 @@ import { ImageDropZone } from '@/components/canary/molecules/image-drop-zone/ima
 import { ImageUploadDialog } from '@/components/canary/organisms/shared/image-upload-dialog/image-upload-dialog';
 import { ArdaConfirmDialog } from '@/components/canary/atoms/confirm-dialog/confirm-dialog';
 import { Button } from '@/components/canary/primitives/button';
+import { AutoFillLabel } from '@/components/canary/atoms/auto-fill-label';
 import { Input } from '@/components/canary/primitives/input';
 import {
   TypeaheadInput,
@@ -71,6 +72,11 @@ export interface ItemCardEditorRuntimeProps {
    * closing over an item identifier in scope.
    */
   qrCodeUrl?: () => Promise<string>;
+  /** Auto-fill indicators — per-field source labels and clear callbacks. */
+  autoFill?: {
+    title?: { source: string; iconClass?: string; onClear: () => void };
+    image?: { source: string; iconClass?: string; onClear: () => void };
+  };
 }
 
 /** Combined props for ItemCardEditor. */
@@ -108,6 +114,7 @@ export function ItemCardEditor({
   onImageConfirmed,
   onUploadError,
   qrCodeUrl,
+  autoFill,
 }: ItemCardEditorProps) {
   const uploader = useImageUploader();
   const [dialogOpen, setDialogOpen] = React.useState(false);
@@ -154,9 +161,13 @@ export function ItemCardEditor({
     [],
   );
 
+  const autoFillRef = React.useRef(autoFill);
+  autoFillRef.current = autoFill;
+
   const commitImageUrl = React.useCallback((url: string) => {
     onChangeRef.current({ ...fieldsRef.current, imageUrl: url });
     onImageConfirmedRef.current?.(url);
+    autoFillRef.current?.image?.onClear();
   }, []);
 
   // Direct upload: no dialog, no cropper. The user drops → we upload →
@@ -195,6 +206,7 @@ export function ItemCardEditor({
 
   const handleRemoveImage = React.useCallback(() => {
     onChangeRef.current({ ...fieldsRef.current, imageUrl: null });
+    autoFillRef.current?.image?.onClear();
   }, []);
 
   const handleDialogConfirm = React.useCallback((result: ImageUploadResult) => {
@@ -238,9 +250,18 @@ export function ItemCardEditor({
             <Input
               placeholder="Item name*"
               value={fields.title}
-              onChange={(e) => updateField('title', e.target.value)}
+              onChange={(e) => {
+                updateField('title', e.target.value);
+                autoFill?.title?.onClear();
+              }}
               className="font-extrabold text-lg h-10 rounded-lg border-input"
             />
+            {autoFill?.title && (
+              <AutoFillLabel
+                source={autoFill.title.source}
+                {...(autoFill.title.iconClass ? { iconClass: autoFill.title.iconClass } : {})}
+              />
+            )}
           </div>
           <div className="flex flex-col items-center flex-shrink-0 h-10 justify-between">
             <img src={resolvedQrSrc} alt="QR" className="w-7 h-7 object-contain" />
@@ -302,7 +323,7 @@ export function ItemCardEditor({
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="absolute top-1.5 left-1.5 z-10 rounded-full bg-black/50 hover:bg-destructive text-white hover:text-white"
+                className="absolute top-1.5 left-1.5 z-10 w-9 h-9 rounded-full bg-black/50 hover:bg-destructive text-white hover:text-white"
                 onClick={() => setConfirmRemoveOpen(true)}
                 aria-label="Remove image"
               >
@@ -348,6 +369,12 @@ export function ItemCardEditor({
             <ImageDropZone
               acceptedFormats={imageConfig.acceptedFormats}
               onInput={handleDropZoneInput}
+            />
+          )}
+          {autoFill?.image && (
+            <AutoFillLabel
+              source={autoFill.image.source}
+              {...(autoFill.image.iconClass ? { iconClass: autoFill.image.iconClass } : {})}
             />
           )}
         </div>

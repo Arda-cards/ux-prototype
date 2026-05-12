@@ -122,6 +122,37 @@ export { TooltipProvider } from './components/canary/primitives/tooltip';
 // Primitives: Input
 export { Input } from './components/canary/primitives/input';
 
+// Primitives: Select
+export {
+  Select as SelectPrimitive,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from './components/canary/primitives/select';
+
+// Atoms: Select
+export { ArdaSelect } from './components/canary/atoms/select';
+export type { ArdaSelectProps } from './components/canary/atoms/select';
+
+// Atoms: AutoFillLabel
+export { AutoFillLabel } from './components/canary/atoms/auto-fill-label';
+export type { AutoFillLabelProps } from './components/canary/atoms/auto-fill-label';
+
+// Atoms: InputGroup
+export {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupText,
+  InputGroupInput,
+  InputGroupTextarea,
+} from './components/canary/atoms/input-group/input-group';
+export type { InputGroupProps } from './components/canary/atoms/input-group/input-group';
+
 // Primitives: Popover
 export {
   Popover,

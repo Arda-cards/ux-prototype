@@ -4,6 +4,7 @@ import { Plus, Loader2, AlertCircle } from 'lucide-react';
 import { cn } from '@/types/canary/utilities/utils';
 import { Input } from '@/components/canary/primitives/input';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/canary/primitives/popover';
+import { AutoFillLabel } from '@/components/canary/atoms/auto-fill-label';
 
 // --- Types ---
 
@@ -33,6 +34,12 @@ export interface TypeaheadInputProps extends Omit<React.ComponentProps<'div'>, '
    * is portaled via Radix Popover to escape overflow clipping.
    */
   cellEditorMode?: boolean;
+  /** Source label for auto-filled state. When set, shows helper text below the field. */
+  autoFillSource?: string;
+  /** CSS color class for the auto-fill sparkle icon. */
+  autoFillIconClass?: string;
+  /** Called when user first edits the field, signaling auto-fill should clear. */
+  onAutoFillClear?: () => void;
 }
 
 const MAX_RESULTS = 8;
@@ -66,6 +73,9 @@ export function TypeaheadInput({
   'aria-label': ariaLabel,
   disabled = false,
   cellEditorMode = false,
+  autoFillSource,
+  autoFillIconClass,
+  onAutoFillClear,
   className,
   ...rest
 }: TypeaheadInputProps) {
@@ -172,12 +182,16 @@ export function TypeaheadInput({
   const showCreate = allowCreate && trimmedInput.length > 0 && !exactMatch;
 
   // --- Input handlers ---
+  const onAutoFillClearRef = React.useRef(onAutoFillClear);
+  onAutoFillClearRef.current = onAutoFillClear;
+
   const handleInputChange = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const val = e.target.value;
       setInputValue(val);
       setOpen(true);
       debouncedSearch(val);
+      onAutoFillClearRef.current?.();
     },
     [debouncedSearch],
   );
@@ -386,34 +400,42 @@ export function TypeaheadInput({
   );
 
   return (
-    <div
-      ref={wrapperRef}
-      className={cn('relative', className)}
-      data-slot="typeahead-input"
-      data-state={open ? 'open' : 'closed'}
-      data-loading={loading || undefined}
-      data-disabled={disabled || undefined}
-      data-cell-editor={cellEditorMode || undefined}
-      {...rest}
-    >
-      {/* Live region for screen readers */}
-      <div className="sr-only" aria-live="polite" aria-atomic="true">
-        {statusMessage}
-      </div>
+    <>
+      <div
+        ref={wrapperRef}
+        className={cn('relative', className)}
+        data-slot="typeahead-input"
+        data-state={open ? 'open' : 'closed'}
+        data-loading={loading || undefined}
+        data-disabled={disabled || undefined}
+        data-cell-editor={cellEditorMode || undefined}
+        {...rest}
+      >
+        {/* Live region for screen readers */}
+        <div className="sr-only" aria-live="polite" aria-atomic="true">
+          {statusMessage}
+        </div>
 
-      <Popover open={showDropdown}>
-        <PopoverAnchor asChild>{inputElement}</PopoverAnchor>
-        <PopoverContent
-          ref={popoverRef}
-          align="start"
-          sideOffset={4}
-          className="w-(--radix-popover-trigger-width) p-0 max-h-52 overflow-auto"
-          onOpenAutoFocus={(e) => e.preventDefault()}
-          onCloseAutoFocus={(e) => e.preventDefault()}
-        >
-          {dropdownList}
-        </PopoverContent>
-      </Popover>
-    </div>
+        <Popover open={showDropdown}>
+          <PopoverAnchor asChild>{inputElement}</PopoverAnchor>
+          <PopoverContent
+            ref={popoverRef}
+            align="start"
+            sideOffset={4}
+            className="w-(--radix-popover-trigger-width) p-0 max-h-52 overflow-auto"
+            onOpenAutoFocus={(e) => e.preventDefault()}
+            onCloseAutoFocus={(e) => e.preventDefault()}
+          >
+            {dropdownList}
+          </PopoverContent>
+        </Popover>
+      </div>
+      {autoFillSource && (
+        <AutoFillLabel
+          source={autoFillSource}
+          {...(autoFillIconClass ? { iconClass: autoFillIconClass } : {})}
+        />
+      )}
+    </>
   );
 }
