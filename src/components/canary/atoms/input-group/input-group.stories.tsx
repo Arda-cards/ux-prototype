@@ -219,16 +219,40 @@ export const AutoFilled: Story = {
       },
     },
   },
+  argTypes: {
+    autoFillSource: {
+      control: 'select',
+      options: ['Amazon', 'Claude', 'CSV Import', 'Clipboard'],
+      description: 'The source that auto-filled this field.',
+    },
+    autoFillIconClass: {
+      control: 'select',
+      options: ['text-orange-500', 'text-purple-500', 'text-blue-500', 'text-green-500'],
+      description: 'CSS color class for the sparkle icon.',
+    },
+  },
   args: {
     className: 'w-72',
+    autoFillSource: 'Amazon',
+    autoFillIconClass: 'text-orange-500',
   },
   render: function AutoFilledStory(args) {
-    const [source, setSource] = React.useState<string | undefined>('Amazon');
+    const [source, setSource] = React.useState<string | undefined>(args.autoFillSource);
     const [value, setValue] = React.useState('B08N5WRWNW');
+    // Sync source when Storybook control changes
+    React.useEffect(() => {
+      setSource(args.autoFillSource);
+    }, [args.autoFillSource]);
     return (
       <InputGroup
         {...args}
-        {...(source ? { autoFillSource: source, onAutoFillClear: () => setSource(undefined) } : {})}
+        {...(source
+          ? {
+              autoFillSource: source,
+              autoFillIconClass: args.autoFillIconClass,
+              onAutoFillClear: () => setSource(undefined),
+            }
+          : {})}
       >
         <InputGroupAddon align="inline-start">
           <InputGroupText>SKU</InputGroupText>

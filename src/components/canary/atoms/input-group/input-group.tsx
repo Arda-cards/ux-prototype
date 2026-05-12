@@ -77,7 +77,7 @@ const inputGroupAddonVariants = cva(
       },
       variant: {
         default: '',
-        muted: 'self-stretch bg-muted py-0 rounded-[calc(var(--radius)-3px)]',
+        muted: 'self-stretch bg-muted py-0',
       },
     },
     defaultVariants: {
@@ -85,8 +85,16 @@ const inputGroupAddonVariants = cva(
       variant: 'default',
     },
     compoundVariants: [
-      { variant: 'muted', align: 'inline-start', className: 'has-[>button]:ml-0' },
-      { variant: 'muted', align: 'inline-end', className: 'has-[>button]:mr-0' },
+      {
+        variant: 'muted',
+        align: 'inline-start',
+        className: 'has-[>button]:ml-0 rounded-l-[calc(var(--radius)-3px)]',
+      },
+      {
+        variant: 'muted',
+        align: 'inline-end',
+        className: 'has-[>button]:mr-0 rounded-r-[calc(var(--radius)-3px)]',
+      },
     ],
   },
 );
