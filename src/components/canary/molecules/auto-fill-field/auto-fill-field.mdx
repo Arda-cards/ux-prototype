@@ -105,10 +105,10 @@ Custom components like Radix Select and image dropzones use React callbacks inst
       <td>The source that auto-filled the field. When undefined, no badge is shown.</td>
     </tr>
     <tr>
-      <td><code>iconColorClass</code></td>
+      <td><code>iconColor</code></td>
       <td><code>string</code></td>
-      <td><code>text-muted-foreground</code></td>
-      <td>CSS color class for the sparkle icon.</td>
+      <td>&#8212;</td>
+      <td>CSS color class for the sparkle icon (e.g. <code>text-primary</code>).</td>
     </tr>
     <tr>
       <td><code>dismissOn</code></td>
@@ -153,6 +153,12 @@ Custom components like Radix Select and image dropzones use React callbacks inst
 - The badge is decorative (`select-none`, `cursor-default`) &#8212; not interactive
 - The wrapper uses event delegation to detect edits without modifying child components
 - Screen readers ignore the badge (no accessible label)
+
+---
+
+## Integration Guide
+
+For a complete step-by-step guide on setting up auto-fill indicators on a form &#8212; including state management, dismiss mode selection, and organism integration &#8212; see the [AutoFillField Integration Guide](https://documentation.arda.cards/current-system/architecture/auto-fill-field-guide/) in the Arda documentation site.
 
 ---
 
