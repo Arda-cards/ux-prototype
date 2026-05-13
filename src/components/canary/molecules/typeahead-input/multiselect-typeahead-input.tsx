@@ -35,6 +35,18 @@ export interface MultiSelectTypeaheadInputProps extends Omit<
    * Dropdown is portaled via Radix Popover to escape overflow clipping.
    */
   cellEditorMode?: boolean;
+  /**
+   * When true (default), Enter selects the highlighted item and signals commit
+   * (exit edit mode in grid context). Enter never unchecks a selected item.
+   * When false, Enter adds the highlighted item without exiting — the dropdown
+   * stays open for continued selection.
+   */
+  defaultOne?: boolean;
+  /**
+   * Called when the user commits the selection (Enter with defaultOne, or Tab).
+   * In cell editor context, this signals "stop editing".
+   */
+  onCommit?: () => void;
 }
 
 const MAX_RESULTS = 8;
@@ -68,6 +80,8 @@ export function MultiSelectTypeaheadInput({
   'aria-label': ariaLabel,
   disabled = false,
   cellEditorMode = false,
+  defaultOne = true,
+  onCommit,
   className,
   ...rest
 }: MultiSelectTypeaheadInputProps) {
@@ -77,11 +91,13 @@ export function MultiSelectTypeaheadInput({
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState(false);
   const [open, setOpen] = React.useState(false);
+  const [focusedTokenIndex, setFocusedTokenIndex] = React.useState(-1);
   const instanceId = React.useId();
   const listboxId = `multiselect-listbox-${instanceId}`;
   const optionId = (index: number) => `multiselect-opt-${instanceId}-${index}`;
 
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const tokenRefs = React.useRef<(HTMLSpanElement | null)[]>([]);
   const listRef = React.useRef<HTMLDivElement>(null);
   const debounceRef = React.useRef<ReturnType<typeof setTimeout>>(undefined);
   const abortRef = React.useRef<AbortController>(undefined);
@@ -111,8 +127,9 @@ export function MultiSelectTypeaheadInput({
       try {
         const results = await lookup(search);
         if (controller.signal.aborted) return;
-        setOptions(results.slice(0, MAX_RESULTS));
-        setHighlightedIndex(-1);
+        const sliced = results.slice(0, MAX_RESULTS);
+        setOptions(sliced);
+        setHighlightedIndex(sliced.length > 0 ? 0 : -1);
         setLoading(false);
       } catch {
         if (controller.signal.aborted) return;
@@ -139,6 +156,14 @@ export function MultiSelectTypeaheadInput({
       abortRef.current?.abort();
     };
   }, []);
+
+  // Auto-focus input on mount in cell editor mode so the dropdown opens
+  // immediately and all tokens are visible for keyboard navigation.
+  React.useEffect(() => {
+    if (cellEditorMode) {
+      inputRef.current?.focus();
+    }
+  }, [cellEditorMode]);
 
   // --- Selection ---
   const selectedSet = React.useMemo(() => new Set(value), [value]);
@@ -200,9 +225,84 @@ export function MultiSelectTypeaheadInput({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [open]);
 
-  // --- Keyboard ---
+  // --- Focus helpers ---
+  const focusToken = React.useCallback((index: number) => {
+    setFocusedTokenIndex(index);
+    setHighlightedIndex(-1);
+    tokenRefs.current[index]?.focus();
+  }, []);
+
+  const focusInput = React.useCallback(() => {
+    setFocusedTokenIndex(-1);
+    inputRef.current?.focus();
+  }, []);
+
+  // --- Token keyboard handler ---
+  const handleTokenKeyDown = React.useCallback(
+    (e: React.KeyboardEvent, tokenIndex: number) => {
+      const tokens = valueRef.current;
+      switch (e.key) {
+        case 'ArrowLeft':
+          e.preventDefault();
+          if (tokenIndex > 0) {
+            focusToken(tokenIndex - 1);
+          }
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          if (tokenIndex < tokens.length - 1) {
+            focusToken(tokenIndex + 1);
+          } else {
+            focusInput();
+          }
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          focusInput();
+          setOpen(true);
+          doSearch(inputValueRef.current);
+          break;
+        case 'Backspace':
+        case 'Delete':
+          e.preventDefault();
+          {
+            const removedValue = tokens[tokenIndex];
+            if (removedValue) {
+              onValueChange(tokens.filter((v) => v !== removedValue));
+            }
+            // Focus neighbor or input
+            if (tokens.length <= 1) {
+              focusInput();
+            } else if (tokenIndex > 0) {
+              // Will shift, so focus same index - 1
+              setTimeout(() => focusToken(tokenIndex - 1), 0);
+            } else {
+              setTimeout(() => focusToken(0), 0);
+            }
+          }
+          break;
+        default:
+          // Any printable character → focus input and let it handle the key
+          if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+            focusInput();
+            // Don't prevent default — let the character reach the input
+          }
+          break;
+      }
+    },
+    [focusToken, focusInput, doSearch, onValueChange],
+  );
+
+  // --- Input keyboard handler ---
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent) => {
+      // Left arrow at cursor position 0 with empty input → focus last token
+      if (e.key === 'ArrowLeft' && inputValueRef.current === '' && valueRef.current.length > 0) {
+        e.preventDefault();
+        focusToken(valueRef.current.length - 1);
+        return;
+      }
+
       // Backspace with empty input removes last token
       if (e.key === 'Backspace' && inputValueRef.current === '' && valueRef.current.length > 0) {
         onValueChange(valueRef.current.slice(0, -1));
@@ -228,14 +328,33 @@ export function MultiSelectTypeaheadInput({
           break;
         case 'ArrowUp':
           e.preventDefault();
-          setHighlightedIndex((prev) => (prev - 1 + opts.length) % opts.length);
+          if (hi <= 0 && valueRef.current.length > 0) {
+            // At top of dropdown → focus last token
+            focusToken(valueRef.current.length - 1);
+          } else {
+            setHighlightedIndex((prev) => (prev - 1 + opts.length) % opts.length);
+          }
           break;
         case 'Enter':
           e.preventDefault();
           {
             const opt = opts[hi];
             if (hi >= 0 && opt) {
-              toggleOption(opt.value);
+              const alreadySelected = valueRef.current.includes(opt.value);
+              if (defaultOne) {
+                // defaultOne: select (if not already), then commit and exit
+                if (!alreadySelected) {
+                  onValueChange([...valueRef.current, opt.value]);
+                }
+                setOpen(false);
+                setInputValue('');
+                onCommit?.();
+              } else {
+                // additive: toggle unless already selected (never uncheck via Enter)
+                if (!alreadySelected) {
+                  toggleOption(opt.value);
+                }
+              }
             }
           }
           break;
@@ -247,10 +366,11 @@ export function MultiSelectTypeaheadInput({
         case 'Tab':
           setOpen(false);
           setInputValue('');
+          onCommit?.();
           break;
       }
     },
-    [open, doSearch, toggleOption, onValueChange],
+    [open, defaultOne, doSearch, focusToken, toggleOption, onValueChange, onCommit],
   );
 
   // Scroll highlighted item into view
@@ -274,8 +394,11 @@ export function MultiSelectTypeaheadInput({
           : '';
 
   // --- Token display ---
-  const visibleTokens = value.slice(0, maxVisible);
-  const overflowCount = value.length - maxVisible;
+  // When editing (input focused or dropdown open), show all tokens so they're
+  // reachable via arrow keys. When collapsed, cap at maxVisible.
+  const isEditing = open || focusedTokenIndex >= 0;
+  const visibleTokens = isEditing ? value : value.slice(0, maxVisible);
+  const overflowCount = isEditing ? 0 : value.length - maxVisible;
 
   // --- Dropdown list content ---
   const dropdownList = (
@@ -339,19 +462,39 @@ export function MultiSelectTypeaheadInput({
         'flex flex-wrap items-center gap-1 rounded-md border border-input bg-background px-2 py-1 text-sm',
         'focus-within:ring-2 focus-within:ring-ring',
         disabled && 'opacity-50 cursor-not-allowed',
-        cellEditorMode && 'border-0 shadow-none bg-transparent focus-within:ring-0 h-full',
+        cellEditorMode &&
+          !isEditing &&
+          'border-0 shadow-none bg-transparent focus-within:ring-0 h-full',
+        cellEditorMode && isEditing && 'border-0 shadow-none focus-within:ring-0 bg-background',
+        // Expand as overlay when editing (standalone mode only) — absolute
+        // position so tokens wrap without pushing layout. In cellEditorMode,
+        // AG Grid's popup editor handles expansion, so we just show all tokens.
+        !cellEditorMode &&
+          isEditing &&
+          'absolute inset-x-0 top-0 z-10 bg-background border border-input rounded-md shadow-md',
       )}
       onClick={() => inputRef.current?.focus()}
     >
-      {visibleTokens.map((tokenValue) => (
-        <Badge
+      {visibleTokens.map((tokenValue, i) => (
+        <span
           key={tokenValue}
-          variant="secondary"
-          {...(disabled ? {} : { onDismiss: () => removeToken(tokenValue) })}
-          className="text-xs"
+          ref={(el) => {
+            tokenRefs.current[i] = el;
+          }}
+          tabIndex={-1}
+          onKeyDown={(e) => handleTokenKeyDown(e, i)}
+          onFocus={() => setFocusedTokenIndex(i)}
+          onBlur={() => setFocusedTokenIndex(-1)}
+          className={cn('rounded-md outline-none', focusedTokenIndex === i && 'ring-2 ring-ring')}
         >
-          {tokenValue}
-        </Badge>
+          <Badge
+            variant="secondary"
+            {...(disabled ? {} : { onDismiss: () => removeToken(tokenValue) })}
+            className="text-xs"
+          >
+            {tokenValue}
+          </Badge>
+        </span>
       ))}
       {overflowCount > 0 && (
         <span className="text-xs text-muted-foreground font-medium px-1">
@@ -381,7 +524,7 @@ export function MultiSelectTypeaheadInput({
   return (
     <div
       ref={wrapperRef}
-      className={cn('relative', className)}
+      className={cn('relative min-h-9', className)}
       data-slot="multiselect-typeahead-input"
       data-state={open ? 'open' : 'closed'}
       data-loading={loading || undefined}

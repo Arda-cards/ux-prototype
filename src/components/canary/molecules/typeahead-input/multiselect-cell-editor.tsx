@@ -12,6 +12,11 @@ export interface MultiSelectCellEditorConfig {
   placeholder?: string;
   /** Maximum visible tokens before "+N more". Defaults to 2. */
   maxVisible?: number;
+  /**
+   * When true (default), Enter selects the highlighted item and exits edit mode.
+   * When false, Enter adds items additively — user must Tab or click away to exit.
+   */
+  defaultOne?: boolean;
 }
 
 export interface MultiSelectCellEditorProps {
@@ -25,8 +30,9 @@ export interface MultiSelectCellEditorProps {
 function MultiSelectCellEditorInner({
   value,
   onValueChange,
+  stopEditing,
   config,
-}: Omit<MultiSelectCellEditorProps, 'stopEditing'> & {
+}: MultiSelectCellEditorProps & {
   config: MultiSelectCellEditorConfig;
 }) {
   const [currentValue, setCurrentValue] = useState<string[]>(value ?? []);
@@ -44,6 +50,10 @@ function MultiSelectCellEditorInner({
     [onValueChange],
   );
 
+  const handleCommit = useCallback(() => {
+    stopEditing();
+  }, [stopEditing]);
+
   return (
     <MultiSelectTypeaheadInput
       value={currentValue}
@@ -51,6 +61,8 @@ function MultiSelectCellEditorInner({
       lookup={config.lookup}
       placeholder={config.placeholder ?? 'Search\u2026'}
       maxVisible={config.maxVisible ?? 2}
+      defaultOne={config.defaultOne ?? true}
+      onCommit={handleCommit}
       cellEditorMode
       className="w-full"
     />

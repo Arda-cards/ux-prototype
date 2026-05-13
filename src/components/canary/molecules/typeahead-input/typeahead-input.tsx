@@ -114,8 +114,9 @@ export function TypeaheadInput({
       try {
         const results = await lookup(search);
         if (controller.signal.aborted) return;
-        setOptions(results.slice(0, MAX_RESULTS));
-        setHighlightedIndex(-1);
+        const sliced = results.slice(0, MAX_RESULTS);
+        setOptions(sliced);
+        setHighlightedIndex(sliced.length > 0 ? 0 : -1);
         setLoading(false);
       } catch {
         if (controller.signal.aborted) return;
