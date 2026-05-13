@@ -6,26 +6,59 @@ import * as BadgeStories from './badge.stories';
 
 # Badge
 
-Small inline status badge with count-capping and variant support.
+Small inline status badge with count-capping, icon support, and collapsible expand-on-hover behavior.
 
 **Atom** &#8212; Canary | Import: `import { Badge } from '@arda-cards/design-system/canary'`
 
 ---
 
-## All Variants
+## Playground
 
-<Canvas of={BadgeStories.AllVariants} />
+Use the controls panel to explore all badge configurations: variants, sizes, icons, collapsible mode, and count.
+
+<Canvas of={BadgeStories.Playground} />
 
 ---
 
-## Purpose
+## Modes
 
-`Badge` is a thin Arda wrapper around the shadcn Badge primitive. It adds:
+`Badge` supports four rendering modes:
 
-1. **Count mode** &#8212; pass `count={n}` to render a numeric badge. The value is capped at `max` (default 99); values above that display as `99+`. The badge receives `role="status"` when in count mode for live-region accessibility.
-2. **Label mode** &#8212; pass text via `children` for string or label badges (e.g., `New`, `Draft`).
+1. **Label** &#8212; pass text via `children` (e.g. `New`, `Draft`).
+2. **Count** &#8212; pass `count={n}` for a numeric badge. Capped at `max` (default 99). Uses monospaced tabular-nums. Gets `role="status"` for accessibility.
+3. **Icon** &#8212; pass `icon={Component}`. Without children, renders as a compact circle. With children, renders icon + text.
+4. **Collapsible** &#8212; pass `icon` + `collapsible`. Shows icon-only at rest (circle), expands on hover to reveal text (pill). Fixed height in both states.
 
-The component uses a rounded-md shape, tight padding, and 10 px semibold monospaced text to integrate cleanly with sidebar nav items, table cells, and page headers.
+---
+
+## Sizes
+
+<table>
+  <thead>
+    <tr>
+      <th>Size</th>
+      <th>Height</th>
+      <th>Font</th>
+      <th>Icon</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>default</code></td>
+      <td>20px (<code>h-5</code>)</td>
+      <td>12px (<code>text-xs</code>)</td>
+      <td>12px (<code>size-3</code>)</td>
+    </tr>
+    <tr>
+      <td><code>sm</code></td>
+      <td>16px (<code>h-4</code>)</td>
+      <td>10px (<code>text-[10px]</code>)</td>
+      <td>10px (<code>size-2.5</code>)</td>
+    </tr>
+  </tbody>
+</table>
+
+Both sizes use fixed height with horizontal-only padding. No vertical padding &#8212; `items-center` handles vertical alignment.
 
 ---
 
@@ -35,74 +68,38 @@ The component uses a rounded-md shape, tight padding, and 10 px semibold monospa
   <thead>
     <tr>
       <th>Variant</th>
+      <th>Background</th>
       <th>Use</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td><code>default</code></td>
-      <td>Primary emphasis. Uses <code>sidebar-primary</code> color token (Arda orange in default theme).</td>
+      <td><code>bg-primary</code> (Arda orange)</td>
+      <td>Primary emphasis, active states.</td>
     </tr>
     <tr>
       <td><code>secondary</code></td>
-      <td>Low-emphasis label on neutral backgrounds.</td>
+      <td><code>bg-accent-light</code> (#FEF7F5)</td>
+      <td>Low-emphasis, warm-tinted. Auto-fill indicators, subtle labels.</td>
     </tr>
     <tr>
       <td><code>outline</code></td>
-      <td>Bordered badge with transparent background.</td>
+      <td>Transparent + border</td>
+      <td>Bordered badge on neutral backgrounds.</td>
     </tr>
     <tr>
       <td><code>destructive</code></td>
-      <td>Error or destructive status indicator.</td>
+      <td><code>bg-destructive</code></td>
+      <td>Error or destructive status.</td>
     </tr>
     <tr>
       <td><code>error-overlay</code></td>
-      <td>Absolutely positioned overlay badge for thumbnail/image error states. Place inside a <code>relative</code> container.</td>
+      <td><code>bg-destructive</code></td>
+      <td>Absolutely positioned overlay for thumbnail error states.</td>
     </tr>
   </tbody>
 </table>
-
-### Default
-
-<Canvas of={BadgeStories.Default} />
-
-### Secondary
-
-<Canvas of={BadgeStories.Secondary} />
-
-### Outline
-
-<Canvas of={BadgeStories.Outline} />
-
----
-
-## Count Mode
-
-<Canvas of={BadgeStories.Count} />
-
-### High count (capped at 99+)
-
-<Canvas of={BadgeStories.HighCount} />
-
-### Custom max threshold
-
-<Canvas of={BadgeStories.CustomMax} />
-
----
-
-## Error Overlay Variant
-
-The `error-overlay` variant is designed to be positioned absolutely over a `relative` container
-(e.g., an image thumbnail). It uses destructive colors and a small fixed size suitable for
-overlaying on grid cells or preview thumbnails.
-
-<Canvas of={BadgeStories.ErrorOverlay} />
-
-### In context
-
-Side-by-side comparison of a normal thumbnail placeholder vs one with an error badge overlay.
-
-<Canvas of={BadgeStories.ErrorOverlayInContext} />
 
 ---
 
@@ -120,54 +117,73 @@ Side-by-side comparison of a normal thumbnail placeholder vs one with an error b
   <tbody>
     <tr>
       <td><code>variant</code></td>
-      <td><code>'default' | 'secondary' | 'destructive' | 'outline' | 'error-overlay'</code></td>
+      <td><code>'default' | 'secondary' | 'destructive' | 'outline' | 'ghost' | 'link' | 'error-overlay'</code></td>
       <td><code>'default'</code></td>
-      <td>Visual variant from shadcn Badge.</td>
+      <td>Visual variant.</td>
+    </tr>
+    <tr>
+      <td><code>size</code></td>
+      <td><code>'default' | 'sm'</code></td>
+      <td><code>'default'</code></td>
+      <td>Badge height &#8212; default (20px) or sm (16px).</td>
+    </tr>
+    <tr>
+      <td><code>icon</code></td>
+      <td><code>React.ComponentType</code></td>
+      <td>&#8212;</td>
+      <td>Icon component. Without children, renders as icon-only circle.</td>
+    </tr>
+    <tr>
+      <td><code>iconColor</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>CSS color class for the icon (e.g. <code>text-primary</code>).</td>
+    </tr>
+    <tr>
+      <td><code>collapsible</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>When true with <code>icon</code>, shows icon-only at rest and expands on hover.</td>
     </tr>
     <tr>
       <td><code>count</code></td>
       <td><code>number</code></td>
       <td>&#8212;</td>
-      <td>Numeric count. Capped at <code>max</code>; adds <code>role="status"</code> for live updates.</td>
+      <td>Numeric count. Capped at <code>max</code>; adds <code>role="status"</code>.</td>
     </tr>
     <tr>
       <td><code>max</code></td>
       <td><code>number</code></td>
       <td><code>99</code></td>
-      <td>Maximum count value before showing <code>99+</code> (or <code>max+</code>).</td>
+      <td>Maximum count before showing <code>99+</code>.</td>
     </tr>
     <tr>
       <td><code>children</code></td>
       <td><code>ReactNode</code></td>
       <td>&#8212;</td>
-      <td>Content rendered when <code>count</code> is not provided.</td>
+      <td>Content when <code>count</code> is not provided.</td>
     </tr>
     <tr>
       <td><code>className</code></td>
       <td><code>string</code></td>
       <td>&#8212;</td>
-      <td>Additional CSS classes merged via <code>cn()</code>.</td>
+      <td>Additional CSS classes.</td>
     </tr>
   </tbody>
 </table>
-
-Also accepts all standard `React.ComponentProps<'span'>` attributes.
 
 ---
 
 ## Accessibility
 
-- When `count` is provided the badge receives `role="status"` so screen readers announce live updates.
-- For purely decorative badges (e.g., a dot) use `aria-hidden="true"` on the badge element.
+- Count mode: receives `role="status"` for screen reader live updates.
+- Icon-only: decorative &#8212; use `aria-hidden="true"` if no accessible meaning.
+- Collapsible: expanded text provides additional context on hover.
 
 ---
 
 ## Import
 
 ```tsx
-// From canary barrel (recommended)
 import { Badge } from '@arda-cards/design-system/canary';
-
-// Direct import
-import { Badge } from '@/components/canary/atoms/badge/badge';
 ```

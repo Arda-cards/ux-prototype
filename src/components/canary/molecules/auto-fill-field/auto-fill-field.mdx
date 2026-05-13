@@ -1,6 +1,6 @@
 {/* auto-fill-field.mdx */}
-import { Meta, Canvas } from '@storybook/addon-docs/blocks';
-import \* as Stories from './auto-fill-field.stories';
+import { Meta } from '@storybook/addon-docs/blocks';
+import * as Stories from './auto-fill-field.stories';
 
 <Meta of={Stories} />
 
@@ -9,14 +9,6 @@ import \* as Stories from './auto-fill-field.stories';
 Wraps any form field to show an auto-fill badge indicator. On hover, the sparkle badge expands to reveal the source name (e.g. "Filled by Amazon"). Takes no extra vertical space &#8212; the badge is absolutely positioned over the field's top-right corner.
 
 **Molecule** &#8212; Canary | Import: `import { AutoFillField } from '@arda-cards/design-system/canary'`
-
----
-
-## Playground
-
-Type in the input to dismiss the badge.
-
-<Canvas of={Stories.TextInput} />
 
 ---
 
@@ -34,40 +26,50 @@ AutoFillField supports three dismiss modes to handle different input types:
   </thead>
   <tbody>
     <tr>
-      <td>
-        <code>input</code> (default)
-      </td>
-      <td>
-        <code>onInput</code>
-      </td>
+      <td><code>input</code> (default)</td>
+      <td><code>onInput</code></td>
       <td>Text inputs, textareas, typeaheads &#8212; fires on every keystroke</td>
     </tr>
     <tr>
-      <td>
-        <code>change</code>
-      </td>
-      <td>
-        <code>onChange</code>
-      </td>
+      <td><code>change</code></td>
+      <td><code>onChange</code></td>
       <td>Native selects, checkboxes, toggles, file inputs</td>
     </tr>
     <tr>
-      <td>
-        <code>manual</code>
-      </td>
+      <td><code>manual</code></td>
       <td>None</td>
-      <td>
-        Radix Select, image upload, any custom component that doesn&#8217;t fire native DOM events
-      </td>
+      <td>Radix Select, image upload, any custom component that doesn&#8217;t fire native DOM events</td>
     </tr>
   </tbody>
 </table>
 
-### Why `manual`?
+---
 
-Custom components like Radix Select and image dropzones use React callbacks (`onValueChange`, `onInput`) instead of native DOM events. These callbacks don&#8217;t bubble to a wrapper `div`, so the wrapper can&#8217;t detect them automatically.
+## Usage
 
-In manual mode, the consumer clears the `source` from their own callback &#8212; just one extra line of code:
+### Text input (default &#8212; dismissOn="input")
+
+```tsx
+<AutoFillField source="Amazon" onClear={() => clearAutoFill('sku')}>
+  <InputGroup>
+    <InputGroupInput value={sku} onChange={handleChange} />
+  </InputGroup>
+</AutoFillField>
+```
+
+The badge disappears when the user types in the input.
+
+### Native select (dismissOn="change")
+
+```tsx
+<AutoFillField source="Amazon" dismissOn="change" onClear={() => clearAutoFill('taxable')}>
+  <Switch checked={taxable} onCheckedChange={handleChange} />
+</AutoFillField>
+```
+
+The badge disappears when the native element fires a `change` event.
+
+### Custom component (dismissOn="manual")
 
 ```tsx
 <AutoFillField source="Amazon" dismissOn="manual">
@@ -80,17 +82,7 @@ In manual mode, the consumer clears the `source` from their own callback &#8212;
 </AutoFillField>
 ```
 
----
-
-## Native Select (dismissOn="change")
-
-<Canvas of={Stories.NativeSelect} />
-
----
-
-## Manual Dismiss (Radix Select)
-
-<Canvas of={Stories.ManualDismiss} />
+Custom components like Radix Select and image dropzones use React callbacks instead of native DOM events. These don&#8217;t bubble to a wrapper div, so the consumer clears the source from their own callback.
 
 ---
 
@@ -107,72 +99,38 @@ In manual mode, the consumer clears the `source` from their own callback &#8212;
   </thead>
   <tbody>
     <tr>
-      <td>
-        <code>source</code>
-      </td>
-      <td>
-        <code>string</code>
-      </td>
+      <td><code>source</code></td>
+      <td><code>string</code></td>
       <td>&#8212;</td>
-      <td>
-        The source that auto-filled the field. When undefined, no badge is shown and the wrapper is
-        transparent.
-      </td>
+      <td>The source that auto-filled the field. When undefined, no badge is shown.</td>
     </tr>
     <tr>
-      <td>
-        <code>iconColorClass</code>
-      </td>
-      <td>
-        <code>string</code>
-      </td>
-      <td>
-        <code>text-muted-foreground</code>
-      </td>
+      <td><code>iconColorClass</code></td>
+      <td><code>string</code></td>
+      <td><code>text-muted-foreground</code></td>
       <td>CSS color class for the sparkle icon.</td>
     </tr>
     <tr>
-      <td>
-        <code>dismissOn</code>
-      </td>
-      <td>
-        <code>'input' | 'change' | 'manual'</code>
-      </td>
-      <td>
-        <code>'input'</code>
-      </td>
+      <td><code>dismissOn</code></td>
+      <td><code>'input' | 'change' | 'manual'</code></td>
+      <td><code>'input'</code></td>
       <td>Which DOM event triggers auto-dismiss. See Dismiss Modes above.</td>
     </tr>
     <tr>
-      <td>
-        <code>onClear</code>
-      </td>
-      <td>
-        <code>() =&gt; void</code>
-      </td>
+      <td><code>onClear</code></td>
+      <td><code>() =&gt; void</code></td>
       <td>&#8212;</td>
-      <td>
-        Called when the badge is dismissed via auto-dismiss. Not needed for <code>manual</code>{' '}
-        mode.
-      </td>
+      <td>Called when the badge is dismissed via auto-dismiss. Not needed for manual mode.</td>
     </tr>
     <tr>
-      <td>
-        <code>children</code>
-      </td>
-      <td>
-        <code>ReactNode</code>
-      </td>
+      <td><code>children</code></td>
+      <td><code>ReactNode</code></td>
       <td>&#8212;</td>
       <td>The wrapped form field.</td>
     </tr>
     <tr>
-      <td>
-        <code>className</code>
-      </td>
-      <td>
-        <code>string</code>
-      </td>
+      <td><code>className</code></td>
+      <td><code>string</code></td>
       <td>&#8212;</td>
       <td>Additional CSS classes on the wrapper.</td>
     </tr>
@@ -183,18 +141,18 @@ In manual mode, the consumer clears the `source` from their own callback &#8212;
 
 ## Badge Behavior
 
-- **Collapsed:** Small sparkle icon in a pill at the top-right corner of the wrapped field
-- **Hover:** Expands smoothly to show "Filled by {source}"
+- **Collapsed:** Small sparkle icon in a pill at the top-right corner
+- **Hover:** Expands smoothly to show "Filled by &#123;source&#125;"
 - **On dismiss:** Badge disappears (source becomes undefined)
-- **No source:** Wrapper renders transparently with no badge &#8212; zero overhead
+- **No source:** Wrapper renders transparently &#8212; zero overhead
 
 ---
 
 ## Accessibility
 
-- The badge is `select-none` and `cursor-default` &#8212; it is not interactive
-- The wrapper uses `onInput` or `onChange` event delegation to detect edits without modifying child components
-- The sparkle icon has no accessible label &#8212; the badge is decorative, not actionable
+- The badge is decorative (`select-none`, `cursor-default`) &#8212; not interactive
+- The wrapper uses event delegation to detect edits without modifying child components
+- Screen readers ignore the badge (no accessible label)
 
 ---
 

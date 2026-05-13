@@ -1,12 +1,13 @@
 import * as React from 'react';
 import { Sparkles } from 'lucide-react';
 import { cn } from '@/types/canary/utilities/utils';
+import { Badge } from '@/components/canary/atoms/badge/badge';
 
 export interface AutoFillFieldProps {
   /** The source that auto-filled this field (e.g. "Amazon", "Claude"). When undefined, no badge is shown. */
   source?: string;
-  /** CSS color class for the sparkle icon. Defaults to "text-muted-foreground". */
-  iconColorClass?: string;
+  /** CSS color class for the sparkle icon (e.g. "text-primary" for orange). */
+  iconColor?: string;
   /**
    * Which DOM event on the wrapper triggers auto-dismiss of the badge.
    *
@@ -30,37 +31,23 @@ export interface AutoFillFieldProps {
 /**
  * AutoFillField — wraps any form field to show an auto-fill badge indicator.
  *
- * Renders a small sparkle badge at the top-right corner of the wrapped content.
- * On hover, the badge expands to show "Filled by {source}". The badge disappears
- * when the user interacts with the field (controlled by `dismissOn`).
+ * Renders a collapsible secondary Badge with a sparkle icon at the top-right
+ * corner. On hover, the badge expands to show "Filled by {source}".
  *
- * Takes no extra vertical space — the badge is absolutely positioned and overlaps
- * the field's top-right corner.
- *
- * ## Usage
+ * Wrap both the label and the input so the badge aligns with the label row:
  *
  * ```tsx
- * // Text input — auto-clears on typing (default)
  * <AutoFillField source="Amazon" onClear={() => clear('sku')}>
+ *   <label>SKU</label>
  *   <InputGroup>
  *     <InputGroupInput value={sku} onChange={...} />
  *   </InputGroup>
- * </AutoFillField>
- *
- * // Native select or checkbox — auto-clears on change
- * <AutoFillField source="Amazon" onClear={() => clear('taxable')} dismissOn="change">
- *   <Switch checked={taxable} onCheckedChange={...} />
- * </AutoFillField>
- *
- * // Custom component (Radix Select, image upload) — manual clear
- * <AutoFillField source="Amazon" dismissOn="manual">
- *   <ArdaSelect onValueChange={(v) => { setValue(v); clear('method'); }} />
  * </AutoFillField>
  * ```
  */
 export function AutoFillField({
   source,
-  iconColorClass = 'text-muted-foreground',
+  iconColor,
   dismissOn = 'input',
   onClear,
   children,
@@ -84,27 +71,15 @@ export function AutoFillField({
     <div data-slot="auto-fill-field" className={cn('relative', className)} {...eventHandlers}>
       {children}
       {source && (
-        <span
-          className={cn(
-            'absolute -top-2.5 right-1 z-10',
-            'group/autofill inline-flex items-center gap-1',
-            'rounded-full bg-background border border-border shadow-sm',
-            'px-1.5 py-0.5',
-            'cursor-default select-none',
-            'transition-all duration-200 ease-in-out',
-          )}
+        <Badge
+          variant="secondary"
+          icon={Sparkles}
+          {...(iconColor ? { iconColor } : {})}
+          collapsible
+          className="absolute top-0 right-0 z-10 cursor-default select-none"
         >
-          <Sparkles className={cn('size-3 shrink-0', iconColorClass)} />
-          <span
-            className={cn(
-              'text-xs text-muted-foreground whitespace-nowrap overflow-hidden',
-              'max-w-0 opacity-0 group-hover/autofill:max-w-48 group-hover/autofill:opacity-100',
-              'transition-all duration-200 ease-in-out',
-            )}
-          >
-            Filled by {source}
-          </span>
-        </span>
+          Filled by {source}
+        </Badge>
       )}
     </div>
   );

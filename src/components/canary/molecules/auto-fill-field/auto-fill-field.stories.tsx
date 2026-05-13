@@ -19,31 +19,9 @@ const meta = {
     docs: {
       description: {
         component:
-          'Wraps any form field to show an auto-fill badge indicator. ' +
+          'Wraps any form field (label + input) to show an auto-fill badge indicator. ' +
           'On hover, the sparkle badge expands to show "Filled by {source}". ' +
-          'Supports three dismiss modes for different input types.\n\n' +
-          '## Dismiss modes\n\n' +
-          '| Mode | Event | Use for |\n' +
-          '|------|-------|---------|\n' +
-          '| `input` (default) | `onInput` | Text inputs, textareas, typeaheads |\n' +
-          '| `change` | `onChange` | Native selects, checkboxes, toggles |\n' +
-          '| `manual` | None — consumer calls `onClear` | Radix Select, image upload, custom components |\n\n' +
-          '## Usage\n\n' +
-          '```tsx\n' +
-          '// Text input — auto-clears on typing (default)\n' +
-          '<AutoFillField source="Amazon" onClear={() => clear("sku")}>\n' +
-          '  <InputGroup>\n' +
-          '    <InputGroupInput value={sku} onChange={...} />\n' +
-          '  </InputGroup>\n' +
-          '</AutoFillField>\n\n' +
-          '// Radix Select — manual clear\n' +
-          '<AutoFillField source="Amazon" dismissOn="manual">\n' +
-          '  <ArdaSelect onValueChange={(v) => { setValue(v); clear("method"); }} />\n' +
-          '</AutoFillField>\n' +
-          '```\n\n' +
-          '**Why `manual`?** Custom components like Radix Select and image dropzones ' +
-          "don't fire native DOM events that bubble to the wrapper. In manual mode, " +
-          'the consumer clears `source` from their own callback — just one extra line.',
+          'Supports three dismiss modes: `input` (default), `change`, and `manual`.',
       },
     },
   },
@@ -52,9 +30,9 @@ const meta = {
       control: 'select',
       options: ['Amazon', 'Claude', 'CSV Import'],
     },
-    iconColorClass: {
+    iconColor: {
       control: 'select',
-      options: ['text-muted-foreground', 'text-primary', 'text-purple-500'],
+      options: ['text-primary', 'text-muted-foreground', 'text-purple-500', 'text-blue-500'],
     },
     dismissOn: {
       control: 'radio',
@@ -69,6 +47,7 @@ type Story = StoryObj<typeof meta>;
 /**
  * Default behavior — badge clears when the user types in the text input.
  * Hover over the sparkle icon to see the source label expand.
+ * The wrapper includes both the label and the input.
  */
 export const TextInput: Story = {
   args: {
@@ -76,13 +55,20 @@ export const TextInput: Story = {
     dismissOn: 'input',
     children: null,
   },
-  render: function TextInputStory() {
+  render: function TextInputStory(args) {
     const [source, setSource] = React.useState<string | undefined>('Amazon');
     const [value, setValue] = React.useState('B08N5WRWNW');
+    React.useEffect(() => {
+      setSource(args.source);
+    }, [args.source]);
     return (
-      <div className="w-72 pt-4">
-        <label className="text-sm font-medium mb-1 block">SKU</label>
-        <AutoFillField {...(source ? { source } : {})} onClear={() => setSource(undefined)}>
+      <div className="w-72">
+        <AutoFillField
+          {...(source ? { source } : {})}
+          {...(args.iconColor ? { iconColor: args.iconColor } : {})}
+          onClear={() => setSource(undefined)}
+        >
+          <label className="text-sm font-medium mb-1 block">SKU</label>
           <Input value={value} onChange={(e) => setValue(e.target.value)} placeholder="Enter SKU" />
         </AutoFillField>
       </div>
@@ -99,17 +85,21 @@ export const NativeSelect: Story = {
     dismissOn: 'change',
     children: null,
   },
-  render: function NativeSelectStory() {
+  render: function NativeSelectStory(args) {
     const [source, setSource] = React.useState<string | undefined>('Amazon');
     const [value, setValue] = React.useState('ONLINE');
+    React.useEffect(() => {
+      setSource(args.source);
+    }, [args.source]);
     return (
-      <div className="w-72 pt-4">
-        <label className="text-sm font-medium mb-1 block">Order method</label>
+      <div className="w-72">
         <AutoFillField
           {...(source ? { source } : {})}
+          {...(args.iconColor ? { iconColor: args.iconColor } : {})}
           dismissOn="change"
           onClear={() => setSource(undefined)}
         >
+          <label className="text-sm font-medium mb-1 block">Order method</label>
           <select
             value={value}
             onChange={(e) => setValue(e.target.value)}
@@ -136,13 +126,20 @@ export const ManualDismiss: Story = {
     dismissOn: 'manual',
     children: null,
   },
-  render: function ManualDismissStory() {
+  render: function ManualDismissStory(args) {
     const [source, setSource] = React.useState<string | undefined>('Amazon');
     const [value, setValue] = React.useState('ONLINE');
+    React.useEffect(() => {
+      setSource(args.source);
+    }, [args.source]);
     return (
-      <div className="w-72 pt-4">
-        <label className="text-sm font-medium mb-1 block">Order method (Radix Select)</label>
-        <AutoFillField {...(source ? { source } : {})} dismissOn="manual">
+      <div className="w-72">
+        <AutoFillField
+          {...(source ? { source } : {})}
+          {...(args.iconColor ? { iconColor: args.iconColor } : {})}
+          dismissOn="manual"
+        >
+          <label className="text-sm font-medium mb-1 block">Order method (Radix Select)</label>
           <Select
             value={value}
             onValueChange={(v) => {
