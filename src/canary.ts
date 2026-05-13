@@ -142,6 +142,10 @@ export type { ArdaSelectProps } from './components/canary/atoms/select';
 export { AutoFillLabel } from './components/canary/atoms/auto-fill-label';
 export type { AutoFillLabelProps } from './components/canary/atoms/auto-fill-label';
 
+// Molecules: AutoFillField
+export { AutoFillField } from './components/canary/molecules/auto-fill-field';
+export type { AutoFillFieldProps } from './components/canary/molecules/auto-fill-field';
+
 // Atoms: InputGroup
 export {
   InputGroup,

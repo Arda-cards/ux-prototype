@@ -65,6 +65,10 @@ export interface ArdaSplitButtonRuntimeConfig {
   loading?: boolean | string;
   /** Disabled state for the entire split button. */
   disabled?: boolean;
+  /** Controlled open state of the dropdown menu. */
+  menuOpen?: boolean;
+  /** Called when the dropdown open state changes. */
+  onMenuOpenChange?: (open: boolean) => void;
 }
 
 /** Combined props for SplitButton. */
@@ -97,6 +101,8 @@ export function SplitButton({
   onClick,
   loading,
   disabled,
+  menuOpen,
+  onMenuOpenChange,
   children,
 }: SplitButtonProps) {
   const isDisabled = disabled || !!loading;
@@ -104,7 +110,10 @@ export function SplitButton({
   const dividerClass = separatorVariantClasses[variant ?? 'primary'];
 
   return (
-    <DropdownMenu>
+    <DropdownMenu
+      {...(menuOpen !== undefined ? { open: menuOpen } : {})}
+      {...(onMenuOpenChange ? { onOpenChange: onMenuOpenChange } : {})}
+    >
       <ButtonGroup
         {...(className ? { className } : {})}
         {...(showDivider ? { showDivider, dividerClassName: dividerClass } : {})}
