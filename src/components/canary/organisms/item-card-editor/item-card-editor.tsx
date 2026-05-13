@@ -6,7 +6,7 @@ import { ImageDropZone } from '@/components/canary/molecules/image-drop-zone/ima
 import { ImageUploadDialog } from '@/components/canary/organisms/shared/image-upload-dialog/image-upload-dialog';
 import { ArdaConfirmDialog } from '@/components/canary/atoms/confirm-dialog/confirm-dialog';
 import { Button } from '@/components/canary/primitives/button';
-import { AutoFillLabel } from '@/components/canary/atoms/auto-fill-label';
+import { AutoFillField } from '@/components/canary/molecules/auto-fill-field';
 import { Input } from '@/components/canary/primitives/input';
 import {
   TypeaheadInput,
@@ -72,10 +72,11 @@ export interface ItemCardEditorRuntimeProps {
    * closing over an item identifier in scope.
    */
   qrCodeUrl?: () => Promise<string>;
-  /** Auto-fill indicators — per-field source labels and clear callbacks. */
+  /** Auto-fill indicators — shared source with per-field clear callbacks. */
   autoFill?: {
-    title?: { source: string; iconClass?: string; onClear: () => void };
-    image?: { source: string; iconClass?: string; onClear: () => void };
+    source: string;
+    iconColor?: string;
+    fields: Partial<Record<keyof ItemCardFields, () => void>>;
   };
 }
 
@@ -167,7 +168,7 @@ export function ItemCardEditor({
   const commitImageUrl = React.useCallback((url: string) => {
     onChangeRef.current({ ...fieldsRef.current, imageUrl: url });
     onImageConfirmedRef.current?.(url);
-    autoFillRef.current?.image?.onClear();
+    autoFillRef.current?.fields.imageUrl?.();
   }, []);
 
   // Direct upload: no dialog, no cropper. The user drops → we upload →
@@ -206,7 +207,7 @@ export function ItemCardEditor({
 
   const handleRemoveImage = React.useCallback(() => {
     onChangeRef.current({ ...fieldsRef.current, imageUrl: null });
-    autoFillRef.current?.image?.onClear();
+    autoFillRef.current?.fields.imageUrl?.();
   }, []);
 
   const handleDialogConfirm = React.useCallback((result: ImageUploadResult) => {
@@ -246,23 +247,20 @@ export function ItemCardEditor({
       >
         {/* Header — editable title + QR code */}
         <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
+          <AutoFillField
+            {...(autoFill?.fields.title
+              ? { source: autoFill.source, onClear: autoFill.fields.title }
+              : {})}
+            {...(autoFill?.iconColor ? { iconColor: autoFill.iconColor } : {})}
+            className="flex-1 min-w-0"
+          >
             <Input
               placeholder="Item name*"
               value={fields.title}
-              onChange={(e) => {
-                updateField('title', e.target.value);
-                autoFill?.title?.onClear();
-              }}
+              onChange={(e) => updateField('title', e.target.value)}
               className="font-extrabold text-lg h-10 rounded-lg border-input"
             />
-            {autoFill?.title && (
-              <AutoFillLabel
-                source={autoFill.title.source}
-                {...(autoFill.title.iconClass ? { iconClass: autoFill.title.iconClass } : {})}
-              />
-            )}
-          </div>
+          </AutoFillField>
           <div className="flex flex-col items-center flex-shrink-0 h-10 justify-between">
             <img src={resolvedQrSrc} alt="QR" className="w-7 h-7 object-contain" />
             <span className="text-[9px] font-semibold text-muted-foreground leading-none">
@@ -308,7 +306,13 @@ export function ItemCardEditor({
         </div>
 
         {/* Product Image Area — image, drop zone, uploading spinner, or error */}
-        <div className="w-full">
+        <AutoFillField
+          {...(autoFill?.fields.imageUrl
+            ? { source: autoFill.source, dismissOn: 'manual' as const }
+            : {})}
+          {...(autoFill?.iconColor ? { iconColor: autoFill.iconColor } : {})}
+          className="w-full"
+        >
           {fields.imageUrl ? (
             <div
               className="relative w-full overflow-hidden rounded-lg border border-border"
@@ -371,13 +375,7 @@ export function ItemCardEditor({
               onInput={handleDropZoneInput}
             />
           )}
-          {autoFill?.image && (
-            <AutoFillLabel
-              source={autoFill.image.source}
-              {...(autoFill.image.iconClass ? { iconClass: autoFill.image.iconClass } : {})}
-            />
-          )}
-        </div>
+        </AutoFillField>
 
         {/* Color Swatch Picker + accent bar */}
         <div className="flex items-center gap-2 w-full">
