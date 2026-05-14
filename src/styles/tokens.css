@@ -45,7 +45,7 @@
   --primary-hover: oklch(0.701 0.187 37.5);
   --primary-active: oklch(0.605 0.215 36.4);
   --primary-muted: oklch(0.98 0.016 36.4);
-  --accent-light: #FEF7F5;
+  --accent-light: oklch(0.98 0.015 28);
 
   --secondary-light: oklch(0.985 0.003 247.858);
   --secondary-hover: oklch(0.948 0 0);

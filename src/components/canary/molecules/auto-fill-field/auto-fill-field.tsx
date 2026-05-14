@@ -71,15 +71,18 @@ export function AutoFillField({
     <div data-slot="auto-fill-field" className={cn('relative', className)} {...eventHandlers}>
       {children}
       {source && (
-        <Badge
-          variant="secondary"
-          icon={Sparkles}
-          {...(iconColor ? { iconColor } : {})}
-          collapsible
-          className="absolute top-0 right-0 z-10 cursor-default select-none"
-        >
-          Filled by {source}
-        </Badge>
+        <>
+          <span className="sr-only">Filled by {source}</span>
+          <Badge
+            variant="secondary"
+            icon={Sparkles}
+            {...(iconColor ? { iconColor } : {})}
+            collapsible
+            className="absolute top-0 right-0 z-10 cursor-default select-none"
+          >
+            Filled by {source}
+          </Badge>
+        </>
       )}
     </div>
   );

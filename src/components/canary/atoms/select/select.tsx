@@ -1,5 +1,3 @@
-import * as React from 'react';
-
 import {
   Select as SelectPrimitive,
   SelectContent,
@@ -10,7 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/canary/primitives/select';
-import { AutoFillLabel } from '@/components/canary/atoms/auto-fill-label';
 
 export interface ArdaSelectProps {
   /** Current value. */
@@ -27,12 +24,6 @@ export interface ArdaSelectProps {
   size?: 'sm' | 'default';
   /** Additional CSS classes on the trigger. */
   className?: string;
-  /** Source label for auto-filled state. When set, shows helper text below the field. */
-  autoFillSource?: string;
-  /** CSS color class for the auto-fill sparkle icon. */
-  autoFillIconClass?: string;
-  /** Called when user changes the value, signaling auto-fill should clear. */
-  onAutoFillClear?: () => void;
 }
 
 export function ArdaSelect({
@@ -43,43 +34,24 @@ export function ArdaSelect({
   disabled,
   size = 'default',
   className,
-  autoFillSource,
-  autoFillIconClass,
-  onAutoFillClear,
 }: ArdaSelectProps) {
-  const handleValueChange = React.useCallback(
-    (val: string) => {
-      onValueChange?.(val);
-      onAutoFillClear?.();
-    },
-    [onValueChange, onAutoFillClear],
-  );
-
   return (
-    <>
-      <SelectPrimitive
-        {...(value ? { value } : {})}
-        onValueChange={handleValueChange}
-        {...(disabled ? { disabled } : {})}
-      >
-        <SelectTrigger size={size} className={className}>
-          <SelectValue placeholder={placeholder} />
-        </SelectTrigger>
-        <SelectContent>
-          {options.map((opt) => (
-            <SelectItem key={opt.value} value={opt.value}>
-              {opt.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </SelectPrimitive>
-      {autoFillSource && (
-        <AutoFillLabel
-          source={autoFillSource}
-          {...(autoFillIconClass ? { iconClass: autoFillIconClass } : {})}
-        />
-      )}
-    </>
+    <SelectPrimitive
+      {...(value ? { value } : {})}
+      {...(onValueChange ? { onValueChange } : {})}
+      {...(disabled ? { disabled } : {})}
+    >
+      <SelectTrigger size={size} className={className}>
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map((opt) => (
+          <SelectItem key={opt.value} value={opt.value}>
+            {opt.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </SelectPrimitive>
   );
 }
 

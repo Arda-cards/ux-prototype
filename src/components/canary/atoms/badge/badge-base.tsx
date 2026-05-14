@@ -70,9 +70,10 @@ function Badge({
           badgeVariants({ variant, size }),
           // Collapsed: perfect circle
           `group/badge gap-0 rounded-full px-0 ${circleWidth}`,
-          // Expanded: pill with text, auto width
+          // Expanded: pill with text, auto width (hover + focus-visible for touch/keyboard)
           'hover:w-auto hover:rounded-md hover:px-2 hover:gap-1',
-          'transition-all duration-200 ease-in-out',
+          'focus-visible:w-auto focus-visible:rounded-md focus-visible:px-2 focus-visible:gap-1',
+          'transition-[width,padding,gap,border-radius] duration-200 ease-in-out',
           className,
         )}
         {...props}
@@ -81,7 +82,7 @@ function Badge({
         <span
           className={cn(
             'font-semibold whitespace-nowrap overflow-hidden',
-            'hidden group-hover/badge:inline',
+            'hidden group-hover/badge:inline group-focus-visible/badge:inline',
           )}
         >
           {children}

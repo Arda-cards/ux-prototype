@@ -155,7 +155,6 @@ export {
   InputGroupInput,
   InputGroupTextarea,
 } from './components/canary/atoms/input-group/input-group';
-export type { InputGroupProps } from './components/canary/atoms/input-group/input-group';
 
 // Primitives: Popover
 export {
