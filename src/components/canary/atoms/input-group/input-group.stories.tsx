@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Search, DollarSign, AtSign } from 'lucide-react';
 
@@ -9,6 +10,13 @@ import {
   InputGroupInput,
   InputGroupTextarea,
 } from './input-group';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/canary/primitives/select';
 
 const meta = {
   title: 'Components/Canary/Atoms/InputGroup',
@@ -151,4 +159,51 @@ export const Playground: Story = {
       <InputGroupInput placeholder="0.00" type="number" />
     </InputGroup>
   ),
+};
+
+/** Currency select + price input — demonstrates a Select inside an InputGroupAddon. */
+export const CurrencyInput: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A Select dropdown for currency inside an inline-start addon, paired with a numeric input. ' +
+          'The Select trigger is styled to blend into the addon area.',
+      },
+    },
+  },
+  args: {
+    className: 'w-72',
+  },
+  render: function CurrencyInputStory(args) {
+    const [currency, setCurrency] = React.useState('USD');
+    const [amount, setAmount] = React.useState('');
+    const currencySymbols: Record<string, string> = { USD: '$', EUR: '€', GBP: '£', CAD: 'C$' };
+    return (
+      <InputGroup {...args}>
+        <InputGroupAddon align="inline-start" variant="muted">
+          <InputGroupText>{currencySymbols[currency] ?? '$'}</InputGroupText>
+          <Select value={currency} onValueChange={setCurrency}>
+            <SelectTrigger className="border-none shadow-none p-0 h-auto text-sm text-muted-foreground gap-1">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="USD">USD</SelectItem>
+              <SelectItem value="EUR">EUR</SelectItem>
+              <SelectItem value="GBP">GBP</SelectItem>
+              <SelectItem value="CAD">CAD</SelectItem>
+            </SelectContent>
+          </Select>
+        </InputGroupAddon>
+        <InputGroupInput
+          type="number"
+          step="any"
+          min="0"
+          placeholder="0.00"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+        />
+      </InputGroup>
+    );
+  },
 };

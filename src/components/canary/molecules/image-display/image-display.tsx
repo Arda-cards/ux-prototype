@@ -133,7 +133,7 @@ export function ImageDisplay({
           src={imageUrl}
           alt={entityTypeDisplayName}
           className={cn(
-            'absolute inset-0 w-full h-full object-cover',
+            'absolute inset-0 w-full h-full object-contain',
             loadState !== 'loaded' && 'invisible',
           )}
           onLoad={() => setLoadState('loaded')}

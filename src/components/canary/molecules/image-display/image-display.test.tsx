@@ -93,10 +93,10 @@ describe('ImageDisplay', () => {
     expect(container).toHaveClass('h-full');
   });
 
-  it('applies object-cover to img', () => {
+  it('applies object-contain to img', () => {
     render(<ImageDisplay {...defaultProps} imageUrl="https://example.com/image.jpg" />);
     const img = screen.getByRole('img');
-    expect(img).toHaveClass('object-cover');
+    expect(img).toHaveClass('object-contain');
   });
 
   // --- onImageChange / config interaction tests ---

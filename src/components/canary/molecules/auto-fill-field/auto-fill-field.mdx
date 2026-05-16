@@ -1,0 +1,169 @@
+{/* auto-fill-field.mdx */}
+import { Meta } from '@storybook/addon-docs/blocks';
+import * as Stories from './auto-fill-field.stories';
+
+<Meta of={Stories} />
+
+# AutoFillField
+
+Wraps any form field to show an auto-fill badge indicator. On hover, the sparkle badge expands to reveal the source name (e.g. "Filled by Amazon"). Takes no extra vertical space &#8212; the badge is absolutely positioned over the field's top-right corner.
+
+**Molecule** &#8212; Canary | Import: `import { AutoFillField } from '@arda-cards/design-system/canary'`
+
+---
+
+## Dismiss Modes
+
+AutoFillField supports three dismiss modes to handle different input types:
+
+<table>
+  <thead>
+    <tr>
+      <th>Mode</th>
+      <th>DOM Event</th>
+      <th>Use for</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>input</code> (default)</td>
+      <td><code>onInput</code></td>
+      <td>Text inputs, textareas, typeaheads &#8212; fires on every keystroke</td>
+    </tr>
+    <tr>
+      <td><code>change</code></td>
+      <td><code>onChange</code></td>
+      <td>Native selects, checkboxes, toggles, file inputs</td>
+    </tr>
+    <tr>
+      <td><code>manual</code></td>
+      <td>None</td>
+      <td>Radix Select, image upload, any custom component that doesn&#8217;t fire native DOM events</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Usage
+
+### Text input (default &#8212; dismissOn="input")
+
+```tsx
+<AutoFillField source="Amazon" onClear={() => clearAutoFill('sku')}>
+  <InputGroup>
+    <InputGroupInput value={sku} onChange={handleChange} />
+  </InputGroup>
+</AutoFillField>
+```
+
+The badge disappears when the user types in the input.
+
+### Native select (dismissOn="change")
+
+```tsx
+<AutoFillField source="Amazon" dismissOn="change" onClear={() => clearAutoFill('taxable')}>
+  <Switch checked={taxable} onCheckedChange={handleChange} />
+</AutoFillField>
+```
+
+The badge disappears when the native element fires a `change` event.
+
+### Custom component (dismissOn="manual")
+
+```tsx
+<AutoFillField source="Amazon" dismissOn="manual">
+  <ArdaSelect
+    onValueChange={(v) => {
+      setValue(v);
+      clearAutoFill('orderMethod'); // one extra line
+    }}
+  />
+</AutoFillField>
+```
+
+Custom components like Radix Select and image dropzones use React callbacks instead of native DOM events. These don&#8217;t bubble to a wrapper div, so the consumer clears the source from their own callback.
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>source</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>The source that auto-filled the field. When undefined, no badge is shown.</td>
+    </tr>
+    <tr>
+      <td><code>iconColor</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>CSS color class for the sparkle icon (e.g. <code>text-primary</code>).</td>
+    </tr>
+    <tr>
+      <td><code>dismissOn</code></td>
+      <td><code>'input' | 'change' | 'manual'</code></td>
+      <td><code>'input'</code></td>
+      <td>Which DOM event triggers auto-dismiss. See Dismiss Modes above.</td>
+    </tr>
+    <tr>
+      <td><code>onClear</code></td>
+      <td><code>() =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Called when the badge is dismissed via auto-dismiss. Not needed for manual mode.</td>
+    </tr>
+    <tr>
+      <td><code>children</code></td>
+      <td><code>ReactNode</code></td>
+      <td>&#8212;</td>
+      <td>The wrapped form field.</td>
+    </tr>
+    <tr>
+      <td><code>className</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Additional CSS classes on the wrapper.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Badge Behavior
+
+- **Collapsed:** Small sparkle icon in a pill at the top-right corner
+- **Hover:** Expands smoothly to show "Filled by &#123;source&#125;"
+- **On dismiss:** Badge disappears (source becomes undefined)
+- **No source:** Wrapper renders transparently &#8212; zero overhead
+
+---
+
+## Accessibility
+
+- The badge is decorative (`select-none`, `cursor-default`) &#8212; not interactive
+- The wrapper uses event delegation to detect edits without modifying child components
+- Screen readers ignore the badge (no accessible label)
+
+---
+
+## Integration Guide
+
+For a complete step-by-step guide on setting up auto-fill indicators on a form &#8212; including state management, dismiss mode selection, and organism integration &#8212; see the [AutoFillField Integration Guide](https://documentation.arda.cards/current-system/architecture/auto-fill-field-guide/) in the Arda documentation site.
+
+---
+
+## Import
+
+```tsx
+import { AutoFillField } from '@arda-cards/design-system/canary';
+```

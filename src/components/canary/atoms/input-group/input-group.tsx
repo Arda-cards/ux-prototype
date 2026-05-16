@@ -6,7 +6,7 @@ import { Button } from '@/components/canary/primitives/button';
 import { Input } from '@/components/canary/primitives/input';
 import { Textarea } from '@/components/canary/primitives/textarea';
 
-function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
+function InputGroup({ className, children, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="input-group"
@@ -30,7 +30,9 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
         className,
       )}
       {...props}
-    />
+    >
+      {children}
+    </div>
   );
 }
 
@@ -46,16 +48,34 @@ const inputGroupAddonVariants = cva(
         'block-end':
           'order-last w-full justify-start px-3 pb-3 group-has-[>input]/input-group:pb-2.5 [.border-t]:pt-3',
       },
+      variant: {
+        default: '',
+        muted: 'self-stretch bg-muted py-0',
+      },
     },
     defaultVariants: {
       align: 'inline-start',
+      variant: 'default',
     },
+    compoundVariants: [
+      {
+        variant: 'muted',
+        align: 'inline-start',
+        className: 'has-[>button]:ml-0 rounded-l-[calc(var(--radius)-3px)]',
+      },
+      {
+        variant: 'muted',
+        align: 'inline-end',
+        className: 'has-[>button]:mr-0 rounded-r-[calc(var(--radius)-3px)]',
+      },
+    ],
   },
 );
 
 function InputGroupAddon({
   className,
   align = 'inline-start',
+  variant = 'default',
   ...props
 }: React.ComponentProps<'div'> & VariantProps<typeof inputGroupAddonVariants>) {
   return (
@@ -63,7 +83,7 @@ function InputGroupAddon({
       role="group"
       data-slot="input-group-addon"
       data-align={align}
-      className={cn(inputGroupAddonVariants({ align }), className)}
+      className={cn(inputGroupAddonVariants({ align, variant }), className)}
       onClick={(e) => {
         if ((e.target as HTMLElement).closest('button')) {
           return;

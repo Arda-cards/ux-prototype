@@ -119,6 +119,51 @@ export type {
 // Primitives: Tooltip (for app-level TooltipProvider)
 export { TooltipProvider } from './components/canary/primitives/tooltip';
 
+// Primitives: Input
+export { Input } from './components/canary/primitives/input';
+
+// Primitives: Select
+export {
+  Select as SelectPrimitive,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from './components/canary/primitives/select';
+
+// Atoms: Select
+export { ArdaSelect } from './components/canary/atoms/select';
+export type { ArdaSelectProps } from './components/canary/atoms/select';
+
+// Atoms: AutoFillLabel
+export { AutoFillLabel } from './components/canary/atoms/auto-fill-label';
+export type { AutoFillLabelProps } from './components/canary/atoms/auto-fill-label';
+
+// Molecules: AutoFillField
+export { AutoFillField } from './components/canary/molecules/auto-fill-field';
+export type { AutoFillFieldProps } from './components/canary/molecules/auto-fill-field';
+
+// Atoms: InputGroup
+export {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupText,
+  InputGroupInput,
+  InputGroupTextarea,
+} from './components/canary/atoms/input-group/input-group';
+
+// Primitives: Popover
+export {
+  Popover,
+  PopoverTrigger,
+  PopoverAnchor,
+  PopoverContent,
+} from './components/canary/primitives/popover';
+
 // Primitives: DropdownMenu (for use with SplitButton menuContent)
 export {
   DropdownMenu,
