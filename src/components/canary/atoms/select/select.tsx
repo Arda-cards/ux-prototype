@@ -37,7 +37,7 @@ export function ArdaSelect({
 }: ArdaSelectProps) {
   return (
     <SelectPrimitive
-      {...(value ? { value } : {})}
+      {...(value !== undefined ? { value } : {})}
       {...(onValueChange ? { onValueChange } : {})}
       {...(disabled ? { disabled } : {})}
     >

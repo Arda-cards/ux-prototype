@@ -154,6 +154,7 @@ export function ImageFormField({
           {/* Trash icon — opens remove confirmation (hidden when no image) */}
           {resolvedImageUrl !== null && (
             <Button
+              type="button"
               size="icon-sm"
               variant="ghost"
               aria-label="Remove image"
