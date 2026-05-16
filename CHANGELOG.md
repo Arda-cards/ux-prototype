@@ -18,7 +18,7 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
-## [5.3.0-nail60-may-14-26] - 2026-05-14
+## [5.3.0] - 2026-05-14
 
 ### Added
 - **AutoFillField molecule** — wrapper component showing a collapsible sparkle badge on auto-filled fields with three dismiss modes (`input`, `change`, `manual`).
