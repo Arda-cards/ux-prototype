@@ -28,9 +28,9 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
 - Canary exports for `Popover`, `Input`, `InputGroup`, `AutoFillField`, `Select`, and `AutoFillLabel`.
 - `--accent-light` design token and `InputGroupAddon` muted variant.
 
-### Changed
-- Badge secondary variant uses `bg-accent-light` (#FEF7F5).
-- Image display and item card editor use `object-contain` instead of `object-cover`.
+### Fixed
+- Badge secondary variant now uses `bg-accent-light` (#FEF7F5) to match Figma spec.
+- Image display and item card editor use `object-contain` instead of `object-cover` for proper image scaling.
 - ItemCardEditor uses `AutoFillField` internally for per-field auto-fill badges.
 
 ## [5.2.1] - 2026-05-08
