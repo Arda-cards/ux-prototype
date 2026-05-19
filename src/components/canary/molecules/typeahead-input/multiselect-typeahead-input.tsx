@@ -12,6 +12,30 @@ export interface MultiSelectOption {
   value: string;
 }
 
+/**
+ * Source of multiselect options. Either an async function (receives search
+ * text, returns matches) or a static list (`MultiSelectOption[]` or `string[]`)
+ * filtered client-side by label.
+ */
+export type MultiSelectSource =
+  | ((search: string) => Promise<MultiSelectOption[]>)
+  | MultiSelectOption[]
+  | string[];
+
+/** Normalize a MultiSelectSource into an async lookup function. */
+function normalizeLookup(
+  source: MultiSelectSource,
+): (search: string) => Promise<MultiSelectOption[]> {
+  if (typeof source === 'function') return source;
+  const options: MultiSelectOption[] = source.map((o) =>
+    typeof o === 'string' ? { label: o, value: o } : o,
+  );
+  return async (search: string) => {
+    const q = search.trim().toLowerCase();
+    return q ? options.filter((o) => o.label.toLowerCase().includes(q)) : options;
+  };
+}
+
 export interface MultiSelectTypeaheadInputProps extends Omit<
   React.ComponentProps<'div'>,
   'onChange'
@@ -20,8 +44,11 @@ export interface MultiSelectTypeaheadInputProps extends Omit<
   value: string[];
   /** Called when the selection changes. */
   onValueChange: (value: string[]) => void;
-  /** Async lookup function — receives search text, returns matching options. */
-  lookup: (search: string) => Promise<MultiSelectOption[]>;
+  /**
+   * Options source — an async lookup function, or a static list of options
+   * (`MultiSelectOption[]` or `string[]`) filtered client-side by label.
+   */
+  lookup: MultiSelectSource;
   /** Input placeholder text (shown when no tokens are selected). */
   placeholder?: string;
   /** Accessible label for the input. */
@@ -45,9 +72,11 @@ export interface MultiSelectTypeaheadInputProps extends Omit<
    * In cell editor context, this signals "stop editing".
    */
   onCommit?: () => void;
+  /** Maximum number of dropdown results to show. Defaults to 8. */
+  maxResults?: number;
 }
 
-const MAX_RESULTS = 8;
+const DEFAULT_MAX_RESULTS = 8;
 const DEBOUNCE_MS = 250;
 
 // Hoisted static JSX
@@ -79,9 +108,14 @@ export function MultiSelectTypeaheadInput({
   cellEditorMode = false,
   defaultOne = true,
   onCommit,
+  maxResults = DEFAULT_MAX_RESULTS,
   className,
   ...rest
 }: MultiSelectTypeaheadInputProps) {
+  // Normalize the lookup source (function | options[] | string[]) into a
+  // single async lookup function.
+  const lookupFn = React.useMemo(() => normalizeLookup(lookup), [lookup]);
+
   const [inputValue, setInputValue] = React.useState('');
   const [options, setOptions] = React.useState<MultiSelectOption[]>([]);
   const [highlightedIndex, setHighlightedIndex] = React.useState(-1);
@@ -122,9 +156,9 @@ export function MultiSelectTypeaheadInput({
       setError(false);
 
       try {
-        const results = await lookup(search);
+        const results = await lookupFn(search);
         if (controller.signal.aborted) return;
-        const sliced = results.slice(0, MAX_RESULTS);
+        const sliced = results.slice(0, maxResults);
         setOptions(sliced);
         setHighlightedIndex(sliced.length > 0 ? 0 : -1);
         setLoading(false);
@@ -135,7 +169,7 @@ export function MultiSelectTypeaheadInput({
         setOptions([]);
       }
     },
-    [lookup],
+    [lookupFn, maxResults],
   );
 
   const debouncedSearch = React.useCallback(
@@ -178,6 +212,24 @@ export function MultiSelectTypeaheadInput({
       inputRef.current?.focus();
     },
     [onValueChange],
+  );
+
+  // Choosing an option — from Enter or a click. With defaultOne, selecting
+  // (never unselecting) commits and closes; otherwise it toggles and stays open.
+  const chooseOption = React.useCallback(
+    (optionValue: string) => {
+      if (defaultOne) {
+        if (!valueRef.current.includes(optionValue)) {
+          onValueChange([...valueRef.current, optionValue]);
+        }
+        setOpen(false);
+        setInputValue('');
+        onCommit?.();
+      } else {
+        toggleOption(optionValue);
+      }
+    },
+    [defaultOne, onValueChange, onCommit, toggleOption],
   );
 
   // --- Input handlers ---
@@ -329,21 +381,7 @@ export function MultiSelectTypeaheadInput({
           {
             const opt = opts[hi];
             if (hi >= 0 && opt) {
-              const alreadySelected = valueRef.current.includes(opt.value);
-              if (defaultOne) {
-                // defaultOne: select (if not already), then commit and exit
-                if (!alreadySelected) {
-                  onValueChange([...valueRef.current, opt.value]);
-                }
-                setOpen(false);
-                setInputValue('');
-                onCommit?.();
-              } else {
-                // additive: toggle unless already selected (never uncheck via Enter)
-                if (!alreadySelected) {
-                  toggleOption(opt.value);
-                }
-              }
+              chooseOption(opt.value);
             }
           }
           break;
@@ -359,7 +397,7 @@ export function MultiSelectTypeaheadInput({
           break;
       }
     },
-    [open, defaultOne, doSearch, focusToken, toggleOption, onValueChange, onCommit],
+    [open, doSearch, focusToken, chooseOption, onValueChange, onCommit],
   );
 
   // Scroll highlighted item into view
@@ -463,7 +501,7 @@ export function MultiSelectTypeaheadInput({
               )}
               onMouseDown={(e) => {
                 e.preventDefault();
-                toggleOption(opt.value);
+                chooseOption(opt.value);
               }}
               onMouseEnter={() => setHighlightedIndex(i)}
             >
@@ -490,9 +528,12 @@ export function MultiSelectTypeaheadInput({
   const inputArea = (
     <div
       className={cn(
-        'flex flex-wrap items-center gap-1 rounded-md border border-input bg-background px-2 py-1 text-sm',
+        'flex items-center gap-1 rounded-md border border-input bg-background px-2 py-1 text-sm',
         'focus-within:ring-2 focus-within:ring-ring',
         disabled && 'opacity-50 cursor-not-allowed',
+        // Collapsed: single line, clip overflow so the field never grows tall.
+        // Editing: wrap tokens onto multiple lines.
+        isEditing ? 'flex-wrap' : 'flex-nowrap overflow-hidden',
         // In cell editor mode, keep the standard input styling in both states —
         // no special transparent/borderless treatment for non-editing.
         cellEditorMode && 'min-h-[var(--ag-row-height,48px)]',
@@ -516,7 +557,10 @@ export function MultiSelectTypeaheadInput({
           onKeyDown={(e) => handleTokenKeyDown(e, i)}
           onFocus={() => setFocusedTokenIndex(i)}
           onBlur={() => setFocusedTokenIndex(-1)}
-          className={cn('rounded-md outline-none', focusedTokenIndex === i && 'ring-2 ring-ring')}
+          className={cn(
+            'shrink-0 rounded-md outline-none',
+            focusedTokenIndex === i && 'ring-2 ring-ring',
+          )}
         >
           <Badge variant="secondary" className="text-xs">
             {tokenValue}
@@ -524,7 +568,7 @@ export function MultiSelectTypeaheadInput({
         </span>
       ))}
       {overflowCount > 0 && (
-        <span className="text-xs text-muted-foreground font-medium px-1">
+        <span className="shrink-0 whitespace-nowrap px-1 text-xs font-medium text-muted-foreground">
           +{overflowCount} more
         </span>
       )}
