@@ -1,12 +1,10 @@
 import { useState, useMemo } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { AgGridReact } from 'ag-grid-react';
-import { ModuleRegistry, AllCommunityModule, type ColDef } from 'ag-grid-community';
-
-ModuleRegistry.registerModules([AllCommunityModule]);
+import type { ColDef } from 'ag-grid-community';
 
 import { MultiSelectTypeaheadInput } from './multiselect-typeahead-input';
 import { createMultiSelectCellEditor } from './multiselect-cell-editor';
+import { DataGrid } from '../data-grid/data-grid';
 import { lookupRoles } from '@/components/canary/__mocks__/role-lookup';
 import { roleLookupHandler } from '@/components/canary/__mocks__/handlers/role-lookup';
 
@@ -88,7 +86,14 @@ export const Disabled: StoryObj = {
   ),
 };
 
-/** Cell editor in an AG Grid — double-click the Roles column to edit. */
+interface SupplierRow {
+  [key: string]: unknown;
+  name: string;
+  city: string;
+  roles: string[];
+}
+
+/** Cell editor in the canary DataGrid — double-click the Roles column to edit. */
 export const InGrid: StoryObj = {
   render: () => {
     const RoleCellEditor = useMemo(
@@ -100,13 +105,13 @@ export const InGrid: StoryObj = {
       [],
     );
 
-    const [rowData] = useState([
+    const [rowData] = useState<SupplierRow[]>([
       { name: 'Apex Medical', city: 'Denver', roles: ['Vendor'] },
       { name: 'BioTech Supplies', city: 'Boston', roles: ['Vendor', 'Carrier'] },
       { name: 'Delta Pharma', city: 'Atlanta', roles: ['Vendor', 'Customer', 'Carrier'] },
     ]);
 
-    const columnDefs = useMemo<ColDef[]>(
+    const columnDefs = useMemo<ColDef<SupplierRow>[]>(
       () => [
         { field: 'name', headerName: 'Name', flex: 2 },
         { field: 'city', headerName: 'City', width: 120 },
@@ -116,7 +121,6 @@ export const InGrid: StoryObj = {
           flex: 2,
           editable: true,
           cellEditor: RoleCellEditor,
-          cellEditorPopup: true,
           cellRenderer: (params: { value?: string[] }) => {
             const roles = params.value ?? [];
             return (
@@ -142,9 +146,7 @@ export const InGrid: StoryObj = {
         <p className="text-sm text-muted-foreground mb-4">
           Double-click the <strong>Roles</strong> column to open the multiselect cell editor.
         </p>
-        <div className="ag-theme-quartz w-[600px] h-[220px]">
-          <AgGridReact rowData={rowData} columnDefs={columnDefs} />
-        </div>
+        <DataGrid<SupplierRow> rowData={rowData} columnDefs={columnDefs} height={220} editable />
       </div>
     );
   },

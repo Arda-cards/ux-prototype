@@ -464,7 +464,7 @@ export function TypeaheadInput({
       autoComplete="off"
       className={
         cellEditorMode
-          ? 'border-0 shadow-none bg-transparent focus-visible:ring-0 focus-visible:border-transparent h-full'
+          ? 'h-full py-0 rounded-none border-0 bg-background shadow-none focus-visible:border-transparent focus-visible:ring-0'
           : undefined
       }
     />
@@ -473,7 +473,7 @@ export function TypeaheadInput({
   return (
     <div
       ref={wrapperRef}
-      className={cn('relative', className)}
+      className={cn('relative', cellEditorMode && 'h-full', className)}
       data-slot="typeahead-input"
       data-state={open ? 'open' : 'closed'}
       data-loading={loading || undefined}

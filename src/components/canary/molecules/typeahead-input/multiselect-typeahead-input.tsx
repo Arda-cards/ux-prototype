@@ -543,9 +543,10 @@ export function MultiSelectTypeaheadInput({
         // Collapsed: single line, clip overflow so the field never grows tall.
         // Editing: wrap tokens onto multiple lines.
         isEditing ? 'flex-wrap' : 'flex-nowrap overflow-hidden',
-        // In cell editor mode, keep the standard input styling in both states —
-        // no special transparent/borderless treatment for non-editing.
-        cellEditorMode && 'min-h-[var(--ag-row-height,48px)]',
+        // In cell editor mode the AG Grid cell supplies the edit border, so drop
+        // our own border / radius / focus ring. Fill the cell exactly and remove
+        // vertical padding so content centers at the same height as the read cell.
+        cellEditorMode && 'h-full py-0 rounded-none border-0 shadow-none focus-within:ring-0',
         // Expand as overlay when editing (standalone mode only) — absolute
         // position so tokens wrap without pushing layout. In cellEditorMode,
         // AG Grid's popup editor handles expansion, so we just show all tokens.
@@ -615,7 +616,7 @@ export function MultiSelectTypeaheadInput({
   return (
     <div
       ref={wrapperRef}
-      className={cn('relative min-h-9', className)}
+      className={cn('relative min-h-9', cellEditorMode && 'h-full', className)}
       data-slot="multiselect-typeahead-input"
       data-state={open ? 'open' : 'closed'}
       data-loading={loading || undefined}
