@@ -510,11 +510,22 @@ export type {
 export { TypeaheadInput } from './components/canary/molecules/typeahead-input/typeahead-input';
 export type {
   TypeaheadOption,
+  TypeaheadSource,
   TypeaheadInputProps,
 } from './components/canary/molecules/typeahead-input/typeahead-input';
 
 export { createTypeaheadCellEditor } from './components/canary/molecules/typeahead-input/typeahead-cell-editor';
 export type { TypeaheadCellEditorConfig } from './components/canary/molecules/typeahead-input/typeahead-cell-editor';
+
+export { MultiSelectTypeaheadInput } from './components/canary/molecules/typeahead-input/multiselect-typeahead-input';
+export type {
+  MultiSelectOption,
+  MultiSelectSource,
+  MultiSelectTypeaheadInputProps,
+} from './components/canary/molecules/typeahead-input/multiselect-typeahead-input';
+
+export { createMultiSelectCellEditor } from './components/canary/molecules/typeahead-input/multiselect-cell-editor';
+export type { MultiSelectCellEditorConfig } from './components/canary/molecules/typeahead-input/multiselect-cell-editor';
 
 // --- Organisms — ItemCardEditor ---
 

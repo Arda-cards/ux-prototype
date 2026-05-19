@@ -68,6 +68,11 @@ export interface TypeaheadInputProps extends Omit<React.ComponentProps<'div'>, '
    * (calls `onValueChange('')`) and blurs.
    */
   clearOnFocus?: boolean;
+  /**
+   * Called when the user commits a value (selecting an option, creating one, or
+   * Tab). In a cell editor this signals "stop editing".
+   */
+  onCommit?: () => void;
 }
 
 const DEFAULT_MAX_RESULTS = 8;
@@ -103,6 +108,7 @@ export function TypeaheadInput({
   cellEditorMode = false,
   maxResults = DEFAULT_MAX_RESULTS,
   clearOnFocus = false,
+  onCommit,
   className,
   ...rest
 }: TypeaheadInputProps) {
@@ -192,8 +198,9 @@ export function TypeaheadInput({
       onValueChange(opt.value);
       setOpen(false);
       setOptions([]);
+      onCommit?.();
     },
-    [onValueChange],
+    [onValueChange, onCommit],
   );
 
   const createValue = React.useCallback(
@@ -204,8 +211,9 @@ export function TypeaheadInput({
       onValueChange(trimmed);
       setOpen(false);
       setOptions([]);
+      onCommit?.();
     },
-    [onValueChange],
+    [onValueChange, onCommit],
   );
 
   // --- Derived state ---
@@ -345,6 +353,7 @@ export function TypeaheadInput({
             createValue(inputValueRef.current.trim());
           } else if (cellEditorMode && inputValueRef.current.trim()) {
             onValueChange(inputValueRef.current.trim());
+            onCommit?.();
           }
           setOpen(false);
           break;
@@ -359,6 +368,7 @@ export function TypeaheadInput({
       selectOption,
       createValue,
       onValueChange,
+      onCommit,
     ],
   );
 

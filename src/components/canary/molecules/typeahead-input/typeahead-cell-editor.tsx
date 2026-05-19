@@ -1,17 +1,27 @@
 import { useState, useRef, useCallback } from 'react';
 import { useGridCellEditor } from 'ag-grid-react';
 
-import { TypeaheadInput, type TypeaheadOption } from './typeahead-input';
+import { TypeaheadInput, type TypeaheadSource } from './typeahead-input';
 
 // --- Types ---
 
 export interface TypeaheadCellEditorConfig {
-  /** Async lookup function for options. */
-  lookup: (search: string) => Promise<TypeaheadOption[]>;
+  /**
+   * Options source — an async lookup function, or a static list (`string[]` or
+   * `TypeaheadOption[]`) filtered client-side by label.
+   */
+  lookup: TypeaheadSource;
   /** Allow creating new values not in the lookup results. */
   allowCreate?: boolean;
   /** Input placeholder text. */
   placeholder?: string;
+  /** Maximum number of dropdown results to show. Defaults to 8. */
+  maxResults?: number;
+  /**
+   * Clear the input on focus to show the full list; restore on Escape/blur.
+   * Delete/Backspace on an empty input clears the value.
+   */
+  clearOnFocus?: boolean;
 }
 
 export interface TypeaheadCellEditorProps {
@@ -25,8 +35,9 @@ export interface TypeaheadCellEditorProps {
 function TypeaheadCellEditorInner({
   value,
   onValueChange,
+  stopEditing,
   config,
-}: Omit<TypeaheadCellEditorProps, 'stopEditing'> & { config: TypeaheadCellEditorConfig }) {
+}: TypeaheadCellEditorProps & { config: TypeaheadCellEditorConfig }) {
   const [currentValue, setCurrentValue] = useState(value ?? '');
   const wasCancelledRef = useRef(false);
 
@@ -42,13 +53,18 @@ function TypeaheadCellEditorInner({
     [onValueChange],
   );
 
+  const handleCommit = useCallback(() => stopEditing(), [stopEditing]);
+
   return (
     <TypeaheadInput
       value={currentValue}
       onValueChange={handleValueChange}
+      onCommit={handleCommit}
       lookup={config.lookup}
       allowCreate={config.allowCreate ?? false}
-      placeholder={config.placeholder ?? 'Search\u2026'}
+      placeholder={config.placeholder ?? 'Search…'}
+      maxResults={config.maxResults ?? 8}
+      clearOnFocus={config.clearOnFocus ?? false}
       cellEditorMode
       className="w-full"
     />
@@ -62,10 +78,11 @@ function TypeaheadCellEditorInner({
  *
  * Usage:
  * ```tsx
- * const UnitCellEditor = createTypeaheadCellEditor({
- *   lookup: lookupUnits,
- *   allowCreate: true,
- *   placeholder: 'Search units...',
+ * const OrderMethodCellEditor = createTypeaheadCellEditor({
+ *   lookup: ORDER_METHODS,
+ *   placeholder: 'Order method...',
+ *   maxResults: ORDER_METHODS.length,
+ *   clearOnFocus: true,
  * });
  * ```
  */
