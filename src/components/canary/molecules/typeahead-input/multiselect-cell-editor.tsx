@@ -10,8 +10,6 @@ export interface MultiSelectCellEditorConfig {
   lookup: (search: string) => Promise<MultiSelectOption[]>;
   /** Input placeholder text. */
   placeholder?: string;
-  /** Maximum visible tokens before "+N more". Defaults to 2. */
-  maxVisible?: number;
   /**
    * When true (default), Enter selects the highlighted item and exits edit mode.
    * When false, Enter adds items additively — user must Tab or click away to exit.
@@ -60,7 +58,6 @@ function MultiSelectCellEditorInner({
       onValueChange={handleValueChange}
       lookup={config.lookup}
       placeholder={config.placeholder ?? 'Search\u2026'}
-      maxVisible={config.maxVisible ?? 2}
       defaultOne={config.defaultOne ?? true}
       onCommit={handleCommit}
       cellEditorMode
@@ -79,7 +76,6 @@ function MultiSelectCellEditorInner({
  * const RoleCellEditor = createMultiSelectCellEditor({
  *   lookup: lookupRoles,
  *   placeholder: 'Select roles...',
- *   maxVisible: 2,
  * });
  * ```
  */

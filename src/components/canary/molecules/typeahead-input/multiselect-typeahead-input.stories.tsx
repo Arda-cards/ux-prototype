@@ -65,25 +65,12 @@ export const PrePopulated: StoryObj = {
   ),
 };
 
-/** Overflow — four selected, maxVisible=2 shows "+2 more". */
+/** Overflow — many selected, tokens that don't fit show "+N more". */
 export const Overflow: StoryObj = {
   render: () => (
     <MultiSelectDemo
       lookup={lookupRoles}
-      initialValue={['Vendor', 'Customer', 'Carrier', 'Operator']}
-      maxVisible={2}
-      placeholder="Select roles..."
-    />
-  ),
-};
-
-/** maxVisible=3 for wider containers. */
-export const MaxVisibleThree: StoryObj = {
-  render: () => (
-    <MultiSelectDemo
-      lookup={lookupRoles}
       initialValue={['Vendor', 'Customer', 'Carrier', 'Operator', 'Distributor']}
-      maxVisible={3}
       placeholder="Select roles..."
     />
   ),
@@ -109,7 +96,6 @@ export const InGrid: StoryObj = {
         createMultiSelectCellEditor({
           lookup: lookupRoles,
           placeholder: 'Select roles...',
-          maxVisible: 2,
         }),
       [],
     );

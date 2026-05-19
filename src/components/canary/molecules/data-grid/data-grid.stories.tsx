@@ -130,7 +130,6 @@ export const WithMultiSelectEditor: StoryObj = {
         createMultiSelectCellEditor({
           lookup: lookupRoles,
           placeholder: 'Select roles...',
-          maxVisible: 2,
         }),
       [],
     );
@@ -145,7 +144,7 @@ export const WithMultiSelectEditor: StoryObj = {
             return filtered.map((m) => ({ label: m, value: m }));
           },
           placeholder: 'Select methods...',
-          maxVisible: 2,
+
           defaultOne: false,
         }),
       [],

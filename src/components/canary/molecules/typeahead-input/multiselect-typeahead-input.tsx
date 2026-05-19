@@ -24,8 +24,6 @@ export interface MultiSelectTypeaheadInputProps extends Omit<
   lookup: (search: string) => Promise<MultiSelectOption[]>;
   /** Input placeholder text (shown when no tokens are selected). */
   placeholder?: string;
-  /** Maximum visible tokens before showing "+N more". Defaults to 2. */
-  maxVisible?: number;
   /** Accessible label for the input. */
   'aria-label'?: string;
   /** Disable the input. */
@@ -68,7 +66,7 @@ const noResults = <div className="px-3 py-2 text-sm text-muted-foreground">No re
  * MultiSelectTypeaheadInput — async search input with multiselect.
  *
  * Shows selected values as dismissible Badge tokens in the input area.
- * Overflows to "+N more" when tokens exceed `maxVisible`.
+ * Overflows to "+N more" when tokens exceed the container width.
  * Dropdown items show a checkmark when already selected.
  */
 export function MultiSelectTypeaheadInput({
@@ -76,7 +74,6 @@ export function MultiSelectTypeaheadInput({
   onValueChange,
   lookup,
   placeholder = 'Search\u2026',
-  maxVisible = 2,
   'aria-label': ariaLabel,
   disabled = false,
   cellEditorMode = false,
@@ -178,14 +175,6 @@ export function MultiSelectTypeaheadInput({
       }
       // Keep dropdown open, clear search, refocus input
       setInputValue('');
-      inputRef.current?.focus();
-    },
-    [onValueChange],
-  );
-
-  const removeToken = React.useCallback(
-    (tokenValue: string) => {
-      onValueChange(valueRef.current.filter((v) => v !== tokenValue));
       inputRef.current?.focus();
     },
     [onValueChange],
@@ -394,11 +383,53 @@ export function MultiSelectTypeaheadInput({
           : '';
 
   // --- Token display ---
-  // When editing (input focused or dropdown open), show all tokens so they're
-  // reachable via arrow keys. When collapsed, cap at maxVisible.
   const isEditing = open || focusedTokenIndex >= 0;
-  const visibleTokens = isEditing ? value : value.slice(0, maxVisible);
-  const overflowCount = isEditing ? 0 : value.length - maxVisible;
+
+  // Dynamic overflow: measure how many tokens fit in one line.
+  // Uses the same hidden-measurer + ResizeObserver pattern as OverflowToolbar.
+  const measurerRef = React.useRef<HTMLDivElement>(null);
+  const [visibleCount, setVisibleCount] = React.useState(value.length);
+  const TOKEN_GAP = 4; // gap-1 = 0.25rem = 4px
+  const OVERFLOW_LABEL_WIDTH = 56; // "+N more" text approximate width
+
+  React.useEffect(() => {
+    if (isEditing) {
+      setVisibleCount(value.length);
+      return;
+    }
+    const measurer = measurerRef.current;
+    const container = wrapperRef.current;
+    if (!measurer || !container) return;
+
+    const measure = () => {
+      const containerWidth = container.offsetWidth - 16; // px-2 padding both sides
+      const items = Array.from(measurer.children) as HTMLElement[];
+      let usedWidth = 0;
+      let count = 0;
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (!item) break;
+        const itemWidth = item.offsetWidth + (i > 0 ? TOKEN_GAP : 0);
+        const needsOverflow = i < items.length - 1;
+        const reserve = needsOverflow ? OVERFLOW_LABEL_WIDTH + TOKEN_GAP : 0;
+        if (usedWidth + itemWidth + reserve <= containerWidth) {
+          usedWidth += itemWidth;
+          count++;
+        } else {
+          break;
+        }
+      }
+      setVisibleCount(count === items.length ? items.length : count);
+    };
+
+    const observer = new ResizeObserver(() => requestAnimationFrame(measure));
+    observer.observe(container);
+    requestAnimationFrame(measure);
+    return () => observer.disconnect();
+  }, [value, isEditing]);
+
+  const visibleTokens = isEditing ? value : value.slice(0, visibleCount);
+  const overflowCount = isEditing ? 0 : value.length - visibleCount;
 
   // --- Dropdown list content ---
   const dropdownList = (
@@ -462,16 +493,15 @@ export function MultiSelectTypeaheadInput({
         'flex flex-wrap items-center gap-1 rounded-md border border-input bg-background px-2 py-1 text-sm',
         'focus-within:ring-2 focus-within:ring-ring',
         disabled && 'opacity-50 cursor-not-allowed',
-        cellEditorMode &&
-          !isEditing &&
-          'border-0 shadow-none bg-transparent focus-within:ring-0 h-full',
-        cellEditorMode && isEditing && 'border-0 shadow-none focus-within:ring-0 bg-background',
+        // In cell editor mode, keep the standard input styling in both states —
+        // no special transparent/borderless treatment for non-editing.
+        cellEditorMode && 'min-h-[var(--ag-row-height,48px)]',
         // Expand as overlay when editing (standalone mode only) — absolute
         // position so tokens wrap without pushing layout. In cellEditorMode,
         // AG Grid's popup editor handles expansion, so we just show all tokens.
         !cellEditorMode &&
           isEditing &&
-          'absolute inset-x-0 top-0 z-10 bg-background border border-input rounded-md shadow-md',
+          'absolute inset-x-0 top-0 z-10 bg-background border border-input rounded-md',
       )}
       onClick={() => inputRef.current?.focus()}
     >
@@ -481,17 +511,14 @@ export function MultiSelectTypeaheadInput({
           ref={(el) => {
             tokenRefs.current[i] = el;
           }}
+          data-token
           tabIndex={-1}
           onKeyDown={(e) => handleTokenKeyDown(e, i)}
           onFocus={() => setFocusedTokenIndex(i)}
           onBlur={() => setFocusedTokenIndex(-1)}
           className={cn('rounded-md outline-none', focusedTokenIndex === i && 'ring-2 ring-ring')}
         >
-          <Badge
-            variant="secondary"
-            {...(disabled ? {} : { onDismiss: () => removeToken(tokenValue) })}
-            className="text-xs"
-          >
+          <Badge variant="secondary" className="text-xs">
             {tokenValue}
           </Badge>
         </span>
@@ -535,6 +562,20 @@ export function MultiSelectTypeaheadInput({
       {/* Live region for screen readers */}
       <div className="sr-only" aria-live="polite" aria-atomic="true">
         {statusMessage}
+      </div>
+
+      {/* Hidden measurer — renders all tokens off-screen to measure widths */}
+      <div
+        ref={measurerRef}
+        aria-hidden="true"
+        className="pointer-events-none fixed left-[-9999px] top-0 flex items-center gap-1"
+        style={{ visibility: 'hidden' }}
+      >
+        {value.map((tokenValue) => (
+          <Badge key={tokenValue} variant="secondary" className="text-xs">
+            {tokenValue}
+          </Badge>
+        ))}
       </div>
 
       <Popover open={showDropdown}>
