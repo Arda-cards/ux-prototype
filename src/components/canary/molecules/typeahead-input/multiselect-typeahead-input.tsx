@@ -248,6 +248,15 @@ export function MultiSelectTypeaheadInput({
     doSearch(inputValueRef.current);
   }, [doSearch]);
 
+  // Clicking the input reopens the dropdown when it's already focused (focus
+  // alone won't re-fire, e.g. after a defaultOne selection closed it).
+  const handleInputClick = React.useCallback(() => {
+    if (!open) {
+      setOpen(true);
+      doSearch(inputValueRef.current);
+    }
+  }, [open, doSearch]);
+
   // Close on outside click
   React.useEffect(() => {
     if (!open) return;
@@ -554,6 +563,16 @@ export function MultiSelectTypeaheadInput({
           }}
           data-token
           tabIndex={-1}
+          onMouseDown={(e) => {
+            // Select the token (focus it for keyboard nav) and open the
+            // dropdown. Stop the wrapper onClick from stealing focus to the input.
+            e.preventDefault();
+            e.stopPropagation();
+            focusToken(i);
+            setOpen(true);
+            doSearch(inputValueRef.current);
+          }}
+          onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => handleTokenKeyDown(e, i)}
           onFocus={() => setFocusedTokenIndex(i)}
           onBlur={() => setFocusedTokenIndex(-1)}
@@ -577,6 +596,7 @@ export function MultiSelectTypeaheadInput({
         value={inputValue}
         onChange={handleInputChange}
         onFocus={handleFocus}
+        onClick={handleInputClick}
         onKeyDownCapture={handleKeyDown}
         placeholder={value.length === 0 ? placeholder : ''}
         disabled={disabled}

@@ -12,13 +12,39 @@ export interface TypeaheadOption {
   value: string;
 }
 
+/**
+ * Source of typeahead options. Either:
+ * - an async function that receives the search text and returns matches, or
+ * - a static list (of `TypeaheadOption`s or plain strings) that is filtered
+ *   client-side by label.
+ */
+export type TypeaheadSource =
+  | ((search: string) => Promise<TypeaheadOption[]>)
+  | TypeaheadOption[]
+  | string[];
+
+/** Normalize a TypeaheadSource into an async lookup function. */
+function normalizeLookup(source: TypeaheadSource): (search: string) => Promise<TypeaheadOption[]> {
+  if (typeof source === 'function') return source;
+  const options: TypeaheadOption[] = source.map((o) =>
+    typeof o === 'string' ? { label: o, value: o } : o,
+  );
+  return async (search: string) => {
+    const q = search.trim().toLowerCase();
+    return q ? options.filter((o) => o.label.toLowerCase().includes(q)) : options;
+  };
+}
+
 export interface TypeaheadInputProps extends Omit<React.ComponentProps<'div'>, 'onChange'> {
   /** Current value. */
   value: string;
   /** Called when the user selects or creates a value. */
   onValueChange: (value: string) => void;
-  /** Async lookup function — receives search text, returns matching options. */
-  lookup: (search: string) => Promise<TypeaheadOption[]>;
+  /**
+   * Options source — an async lookup function, or a static list of options
+   * (`TypeaheadOption[]` or `string[]`) filtered client-side by label.
+   */
+  lookup: TypeaheadSource;
   /** Allow creating new values not in the lookup results. */
   allowCreate?: boolean;
   /** Input placeholder text. */
@@ -33,9 +59,18 @@ export interface TypeaheadInputProps extends Omit<React.ComponentProps<'div'>, '
    * is portaled via Radix Popover to escape overflow clipping.
    */
   cellEditorMode?: boolean;
+  /** Maximum number of dropdown results to show. Defaults to 8. */
+  maxResults?: number;
+  /**
+   * When true, clears the input on focus to show an unfiltered list of results.
+   * The original value is restored if the user exits without picking (Escape or
+   * blur). Pressing Delete/Backspace while the input is empty clears the value
+   * (calls `onValueChange('')`) and blurs.
+   */
+  clearOnFocus?: boolean;
 }
 
-const MAX_RESULTS = 8;
+const DEFAULT_MAX_RESULTS = 8;
 const DEBOUNCE_MS = 250;
 // LISTBOX_ID generated per instance via useId() — see component body
 
@@ -66,9 +101,15 @@ export function TypeaheadInput({
   'aria-label': ariaLabel,
   disabled = false,
   cellEditorMode = false,
+  maxResults = DEFAULT_MAX_RESULTS,
+  clearOnFocus = false,
   className,
   ...rest
 }: TypeaheadInputProps) {
+  // Normalize the lookup source (function | options[] | string[]) into a
+  // single async lookup function.
+  const lookupFn = React.useMemo(() => normalizeLookup(lookup), [lookup]);
+
   const [inputValue, setInputValue] = React.useState(value);
   const [options, setOptions] = React.useState<TypeaheadOption[]>([]);
   const [highlightedIndex, setHighlightedIndex] = React.useState(-1);
@@ -112,9 +153,9 @@ export function TypeaheadInput({
       setError(false);
 
       try {
-        const results = await lookup(search);
+        const results = await lookupFn(search);
         if (controller.signal.aborted) return;
-        const sliced = results.slice(0, MAX_RESULTS);
+        const sliced = results.slice(0, maxResults);
         setOptions(sliced);
         setHighlightedIndex(sliced.length > 0 ? 0 : -1);
         setLoading(false);
@@ -125,7 +166,7 @@ export function TypeaheadInput({
         setOptions([]);
       }
     },
-    [lookup],
+    [lookupFn, maxResults],
   );
 
   const debouncedSearch = React.useCallback(
@@ -185,8 +226,23 @@ export function TypeaheadInput({
 
   const handleFocus = React.useCallback(() => {
     setOpen(true);
-    doSearch(inputValueRef.current);
-  }, [doSearch]);
+    if (clearOnFocus) {
+      setInputValue('');
+      doSearch('');
+    } else {
+      doSearch(inputValueRef.current);
+    }
+  }, [doSearch, clearOnFocus]);
+
+  // Clicking the input reopens the dropdown when it's already focused (focus
+  // alone won't re-fire, e.g. after selecting an option closed it).
+  const handleInputClick = React.useCallback(() => {
+    if (!open) {
+      setOpen(true);
+      doSearch(clearOnFocus ? '' : inputValueRef.current);
+      if (clearOnFocus) setInputValue('');
+    }
+  }, [open, doSearch, clearOnFocus]);
 
   // Close on outside click — deps narrowed to [open, cellEditorMode] via refs
   React.useEffect(() => {
@@ -200,7 +256,10 @@ export function TypeaheadInput({
         !popoverRef.current?.contains(target)
       ) {
         setOpen(false);
-        if (cellEditorMode) {
+        if (clearOnFocus) {
+          // clearOnFocus: blur without selecting → restore the original value
+          setInputValue(valueRef.current);
+        } else if (cellEditorMode) {
           // Cell editor: accept typed value on blur
           const trimmed = inputValueRef.current.trim();
           if (trimmed && trimmed !== valueRef.current) {
@@ -216,11 +275,26 @@ export function TypeaheadInput({
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [open, cellEditorMode, onValueChange]);
+  }, [open, cellEditorMode, clearOnFocus, onValueChange]);
 
   // --- Keyboard — uses refs for stable callback ---
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent) => {
+      // clearOnFocus: Delete/Backspace with empty input clears the value and blurs
+      if (
+        clearOnFocus &&
+        (e.key === 'Delete' || e.key === 'Backspace') &&
+        inputValueRef.current === ''
+      ) {
+        e.preventDefault();
+        if (valueRef.current !== '') {
+          onValueChange('');
+        }
+        setOpen(false);
+        inputRef.current?.blur();
+        return;
+      }
+
       if (!open) {
         if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
           e.preventDefault();
@@ -276,7 +350,16 @@ export function TypeaheadInput({
           break;
       }
     },
-    [open, allowCreate, cellEditorMode, doSearch, selectOption, createValue, onValueChange],
+    [
+      open,
+      allowCreate,
+      cellEditorMode,
+      clearOnFocus,
+      doSearch,
+      selectOption,
+      createValue,
+      onValueChange,
+    ],
   );
 
   // Scroll highlighted item into view
@@ -368,6 +451,7 @@ export function TypeaheadInput({
       value={inputValue}
       onChange={handleInputChange}
       onFocus={handleFocus}
+      onClick={handleInputClick}
       onKeyDownCapture={handleKeyDown}
       placeholder={placeholder}
       disabled={disabled}
