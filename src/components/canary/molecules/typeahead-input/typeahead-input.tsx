@@ -148,6 +148,14 @@ export function TypeaheadInput({
     setInputValue(value);
   }, [value]);
 
+  // Auto-focus on mount in cell editor mode so the editor is ready immediately
+  // (opens the dropdown; with clearOnFocus, clears to show the full list).
+  React.useEffect(() => {
+    if (cellEditorMode) {
+      inputRef.current?.focus();
+    }
+  }, [cellEditorMode]);
+
   // --- Search ---
   const doSearch = React.useCallback(
     async (search: string) => {
@@ -183,11 +191,16 @@ export function TypeaheadInput({
     [doSearch],
   );
 
-  // Cleanup on unmount
+  // Cleanup on unmount. Note: we intentionally do NOT abort the in-flight
+  // lookup here. Under React StrictMode the mount effect is double-invoked
+  // (mount → cleanup → mount) on the same DOM; aborting would cancel the
+  // dropdown's initial search while the re-run focus() is a no-op (the input
+  // is already focused), leaving `loading` stuck. Search-racing is already
+  // handled by the abort inside doSearch; stale setState after a real unmount
+  // is a safe no-op in React 18+.
   React.useEffect(() => {
     return () => {
       clearTimeout(debounceRef.current);
-      abortRef.current?.abort();
     };
   }, []);
 

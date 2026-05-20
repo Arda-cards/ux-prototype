@@ -180,11 +180,15 @@ export function MultiSelectTypeaheadInput({
     [doSearch],
   );
 
-  // Cleanup on unmount
+  // Cleanup on unmount. We intentionally do NOT abort the in-flight lookup
+  // here — under React StrictMode the mount effect is double-invoked on the
+  // same DOM, and aborting would cancel the dropdown's initial search while the
+  // re-run focus() is a no-op (input already focused), leaving `loading` stuck.
+  // Search-racing is handled by the abort inside doSearch; stale setState after
+  // a real unmount is a safe no-op in React 18+.
   React.useEffect(() => {
     return () => {
       clearTimeout(debounceRef.current);
-      abortRef.current?.abort();
     };
   }, []);
 

@@ -1,15 +1,20 @@
 import { useState, useRef, useCallback } from 'react';
 import { useGridCellEditor } from 'ag-grid-react';
 
-import { MultiSelectTypeaheadInput, type MultiSelectOption } from './multiselect-typeahead-input';
+import { MultiSelectTypeaheadInput, type MultiSelectSource } from './multiselect-typeahead-input';
 
 // --- Types ---
 
 export interface MultiSelectCellEditorConfig {
-  /** Async lookup function for options. */
-  lookup: (search: string) => Promise<MultiSelectOption[]>;
+  /**
+   * Options source — an async lookup function, or a static list (`string[]` or
+   * `MultiSelectOption[]`) filtered client-side by label.
+   */
+  lookup: MultiSelectSource;
   /** Input placeholder text. */
   placeholder?: string;
+  /** Maximum number of dropdown results to show. Defaults to 8. */
+  maxResults?: number;
   /**
    * When true (default), Enter selects the highlighted item and exits edit mode.
    * When false, Enter adds items additively — user must Tab or click away to exit.
@@ -59,6 +64,7 @@ function MultiSelectCellEditorInner({
       lookup={config.lookup}
       placeholder={config.placeholder ?? 'Search\u2026'}
       defaultOne={config.defaultOne ?? true}
+      {...(config.maxResults !== undefined ? { maxResults: config.maxResults } : {})}
       onCommit={handleCommit}
       cellEditorMode
       className="w-full"
