@@ -360,13 +360,17 @@ export function TypeaheadInput({
           setInputValue(valueRef.current);
           break;
         case 'Tab':
+          // In a grid, let AG Grid handle Tab (commit + move to the next
+          // editable cell). Just close the dropdown; do NOT preventDefault or
+          // stopEditing ourselves, or focus escapes to the next row.
+          if (cellEditorMode) {
+            setOpen(false);
+            break;
+          }
           if (hi >= 0 && hi < opts.length) {
             selectOption(opts[hi] as TypeaheadOption);
           } else if (inputValueRef.current.trim() && allowCreate) {
             createValue(inputValueRef.current.trim());
-          } else if (cellEditorMode && inputValueRef.current.trim()) {
-            onValueChange(inputValueRef.current.trim());
-            onCommit?.();
           }
           setOpen(false);
           break;

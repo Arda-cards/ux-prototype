@@ -404,13 +404,16 @@ export function MultiSelectTypeaheadInput({
           setInputValue('');
           break;
         case 'Tab':
+          // In a grid, let AG Grid handle Tab (commit + move to the next
+          // editable cell). Just close the dropdown; do NOT stopEditing here or
+          // focus escapes to the next row.
           setOpen(false);
           setInputValue('');
-          onCommit?.();
+          if (!cellEditorMode) onCommit?.();
           break;
       }
     },
-    [open, doSearch, focusToken, chooseOption, onValueChange, onCommit],
+    [open, cellEditorMode, doSearch, focusToken, chooseOption, onValueChange, onCommit],
   );
 
   // Scroll highlighted item into view
