@@ -17,7 +17,10 @@ import {
   AllCommunityModule,
   ModuleRegistry,
   themeQuartz,
+  type CellSelectionOptions,
   type ColDef,
+  type ColTypeDef,
+  type DataTypeDefinition,
   type GridApi,
   type GridOptions,
   type GridReadyEvent,
@@ -27,11 +30,20 @@ import {
   type CellEditingStoppedEvent,
   type SelectionChangedEvent,
 } from 'ag-grid-community';
-import { RichSelectModule } from 'ag-grid-enterprise';
+import { RichSelectModule, ClipboardModule, CellSelectionModule } from 'ag-grid-enterprise';
 import '@/styles/canary/ag-theme-arda.css';
 import { useDragToScroll } from './use-drag-to-scroll';
 
-ModuleRegistry.registerModules([AllCommunityModule, RichSelectModule]);
+// ClipboardModule: copy / cut / paste (incl. bulk paste across a range).
+// CellSelectionModule: range selection + fill handle (spreadsheet-style fill-down).
+// Both are Enterprise; features watermark in Storybook (no license) and run
+// clean in arda-frontend-app, which sets the license globally.
+ModuleRegistry.registerModules([
+  AllCommunityModule,
+  RichSelectModule,
+  ClipboardModule,
+  CellSelectionModule,
+]);
 
 // --- Theme ---
 
@@ -120,6 +132,20 @@ export interface DataGridStaticConfig<T = Record<string, unknown>> {
   columnDefs: ColDef<T>[];
   /** Default column definition applied to all columns. */
   defaultColDef?: ColDef<T>;
+  /**
+   * Custom cell data type registry (e.g. `tokens`, `address`). Each entry owns
+   * the value <-> string round trip (formatter/parser/keyCreator) that drives
+   * copy/paste, bulk paste, fill-down, and export. Columns opt in via
+   * `cellDataType: '<name>'`. See `createTokenDataType`.
+   */
+  dataTypeDefinitions?: Record<string, DataTypeDefinition>;
+  /** Named column-type bundles referenced by data types (renderer/editor/keyCreator). */
+  columnTypes?: Record<string, ColTypeDef>;
+  /**
+   * Range selection + fill handle. Pass `{ handle: { mode: 'fill' } }` to enable
+   * spreadsheet-style fill-down and multi-cell range paste. Enterprise.
+   */
+  cellSelection?: boolean | CellSelectionOptions;
   /** Fixed height for the grid. Ignored when `autoHeight` is true. */
   height?: string | number;
   /** Grid grows to fit content. Disables vertical scroll. */
@@ -179,6 +205,9 @@ export const DataGrid = forwardRef(
       // Static
       columnDefs,
       defaultColDef,
+      dataTypeDefinitions,
+      columnTypes,
+      cellSelection,
       height = 600,
       autoHeight = false,
       enableRowSelection = false,
@@ -430,6 +459,9 @@ export const DataGrid = forwardRef(
             domLayout={autoHeight ? 'autoHeight' : 'normal'}
             columnDefs={resolvedColumnDefs}
             defaultColDef={mergedDefaultColDef}
+            {...(dataTypeDefinitions ? { dataTypeDefinitions } : {})}
+            {...(columnTypes ? { columnTypes } : {})}
+            {...(cellSelection ? { cellSelection } : {})}
             rowData={filteredRowData}
             loading={loading}
             onGridReady={handleGridReady}

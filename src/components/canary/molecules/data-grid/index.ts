@@ -7,6 +7,9 @@ export type {
   DataGridRuntimeConfig,
 } from './data-grid';
 
+export { createTokenDataType } from './cell-data-types';
+export type { TokenDataTypeConfig, TokenDataType } from './cell-data-types';
+
 export { useColumnPersistence } from './use-column-persistence';
 export { useDragToScroll } from './use-drag-to-scroll';
 

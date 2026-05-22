@@ -74,6 +74,13 @@ export interface MultiSelectTypeaheadInputProps extends Omit<
   onCommit?: () => void;
   /** Maximum number of dropdown results to show. Defaults to 8. */
   maxResults?: number;
+  /**
+   * Cell geometry for `cellEditorMode` (popup). The editor matches the cell's
+   * pixel width and uses the row height as its minimum height, so a single-line
+   * popup aligns with the cell and grows taller as tokens wrap onto more lines.
+   */
+  cellWidth?: number;
+  cellMinHeight?: number;
 }
 
 const DEFAULT_MAX_RESULTS = 8;
@@ -109,6 +116,8 @@ export function MultiSelectTypeaheadInput({
   defaultOne = true,
   onCommit,
   maxResults = DEFAULT_MAX_RESULTS,
+  cellWidth,
+  cellMinHeight,
   className,
   ...rest
 }: MultiSelectTypeaheadInputProps) {
@@ -512,8 +521,8 @@ export function MultiSelectTypeaheadInput({
               role="option"
               aria-selected={isSelected}
               className={cn(
-                'flex items-center gap-2 px-3 py-2 text-sm cursor-pointer',
-                i === highlightedIndex ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50',
+                'flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm',
+                i === highlightedIndex && 'bg-accent text-accent-foreground',
               )}
               onMouseDown={(e) => {
                 e.preventDefault();
@@ -545,22 +554,29 @@ export function MultiSelectTypeaheadInput({
     <div
       className={cn(
         'flex items-center gap-1 rounded-md border border-input bg-background px-2 py-1 text-sm',
-        'focus-within:ring-2 focus-within:ring-ring',
+        // Canonical focus treatment via the shared `focus-ring` utility (handles
+        // both :focus-visible and :focus-within) so this matches the Input
+        // primitive and can't drift.
+        'focus-ring',
         disabled && 'opacity-50 cursor-not-allowed',
         // Collapsed: single line, clip overflow so the field never grows tall.
         // Editing: wrap tokens onto multiple lines.
         isEditing ? 'flex-wrap' : 'flex-nowrap overflow-hidden',
-        // In cell editor mode the AG Grid cell supplies the edit border, so drop
-        // our own border / radius / focus ring. Fill the cell exactly and remove
-        // vertical padding so content centers at the same height as the read cell.
-        cellEditorMode && 'h-full py-0 rounded-none border-0 shadow-none focus-within:ring-0',
-        // Expand as overlay when editing (standalone mode only) — absolute
-        // position so tokens wrap without pushing layout. In cellEditorMode,
-        // AG Grid's popup editor handles expansion, so we just show all tokens.
+        // Cell editor mode renders in an AG Grid popup ('over' the cell). Keep
+        // the normal input chrome (rounded border + focus ring from the base) —
+        // a popup floats, so AG Grid does not draw a cell edit border around it.
+        // Width + min-height come from the cell via inline style, so the popup
+        // aligns with the cell on one line and grows downward as tokens wrap.
+        // `min-w-60` keeps the editor usable on narrow columns (extends past the
+        // cell edge; AG Grid keeps the popup in bounds). px-3 matches cell padding.
+        cellEditorMode && 'min-w-60 px-3 py-1.5',
+        // Standalone editing: expand as an absolute overlay so wrapped tokens
+        // don't push surrounding layout.
         !cellEditorMode &&
           isEditing &&
           'absolute inset-x-0 top-0 z-10 bg-background border border-input rounded-md',
       )}
+      style={cellEditorMode ? { width: cellWidth, minHeight: cellMinHeight } : undefined}
       onClick={() => inputRef.current?.focus()}
     >
       {visibleTokens.map((tokenValue, i) => (
@@ -623,7 +639,7 @@ export function MultiSelectTypeaheadInput({
   return (
     <div
       ref={wrapperRef}
-      className={cn('relative min-h-9', cellEditorMode && 'h-full', className)}
+      className={cn('relative', cellEditorMode ? 'w-fit' : 'min-h-9', className)}
       data-slot="multiselect-typeahead-input"
       data-state={open ? 'open' : 'closed'}
       data-loading={loading || undefined}
@@ -656,7 +672,7 @@ export function MultiSelectTypeaheadInput({
           ref={popoverRef}
           align="start"
           sideOffset={4}
-          className="w-(--radix-popover-trigger-width) p-0 max-h-52 overflow-auto"
+          className="w-(--radix-popover-trigger-width) p-1 max-h-52 overflow-auto"
           onOpenAutoFocus={(e) => e.preventDefault()}
           onCloseAutoFocus={(e) => e.preventDefault()}
         >

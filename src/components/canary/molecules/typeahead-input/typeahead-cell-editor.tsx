@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback } from 'react';
-import { useGridCellEditor } from 'ag-grid-react';
+import { useGridCellEditor, type CustomCellEditorProps } from 'ag-grid-react';
 
 import { TypeaheadInput, type TypeaheadSource } from './typeahead-input';
+import { useCellEditorGeometry } from './use-cell-editor-geometry';
 
 // --- Types ---
 
@@ -36,14 +37,21 @@ function TypeaheadCellEditorInner({
   value,
   onValueChange,
   stopEditing,
+  column,
+  node,
   config,
-}: TypeaheadCellEditorProps & { config: TypeaheadCellEditorConfig }) {
+}: CustomCellEditorProps<Record<string, unknown>, string | null> & {
+  config: TypeaheadCellEditorConfig;
+}) {
   const [currentValue, setCurrentValue] = useState(value ?? '');
   const wasCancelledRef = useRef(false);
 
   useGridCellEditor({
     isCancelAfterEnd: () => wasCancelledRef.current,
   });
+
+  // Match the popup editor to the cell it edits (shared with multi-select).
+  const { cellWidth, cellMinHeight } = useCellEditorGeometry(column, node);
 
   const handleValueChange = useCallback(
     (val: string) => {
@@ -66,7 +74,8 @@ function TypeaheadCellEditorInner({
       maxResults={config.maxResults ?? 8}
       clearOnFocus={config.clearOnFocus ?? false}
       cellEditorMode
-      className="w-full"
+      cellWidth={cellWidth}
+      {...(cellMinHeight !== undefined ? { cellMinHeight } : {})}
     />
   );
 }
@@ -87,7 +96,7 @@ function TypeaheadCellEditorInner({
  * ```
  */
 export function createTypeaheadCellEditor(config: TypeaheadCellEditorConfig) {
-  function CellEditor(props: TypeaheadCellEditorProps) {
+  function CellEditor(props: CustomCellEditorProps<Record<string, unknown>, string | null>) {
     return <TypeaheadCellEditorInner {...props} config={config} />;
   }
   CellEditor.displayName = `TypeaheadCellEditor(${config.placeholder ?? 'Search'})`;

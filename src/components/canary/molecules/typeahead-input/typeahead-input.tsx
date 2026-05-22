@@ -73,6 +73,13 @@ export interface TypeaheadInputProps extends Omit<React.ComponentProps<'div'>, '
    * Tab). In a cell editor this signals "stop editing".
    */
   onCommit?: () => void;
+  /**
+   * Cell geometry for `cellEditorMode` (popup). The editor matches the cell's
+   * pixel width and uses the row height as its minimum, so the popup aligns with
+   * the cell. See `useCellEditorGeometry`.
+   */
+  cellWidth?: number;
+  cellMinHeight?: number;
 }
 
 const DEFAULT_MAX_RESULTS = 8;
@@ -109,6 +116,8 @@ export function TypeaheadInput({
   maxResults = DEFAULT_MAX_RESULTS,
   clearOnFocus = false,
   onCommit,
+  cellWidth,
+  cellMinHeight,
   className,
   ...rest
 }: TypeaheadInputProps) {
@@ -434,8 +443,8 @@ export function TypeaheadInput({
             role="option"
             aria-selected={i === highlightedIndex}
             className={cn(
-              'px-3 py-2 text-sm cursor-pointer',
-              i === highlightedIndex ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50',
+              'cursor-pointer rounded-sm px-2 py-1.5 text-sm',
+              i === highlightedIndex && 'bg-accent text-accent-foreground',
             )}
             onMouseDown={(e) => {
               e.preventDefault();
@@ -453,8 +462,8 @@ export function TypeaheadInput({
           role="option"
           aria-selected={highlightedIndex === options.length}
           className={cn(
-            'flex items-center gap-2 px-3 py-2 text-sm cursor-pointer text-primary',
-            highlightedIndex === options.length ? 'bg-accent text-primary' : 'hover:bg-accent/50',
+            'flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-primary',
+            highlightedIndex === options.length && 'bg-accent text-primary',
           )}
           onMouseDown={(e) => {
             e.preventDefault();
@@ -490,17 +499,20 @@ export function TypeaheadInput({
       aria-label={ariaLabel ?? placeholder}
       autoComplete="off"
       className={
-        cellEditorMode
-          ? 'h-full py-0 rounded-none border-0 bg-background shadow-none focus-visible:border-transparent focus-visible:ring-0'
-          : undefined
+        // Popup editor (floats over the cell): keep the normal input chrome —
+        // rounded border + focus ring — since AG Grid does not draw a cell edit
+        // border around a popup. Just make the background opaque, drop the
+        // input's own shadow (the popup provides one), and apply the min-width.
+        cellEditorMode ? 'min-w-60 bg-background shadow-none' : undefined
       }
+      style={cellEditorMode ? { width: cellWidth, minHeight: cellMinHeight } : undefined}
     />
   );
 
   return (
     <div
       ref={wrapperRef}
-      className={cn('relative', cellEditorMode && 'h-full', className)}
+      className={cn('relative', cellEditorMode && 'w-fit', className)}
       data-slot="typeahead-input"
       data-state={open ? 'open' : 'closed'}
       data-loading={loading || undefined}
@@ -519,7 +531,7 @@ export function TypeaheadInput({
           ref={popoverRef}
           align="start"
           sideOffset={4}
-          className="w-(--radix-popover-trigger-width) p-0 max-h-52 overflow-auto"
+          className="w-(--radix-popover-trigger-width) p-1 max-h-52 overflow-auto"
           onOpenAutoFocus={(e) => e.preventDefault()}
           onCloseAutoFocus={(e) => e.preventDefault()}
         >

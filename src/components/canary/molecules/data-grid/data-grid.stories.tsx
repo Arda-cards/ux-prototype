@@ -1,7 +1,9 @@
 import { useMemo } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, within, userEvent, waitFor, screen } from 'storybook/test';
 import { DataGrid } from './data-grid';
 import type { ColDef } from 'ag-grid-community';
+import { createTokenDataType } from './cell-data-types';
 import { createMultiSelectCellEditor } from '../typeahead-input/multiselect-cell-editor';
 import { lookupRoles } from '@/components/canary/__mocks__/role-lookup';
 import { roleLookupHandler } from '@/components/canary/__mocks__/handlers/role-lookup';
@@ -206,5 +208,122 @@ export const WithMultiSelectEditor: StoryObj = {
         }}
       />
     );
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Token cell data types — renderer + editor + value round trip
+// ---------------------------------------------------------------------------
+
+const TOKEN_ROLE_OPTIONS = ['Vendor', 'Customer', 'Carrier', 'Operator', 'Other'];
+const TOKEN_ORDER_METHODS = ['Online', 'Purchase order', 'Email', 'Phone', 'In store', 'RFQ'];
+
+interface TokenRow {
+  [key: string]: unknown;
+  id: string;
+  name: string;
+  roles: string[];
+  orderMethod: string;
+}
+
+const tokenRows: TokenRow[] = Array.from({ length: 12 }, (_, i) => ({
+  id: `sup-${i + 1}`,
+  name: `Supplier ${i + 1}`,
+  // First row gets every role to show read-mode clipping + edit-mode wrap/grow.
+  roles: i === 0 ? [...TOKEN_ROLE_OPTIONS] : TOKEN_ROLE_OPTIONS.slice(0, (i % 3) + 1),
+  orderMethod: TOKEN_ORDER_METHODS[i % TOKEN_ORDER_METHODS.length] ?? 'Online',
+}));
+
+/**
+ * Token columns via `createTokenDataType` — Role (multi-select) + Order Method
+ * (single-select). Try it: double-click to edit, copy a cell (Ctrl/Cmd+C) and
+ * paste into a range, or drag the fill handle to extend a value down. The
+ * value-to-string round trip drives copy/paste, bulk paste, and fill-down; the
+ * keyCreator/formatter drive set filter and CSV export.
+ */
+function TokenGridDemo() {
+  const { columnTypes, dataTypeDefinitions, columnDefs } = useMemo(() => {
+    const roles = createTokenDataType({
+      multiple: true,
+      editor: { lookup: TOKEN_ROLE_OPTIONS, placeholder: 'Select roles…', defaultOne: true },
+      variant: 'secondary',
+    });
+    const orderMethod = createTokenDataType({
+      multiple: false,
+      editor: {
+        lookup: TOKEN_ORDER_METHODS,
+        placeholder: 'Order method…',
+        maxResults: TOKEN_ORDER_METHODS.length,
+        clearOnFocus: true,
+      },
+      variant: 'outline',
+    });
+    return {
+      columnTypes: {
+        rolesColType: roles.columnType,
+        orderMethodColType: orderMethod.columnType,
+      },
+      dataTypeDefinitions: {
+        roles: { ...roles.dataType, columnTypes: 'rolesColType' },
+        orderMethod: { ...orderMethod.dataType, columnTypes: 'orderMethodColType' },
+      },
+      columnDefs: [
+        { field: 'name', headerName: 'Name', flex: 1, minWidth: 160 },
+        { field: 'roles', headerName: 'Role', width: 240, editable: true, cellDataType: 'roles' },
+        {
+          field: 'orderMethod',
+          headerName: 'Order Method',
+          width: 200,
+          editable: true,
+          cellDataType: 'orderMethod',
+        },
+      ] as ColDef<TokenRow>[],
+    };
+  }, []);
+
+  return (
+    <DataGrid<TokenRow>
+      rowData={tokenRows}
+      columnDefs={columnDefs}
+      columnTypes={columnTypes}
+      dataTypeDefinitions={dataTypeDefinitions}
+      cellSelection={{ handle: { mode: 'fill' } }}
+      height={500}
+      editable
+    />
+  );
+}
+
+export const WithTokenCellDataTypes: StoryObj = {
+  render: () => <TokenGridDemo />,
+};
+
+/**
+ * Interaction test: open the Role multiselect editor, add an option, and confirm
+ * the cell value commits. Runs in a real browser via the Storybook test-runner
+ * (AG Grid does not render in jsdom). The value round trip behind copy/paste,
+ * bulk paste, fill-down, and paste validation is covered by `token-data-type.test.tsx`.
+ */
+export const TokenMultiSelectEditing: StoryObj = {
+  name: 'Token MultiSelect Editing (interaction)',
+  render: () => <TokenGridDemo />,
+  play: async ({ canvasElement }) => {
+    // Supplier 4's Role cell starts as ["Vendor"]; "Operator" is never pre-selected.
+    const roleCell = (): HTMLElement => {
+      const el = canvasElement.querySelector('[row-id="sup-4"] [col-id="roles"]');
+      if (!el) throw new Error('Role cell for sup-4 not found');
+      return el as HTMLElement;
+    };
+
+    await userEvent.dblClick(roleCell());
+
+    // The dropdown is portaled to <body>; "Operator" appears only there.
+    const operator = await screen.findByText('Operator', {}, { timeout: 5000 });
+    await userEvent.click(operator);
+
+    // defaultOne commits + closes on pick — the cell should now include Operator.
+    await waitFor(() => expect(within(roleCell()).getByText('Operator')).toBeInTheDocument(), {
+      timeout: 5000,
+    });
   },
 };

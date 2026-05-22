@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback } from 'react';
-import { useGridCellEditor } from 'ag-grid-react';
+import { useGridCellEditor, type CustomCellEditorProps } from 'ag-grid-react';
 
 import { MultiSelectTypeaheadInput, type MultiSelectSource } from './multiselect-typeahead-input';
+import { useCellEditorGeometry } from './use-cell-editor-geometry';
 
 // --- Types ---
 
@@ -34,8 +35,10 @@ function MultiSelectCellEditorInner({
   value,
   onValueChange,
   stopEditing,
+  column,
+  node,
   config,
-}: MultiSelectCellEditorProps & {
+}: CustomCellEditorProps<Record<string, unknown>, string[] | null> & {
   config: MultiSelectCellEditorConfig;
 }) {
   const [currentValue, setCurrentValue] = useState<string[]>(value ?? []);
@@ -44,6 +47,9 @@ function MultiSelectCellEditorInner({
   useGridCellEditor({
     isCancelAfterEnd: () => wasCancelledRef.current,
   });
+
+  // Match the popup editor to the cell it edits (shared with single-select).
+  const { cellWidth, cellMinHeight } = useCellEditorGeometry(column, node);
 
   const handleValueChange = useCallback(
     (val: string[]) => {
@@ -67,7 +73,8 @@ function MultiSelectCellEditorInner({
       {...(config.maxResults !== undefined ? { maxResults: config.maxResults } : {})}
       onCommit={handleCommit}
       cellEditorMode
-      className="w-full"
+      cellWidth={cellWidth}
+      {...(cellMinHeight !== undefined ? { cellMinHeight } : {})}
     />
   );
 }
@@ -86,7 +93,7 @@ function MultiSelectCellEditorInner({
  * ```
  */
 export function createMultiSelectCellEditor(config: MultiSelectCellEditorConfig) {
-  function CellEditor(props: MultiSelectCellEditorProps) {
+  function CellEditor(props: CustomCellEditorProps<Record<string, unknown>, string[] | null>) {
     return <MultiSelectCellEditorInner {...props} config={config} />;
   }
   CellEditor.displayName = `MultiSelectCellEditor(${config.placeholder ?? 'Search'})`;

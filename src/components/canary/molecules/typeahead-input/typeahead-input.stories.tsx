@@ -241,6 +241,7 @@ export const InGrid: StoryObj = {
           flex: 1,
           editable: true,
           cellEditor: UnitCellEditor,
+          cellEditorPopup: true,
         },
       ],
       [UnitCellEditor],
