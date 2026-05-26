@@ -501,9 +501,12 @@ export function TypeaheadInput({
       className={
         // Popup editor (floats over the cell): keep the normal input chrome —
         // rounded border + focus ring — since AG Grid does not draw a cell edit
-        // border around a popup. Just make the background opaque, drop the
-        // input's own shadow (the popup provides one), and apply the min-width.
-        cellEditorMode ? 'min-w-60 bg-background shadow-none' : undefined
+        // border around a popup. Make the background opaque, drop the input's own
+        // shadow (the popup provides one), apply the min-width, and use a thin
+        // (1px) full-opacity accent ring (`ring-1 ring-ring`) — 3px reads too bold.
+        cellEditorMode
+          ? 'min-w-60 bg-background shadow-none focus-visible:ring-2 focus-visible:ring-ring'
+          : undefined
       }
       style={cellEditorMode ? { width: cellWidth, minHeight: cellMinHeight } : undefined}
     />

@@ -90,6 +90,15 @@ const gridColorVars = {
 const rowStateStyles = `
   .ag-row-saving { background-color: color-mix(in srgb, var(--base-primary) 6%, var(--base-background)) !important; }
   .ag-row-error  { background-color: color-mix(in srgb, var(--destructive) 8%, var(--base-background)) !important; }
+  /* While editing, round the cell and thicken its accent border to 2px to match
+     the editor's focus ring. A border (vs a box-shadow) stays inside the cell so
+     it isn't cropped by adjacent grid cells. */
+  .ag-cell.ag-cell-popup-editing,
+  .ag-cell.ag-cell-inline-editing {
+    border-radius: calc(var(--radius) - 2px);
+    border-width: 2px !important;
+    border-color: var(--ring) !important;
+  }
 `;
 
 // --- Static config (hoisted outside component) ---
@@ -146,6 +155,12 @@ export interface DataGridStaticConfig<T = Record<string, unknown>> {
    * spreadsheet-style fill-down and multi-cell range paste. Enterprise.
    */
   cellSelection?: boolean | CellSelectionOptions;
+  /**
+   * Cell-edit undo/redo stack size (0–20). `0` disables it. When > 0, Ctrl/Cmd+Z
+   * and Ctrl/Cmd+Y undo/redo edits, paste, fill, cut, and delete (grid must have
+   * focus). Defaults to 0 (off).
+   */
+  undoRedoLimit?: number;
   /** Fixed height for the grid. Ignored when `autoHeight` is true. */
   height?: string | number;
   /** Grid grows to fit content. Disables vertical scroll. */
@@ -208,6 +223,7 @@ export const DataGrid = forwardRef(
       dataTypeDefinitions,
       columnTypes,
       cellSelection,
+      undoRedoLimit = 0,
       height = 600,
       autoHeight = false,
       enableRowSelection = false,
@@ -462,6 +478,9 @@ export const DataGrid = forwardRef(
             {...(dataTypeDefinitions ? { dataTypeDefinitions } : {})}
             {...(columnTypes ? { columnTypes } : {})}
             {...(cellSelection ? { cellSelection } : {})}
+            {...(undoRedoLimit > 0
+              ? { undoRedoCellEditing: true, undoRedoCellEditingLimit: Math.min(20, undoRedoLimit) }
+              : {})}
             rowData={filteredRowData}
             loading={loading}
             onGridReady={handleGridReady}

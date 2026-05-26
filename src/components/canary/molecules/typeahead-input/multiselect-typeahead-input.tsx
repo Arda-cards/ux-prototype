@@ -554,10 +554,9 @@ export function MultiSelectTypeaheadInput({
     <div
       className={cn(
         'flex items-center gap-1 rounded-md border border-input bg-background px-2 py-1 text-sm',
-        // Canonical focus treatment via the shared `focus-ring` utility (handles
-        // both :focus-visible and :focus-within) so this matches the Input
-        // primitive and can't drift.
-        'focus-ring',
+        // Focus treatment via Tailwind ring — soft (matches form inputs); a
+        // container, so :focus-within. Cell editor mode bumps it to full opacity.
+        'focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50',
         disabled && 'opacity-50 cursor-not-allowed',
         // Collapsed: single line, clip overflow so the field never grows tall.
         // Editing: wrap tokens onto multiple lines.
@@ -569,7 +568,8 @@ export function MultiSelectTypeaheadInput({
         // aligns with the cell on one line and grows downward as tokens wrap.
         // `min-w-60` keeps the editor usable on narrow columns (extends past the
         // cell edge; AG Grid keeps the popup in bounds). px-3 matches cell padding.
-        cellEditorMode && 'min-w-60 px-3 py-1.5',
+        // 2px full-opacity accent ring in edit mode (3px reads too bold).
+        cellEditorMode && 'min-w-60 px-3 py-1.5 focus-within:ring-2 focus-within:ring-ring',
         // Standalone editing: expand as an absolute overlay so wrapped tokens
         // don't push surrounding layout.
         !cellEditorMode &&

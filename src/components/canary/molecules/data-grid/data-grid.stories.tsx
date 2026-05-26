@@ -288,6 +288,7 @@ function TokenGridDemo() {
       columnTypes={columnTypes}
       dataTypeDefinitions={dataTypeDefinitions}
       cellSelection={{ handle: { mode: 'fill' } }}
+      undoRedoLimit={20}
       height={500}
       editable
     />
