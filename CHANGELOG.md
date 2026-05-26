@@ -18,6 +18,11 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [6.1.0] - 2026-06-22
+
+### Added
+- **ItemCardEditor title search icon** — when the item name is non-empty, an `ExternalLink` icon appears next to the title input. Clicking it opens `google.com/search?q=<title>` in a new tab so the user can quickly look the item up while creating it. Includes `referrerPolicy="no-referrer"` to avoid leaking the app URL.
+
 ## [6.0.0] - 2026-06-12
 
 ### Added
@@ -66,7 +71,6 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
 ### Fixed
 - Cell-editor search no longer stalls under React StrictMode.
 - Multiselect collapses to a single line; `defaultOne` click closes the dropdown; the typeahead cell editor fills the cell cleanly.
-
 ## [5.3.0] - 2026-05-16
 
 ### Added
