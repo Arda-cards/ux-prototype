@@ -18,6 +18,11 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [5.4.0] - 2026-05-26
+
+### Added
+- **ItemCardEditor title search icon** — when the item name is non-empty, an `ExternalLink` icon appears next to the title input. Clicking it opens `google.com/search?q=<title>` in a new tab so the user can quickly look the item up while creating it. Includes `referrerPolicy="no-referrer"` to avoid leaking the app URL.
+
 ## [5.3.0] - 2026-05-16
 
 ### Added
