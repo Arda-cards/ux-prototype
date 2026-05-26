@@ -18,6 +18,12 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [5.4.0] - 2026-05-25
+
+### Added
+- **ItemCardEditor MINIMUM → ORDER auto-mirror** — typing in MINIMUM (qty or unit) auto-fills the matching ORDER cell until the user diverges it; quantity and unit are tracked independently. Diverged values loaded from existing items stay diverged.
+- **`formInstanceKey` prop on ItemCardEditor** — optional identity key; whenever it changes, the editor reseeds its internal touched-state tracking from the current `fields`. Hosts that mount the editor once and async-load data should bump this on every load/duplicate/reset path.
+
 ## [5.3.0] - 2026-05-16
 
 ### Added

@@ -78,6 +78,23 @@ export interface ItemCardEditorRuntimeProps {
     iconColor?: string;
     fields: Partial<Record<keyof ItemCardFields, () => void>>;
   };
+  /**
+   * Identity key for the form instance currently being edited (e.g. an item
+   * id, or `'new'` for an empty form). Whenever its value changes, the
+   * editor reseeds its internal "user diverged ORDER from MINIMUM"
+   * tracking from the current `fields`:
+   *
+   * - cells where `minQty === orderQty` (and `minUnit === orderUnit`) resume
+   *   auto-mirroring on subsequent MINIMUM edits;
+   * - cells that already differ are treated as user-diverged and stay
+   *   independent until reseed.
+   *
+   * Required for any host that mounts the editor once and then loads data
+   * asynchronously — `fields` arriving after mount does NOT by itself
+   * change the touched flags. Bump this key on every load/duplicate/reset
+   * path so the editor knows to re-derive.
+   */
+  formInstanceKey?: string | number;
 }
 
 /** Combined props for ItemCardEditor. */
@@ -116,6 +133,7 @@ export function ItemCardEditor({
   onUploadError,
   qrCodeUrl,
   autoFill,
+  formInstanceKey,
 }: ItemCardEditorProps) {
   const uploader = useImageUploader();
   const [dialogOpen, setDialogOpen] = React.useState(false);
@@ -155,9 +173,54 @@ export function ItemCardEditor({
   const onUploadErrorRef = React.useRef(onUploadError);
   onUploadErrorRef.current = onUploadError;
 
+  // Track whether the user has manually diverged the ORDER side of the card
+  // from MINIMUM, per-cell (qty and unit independent). While a cell is not
+  // touched, MINIMUM edits auto-mirror into ORDER. Seeded from the initial
+  // `fields` and reseeded whenever `formInstanceKey` changes.
+  const orderQtyTouchedRef = React.useRef(fields.minQty !== fields.orderQty);
+  const orderUnitTouchedRef = React.useRef(fields.minUnit !== fields.orderUnit);
+
+  // Reseed from the current `fields` prop on form-identity changes. We omit
+  // `fields` from deps intentionally — async `fields` updates that arrive
+  // without an identity bump must NOT silently re-derive touched flags (that
+  // would let a host's just-typed values reset divergence tracking).
+  React.useEffect(() => {
+    orderQtyTouchedRef.current = fields.minQty !== fields.orderQty;
+    orderUnitTouchedRef.current = fields.minUnit !== fields.orderUnit;
+  }, [formInstanceKey]);
+
   const updateField = React.useCallback(
     <K extends keyof ItemCardFields>(key: K, value: ItemCardFields[K]) => {
-      onChangeRef.current({ ...fieldsRef.current, [key]: value });
+      const current = fieldsRef.current;
+
+      // ORDER edits: mark the matching cell as diverged once the user
+      // changes it to a value that differs from the current MINIMUM.
+      if (key === 'orderQty' && value !== current.minQty) {
+        orderQtyTouchedRef.current = true;
+      } else if (key === 'orderUnit' && value !== current.minUnit) {
+        orderUnitTouchedRef.current = true;
+      }
+
+      // MINIMUM edits: auto-mirror into ORDER while the matching cell is
+      // still linked. Emits a single `onChange` with both fields set.
+      if (key === 'minQty' && !orderQtyTouchedRef.current) {
+        onChangeRef.current({
+          ...current,
+          minQty: value as string,
+          orderQty: value as string,
+        });
+        return;
+      }
+      if (key === 'minUnit' && !orderUnitTouchedRef.current) {
+        onChangeRef.current({
+          ...current,
+          minUnit: value as string,
+          orderUnit: value as string,
+        });
+        return;
+      }
+
+      onChangeRef.current({ ...current, [key]: value });
     },
     [],
   );
