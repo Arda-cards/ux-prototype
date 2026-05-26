@@ -112,6 +112,15 @@ const staticGridOptions: GridOptions = {
 
 const AgGridMemo = memo(AgGridReact) as unknown as typeof AgGridReact;
 
+// `clipboardPaste="single"` — keep only the top-left cell of pasted clipboard
+// data so a range paste lands in the focused cell instead of spilling across
+// rows/columns. Returning the trimmed grid (vs null) still lets the single cell
+// paste; an empty clipboard cancels the paste.
+function clampPasteToSingleCell({ data }: { data: string[][] }): string[][] | null {
+  const firstCell = data[0]?.[0];
+  return firstCell === undefined ? null : [[firstCell]];
+}
+
 // --- Internal components ---
 
 function LoadingOverlay() {
@@ -151,10 +160,28 @@ export interface DataGridStaticConfig<T = Record<string, unknown>> {
   /** Named column-type bundles referenced by data types (renderer/editor/keyCreator). */
   columnTypes?: Record<string, ColTypeDef>;
   /**
-   * Range selection + fill handle. Pass `{ handle: { mode: 'fill' } }` to enable
-   * spreadsheet-style fill-down and multi-cell range paste. Enterprise.
+   * Range selection + drag-to-fill handle. Each is a bulk-write source, so both
+   * are off unless you opt in:
+   * - omit this prop  → no range selection, no bulk range-edit/range-delete.
+   * - `true` / `{}`    → range selection only (copy a block) — no fill handle.
+   * - `{ handle: { mode: 'fill' } }` → adds the spreadsheet fill-down handle.
+   * Enterprise. Leave it off on grids whose save path can't absorb many
+   * concurrent row writes (see `clipboardPaste`).
    */
   cellSelection?: boolean | CellSelectionOptions;
+  /**
+   * Clipboard paste policy. A multi-cell paste maps to one save per affected
+   * row, so paste is the largest bulk-write source; copy is always allowed
+   * (read-only). Choose how much paste a grid's persistence layer can absorb:
+   * - `'range'` (default): multi-cell paste — fills a block from the clipboard.
+   * - `'single'`: paste into the focused cell only; range paste is clamped to 1 cell.
+   * - `'off'`: paste disabled entirely.
+   *
+   * To fully disable spreadsheet-style bulk editing during a phased rollout
+   * (e.g. the items grid): omit `cellSelection`, set `clipboardPaste="off"`,
+   * and leave `undoRedoLimit` at 0.
+   */
+  clipboardPaste?: 'range' | 'single' | 'off';
   /**
    * Cell-edit undo/redo stack size (0–20). `0` disables it. When > 0, Ctrl/Cmd+Z
    * and Ctrl/Cmd+Y undo/redo edits, paste, fill, cut, and delete (grid must have
@@ -223,6 +250,7 @@ export const DataGrid = forwardRef(
       dataTypeDefinitions,
       columnTypes,
       cellSelection,
+      clipboardPaste = 'range',
       undoRedoLimit = 0,
       height = 600,
       autoHeight = false,
@@ -478,6 +506,10 @@ export const DataGrid = forwardRef(
             {...(dataTypeDefinitions ? { dataTypeDefinitions } : {})}
             {...(columnTypes ? { columnTypes } : {})}
             {...(cellSelection ? { cellSelection } : {})}
+            {...(clipboardPaste === 'off' ? { suppressClipboardPaste: true } : {})}
+            {...(clipboardPaste === 'single'
+              ? { processDataFromClipboard: clampPasteToSingleCell }
+              : {})}
             {...(undoRedoLimit > 0
               ? { undoRedoCellEditing: true, undoRedoCellEditingLimit: Math.min(20, undoRedoLimit) }
               : {})}
