@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { PackageMinus, Package, Crop, Trash2, Loader2 } from 'lucide-react';
+import { PackageMinus, Package, Crop, Trash2, Loader2, ExternalLink } from 'lucide-react';
 
 import { ColorPicker, getColorHex } from '@/components/canary/atoms/color-picker/color-picker';
 import { ImageDropZone } from '@/components/canary/molecules/image-drop-zone/image-drop-zone';
@@ -261,6 +261,18 @@ export function ItemCardEditor({
               className="font-extrabold text-lg h-10 rounded-lg border-input"
             />
           </AutoFillField>
+          {fields.title.trim() && (
+            <a
+              href={`https://www.google.com/search?q=${encodeURIComponent(fields.title.trim())}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Search Google for this item"
+              title="Search Google for this item"
+              className="flex-shrink-0 h-10 w-7 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ExternalLink className="w-4 h-4" />
+            </a>
+          )}
           <div className="flex flex-col items-center flex-shrink-0 h-10 justify-between">
             <img src={resolvedQrSrc} alt="QR" className="w-7 h-7 object-contain" />
             <span className="text-[9px] font-semibold text-muted-foreground leading-none">
