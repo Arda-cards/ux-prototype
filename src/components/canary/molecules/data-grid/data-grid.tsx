@@ -29,6 +29,9 @@ import {
   type CellValueChangedEvent,
   type CellEditingStoppedEvent,
   type SelectionChangedEvent,
+  type PasteEndEvent,
+  type FillEndEvent,
+  type CutEndEvent,
 } from 'ag-grid-community';
 import { RichSelectModule, ClipboardModule, CellSelectionModule } from 'ag-grid-enterprise';
 import '@/styles/canary/ag-theme-arda.css';
@@ -225,6 +228,15 @@ export interface DataGridRuntimeConfig<T = Record<string, unknown>> {
   onCellValueChanged?: (event: CellValueChangedEvent<T>) => void;
   /** Called when cell editing stops. */
   onCellEditingStopped?: (event: CellEditingStoppedEvent<T>) => void;
+  /**
+   * Called once a range paste completes (not per cell). Bulk paste does not fire
+   * `onCellEditingStopped`, so a persistence layer flushes pending edits here.
+   */
+  onPasteEnd?: (event: PasteEndEvent<T>) => void;
+  /** Called once a fill-handle drag completes (not per cell). Flush point, like `onPasteEnd`. */
+  onFillEnd?: (event: FillEndEvent<T>) => void;
+  /** Called once a cut completes. Flush point for the cleared cells. */
+  onCutEnd?: (event: CutEndEvent<T>) => void;
   /** Function to compute extra CSS classes for a row. */
   getRowClass?: (params: RowClassParams<T>) => string | string[] | undefined;
   /** Ref to access AG Grid API. */
@@ -271,6 +283,9 @@ export const DataGrid = forwardRef(
       onSelectionChange,
       onCellValueChanged,
       onCellEditingStopped,
+      onPasteEnd,
+      onFillEnd,
+      onCutEnd,
       getRowClass,
       gridRef: externalGridRef,
     }: DataGridProps<T>,
@@ -523,6 +538,9 @@ export const DataGrid = forwardRef(
             {...(enableRowSelection ? { onSelectionChanged: handleSelectionChanged } : {})}
             {...(onRowClick ? { onRowClicked: handleRowClicked } : {})}
             {...(onCellValueChanged ? { onCellValueChanged } : {})}
+            {...(onPasteEnd ? { onPasteEnd } : {})}
+            {...(onFillEnd ? { onFillEnd } : {})}
+            {...(onCutEnd ? { onCutEnd } : {})}
             {...(onCellEditingStopped
               ? {
                   onCellEditingStopped: (e: CellEditingStoppedEvent) => {
