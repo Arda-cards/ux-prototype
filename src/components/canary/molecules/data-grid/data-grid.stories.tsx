@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within, userEvent, waitFor, screen } from 'storybook/test';
-import { DataGrid } from './data-grid';
+import { DataGrid, type DataGridRef } from './data-grid';
 import type { ColDef } from 'ag-grid-community';
 import { createTokenDataType } from './cell-data-types';
 import { createMultiSelectCellEditor } from '../typeahead-input/multiselect-cell-editor';
@@ -46,6 +46,86 @@ const meta: Meta<typeof DataGrid> = {
   args: {
     editable: true,
     enableRowSelection: true,
+  },
+  argTypes: {
+    // --- Behavior (toggles) ---
+    editable: {
+      control: 'boolean',
+      description: 'Enable inline cell editing.',
+      table: { category: 'Behavior' },
+    },
+    enableRowSelection: {
+      control: 'boolean',
+      description: 'Show row-selection checkboxes.',
+      table: { category: 'Behavior' },
+    },
+    loading: {
+      control: 'boolean',
+      description: 'Show the loading overlay.',
+      table: { category: 'Behavior' },
+    },
+    // --- Layout (numbers / toggles) ---
+    height: {
+      control: { type: 'number', min: 200, max: 900, step: 50 },
+      description: 'Fixed grid height in px (ignored when autoHeight).',
+      table: { category: 'Layout' },
+    },
+    autoHeight: {
+      control: 'boolean',
+      description: 'Grow to fit content; disables vertical scroll.',
+      table: { category: 'Layout' },
+    },
+    pageSize: {
+      control: { type: 'number', min: 0, max: 100, step: 5 },
+      description: 'Rows per page (0 / empty = no pagination).',
+      table: { category: 'Layout' },
+    },
+    // --- Editing capabilities (number / dropdown / toggle) ---
+    undoRedoLimit: {
+      control: { type: 'range', min: 0, max: 20, step: 1 },
+      description: 'Cell undo/redo stack size (0 = off).',
+      table: { category: 'Editing' },
+    },
+    clipboardPaste: {
+      control: 'select',
+      options: ['range', 'single', 'off'],
+      description: 'Paste policy.',
+      table: { category: 'Editing' },
+    },
+    cellSelection: {
+      control: 'boolean',
+      description: 'Range selection (true). The fill handle needs an object config, set in code.',
+      table: { category: 'Editing' },
+    },
+    // --- Text ---
+    emptyMessage: {
+      control: 'text',
+      description: 'Empty-state message.',
+      table: { category: 'Behavior' },
+    },
+    // --- Data / wiring / callbacks: not control-editable ---
+    rowData: { control: false, table: { category: 'Data' } },
+    columnDefs: { control: false, table: { category: 'Data' } },
+    defaultColDef: { control: false, table: { category: 'Data' } },
+    dataTypeDefinitions: { control: false, table: { category: 'Data' } },
+    columnTypes: { control: false, table: { category: 'Data' } },
+    actionsColumn: { control: false, table: { category: 'Data' } },
+    searchConfig: { control: false, table: { category: 'Data' } },
+    toolbar: { control: false, table: { category: 'Slots' } },
+    emptyContent: { control: false, table: { category: 'Slots' } },
+    className: { control: false, table: { category: 'Slots' } },
+    getRowClass: { control: false, table: { category: 'Callbacks' } },
+    getNewRowId: { control: false, table: { category: 'Callbacks' } },
+    gridRef: { control: false, table: { category: 'Callbacks' } },
+    onRowClick: { control: false, table: { category: 'Callbacks' } },
+    onSelectionChange: { control: false, table: { category: 'Callbacks' } },
+    onCellValueChanged: { control: false, table: { category: 'Callbacks' } },
+    onCellEditingStopped: { control: false, table: { category: 'Callbacks' } },
+    onPasteEnd: { control: false, table: { category: 'Callbacks' } },
+    onFillEnd: { control: false, table: { category: 'Callbacks' } },
+    onCutEnd: { control: false, table: { category: 'Callbacks' } },
+    onRowsAdded: { control: false, table: { category: 'Callbacks' } },
+    onRowsRemoved: { control: false, table: { category: 'Callbacks' } },
   },
 };
 
@@ -94,6 +174,62 @@ export const Loading: Story = {
     columnDefs,
     height: 400,
     loading: true,
+  },
+};
+
+/**
+ * Playground — interactive add-row mechanics. The toolbar "Add row" button calls
+ * `ref.addRow(seed, { startEditingField })`, which inserts a row in-memory and
+ * opens its Name editor; `onRowsAdded` keeps React `rowData` in sync (the same
+ * pattern `ConnectedDataGrid` uses). Persistence is a container concern, so a
+ * row added here lives only in the browser.
+ */
+export const Playground: StoryObj<typeof DataGrid> = {
+  args: {
+    editable: true,
+    enableRowSelection: true,
+    loading: false,
+    height: 500,
+    autoHeight: false,
+    undoRedoLimit: 10,
+    clipboardPaste: 'range',
+    cellSelection: true,
+  },
+  render: (args) => {
+    const gridRef = useRef<DataGridRef>(null);
+    const [rows, setRows] = useState<Record<string, unknown>[]>(() => sampleData.slice(0, 8));
+
+    const handleAddRow = () =>
+      gridRef.current?.addRow(
+        { name: '', email: '', role: 'Vendor', city: 'Austin', status: 'Active' },
+        { startEditingField: 'name' },
+      );
+
+    return (
+      <DataGrid
+        {...args}
+        ref={gridRef}
+        rowData={rows}
+        columnDefs={columnDefs}
+        onRowsAdded={({ rows: added }) => setRows((prev) => [...added, ...prev])}
+        toolbar={
+          <button
+            type="button"
+            onClick={handleAddRow}
+            className="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            + Add row
+          </button>
+        }
+      />
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const addButton = await canvas.findByRole('button', { name: /add row/i });
+    await userEvent.click(addButton);
+    // A fresh editable row appears at the top — its Name editor opens on add.
+    await waitFor(() => expect(canvas.getAllByRole('row').length).toBeGreaterThan(8));
   },
 };
 

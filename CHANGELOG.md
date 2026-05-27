@@ -26,6 +26,8 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
 - **Typeahead cell editors** — `TypeaheadInput` and `MultiSelectTypeaheadInput` components plus cell-editor factories (keyboard navigation, `defaultOne`, expand-on-edit, `maxResults`, `clearOnFocus`, array lookup, click-to-open).
 - **Spreadsheet capabilities on DataGrid** — `clipboardPaste` policy (`range`/`single`/`off`), `cellSelection` (range selection + fill handle), `undoRedoLimit`, and the `onPasteEnd`/`onFillEnd`/`onCutEnd` flush points; registers the AG Grid Enterprise Clipboard and CellSelection modules.
 - **ConnectedDataGrid container** — `createConnectedDataGrid<T>()`, the write-path-capable successor to `createEntityDataGrid`: a discriminated `dataSource` (`client` mode wired; `server`/SSRM arrives in a later phase), a bulk `onCommit` commit-pipeline seam (`useCommitPipeline`) alongside per-row `onRowPublish`, and `Omit<DataGridProps, …>` prop forwarding so molecule capability props pass through.
+- **Add-row mechanics** — `DataGrid` gains `ref.addRow()`/`ref.removeRows()` (`useRowEditing`) plus `onRowsAdded`/`onRowsRemoved`/`getNewRowId`; a new row focuses and opens its first editable cell (deferred so the reconcile can't cancel the edit).
+- **Draft create lifecycle on ConnectedDataGrid** — `onCreate` seam + `requiredFields`/`newRowDefaults`/`getServerId` config (`useDraftPersistence`): an added row stays a client-only draft (excluded from the `PUT` path via `isDraft`) until its required fields are filled, then auto-creates on row blur / paste-fill flush and reconciles, keeping the grid id stable.
 - **Badge `onDismiss`** — dismissible token badges.
 - `./css` package export for the `design-system.css` bundle.
 

@@ -12,11 +12,21 @@ import {
 } from 'react';
 
 import { Search } from 'lucide-react';
-import type { ColDef, GridApi, PasteEndEvent, FillEndEvent, CutEndEvent } from 'ag-grid-community';
+import type {
+  ColDef,
+  GridApi,
+  PasteEndEvent,
+  FillEndEvent,
+  CutEndEvent,
+  CellValueChangedEvent,
+  CellEditingStoppedEvent,
+  RowClassParams,
+} from 'ag-grid-community';
 import {
   DataGrid,
   type DataGridRef,
   type DataGridProps,
+  type RowEditPayload,
 } from '@/components/canary/molecules/data-grid';
 import type { PaginationData } from '@/types/canary/utilities/pagination';
 import {
@@ -30,6 +40,7 @@ import {
   type RowChange,
   type CommitResult,
 } from './use-commit-pipeline';
+import { useDraftPersistence } from './use-draft-persistence';
 
 // ============================================================================
 // CSS — Row visual state styles
@@ -137,6 +148,25 @@ export interface ConnectedDataGridConfig<T extends Record<string, any>> {
    * Pass `actionCount` to auto-calculate width (28px per button + 4px gap + 16px padding).
    */
   actionsColumn?: ColDef<T> & { actionCount?: number };
+
+  // --- Add-row / create lifecycle (DQ-004/005/013) ---
+
+  /**
+   * Fields that must all be non-empty before an added (draft) row auto-creates
+   * via `onCreate`. Empty/omitted → added rows never auto-create.
+   */
+  requiredFields?: (keyof T)[];
+  /**
+   * Seed values applied to a newly-added row (e.g. token defaults). Passed to
+   * the molecule's `addRow(seed)`; merged under any per-call overrides.
+   */
+  newRowDefaults?: Partial<T> | (() => Partial<T>);
+  /**
+   * Read the server id off an entity (for PUT/DELETE URLs). Defaults to
+   * `getEntityId`. The grid id (`getEntityId`) stays stable across draft→saved;
+   * the server id rides separately (DQ-005).
+   */
+  getServerId?: (entity: T) => string | undefined;
 }
 
 // ============================================================================
@@ -175,6 +205,15 @@ export interface ConnectedDataGridModelProps<T> {
    * Takes precedence over `onRowPublish` when both are supplied.
    */
   onCommit?: (changes: RowChange<T>[]) => Promise<CommitResult[]>;
+  /**
+   * Create seam (DQ-001). Called once an added (draft) row's `requiredFields`
+   * are all non-empty — at row blur, paste/fill flush, or `saveAll`. Receives
+   * the full row snapshot; resolves to the authoritative entity to reconcile
+   * (which MUST keep the grid id, `getEntityId(returned) === rowId`). Throwing
+   * leaves the row a draft in the `error` state. Without it, added rows stay
+   * client-only.
+   */
+  onCreate?: (row: T) => Promise<T>;
   /** Called when the dirty state (has any unpublished rows) changes. */
   onDirtyChange?: (dirty: boolean) => void;
 }
@@ -254,7 +293,6 @@ export interface ConnectedDataGridViewProps<T> {
 export type OwnedByContainer =
   // data + write lifecycle
   | 'rowData'
-  | 'onCellValueChanged'
   | 'onCellEditingStopped'
   | 'getRowClass'
   // supplied by the factory config
@@ -297,6 +335,12 @@ export interface ConnectedDataGridRef {
   discardAll: () => void;
   /** Return the IDs of rows with pending (unpublished) changes. */
   getDirtyRowIds: () => string[];
+  /**
+   * Insert a new (draft) row: merges `newRowDefaults` with `overrides`, delegates
+   * to the molecule, and opens the first required field's editor. Returns the new
+   * row's grid id.
+   */
+  addRow: (overrides?: Record<string, unknown>) => string;
   /**
    * Returns the raw AG Grid API for advanced operations (column visibility,
    * selection, etc.). Returns null if the grid has not mounted yet.
@@ -376,6 +420,7 @@ export function createConnectedDataGrid<T extends Record<string, any>>(
         dataSource,
         onRowPublish,
         onCommit,
+        onCreate,
         onDirtyChange,
 
         // View props
@@ -404,9 +449,11 @@ export function createConnectedDataGrid<T extends Record<string, any>>(
         getRowClass: _getRowClass,
 
         // Forwarded molecule capability props the container composes (flush points).
+        onCellValueChanged: consumerOnCellValueChanged,
         onPasteEnd: consumerOnPasteEnd,
         onFillEnd: consumerOnFillEnd,
         onCutEnd: consumerOnCutEnd,
+        onRowsAdded: consumerOnRowsAdded,
 
         // Remaining forwarded molecule capability props (passthrough — DQ-006):
         // dataTypeDefinitions, columnTypes, cellSelection, clipboardPaste,
@@ -445,6 +492,28 @@ export function createConnectedDataGrid<T extends Record<string, any>>(
       // ----------------------------------------------------------------
 
       const useCommit = onCommit !== undefined;
+      // Whether an *update* write seam exists at all. With neither, editing an
+      // existing row must stay purely in-memory — no save lifecycle, no
+      // `saving`/`idle` row-class churn (which would repaint the row, steal cell
+      // focus and break native Ctrl+Z undo). Draft *creates* (onCreate) are separate.
+      const hasUpdateSeam = onCommit !== undefined || onRowPublish !== undefined;
+
+      // Create lifecycle for added (draft) rows. Defined first so its `isDraft`
+      // predicate suppresses the PUT write path for unsaved rows (DQ-003).
+      const requiredFields = config.requiredFields ?? [];
+      const {
+        isDraft,
+        markAdded: draftMarkAdded,
+        handleCellValueChanged: draftHandleCellValueChanged,
+        handleCellEditingStopped: draftHandleCellEditingStopped,
+        handlePasteEnd: draftHandlePasteEnd,
+        handleFillEnd: draftHandleFillEnd,
+      } = useDraftPersistence<T>({
+        getEntityId: config.getEntityId,
+        getApi: () => gridRef.current?.getGridApi() ?? null,
+        requiredFields,
+        ...(onCreate !== undefined ? { onCreate } : {}),
+      });
 
       const {
         handleCellValueChanged: publishHandleCellValueChanged,
@@ -454,6 +523,7 @@ export function createConnectedDataGrid<T extends Record<string, any>>(
         getEntityId: config.getEntityId,
         ...(onRowPublish !== undefined ? { onRowPublish } : {}),
         ...(onDirtyChange !== undefined ? { onDirtyChange } : {}),
+        isDraft,
         handleRef: publishHandleRef,
       });
 
@@ -468,31 +538,63 @@ export function createConnectedDataGrid<T extends Record<string, any>>(
         getEntityId: config.getEntityId,
         ...(onCommit !== undefined ? { onCommit } : {}),
         ...(onDirtyChange !== undefined ? { onDirtyChange } : {}),
+        isDraft,
         handleRef: commitHandleRef,
       });
 
-      const handleCellValueChanged = useCommit
+      // The active update-path handlers (bulk commit or per-row auto-publish);
+      // both skip draft rows internally. The draft handlers run alongside them.
+      const updateCellValueChanged = useCommit
         ? commitHandleCellValueChanged
         : publishHandleCellValueChanged;
-      const handleCellEditingStopped = useCommit
+      const updateCellEditingStopped = useCommit
         ? commitHandleCellEditingStopped
         : publishHandleCellEditingStopped;
-      const getRowClass = useCommit ? commitGetRowClass : publishGetRowClass;
+      const updateGetRowClass = useCommit ? commitGetRowClass : publishGetRowClass;
 
-      // Compose the bulk flush points with any consumer-supplied handlers.
+      const handleCellValueChanged = useCallback(
+        (event: CellValueChangedEvent<T>) => {
+          if (hasUpdateSeam) updateCellValueChanged(event);
+          draftHandleCellValueChanged(event);
+          consumerOnCellValueChanged?.(event);
+        },
+        [
+          hasUpdateSeam,
+          updateCellValueChanged,
+          draftHandleCellValueChanged,
+          consumerOnCellValueChanged,
+        ],
+      );
+      const handleCellEditingStopped = useCallback(
+        (event: CellEditingStoppedEvent<T>) => {
+          if (hasUpdateSeam) updateCellEditingStopped(event);
+          draftHandleCellEditingStopped(event);
+        },
+        [hasUpdateSeam, updateCellEditingStopped, draftHandleCellEditingStopped],
+      );
+      // Update-path visuals (saving/error) only when an update seam is wired;
+      // otherwise edits are in-memory with no row-class churn. Drafts never tint.
+      const getRowClass = useCallback(
+        (params: RowClassParams<T>) => (hasUpdateSeam ? updateGetRowClass(params) : undefined),
+        [hasUpdateSeam, updateGetRowClass],
+      );
+
+      // Compose the bulk flush points: update pipeline + draft create + consumer.
       const handlePasteEnd = useCallback(
         (event: PasteEndEvent<T>) => {
           if (useCommit) commitHandlePasteEnd(event);
+          draftHandlePasteEnd();
           consumerOnPasteEnd?.(event);
         },
-        [useCommit, commitHandlePasteEnd, consumerOnPasteEnd],
+        [useCommit, commitHandlePasteEnd, draftHandlePasteEnd, consumerOnPasteEnd],
       );
       const handleFillEnd = useCallback(
         (event: FillEndEvent<T>) => {
           if (useCommit) commitHandleFillEnd(event);
+          draftHandleFillEnd();
           consumerOnFillEnd?.(event);
         },
-        [useCommit, commitHandleFillEnd, consumerOnFillEnd],
+        [useCommit, commitHandleFillEnd, draftHandleFillEnd, consumerOnFillEnd],
       );
       const handleCutEnd = useCallback(
         (event: CutEndEvent<T>) => {
@@ -502,9 +604,19 @@ export function createConnectedDataGrid<T extends Record<string, any>>(
         [useCommit, commitHandleCutEnd, consumerOnCutEnd],
       );
 
-      const wirePasteEnd = useCommit || consumerOnPasteEnd !== undefined;
-      const wireFillEnd = useCommit || consumerOnFillEnd !== undefined;
+      // Mark freshly-added rows as drafts, then forward any consumer handler.
+      const handleRowsAdded = useCallback(
+        (payload: RowEditPayload<T>) => {
+          draftMarkAdded(payload);
+          consumerOnRowsAdded?.(payload);
+        },
+        [draftMarkAdded, consumerOnRowsAdded],
+      );
+
+      const wirePasteEnd = useCommit || consumerOnPasteEnd !== undefined || onCreate !== undefined;
+      const wireFillEnd = useCommit || consumerOnFillEnd !== undefined || onCreate !== undefined;
       const wireCutEnd = useCommit || consumerOnCutEnd !== undefined;
+      const wireRowsAdded = onCreate !== undefined || consumerOnRowsAdded !== undefined;
 
       // ----------------------------------------------------------------
       // Imperative Ref API
@@ -520,6 +632,20 @@ export function createConnectedDataGrid<T extends Record<string, any>>(
             activeHandle()?.discardAll();
           },
           getDirtyRowIds: () => activeHandle()?.getDirtyRowIds() ?? [],
+          addRow: (overrides?: Record<string, unknown>) => {
+            const defaults =
+              typeof config.newRowDefaults === 'function'
+                ? config.newRowDefaults()
+                : (config.newRowDefaults ?? {});
+            const seed = { ...defaults, ...(overrides ?? {}) } as Partial<T>;
+            const startField = requiredFields[0] as (keyof T & string) | undefined;
+            return (
+              gridRef.current?.addRow(
+                seed,
+                startField !== undefined ? { startEditingField: startField } : undefined,
+              ) ?? ''
+            );
+          },
           getGridApi: () => gridRef.current?.getGridApi() ?? null,
           // Legacy aliases
           saveAllDrafts: () => {
@@ -800,6 +926,7 @@ export function createConnectedDataGrid<T extends Record<string, any>>(
               {...(wirePasteEnd ? { onPasteEnd: handlePasteEnd } : {})}
               {...(wireFillEnd ? { onFillEnd: handleFillEnd } : {})}
               {...(wireCutEnd ? { onCutEnd: handleCutEnd } : {})}
+              {...(wireRowsAdded ? { onRowsAdded: handleRowsAdded } : {})}
               {...(onRowClick !== undefined
                 ? {
                     onRowClick: (entity: T) => onRowClick(entity),

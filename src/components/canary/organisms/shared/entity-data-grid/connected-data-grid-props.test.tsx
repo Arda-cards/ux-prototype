@@ -26,8 +26,8 @@ describe('ConnectedDataGridProps (DQ-006 prop forwarding)', () => {
     void props.columnDefs;
     // @ts-expect-error — `defaultColDef` is supplied via the factory config.
     void props.defaultColDef;
-    // @ts-expect-error — `onCellValueChanged` is owned (write lifecycle).
-    void props.onCellValueChanged;
+    // @ts-expect-error — `searchConfig` is reimplemented by the container.
+    void props.searchConfig;
     // @ts-expect-error — `gridRef` is owned (container holds the inner ref).
     void props.gridRef;
 
@@ -46,6 +46,8 @@ describe('ConnectedDataGridProps (DQ-006 prop forwarding)', () => {
     void props.onPasteEnd;
     void props.onFillEnd;
     void props.onCutEnd;
+    void props.onCellValueChanged; // composed side-effect hook (favicon, etc.)
+    void props.onRowsAdded;
 
     expect(true).toBe(true);
   });

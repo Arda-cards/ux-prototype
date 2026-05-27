@@ -36,6 +36,7 @@ import {
 import { RichSelectModule, ClipboardModule, CellSelectionModule } from 'ag-grid-enterprise';
 import '@/styles/canary/ag-theme-arda.css';
 import { useDragToScroll } from './use-drag-to-scroll';
+import { useRowEditing, type AddRowOptions, type RowEditPayload } from './use-row-editing';
 
 // ClipboardModule: copy / cut / paste (incl. bulk paste across a range).
 // CellSelectionModule: range selection + fill handle (spreadsheet-style fill-down).
@@ -241,6 +242,12 @@ export interface DataGridRuntimeConfig<T = Record<string, unknown>> {
   getRowClass?: (params: RowClassParams<T>) => string | string[] | undefined;
   /** Ref to access AG Grid API. */
   gridRef?: React.RefObject<AgGridReact<T> | null>;
+  /** Fired after rows are inserted in-memory (add-row mechanics). */
+  onRowsAdded?: (payload: RowEditPayload<T>) => void;
+  /** Fired after rows are removed in-memory. */
+  onRowsRemoved?: (payload: RowEditPayload<T>) => void;
+  /** Mint a new row's grid id. Default ``() => `new-${crypto.randomUUID()}` ``. */
+  getNewRowId?: () => string;
 }
 
 export interface DataGridProps<T = Record<string, unknown>>
@@ -249,6 +256,10 @@ export interface DataGridProps<T = Record<string, unknown>>
 export interface DataGridRef<T = Record<string, unknown>> {
   getGridApi: () => GridApi<T> | null;
   exportDataAsCsv: () => void;
+  /** Insert a row in-memory; returns the new row's grid id. */
+  addRow: (seed?: Partial<T>, opts?: AddRowOptions<T>) => string;
+  /** Remove rows in-memory by grid id. */
+  removeRows: (ids: string[]) => void;
 }
 
 // --- Component ---
@@ -288,6 +299,9 @@ export const DataGrid = forwardRef(
       onCutEnd,
       getRowClass,
       gridRef: externalGridRef,
+      onRowsAdded,
+      onRowsRemoved,
+      getNewRowId,
     }: DataGridProps<T>,
     ref: React.Ref<DataGridRef<T>>,
   ) => {
@@ -299,10 +313,20 @@ export const DataGrid = forwardRef(
     // Drag-to-scroll
     useDragToScroll(gridContainerRef);
 
+    // Add-row mechanics (in-memory insert/remove + events)
+    const { addRow, removeRows } = useRowEditing<T>({
+      getApi: () => gridApi,
+      getNewRowId: getNewRowId ?? (() => `new-${crypto.randomUUID()}`),
+      ...(onRowsAdded ? { onRowsAdded } : {}),
+      ...(onRowsRemoved ? { onRowsRemoved } : {}),
+    });
+
     // Expose imperative API
     useImperativeHandle(ref, () => ({
       getGridApi: () => gridApi,
       exportDataAsCsv: () => gridApi?.exportDataAsCsv(),
+      addRow,
+      removeRows,
     }));
 
     const handleGridReady = useCallback((params: GridReadyEvent<T>) => {

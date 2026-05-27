@@ -67,6 +67,13 @@ export interface UseCommitPipelineOptions<T> {
   onCommit?: (changes: RowChange<T>[]) => Promise<CommitResult[]>;
   /** Called when the dirty state (has any uncommitted rows) changes. */
   onDirtyChange?: (dirty: boolean) => void;
+  /**
+   * Draft-aware suppression (DQ-003). When provided, rows for which this returns
+   * `true` are unsaved drafts with no server id — their edits must NOT fire a
+   * `PUT`, so the pipeline skips accumulating and flushing them. Their creation
+   * is handled separately by `useDraftPersistence`.
+   */
+  isDraft?: (rowId: string) => boolean;
   /** Optional ref to expose `saveAll`/`discardAll`/`getDirtyRowIds` to a parent. */
   handleRef?: Ref<CommitPipelineHandle> | undefined;
 }
@@ -94,6 +101,7 @@ export function useCommitPipeline<T extends Record<string, any>>({
   getEntityId,
   onCommit,
   onDirtyChange,
+  isDraft,
   handleRef,
 }: UseCommitPipelineOptions<T>) {
   // --- Refs (imperative, non-reactive for perf) ---
@@ -111,9 +119,11 @@ export function useCommitPipeline<T extends Record<string, any>>({
   /** Stable callback refs so closures don't go stale. */
   const onCommitRef = useRef(onCommit);
   const onDirtyChangeRef = useRef(onDirtyChange);
+  const isDraftRef = useRef(isDraft);
 
   onCommitRef.current = onCommit;
   onDirtyChangeRef.current = onDirtyChange;
+  isDraftRef.current = isDraft;
 
   // --- State (reactive — drives getRowClass visuals) ---
 
@@ -220,6 +230,7 @@ export function useCommitPipeline<T extends Record<string, any>>({
     (event: CellValueChangedEvent<T>) => {
       const rowId = event.data ? getEntityId(event.data) : undefined;
       if (!rowId) return;
+      if (isDraftRef.current?.(rowId)) return; // unsaved draft → no PUT (DQ-003)
       const field = event.colDef.field;
       if (!field) return;
 
@@ -239,6 +250,7 @@ export function useCommitPipeline<T extends Record<string, any>>({
     (event: CellEditingStoppedEvent<T>) => {
       const rowId = event.data ? getEntityId(event.data) : undefined;
       if (!rowId || !event.data) return;
+      if (isDraftRef.current?.(rowId)) return; // unsaved draft → no PUT (DQ-003)
 
       // Still editing another cell in this row? Defer — flush on the final blur.
       const editingCells = event.api.getEditingCells();

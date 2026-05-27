@@ -173,6 +173,7 @@ export function createEntityDataGridShim<T extends Record<string, any>>(
           },
           discardAll: () => baseRef.current?.discardAll(),
           getDirtyRowIds: () => baseRef.current?.getDirtyRowIds() ?? [],
+          addRow: (overrides?: Record<string, unknown>) => baseRef.current?.addRow(overrides) ?? '',
           getGridApi: () => baseRef.current?.getGridApi() ?? null,
 
           // Legacy alias delegates
