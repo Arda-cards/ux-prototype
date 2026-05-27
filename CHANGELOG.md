@@ -36,6 +36,7 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
 - `createEntityDataGrid` and the `EntityDataGrid*` types — renamed to `createConnectedDataGrid` / `ConnectedDataGrid*`; the old names remain as re-export aliases.
 
 ### Fixed
+- The write path (auto-publish / commit pipeline) keys a cell change on `colId` when the column has no `field`, so combined-column edits (e.g. Address) mark the row dirty for publish.
 - Two-stage Escape in DataGrid (first exits edit mode, second clears the focus ring); AG Grid now handles Tab in cell-editor mode.
 - Cell-editor search no longer stalls under React StrictMode.
 - Multiselect collapses to a single line; `defaultOne` click closes the dropdown; the typeahead cell editor fills the cell cleanly.

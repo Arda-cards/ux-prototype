@@ -231,7 +231,9 @@ export function useCommitPipeline<T extends Record<string, any>>({
       const rowId = event.data ? getEntityId(event.data) : undefined;
       if (!rowId) return;
       if (isDraftRef.current?.(rowId)) return; // unsaved draft → no PUT (DQ-003)
-      const field = event.colDef.field;
+      // Combined columns expose a `colId` but no `field`; key on it so composite
+      // edits (e.g. Address) still accumulate for the commit.
+      const field = event.colDef.field ?? event.column?.getColId();
       if (!field) return;
 
       if (!pendingChangesRef.current[rowId]) {

@@ -173,7 +173,9 @@ export function useRowAutoPublish<T extends Record<string, any>>({
       if (!rowId) return;
       if (isDraftRef.current?.(rowId)) return; // unsaved draft → handled by useDraftPersistence
 
-      const field = event.colDef.field;
+      // Combined columns expose a `colId` but no `field`; key the change on it so
+      // composite edits (e.g. Address) still mark the row dirty for publish.
+      const field = event.colDef.field ?? event.column?.getColId();
       if (!field) return;
 
       if (!pendingChangesRef.current[rowId]) {
