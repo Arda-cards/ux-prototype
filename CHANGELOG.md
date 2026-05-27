@@ -18,6 +18,25 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [5.4.0] - 2026-05-27
+
+### Added
+- **DataGrid molecule rewrite** — rebuilt on the AG Grid Theming API (`themeQuartz`) with Arda design-token mapping, based on the production ItemGrid patterns.
+- **Rich cell data types** — token cell data types and popup cell editors; columns opt in via `cellDataType` and own the value↔string round trip that drives copy/paste, fill and CSV export.
+- **Typeahead cell editors** — `TypeaheadInput` and `MultiSelectTypeaheadInput` components plus cell-editor factories (keyboard navigation, `defaultOne`, expand-on-edit, `maxResults`, `clearOnFocus`, array lookup, click-to-open).
+- **Spreadsheet capabilities on DataGrid** — `clipboardPaste` policy (`range`/`single`/`off`), `cellSelection` (range selection + fill handle), `undoRedoLimit`, and the `onPasteEnd`/`onFillEnd`/`onCutEnd` flush points; registers the AG Grid Enterprise Clipboard and CellSelection modules.
+- **ConnectedDataGrid container** — `createConnectedDataGrid<T>()`, the write-path-capable successor to `createEntityDataGrid`: a discriminated `dataSource` (`client` mode wired; `server`/SSRM arrives in a later phase), a bulk `onCommit` commit-pipeline seam (`useCommitPipeline`) alongside per-row `onRowPublish`, and `Omit<DataGridProps, …>` prop forwarding so molecule capability props pass through.
+- **Badge `onDismiss`** — dismissible token badges.
+- `./css` package export for the `design-system.css` bundle.
+
+### Deprecated
+- `createEntityDataGrid` and the `EntityDataGrid*` types — renamed to `createConnectedDataGrid` / `ConnectedDataGrid*`; the old names remain as re-export aliases.
+
+### Fixed
+- Two-stage Escape in DataGrid (first exits edit mode, second clears the focus ring); AG Grid now handles Tab in cell-editor mode.
+- Cell-editor search no longer stalls under React StrictMode.
+- Multiselect collapses to a single line; `defaultOne` click closes the dropdown; the typeahead cell editor fills the cell cleanly.
+
 ## [5.3.0] - 2026-05-16
 
 ### Added
