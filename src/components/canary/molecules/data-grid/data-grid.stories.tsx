@@ -4,6 +4,8 @@ import { expect, within, userEvent, waitFor, screen } from 'storybook/test';
 import { DataGrid, type DataGridRef } from './data-grid';
 import type { ColDef } from 'ag-grid-community';
 import { createTokenDataType } from './cell-data-types';
+import { createCombinedColumn } from './combined-column';
+import { COUNTRY_SYMBOLS } from '@/types/canary/model/general/geo/postal-address';
 import { createMultiSelectCellEditor } from '../typeahead-input/multiselect-cell-editor';
 import { lookupRoles } from '@/components/canary/__mocks__/role-lookup';
 import { roleLookupHandler } from '@/components/canary/__mocks__/handlers/role-lookup';
@@ -230,6 +232,96 @@ export const Playground: StoryObj<typeof DataGrid> = {
     await userEvent.click(addButton);
     // A fresh editable row appears at the top — its Name editor opens on add.
     await waitFor(() => expect(canvas.getAllByRole('row').length).toBeGreaterThan(8));
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Combined column story — Address (group of fields shown as one line)
+// ---------------------------------------------------------------------------
+
+interface AddressRow {
+  [key: string]: unknown;
+  id: string;
+  company: string;
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+}
+
+const addressData: AddressRow[] = [
+  {
+    id: 'a1',
+    company: 'Acme Components',
+    addressLine1: '123 Main St',
+    city: 'Austin',
+    state: 'TX',
+    postalCode: '78701',
+    country: 'US',
+  },
+  {
+    id: 'a2',
+    company: 'Globex',
+    addressLine1: '500 Oak Ave',
+    addressLine2: 'Suite 200',
+    city: 'Denver',
+    state: 'CO',
+    postalCode: '80202',
+    country: 'US',
+  },
+  {
+    id: 'a3',
+    company: 'Initech',
+    addressLine1: '88 King St W',
+    city: 'Toronto',
+    state: 'ON',
+    postalCode: 'M5X 1A1',
+    country: 'CA',
+  },
+];
+
+const addressColumnDefs: ColDef<AddressRow>[] = [
+  { field: 'company', headerName: 'Company', flex: 1, minWidth: 160 },
+  createCombinedColumn<AddressRow>({
+    headerName: 'Address',
+    members: [
+      { field: 'addressLine1', headerName: 'Street' },
+      { field: 'addressLine2', headerName: 'Suite / Unit' },
+      { field: 'city', headerName: 'City' },
+      { field: 'state', headerName: 'State' },
+      { field: 'postalCode', headerName: 'ZIP' },
+      { field: 'country', headerName: 'Country', options: COUNTRY_SYMBOLS },
+    ],
+  }),
+];
+
+/**
+ * Combined column — the `Address` column shows several fields as one line; a
+ * double-click opens a popup with one input per field (empty fields show a
+ * placeholder), each keeping its own editor (Country is a select). Edits write
+ * back to the underlying fields; copy / fill / same-grid paste round-trip through
+ * the composed formatter/parser. Ctrl+Z inside the popup is the input's own undo
+ * and does not reach the grid.
+ */
+export const WithCombinedAddress: StoryObj = {
+  render: () => {
+    const [rows] = useState<AddressRow[]>(() => addressData.map((r) => ({ ...r })));
+    return (
+      <DataGrid<AddressRow>
+        rowData={rows}
+        columnDefs={addressColumnDefs}
+        height={420}
+        editable
+        cellSelection={{ handle: { mode: 'fill' } }}
+        undoRedoLimit={20}
+      />
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(await canvas.findByText(/123 Main St, Austin, TX, 78701, US/)).toBeInTheDocument();
   },
 };
 

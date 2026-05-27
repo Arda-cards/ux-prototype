@@ -21,6 +21,7 @@ import type { ColDef } from 'ag-grid-community';
 import { Eye, Trash2, Download, Printer, ShoppingCart } from 'lucide-react';
 
 import { createEntityDataGrid, type EntityDataGridRef } from './create-entity-data-grid';
+import { createCombinedColumn } from '@/components/canary/molecules/data-grid';
 import { storyStepDelay } from './story-step-delay';
 
 // ---------------------------------------------------------------------------
@@ -105,6 +106,17 @@ const allColumnDefs: ColDef<KitchenSinkEntity>[] = [
   },
   { field: 'supplier', headerName: 'Supplier', width: 160 },
   { field: 'location', headerName: 'Location', width: 140 },
+  // Combined column — Supplier + Location shown as one line; double-click opens a
+  // popup editing both (each field keeps its own editor). Demonstrates that any
+  // group of columns can be combined, not just Address.
+  createCombinedColumn<KitchenSinkEntity>({
+    headerName: 'Supplier / Location',
+    colId: 'supplierLocation',
+    members: [
+      { field: 'supplier', headerName: 'Supplier' },
+      { field: 'location', headerName: 'Location' },
+    ],
+  }),
   { field: 'lastUpdated', headerName: 'Last Updated', width: 140 },
   { field: 'notes', headerName: 'Notes', width: 220 },
 ];

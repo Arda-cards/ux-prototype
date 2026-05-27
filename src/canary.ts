@@ -370,8 +370,10 @@ export {
   DataGrid,
   GridImage,
   createTokenDataType,
+  createCombinedColumn,
   useColumnPersistence,
   useDragToScroll,
+  useRowEditing,
 } from './components/canary/molecules/data-grid';
 export type {
   DataGridRef,
@@ -380,7 +382,20 @@ export type {
   DataGridRuntimeConfig,
   TokenDataTypeConfig,
   TokenDataType,
+  CombinedColumnConfig,
+  CombinedColumnMember,
+  CombinedFieldEditorProps,
+  AddRowOptions,
+  RowEditPayload,
 } from './components/canary/molecules/data-grid';
+
+// Geo model (mirrored from extras into canary) — used by combined Address columns.
+export { COUNTRY_SYMBOLS } from './types/canary/model/general/geo/postal-address';
+export type {
+  PostalAddress,
+  CountrySymbol,
+  GeoLocation,
+} from './types/canary/model/general/geo/postal-address';
 
 // Molecules: TokenList
 export { TokenList } from './components/canary/molecules/token-list';
