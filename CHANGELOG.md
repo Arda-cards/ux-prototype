@@ -18,7 +18,7 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
-## [5.4.0] - 2026-05-27
+## [5.4.0-nail60-vendorgrid] - 2026-05-27
 
 ### Added
 - **DataGrid molecule rewrite** — rebuilt on the AG Grid Theming API (`themeQuartz`) with Arda design-token mapping, based on the production ItemGrid patterns.
