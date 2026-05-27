@@ -61,7 +61,7 @@ describe('createEntityDataGridShim', () => {
       </div>,
     );
 
-    expect(document.querySelector('.arda-grid-container')).toBeInTheDocument();
+    expect(document.querySelector('.ag-root-wrapper')).toBeInTheDocument();
   });
 
   it('renders with empty data', () => {
@@ -79,7 +79,7 @@ describe('createEntityDataGridShim', () => {
       </div>,
     );
 
-    expect(document.querySelector('.arda-grid-container')).toBeInTheDocument();
+    expect(document.querySelector('.ag-root-wrapper')).toBeInTheDocument();
   });
 
   it('renders loading state', () => {
@@ -97,7 +97,7 @@ describe('createEntityDataGridShim', () => {
       </div>,
     );
 
-    expect(document.querySelector('.arda-grid-container')).toBeInTheDocument();
+    expect(document.querySelector('.ag-root-wrapper')).toBeInTheDocument();
   });
 
   it('shows "No items found" when hasActiveSearch and data is empty', async () => {
@@ -190,7 +190,7 @@ describe('createEntityDataGridShim', () => {
     );
 
     // AG Grid should be rendered
-    expect(container.querySelector('.ag-theme-arda')).toBeInTheDocument();
+    expect(container.querySelector('.ag-root-wrapper')).toBeInTheDocument();
   });
 
   it('does not add actions column when enableRowActions is false', () => {
@@ -214,7 +214,7 @@ describe('createEntityDataGridShim', () => {
     );
 
     // Grid should render normally
-    expect(document.querySelector('.arda-grid-container')).toBeInTheDocument();
+    expect(document.querySelector('.ag-root-wrapper')).toBeInTheDocument();
   });
 
   it('exposes ref API', () => {

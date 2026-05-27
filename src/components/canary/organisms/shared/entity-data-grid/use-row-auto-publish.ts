@@ -42,6 +42,12 @@ export interface UseRowAutoPublishOptions<T> {
   onRowPublish?: (rowId: string, changes: PendingChanges, entity?: T) => Promise<void>;
   /** Called when the dirty state (has any unpublished rows) changes. */
   onDirtyChange?: (dirty: boolean) => void;
+  /**
+   * Draft-aware suppression (DQ-003). Rows for which this returns `true` are
+   * unsaved drafts (no server id) and are skipped — their creation is handled by
+   * `useDraftPersistence`, not published as a `PUT`.
+   */
+  isDraft?: (rowId: string) => boolean;
   /** Optional ref to expose `saveAll`, `discardAll`, `getDirtyRowIds` to a parent. */
   handleRef?: Ref<RowAutoPublishHandle> | undefined;
 }
@@ -65,6 +71,7 @@ export function useRowAutoPublish<T extends Record<string, any>>({
   getEntityId,
   onRowPublish,
   onDirtyChange,
+  isDraft,
   handleRef,
 }: UseRowAutoPublishOptions<T>) {
   // --- Refs (not reactive, managed imperatively for perf) ---
@@ -80,10 +87,12 @@ export function useRowAutoPublish<T extends Record<string, any>>({
   /** Stable refs so callbacks don't go stale in closures. */
   const onRowPublishRef = useRef(onRowPublish);
   const onDirtyChangeRef = useRef(onDirtyChange);
+  const isDraftRef = useRef(isDraft);
 
   // Keep callback refs current.
   onRowPublishRef.current = onRowPublish;
   onDirtyChangeRef.current = onDirtyChange;
+  isDraftRef.current = isDraft;
 
   // --- State (reactive — drives AG Grid getRowClass + count display) ---
 
@@ -162,8 +171,11 @@ export function useRowAutoPublish<T extends Record<string, any>>({
     (event: CellValueChangedEvent<T>) => {
       const rowId = event.data ? getEntityId(event.data) : undefined;
       if (!rowId) return;
+      if (isDraftRef.current?.(rowId)) return; // unsaved draft → handled by useDraftPersistence
 
-      const field = event.colDef.field;
+      // Combined columns expose a `colId` but no `field`; key the change on it so
+      // composite edits (e.g. Address) still mark the row dirty for publish.
+      const field = event.colDef.field ?? event.column?.getColId();
       if (!field) return;
 
       if (!pendingChangesRef.current[rowId]) {
@@ -180,6 +192,7 @@ export function useRowAutoPublish<T extends Record<string, any>>({
     (event: CellEditingStoppedEvent<T>) => {
       const rowId = event.data ? getEntityId(event.data) : undefined;
       if (!rowId || !event.data) return;
+      if (isDraftRef.current?.(rowId)) return; // unsaved draft → handled by useDraftPersistence
 
       // Check if the user is still editing another cell in the same row.
       const editingCells = event.api.getEditingCells();

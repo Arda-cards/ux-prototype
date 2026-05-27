@@ -51,6 +51,7 @@
       "import": "./dist/types-extras-date-time.js",
       "require": "./dist/types-extras-date-time.cjs"
     },
+    "./css": "./dist/design-system.css",
     "./styles": "./dist/styles/globals.css",
     "./styles/*": "./dist/styles/*",
     "./assets/*": "./dist/assets/*"
@@ -109,6 +110,7 @@
     "serve": "node tools/server.js"
   },
   "dependencies": {
+    "ag-grid-enterprise": "^34.3.1",
     "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
