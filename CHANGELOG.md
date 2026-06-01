@@ -18,9 +18,10 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
-## [5.4.0-nail60-vendorgrid] - 2026-05-27
+## [5.4.0-nail60-vendorgrid] - 2026-06-01
 
 ### Added
+- **Mobile tap-to-edit on DataGrid** — on touch devices (`(pointer: coarse)`), tapping an already-focused cell opens its editor (first tap focuses, second tap edits). Desktop double-click behavior is unchanged; gated per-event so hybrid devices keep mouse semantics.
 - **DataGrid molecule rewrite** — rebuilt on the AG Grid Theming API (`themeQuartz`) with Arda design-token mapping, based on the production ItemGrid patterns.
 - **Rich cell data types** — token cell data types and popup cell editors; columns opt in via `cellDataType` and own the value↔string round trip that drives copy/paste, fill and CSV export.
 - **Typeahead cell editors** — `TypeaheadInput` and `MultiSelectTypeaheadInput` components plus cell-editor factories (keyboard navigation, `defaultOne`, expand-on-edit, `maxResults`, `clearOnFocus`, array lookup, click-to-open).
@@ -31,6 +32,9 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
 - **Combined column** — `createCombinedColumn({ headerName, members })` shows a group of fields as one line and edits them in a popup (one input per field, each keeping its own editor — canary `Input` for text, a native `<select>` for option fields; placeholder for empties). Edits write back to the underlying fields; copy/fill/(same-grid) paste round-trip; Tab steps through the fields then resumes editing the adjacent cell; Ctrl+Z stays the field's native undo. Address is the first consumer (`PostalAddress` mirrored from extras into `types/canary/.../geo`).
 - **Badge `onDismiss`** — dismissible token badges.
 - `./css` package export for the `design-system.css` bundle.
+
+### Changed
+- DataGrid now suppresses the column-header "…" menu button by default (`suppressHeaderMenuButton` on `defaultColDef`); the column menu is still reachable via right-click on the header. Consumers can re-enable the button per-column or via their own `defaultColDef`.
 
 ### Deprecated
 - `createEntityDataGrid` and the `EntityDataGrid*` types — renamed to `createConnectedDataGrid` / `ConnectedDataGrid*`; the old names remain as re-export aliases.

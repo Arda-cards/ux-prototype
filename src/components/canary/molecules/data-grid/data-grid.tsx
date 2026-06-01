@@ -26,6 +26,7 @@ import {
   type GridReadyEvent,
   type RowClickedEvent,
   type RowClassParams,
+  type CellClickedEvent,
   type CellValueChangedEvent,
   type CellEditingStoppedEvent,
   type SelectionChangedEvent,
@@ -363,6 +364,45 @@ export const DataGrid = forwardRef(
       // wasEditingRef stays true until the next Escape clears it
     }, []);
 
+    // --- Mobile: tap-to-edit on an already-focused cell ---
+    // Touch devices have no natural double-click, so we open the editor when a
+    // user taps the same cell twice in a row (first tap focuses, second tap
+    // edits). Gated on `(pointer: coarse)` so hybrid devices keep AG Grid's
+    // double-click semantics under a fine pointer.
+    const isCoarsePointerRef = useRef(false);
+    useEffect(() => {
+      if (typeof window === 'undefined' || !window.matchMedia) return;
+      const mq = window.matchMedia('(pointer: coarse)');
+      isCoarsePointerRef.current = mq.matches;
+      const update = (e: MediaQueryListEvent) => {
+        isCoarsePointerRef.current = e.matches;
+      };
+      mq.addEventListener('change', update);
+      return () => mq.removeEventListener('change', update);
+    }, []);
+
+    const lastTappedCellKeyRef = useRef<string | null>(null);
+
+    const handleCellClicked = useCallback((event: CellClickedEvent<T>) => {
+      if (!isCoarsePointerRef.current) return;
+      const rowIndex = event.node.rowIndex;
+      if (typeof rowIndex !== 'number') return;
+      const colId = event.column.getColId();
+      const key = `${rowIndex}:${colId}`;
+      // If something is already in edit mode, just record the tapped cell.
+      if (event.api.getEditingCells().length > 0) {
+        lastTappedCellKeyRef.current = key;
+        return;
+      }
+      if (lastTappedCellKeyRef.current === key) {
+        // Second tap on the already-focused cell — open the editor.
+        event.api.startEditingCell({ rowIndex, colKey: colId });
+        lastTappedCellKeyRef.current = null;
+      } else {
+        lastTappedCellKeyRef.current = key;
+      }
+    }, []);
+
     // --- Search ---
 
     const [searchInput, setSearchInput] = useState('');
@@ -456,6 +496,10 @@ export const DataGrid = forwardRef(
       () => ({
         sortable: true,
         resizable: true,
+        // No "..." button on column headers; the same column menu is still
+        // available via right-click on the header. Consumers can re-enable
+        // it per-column or via defaultColDef.
+        suppressHeaderMenuButton: true,
         ...(editable ? { editable: true } : { editable: false }),
         ...defaultColDef,
       }),
@@ -555,6 +599,7 @@ export const DataGrid = forwardRef(
             rowData={filteredRowData}
             loading={loading}
             onGridReady={handleGridReady}
+            onCellClicked={handleCellClicked}
             onCellKeyDown={handleCellKeyDown as never}
             onCellEditingStarted={handleCellEditingStarted as never}
             {...(rowSelection ? { rowSelection } : {})}
