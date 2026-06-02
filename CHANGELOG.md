@@ -40,6 +40,10 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
 
 ### Changed
 - DataGrid now suppresses the column-header "…" menu button by default (`suppressHeaderMenuButton` on `defaultColDef`); the column menu is still reachable via right-click on the header. Consumers can re-enable the button per-column or via their own `defaultColDef`.
+- Softer alternating-row tint — `--ag-odd-row-background-color` is now `color-mix(in srgb, var(--base-foreground) 3%, var(--base-background))` instead of `var(--secondary)`. The previous value shared a color with header + hover, so odd rows visually competed with both. The mix adapts to light/dark mode automatically.
+
+### Fixed
+- Auto-publish `'saving'` / `'error'` row class no longer sticks after the publish finishes. `useRowAutoPublish` now keeps `rowStates` in a synchronous ref (the React state mirror stays for backwards-compat) so `getRowClass` always reflects the latest `setRowState` call, and `setRowState` calls `api.redrawRows({ rowNodes: [node] })` (skipped while the row has a cell in edit mode so it can't cancel typing). `discardAll` redraws cleared rows for the same reason.
 
 ### Deprecated
 - `createEntityDataGrid` and the `EntityDataGrid*` types — renamed to `createConnectedDataGrid` / `ConnectedDataGrid*`; the old names remain as re-export aliases.

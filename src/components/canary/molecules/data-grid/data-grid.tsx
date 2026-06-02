@@ -85,7 +85,12 @@ const gridColorVars = {
   '--ag-header-cell-moving-background-color': 'var(--base-border)',
   '--ag-header-column-resize-handle-color': 'var(--base-border)',
   '--ag-row-border-color': 'var(--secondary)',
-  '--ag-odd-row-background-color': 'var(--secondary)',
+  // Alternating-row tint — a very subtle gray that adapts to light/dark mode
+  // via color-mix against the canonical background. The previous value
+  // (`var(--secondary)`) was the same as the hover and header color, so odd
+  // rows visually competed with both.
+  '--ag-odd-row-background-color':
+    'color-mix(in srgb, var(--base-foreground) 3%, var(--base-background))',
   '--ag-row-hover-color': 'var(--secondary)',
   '--ag-selected-row-background-color': 'var(--accent-light)',
   '--ag-checkbox-unchecked-border-color': 'var(--base-muted-foreground)',

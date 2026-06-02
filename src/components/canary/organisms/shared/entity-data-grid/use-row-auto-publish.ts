@@ -116,8 +116,15 @@ export function useRowAutoPublish<T extends Record<string, any>>({
   isDraftRef.current = isDraft;
   getApiRef.current = getApi;
 
-  // --- State (reactive — drives AG Grid getRowClass + count display) ---
+  // --- State ---
+  //
+  // The authoritative copy is `rowStateMapRef` — getRowClass reads from it so
+  // the class returned is always in sync with the latest setRowState call,
+  // regardless of React batching. `rowStates` is kept as a parallel React
+  // state purely for any external consumer of the hook return value; AG Grid
+  // never reads it directly.
 
+  const rowStateMapRef = useRef<Map<string, RowEditState>>(new Map());
   const [rowStates, setRowStates] = useState<Record<string, RowEditState>>({});
 
   // -------------------------------------------------------------------------
@@ -138,16 +145,39 @@ export function useRowAutoPublish<T extends Record<string, any>>({
   // -------------------------------------------------------------------------
 
   const setRowState = useCallback((rowId: string, state: RowEditState) => {
+    // 1. Update the synchronous ref so getRowClass sees the new value on the
+    //    very next call (no React state-batch wait).
+    if (state === 'idle') {
+      if (!rowStateMapRef.current.has(rowId)) {
+        // already idle, but still flow through to optional redraw below
+      }
+      rowStateMapRef.current.delete(rowId);
+    } else {
+      if (rowStateMapRef.current.get(rowId) === state) return; // no-op
+      rowStateMapRef.current.set(rowId, state);
+    }
+    // 2. Mirror to React state for any external consumer of the hook return.
     setRowStates((prev) => {
       if (state === 'idle') {
-        if (!(rowId in prev)) return prev; // no-op
+        if (!(rowId in prev)) return prev;
         const next = { ...prev };
         delete next[rowId];
         return next;
       }
-      if (prev[rowId] === state) return prev; // no-op
+      if (prev[rowId] === state) return prev;
       return { ...prev, [rowId]: state };
     });
+    // 3. Ask AG Grid to re-evaluate getRowClass for just this row. Without
+    //    this, the previous class (e.g. 'ag-row-saving') stays on the DOM
+    //    forever even after the state map shows 'idle'. Skip while the row is
+    //    being edited so we don't cancel the user's typing.
+    const api = getApiRef.current?.();
+    if (!api) return;
+    const node = api.getRowNode(rowId);
+    if (!node) return;
+    const rowIsEditing = api.getEditingCells().some((cell) => cell.rowIndex === node.rowIndex);
+    if (rowIsEditing) return;
+    api.redrawRows({ rowNodes: [node] });
   }, []);
 
   const notifyDirty = useCallback(() => {
@@ -284,12 +314,14 @@ export function useRowAutoPublish<T extends Record<string, any>>({
     (params: RowClassParams<T>): string | string[] | undefined => {
       const id = params.data ? getEntityId(params.data) : undefined;
       if (!id) return undefined;
-      const state = rowStates[id];
+      // Read from the ref so the class returned is in sync with the most
+      // recent setRowState call (React state would be a frame behind).
+      const state = rowStateMapRef.current.get(id);
       if (state === 'saving') return 'ag-row-saving';
       if (state === 'error') return 'ag-row-error';
       return undefined;
     },
-    [getEntityId, rowStates],
+    [getEntityId],
   );
 
   // -------------------------------------------------------------------------
@@ -330,8 +362,20 @@ export function useRowAutoPublish<T extends Record<string, any>>({
         pendingChangesRef.current = {};
         dirtyRowIdsRef.current.clear();
         snapshotFieldsRef.current.clear();
+        // Capture rows that need their class re-evaluated before clearing.
+        const idsToRedraw = Array.from(rowStateMapRef.current.keys());
+        rowStateMapRef.current.clear();
         setRowStates({});
         notifyDirty();
+        // Redraw rows that had a non-idle state so 'ag-row-saving' /
+        // 'ag-row-error' classes actually come off.
+        const api = getApiRef.current?.();
+        if (api && idsToRedraw.length > 0) {
+          const nodes = idsToRedraw
+            .map((id) => api.getRowNode(id))
+            .filter((n): n is NonNullable<typeof n> => n !== null && n !== undefined);
+          if (nodes.length > 0) api.redrawRows({ rowNodes: nodes });
+        }
       },
       getDirtyRowIds: () => Array.from(dirtyRowIdsRef.current),
     }),
