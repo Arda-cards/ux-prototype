@@ -446,7 +446,10 @@ export function TypeaheadInput({
               'cursor-pointer rounded-sm px-2 py-1.5 text-sm',
               i === highlightedIndex && 'bg-accent text-accent-foreground',
             )}
-            onMouseDown={(e) => {
+            // Use pointerdown so the option-select fires consistently on touch
+            // (mouse-down events are sometimes swallowed on iOS, letting the
+            // document-level outside-click handler close the dropdown first).
+            onPointerDown={(e) => {
               e.preventDefault();
               selectOption(opt);
             }}
@@ -465,7 +468,7 @@ export function TypeaheadInput({
             'flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-primary',
             highlightedIndex === options.length && 'bg-accent text-primary',
           )}
-          onMouseDown={(e) => {
+          onPointerDown={(e) => {
             e.preventDefault();
             createValue(trimmedInput);
           }}
@@ -491,6 +494,11 @@ export function TypeaheadInput({
       onKeyDownCapture={handleKeyDown}
       placeholder={placeholder}
       disabled={disabled}
+      // iOS Safari blocks programmatic focus() outside a fresh user-gesture
+      // frame, which the useEffect-on-mount focus call usually misses. The
+      // autoFocus attribute is applied during the first render and is honored
+      // as user-driven, so the keyboard reliably comes up.
+      autoFocus={cellEditorMode}
       role="combobox"
       aria-expanded={showDropdown}
       aria-haspopup="listbox"

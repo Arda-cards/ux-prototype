@@ -404,6 +404,16 @@ export const DataGrid = forwardRef(
         // Second tap on the already-focused cell — open the editor.
         event.api.startEditingCell({ rowIndex, colKey: colId });
         lastTappedCellKeyRef.current = null;
+        // iOS Safari requires focus() to follow a user gesture for the
+        // keyboard to appear. AG Grid's default text editor focuses inside a
+        // useEffect that often misses that window. Nudge focus on the next
+        // frame — still within the tap's gesture grace period.
+        requestAnimationFrame(() => {
+          const input = document.querySelector<HTMLElement>(
+            '.ag-cell-edit-wrapper input, .ag-cell-edit-input, .ag-input-field-input',
+          );
+          input?.focus();
+        });
       } else {
         lastTappedCellKeyRef.current = key;
       }
