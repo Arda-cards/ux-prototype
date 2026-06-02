@@ -528,6 +528,7 @@ export function createConnectedDataGrid<T extends Record<string, any>>(
         ...(onDirtyChange !== undefined ? { onDirtyChange } : {}),
         isDraft,
         handleRef: publishHandleRef,
+        getApi: () => gridRef.current?.getGridApi() ?? null,
       });
 
       const {

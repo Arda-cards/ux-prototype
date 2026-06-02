@@ -54,6 +54,15 @@ export interface UseRowAutoPublishOptions<T> {
   isDraft?: (rowId: string) => boolean;
   /** Optional ref to expose `saveAll`, `discardAll`, `getDirtyRowIds` to a parent. */
   handleRef?: Ref<RowAutoPublishHandle> | undefined;
+  /**
+   * Live AG Grid API getter — required for revert-on-failure. The hook captures
+   * `oldValue` per (rowId, field) on the first `cellValueChanged` for each row,
+   * and on a publish failure applies the captured oldValues back through
+   * `api.applyTransaction({ update: [row] })`. Without this, a failed publish
+   * leaves the row dirty in the `'error'` state and the user has to clear it
+   * manually.
+   */
+  getApi?: () => import('ag-grid-community').GridApi<T> | null;
 }
 
 // ============================================================================
@@ -77,6 +86,7 @@ export function useRowAutoPublish<T extends Record<string, any>>({
   onDirtyChange,
   isDraft,
   handleRef,
+  getApi,
 }: UseRowAutoPublishOptions<T>) {
   // --- Refs (not reactive, managed imperatively for perf) ---
 
@@ -88,15 +98,23 @@ export function useRowAutoPublish<T extends Record<string, any>>({
   const publishingRef = useRef<Set<string>>(new Set());
   /** Timer IDs keyed by rowId — allows cancelling the 50ms debounce. */
   const debounceTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  /**
+   * Snapshots of `oldValue` per (rowId, field) captured on the FIRST
+   * `cellValueChanged` for a given row → field. Used to revert a row to its
+   * last-saved state when a publish fails. Cleared on publish success.
+   */
+  const snapshotFieldsRef = useRef<Map<string, Map<string, unknown>>>(new Map());
   /** Stable refs so callbacks don't go stale in closures. */
   const onRowPublishRef = useRef(onRowPublish);
   const onDirtyChangeRef = useRef(onDirtyChange);
   const isDraftRef = useRef(isDraft);
+  const getApiRef = useRef(getApi);
 
   // Keep callback refs current.
   onRowPublishRef.current = onRowPublish;
   onDirtyChangeRef.current = onDirtyChange;
   isDraftRef.current = isDraft;
+  getApiRef.current = getApi;
 
   // --- State (reactive — drives AG Grid getRowClass + count display) ---
 
@@ -140,6 +158,24 @@ export function useRowAutoPublish<T extends Record<string, any>>({
   // Publish a single row
   // -------------------------------------------------------------------------
 
+  /**
+   * Revert the row's edited cells to the snapshotted `oldValue`s by replaying
+   * them through AG Grid's transaction API. No-op when `getApi` isn't wired or
+   * the row isn't in the grid anymore.
+   */
+  const revertRowToSnapshot = useCallback((rowId: string) => {
+    const fieldSnap = snapshotFieldsRef.current.get(rowId);
+    const api = getApiRef.current?.();
+    if (!fieldSnap || !api) return;
+    const node = api.getRowNode(rowId);
+    if (!node || !node.data) return;
+    const updated: Record<string, unknown> = { ...(node.data as Record<string, unknown>) };
+    for (const [field, oldValue] of fieldSnap) {
+      updated[field] = oldValue;
+    }
+    api.applyTransaction({ update: [updated as T] });
+  }, []);
+
   const publishRow = useCallback(
     async (rowId: string, entity?: T) => {
       const changes = pendingChangesRef.current[rowId];
@@ -154,17 +190,23 @@ export function useRowAutoPublish<T extends Record<string, any>>({
       try {
         await onRowPublishRef.current?.(rowId, changes, entity);
         delete pendingChangesRef.current[rowId];
+        snapshotFieldsRef.current.delete(rowId);
         setRowState(rowId, 'idle');
       } catch {
-        // Revert dirty — publish failed, changes still pending.
-        dirtyRowIdsRef.current.add(rowId);
-        setRowState(rowId, 'error');
+        // Revert the row's cells to the captured oldValues. After revert there
+        // are no pending changes, no dirty state, and no snapshot — the row is
+        // back to its last-saved baseline. The caller still saw the rejection
+        // and should toast it; we just don't strand the bad value in the grid.
+        revertRowToSnapshot(rowId);
+        delete pendingChangesRef.current[rowId];
+        snapshotFieldsRef.current.delete(rowId);
+        setRowState(rowId, 'idle');
       } finally {
         publishingRef.current.delete(rowId);
         notifyDirty();
       }
     },
-    [setRowState, notifyDirty],
+    [setRowState, notifyDirty, revertRowToSnapshot],
   );
 
   // -------------------------------------------------------------------------
@@ -186,6 +228,17 @@ export function useRowAutoPublish<T extends Record<string, any>>({
         pendingChangesRef.current[rowId] = {};
       }
       pendingChangesRef.current[rowId][field] = event.newValue;
+      // Snapshot the pre-edit value the *first* time we see this (row, field)
+      // since last save. Repeat edits to the same cell keep the original
+      // baseline so revert restores to last-saved, not last-edited.
+      let fieldSnap = snapshotFieldsRef.current.get(rowId);
+      if (!fieldSnap) {
+        fieldSnap = new Map();
+        snapshotFieldsRef.current.set(rowId, fieldSnap);
+      }
+      if (!fieldSnap.has(field)) {
+        fieldSnap.set(field, event.oldValue);
+      }
       dirtyRowIdsRef.current.add(rowId);
       notifyDirty();
     },
@@ -276,6 +329,7 @@ export function useRowAutoPublish<T extends Record<string, any>>({
         debounceTimersRef.current = {};
         pendingChangesRef.current = {};
         dirtyRowIdsRef.current.clear();
+        snapshotFieldsRef.current.clear();
         setRowStates({});
         notifyDirty();
       },
