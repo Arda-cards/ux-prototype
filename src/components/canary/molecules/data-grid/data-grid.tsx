@@ -95,6 +95,12 @@ const gridColorVars = {
 const rowStateStyles = `
   .ag-row-saving { background-color: color-mix(in srgb, var(--base-primary) 6%, var(--base-background)) !important; }
   .ag-row-error  { background-color: color-mix(in srgb, var(--destructive) 8%, var(--base-background)) !important; }
+  /* Center the header checkbox in the narrowed selection column. */
+  .ag-header-cell.ag-selection-header-centered .ag-header-cell-comp-wrapper,
+  .ag-header-cell.ag-selection-header-centered .ag-header-select-all {
+    justify-content: center;
+    padding: 0;
+  }
   /* While editing, round the cell and thicken its accent border to 2px to match
      the editor's focus ring. A border (vs a box-shadow) stays inside the cell so
      it isn't cropped by adjacent grid cells. */
@@ -457,6 +463,31 @@ export const DataGrid = forwardRef(
       [enableRowSelection],
     );
 
+    // Narrow the row-selection column and center its checkbox so the leading
+    // edge of the grid isn't dominated by empty space around a small control.
+    // (Componentizing the selection cell can come later — this is the minimum
+    // tidy-up consumers were asking for.)
+    const selectionColumnDef = useMemo<ColDef<T> | undefined>(
+      () =>
+        enableRowSelection
+          ? {
+              width: 40,
+              minWidth: 40,
+              maxWidth: 40,
+              suppressSizeToFit: true,
+              resizable: false,
+              cellStyle: {
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                padding: 0,
+              },
+              headerClass: 'ag-selection-header-centered',
+            }
+          : undefined,
+      [enableRowSelection],
+    );
+
     // --- Column defs with actions column ---
 
     const resolvedColumnDefs = useMemo(() => {
@@ -588,6 +619,7 @@ export const DataGrid = forwardRef(
             defaultColDef={mergedDefaultColDef}
             {...(dataTypeDefinitions ? { dataTypeDefinitions } : {})}
             {...(columnTypes ? { columnTypes } : {})}
+            {...(selectionColumnDef ? { selectionColumnDef } : {})}
             {...(cellSelection ? { cellSelection } : {})}
             {...(clipboardPaste === 'off' ? { suppressClipboardPaste: true } : {})}
             {...(clipboardPaste === 'single'

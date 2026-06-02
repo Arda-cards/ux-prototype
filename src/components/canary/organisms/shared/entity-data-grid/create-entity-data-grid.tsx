@@ -518,6 +518,9 @@ export function createConnectedDataGrid<T extends Record<string, any>>(
       const {
         handleCellValueChanged: publishHandleCellValueChanged,
         handleCellEditingStopped: publishHandleCellEditingStopped,
+        handlePasteEnd: publishHandlePasteEnd,
+        handleFillEnd: publishHandleFillEnd,
+        handleCutEnd: publishHandleCutEnd,
         getRowClass: publishGetRowClass,
       } = useRowAutoPublish<T>({
         getEntityId: config.getEntityId,
@@ -579,29 +582,49 @@ export function createConnectedDataGrid<T extends Record<string, any>>(
         [hasUpdateSeam, updateGetRowClass],
       );
 
-      // Compose the bulk flush points: update pipeline + draft create + consumer.
+      // Compose the bulk flush points: update pipeline (commit OR auto-publish)
+      // + draft create + consumer. Without the auto-publish branch, paste/fill
+      // edits accumulated via cellValueChanged would stay dirty forever because
+      // cellEditingStopped doesn't fire for bulk operations.
       const handlePasteEnd = useCallback(
         (event: PasteEndEvent<T>) => {
           if (useCommit) commitHandlePasteEnd(event);
+          else if (onRowPublish !== undefined) publishHandlePasteEnd(event);
           draftHandlePasteEnd();
           consumerOnPasteEnd?.(event);
         },
-        [useCommit, commitHandlePasteEnd, draftHandlePasteEnd, consumerOnPasteEnd],
+        [
+          useCommit,
+          commitHandlePasteEnd,
+          onRowPublish,
+          publishHandlePasteEnd,
+          draftHandlePasteEnd,
+          consumerOnPasteEnd,
+        ],
       );
       const handleFillEnd = useCallback(
         (event: FillEndEvent<T>) => {
           if (useCommit) commitHandleFillEnd(event);
+          else if (onRowPublish !== undefined) publishHandleFillEnd(event);
           draftHandleFillEnd();
           consumerOnFillEnd?.(event);
         },
-        [useCommit, commitHandleFillEnd, draftHandleFillEnd, consumerOnFillEnd],
+        [
+          useCommit,
+          commitHandleFillEnd,
+          onRowPublish,
+          publishHandleFillEnd,
+          draftHandleFillEnd,
+          consumerOnFillEnd,
+        ],
       );
       const handleCutEnd = useCallback(
         (event: CutEndEvent<T>) => {
           if (useCommit) commitHandleCutEnd(event);
+          else if (onRowPublish !== undefined) publishHandleCutEnd(event);
           consumerOnCutEnd?.(event);
         },
-        [useCommit, commitHandleCutEnd, consumerOnCutEnd],
+        [useCommit, commitHandleCutEnd, onRowPublish, publishHandleCutEnd, consumerOnCutEnd],
       );
 
       // Mark freshly-added rows as drafts, then forward any consumer handler.
@@ -613,9 +636,17 @@ export function createConnectedDataGrid<T extends Record<string, any>>(
         [draftMarkAdded, consumerOnRowsAdded],
       );
 
-      const wirePasteEnd = useCommit || consumerOnPasteEnd !== undefined || onCreate !== undefined;
-      const wireFillEnd = useCommit || consumerOnFillEnd !== undefined || onCreate !== undefined;
-      const wireCutEnd = useCommit || consumerOnCutEnd !== undefined;
+      const wirePasteEnd =
+        useCommit ||
+        onRowPublish !== undefined ||
+        consumerOnPasteEnd !== undefined ||
+        onCreate !== undefined;
+      const wireFillEnd =
+        useCommit ||
+        onRowPublish !== undefined ||
+        consumerOnFillEnd !== undefined ||
+        onCreate !== undefined;
+      const wireCutEnd = useCommit || onRowPublish !== undefined || consumerOnCutEnd !== undefined;
       const wireRowsAdded = onCreate !== undefined || consumerOnRowsAdded !== undefined;
 
       // ----------------------------------------------------------------

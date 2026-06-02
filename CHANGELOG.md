@@ -18,9 +18,11 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
-## [5.4.0-nail60-vendorgrid] - 2026-06-01
+## [5.4.0-nail60-vendorgrid] - 2026-06-02
 
 ### Added
+- **Bulk auto-publish flush** — `useRowAutoPublish` now exposes `handlePasteEnd` / `handleFillEnd` / `handleCutEnd` that publish every non-draft dirty row. `ConnectedDataGrid` wires them on the non-commit branch so per-row `onRowPublish` consumers (e.g. the vendor grid) get their `PUT` per row after paste / fill / cut, not just after `cellEditingStopped`. Bulk-write seams (`wirePasteEnd`/`wireFillEnd`/`wireCutEnd`) also activate when only `onRowPublish` is provided.
+- **Narrow centered selection column** — when `enableRowSelection` is true the DataGrid sets `selectionColumnDef` to a 40px non-resizable column with a centered checkbox (cell + header). Tightens the leading edge of any grid using row selection.
 - **Mobile tap-to-edit on DataGrid** — on touch devices (`(pointer: coarse)`), tapping an already-focused cell opens its editor (first tap focuses, second tap edits). Desktop double-click behavior is unchanged; gated per-event so hybrid devices keep mouse semantics.
 - **DataGrid molecule rewrite** — rebuilt on the AG Grid Theming API (`themeQuartz`) with Arda design-token mapping, based on the production ItemGrid patterns.
 - **Rich cell data types** — token cell data types and popup cell editors; columns opt in via `cellDataType` and own the value↔string round trip that drives copy/paste, fill and CSV export.

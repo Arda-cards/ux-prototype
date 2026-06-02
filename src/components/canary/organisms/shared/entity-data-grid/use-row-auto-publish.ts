@@ -2,6 +2,10 @@ import { useRef, useState, useCallback, useImperativeHandle, useEffect, type Ref
 import type {
   CellValueChangedEvent,
   CellEditingStoppedEvent,
+  CutEndEvent,
+  FillEndEvent,
+  GridApi,
+  PasteEndEvent,
   RowClassParams,
 } from 'ag-grid-community';
 
@@ -280,9 +284,45 @@ export function useRowAutoPublish<T extends Record<string, any>>({
     [setRowState, notifyDirty],
   );
 
+  // -------------------------------------------------------------------------
+  // Bulk flush points — paste / fill / cut don't fire cellEditingStopped, so
+  // dirty rows accumulated via cellValueChanged would otherwise never publish.
+  // Publish every non-draft dirty row with its current snapshot.
+  // -------------------------------------------------------------------------
+
+  const flushDirtyRows = useCallback(
+    (api: GridApi<T>) => {
+      const rowIds = Array.from(dirtyRowIdsRef.current);
+      for (const rowId of rowIds) {
+        if (isDraftRef.current?.(rowId)) continue;
+        const node = api.getRowNode(rowId);
+        const entity = node?.data;
+        if (!entity) continue;
+        void publishRow(rowId, entity);
+      }
+    },
+    [publishRow],
+  );
+
+  const handlePasteEnd = useCallback(
+    (event: PasteEndEvent<T>) => flushDirtyRows(event.api),
+    [flushDirtyRows],
+  );
+  const handleFillEnd = useCallback(
+    (event: FillEndEvent<T>) => flushDirtyRows(event.api),
+    [flushDirtyRows],
+  );
+  const handleCutEnd = useCallback(
+    (event: CutEndEvent<T>) => flushDirtyRows(event.api),
+    [flushDirtyRows],
+  );
+
   return {
     handleCellValueChanged,
     handleCellEditingStopped,
+    handlePasteEnd,
+    handleFillEnd,
+    handleCutEnd,
     getRowClass,
     rowStates,
   };
