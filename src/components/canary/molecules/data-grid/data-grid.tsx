@@ -13,6 +13,7 @@ import React, {
 } from 'react';
 import { Search, Loader2, Package } from 'lucide-react';
 import { cn } from '@/types/canary/utilities/utils';
+import { SelectionCheckboxCell, SelectionHeaderCheckbox } from './selection-checkbox';
 import { AgGridReact } from 'ag-grid-react';
 import {
   AllCommunityModule,
@@ -487,10 +488,9 @@ export const DataGrid = forwardRef(
       [enableRowSelection],
     );
 
-    // Narrow the row-selection column and center its checkbox so the leading
-    // edge of the grid isn't dominated by empty space around a small control.
-    // (Componentizing the selection cell can come later — this is the minimum
-    // tidy-up consumers were asking for.)
+    // Narrow the row-selection column and render the Arda canary `Checkbox`
+    // atom (body cell + header) so the selection control matches the Figma
+    // spec instead of AG Grid's default theme-driven checkbox.
     const selectionColumnDef = useMemo<ColDef<T> | undefined>(
       () =>
         enableRowSelection
@@ -507,6 +507,8 @@ export const DataGrid = forwardRef(
                 padding: 0,
               },
               headerClass: 'ag-selection-header-centered',
+              cellRenderer: SelectionCheckboxCell,
+              headerComponent: SelectionHeaderCheckbox,
             }
           : undefined,
       [enableRowSelection],
