@@ -1,0 +1,33 @@
+import { Meta, Canvas, Controls } from '@storybook/addon-docs/blocks';
+import * as CheckboxStories from './checkbox.stories';
+
+<Meta of={CheckboxStories} />
+
+# Checkbox
+
+Arda checkbox atom — matches Figma node `46:112`. Wraps `canary/primitives/checkbox` (vanilla shadcn) with Arda styling (`shadow-sm`) and adds optional `label`, `description`, and `required` layout.
+
+## Why an atom (not a primitive)
+
+Canary primitives are stock shadcn/ui — never edited. When a primitive needs Arda colors, sizing, or layout variants, we promote it into an atom and apply the styling here. See the canary primitives docs page for the full rationale.
+
+## Variants
+
+<Canvas of={CheckboxStories.Bare} />
+<Canvas of={CheckboxStories.WithLabel} />
+<Canvas of={CheckboxStories.WithLabelAndDescription} />
+<Canvas of={CheckboxStories.Required} />
+<Canvas of={CheckboxStories.Disabled} />
+<Canvas of={CheckboxStories.Indeterminate} />
+<Canvas of={CheckboxStories.Controlled} />
+
+## Props
+
+<Controls of={CheckboxStories.WithLabelAndDescription} />
+
+## Typical uses
+
+- **Bare** — AG Grid selection-column body cells, header select-all cells, toolbar batch toggles.
+- **WithLabel** — form fields, single-choice options.
+- **WithLabelAndDescription** — settings dialogs, consent toggles, complex forms.
+- **`checked='indeterminate'`** — header select-all when *some* but not all rows are selected.

@@ -108,6 +108,10 @@ export type {
   ArdaButtonGroupStaticConfig,
 } from './components/canary/atoms/button-group/button-group';
 
+// Atoms: Checkbox (Arda-styled wrapper around the canary primitive)
+export { Checkbox } from './components/canary/atoms/checkbox/checkbox';
+export type { CheckboxProps } from './components/canary/atoms/checkbox/checkbox';
+
 // Atoms: SplitButton
 export { SplitButton } from './components/canary/atoms/split-button/split-button';
 export type {
