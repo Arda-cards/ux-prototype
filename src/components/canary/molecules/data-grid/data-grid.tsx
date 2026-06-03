@@ -12,6 +12,7 @@ import React, {
   type ReactNode,
 } from 'react';
 import { Search, Loader2, Package } from 'lucide-react';
+import { cn } from '@/types/canary/utilities/utils';
 import { AgGridReact } from 'ag-grid-react';
 import {
   AllCommunityModule,
@@ -222,6 +223,13 @@ export interface DataGridStaticConfig<T = Record<string, unknown>> {
   actionsColumn?: ColDef<T> & { actionCount?: number };
   /** Toolbar actions rendered to the right of the search bar. */
   toolbar?: ReactNode;
+  /**
+   * Additional class names applied to the header bar (search input + row
+   * count + `toolbar` slot). Useful when the grid is rendered full-bleed in
+   * the page but the header bar should respect the page's horizontal gutters.
+   * Composed with the molecule's defaults via `cn(...)`.
+   */
+  toolbarClassName?: string;
   /** Client-side search. Specify which fields to search across. */
   searchConfig?: { fields: string[]; placeholder?: string };
   /** Additional CSS class name. */
@@ -296,6 +304,7 @@ export const DataGrid = forwardRef(
       emptyContent,
       actionsColumn,
       toolbar,
+      toolbarClassName,
       searchConfig,
       className,
 
@@ -585,7 +594,12 @@ export const DataGrid = forwardRef(
 
         {/* Header: search + count + toolbar */}
         {hasHeader && (
-          <div className="flex flex-wrap items-center gap-2 pb-4 sm:flex-nowrap sm:gap-3">
+          <div
+            className={cn(
+              'flex flex-wrap items-center gap-2 pb-4 sm:flex-nowrap sm:gap-3',
+              toolbarClassName,
+            )}
+          >
             {searchConfig && (
               <div className="relative w-full sm:w-auto sm:min-w-40 sm:max-w-72 sm:flex-1 lg:flex-none">
                 <Search

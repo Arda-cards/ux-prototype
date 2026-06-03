@@ -41,6 +41,7 @@ import {
   type CommitResult,
 } from './use-commit-pipeline';
 import { useDraftPersistence } from './use-draft-persistence';
+import { cn } from '@/types/canary/utilities/utils';
 
 // ============================================================================
 // CSS — Row visual state styles
@@ -255,6 +256,13 @@ export interface ConnectedDataGridViewProps<T> {
    * top if no search is configured). Right-aligned via `ml-auto`.
    */
   toolbar?: ReactNode;
+  /**
+   * Additional class names applied to the entire header bar (search input +
+   * row count + `toolbar` slot). Useful when the grid is rendered full-bleed
+   * in the page but the header bar should keep the page's horizontal gutters.
+   * Composed with the container's defaults via `cn(...)`.
+   */
+  toolbarClassName?: string;
 
   // ------------------------------------------------------------------
   // Tier 3a additions
@@ -437,6 +445,7 @@ export function createConnectedDataGrid<T extends Record<string, any>>(
         onFirstPage: _onFirstPage,
         emptyStateComponent,
         toolbar,
+        toolbarClassName,
 
         // Tier 3a
         enableMultiSort: _enableMultiSort = false,
@@ -904,7 +913,12 @@ export function createConnectedDataGrid<T extends Record<string, any>>(
 
           {/* Search bar + toolbar row */}
           {hasSearchOrToolbar && (
-            <div className="flex flex-wrap items-center gap-2 pb-4 sm:flex-nowrap sm:gap-3">
+            <div
+              className={cn(
+                'flex flex-wrap items-center gap-2 pb-4 sm:flex-nowrap sm:gap-3',
+                toolbarClassName,
+              )}
+            >
               {config.searchConfig && (
                 <>
                   <div className="relative w-full sm:w-auto sm:min-w-40 sm:max-w-72 sm:flex-1 lg:flex-none">
