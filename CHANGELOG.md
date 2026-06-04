@@ -18,9 +18,13 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
-## [5.4.0-nail60-vendorgrid] - 2026-06-02
+## [5.4.0-nail60-vendorgrid] - 2026-06-04
 
 ### Added
+- **`toolbarClassName` escape hatch** — both `DataGrid` (molecule) and `ConnectedDataGrid` (container, since it reimplements the header bar) accept an optional `toolbarClassName?: string` that composes onto the search + count + toolbar row via `cn(...)`. Lets a consumer keep the grid full-bleed while pinning the header bar to the page's horizontal gutters (e.g. `toolbarClassName='px-8'`). No change to existing call sites.
+- **`Checkbox` canary atom** — Arda-styled wrapper around the canary primitive (Figma node `46:112`) with `shadow-sm`, optional `label` + `description` + `required` layout, and `[&_svg]:size-4` so the Lucide checkmark fills the 16px box. Exported from `canary.ts` as `Checkbox` / `CheckboxProps`.
+- **Selection column uses the canary `Checkbox` in body cells** — `DataGrid.selectionColumnDef.cellRenderer = SelectionCheckboxCell`. Header keeps AG Grid's default for now (combining `headerCheckbox: true` + a custom `headerComponent` in v34 either double-renders or removes the column; the custom header stays in `selection-checkbox.tsx` for when that's resolved).
+- **Enter toggles selection** — `selectionColumnDef.suppressKeyboardEvent` returns `true` for Enter on a focused selection cell after toggling `node.setSelected(!isSelected())`. Matches Space.
 - **Revert-on-failure for auto-publish** — `useRowAutoPublish` accepts a `getApi` option and snapshots `oldValue` per `(rowId, field)` on the first `cellValueChanged` (last-saved baseline). On a publish failure, the hook calls `api.applyTransaction({ update: [row] })` to roll the row's cells back to those captured values and clears pending/dirty/snapshot so the row returns to `'idle'`. `ConnectedDataGrid` wires `getApi: () => gridRef.current?.getGridApi() ?? null` automatically, so every per-row `onRowPublish` consumer (e.g. the vendor grid) gets revert without page-level snapshot bookkeeping.
 - **Mobile keyboard on cell-editor open** — TypeaheadInput sets `autoFocus` while in `cellEditorMode` so iOS Safari reliably brings up the keyboard (the existing `useEffect`-on-mount `focus()` fell outside the user-gesture window). `DataGrid`'s mobile tap-to-edit also nudges focus into the editor's input on the next animation frame so AG Grid's default text editor focuses on touch too.
 - **Mobile typeahead option select** — typeahead options now select on `onPointerDown` instead of `onMouseDown`. On iOS the synthesized mousedown could fire on the document before reaching the option, letting the outside-click handler close the dropdown without selecting. PointerEvents normalize mouse + touch and fire before that race.
