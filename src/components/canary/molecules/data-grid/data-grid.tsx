@@ -13,7 +13,7 @@ import React, {
 } from 'react';
 import { Search, Loader2, Package } from 'lucide-react';
 import { cn } from '@/types/canary/utilities/utils';
-import { SelectionCheckboxCell, SelectionHeaderCheckbox } from './selection-checkbox';
+import { SelectionCheckboxCell } from './selection-checkbox';
 import { AgGridReact } from 'ag-grid-react';
 import {
   AllCommunityModule,
@@ -484,13 +484,30 @@ export const DataGrid = forwardRef(
     );
 
     const rowSelection = useMemo(
-      () => (enableRowSelection ? { mode: 'multiRow' as const, headerCheckbox: true } : undefined),
+      () =>
+        enableRowSelection
+          ? {
+              mode: 'multiRow' as const,
+              headerCheckbox: true,
+              // Suppress AG Grid's built-in checkbox — `selectionColumnDef`
+              // below provides Arda canary Checkbox renderers (body + header)
+              // and we don't want the default rendered alongside.
+              checkboxes: false,
+            }
+          : undefined,
       [enableRowSelection],
     );
 
     // Narrow the row-selection column and render the Arda canary `Checkbox`
-    // atom (body cell + header) so the selection control matches the Figma
-    // spec instead of AG Grid's default theme-driven checkbox.
+    // atom in body cells so the selection control matches the Figma spec
+    // instead of AG Grid's default theme-driven checkbox.
+    //
+    // Header: we leave AG Grid's default select-all in place. In AG Grid v34
+    // the combination of `rowSelection.headerCheckbox: true` and a custom
+    // `headerComponent` renders both — and disabling `headerCheckbox` removes
+    // the column entirely. Until that's resolved we accept the small visual
+    // mismatch between header and body checkbox. Custom header lives in
+    // ./selection-checkbox.tsx for when the AG Grid behaviour changes.
     const selectionColumnDef = useMemo<ColDef<T> | undefined>(
       () =>
         enableRowSelection
@@ -508,7 +525,18 @@ export const DataGrid = forwardRef(
               },
               headerClass: 'ag-selection-header-centered',
               cellRenderer: SelectionCheckboxCell,
-              headerComponent: SelectionHeaderCheckbox,
+              // Enter on a focused selection cell toggles the row. Returning
+              // `true` from suppressKeyboardEvent tells AG Grid we handled it
+              // so the default Enter behaviour (which would otherwise be a
+              // no-op for non-editable cells) doesn't override ours.
+              suppressKeyboardEvent: (params) => {
+                if (params.editing) return false;
+                if (params.event.key !== 'Enter') return false;
+                const node = params.node;
+                if (!node) return false;
+                node.setSelected(!node.isSelected());
+                return true;
+              },
             }
           : undefined,
       [enableRowSelection],

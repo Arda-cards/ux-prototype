@@ -46,10 +46,7 @@ function Checkbox({
   const checkbox = (
     <PrimitiveCheckbox
       id={checkboxId}
-      // Override the primitive's shadow-xs with shadow-sm to match the Figma
-      // spec; everything else (size, radius, primary fill on check) already
-      // matches.
-      className={cn('shadow-sm', className)}
+      className={cn('shadow-sm [&_svg]:size-4', className)}
       {...props}
     />
   );
