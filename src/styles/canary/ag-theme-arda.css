@@ -426,9 +426,7 @@ body .ag-dnd-ghost * {
   border: none !important;
 }
 
-.ag-root-wrapper,
 .ag-root,
-.ag-header,
 .ag-body,
 .ag-body-viewport,
 .ag-center-cols-viewport,
@@ -438,7 +436,28 @@ body .ag-dnd-ghost * {
   border-color: transparent !important;
 }
 
-.ag-root-wrapper *:not(.ag-row):not(.ag-row *) {
+/* The global non-canary ag-theme-arda.css (loaded by .storybook/preview.ts at
+ * the same cascade layer) wipes the borders that the AG Grid v34 Theming API
+ * supplies via --ag-wrapper-border / --ag-header-row-border:
+ *   - sets `border-left: none !important; border-right: none !important;`
+ *     on .ag-root-wrapper (kills width AND style on the sides)
+ *   - sets `border-color: transparent !important` on a broad descendant
+ *     selector that catches .ag-header (specificity 0,3,0).
+ * These rules restore both. The doubled .ag-header.ag-header brings the
+ * header selector to specificity 0,3,0 so it ties the blanket and wins on
+ * source order. */
+.ag-root-wrapper {
+  border: 1px solid var(--ag-border-color) !important;
+}
+.ag-root-wrapper .ag-header.ag-header {
+  border-color: var(--ag-border-color) !important;
+  border-bottom-width: 2px !important;
+}
+
+/* Broad blanket: kill border-color on everything inside the grid except rows
+ * (rows carry their own row borders). Exclude .ag-header so AG Grid Theming
+ * API's header-row-border can render — restored by the counter-rule above. */
+.ag-root-wrapper *:not(.ag-row):not(.ag-row *):not(.ag-header) {
   border-color: transparent !important;
 }
 
