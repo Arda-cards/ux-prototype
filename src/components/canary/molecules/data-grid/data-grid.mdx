@@ -6,9 +6,39 @@ import * as DataGridStories from './data-grid.stories';
 
 # DataGrid
 
-AG Grid wrapper with Arda theming, focus ring, Enter-to-edit, drag-to-scroll, debounced search, and empty state overlays.
+The **presentational** AG Grid wrapper. Owns rendering, editing, copy/paste, fill, undo/redo, row add/remove, search, theme &#8212; **all in-memory**. Use for **ephemeral** grids (read-once, no persistence).
 
-**Molecule** — Canary
+For persistent entity grids (vendors, items), use the [ConnectedDataGrid](?path=/docs/components-canary-organisms-shared-connected-data-grid--docs) container, which composes this molecule and adds the read source + write/commit pipeline.
+
+**Molecule** &#8212; Canary | Import: `@arda-cards/design-system/canary`
+
+> See the [AG Grid Usage guide](https://arda-cards.github.io/documentation/process/craft/implementation/ag-grid-usage/) on the documentation site for the canonical decision matrix, default settings, and rich-cell recipes.
+
+---
+
+## When to use
+
+<table>
+  <thead>
+    <tr><th>Use <code>DataGrid</code> when&#8230;</th><th>Reach for <code>ConnectedDataGrid</code> instead when&#8230;</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>The grid is ephemeral &#8212; e.g. a PO item list rendered into a PDF and discarded.</td>
+      <td>The grid is an authoritative entity view (vendors, items, suppliers).</td>
+    </tr>
+    <tr>
+      <td>The page already owns persistence and just needs a viewer/editor widget.</td>
+      <td>You need the draft &#8594; create &#8594; reconcile lifecycle, or bulk edits to round-trip to the server.</td>
+    </tr>
+    <tr>
+      <td>Refresh is fine resetting all state.</td>
+      <td>Edits, adds, and deletes must survive a refresh.</td>
+    </tr>
+  </tbody>
+</table>
+
+When in doubt, choose `ConnectedDataGrid`. Hand-rolling persistence around a bare `DataGrid` is the failure mode this two-tier split exists to prevent.
 
 ---
 
@@ -16,14 +46,206 @@ AG Grid wrapper with Arda theming, focus ring, Enter-to-edit, drag-to-scroll, de
 
 <Canvas of={DataGridStories.Default} />
 
-## With Search
+---
 
-<Canvas of={DataGridStories.WithSearch} />
+## What you get by default
 
-## Empty
+Both wrappers register the same module set centrally &#8212; **never re-register modules in a consumer**:
 
-<Canvas of={DataGridStories.Empty} />
+```ts
+ModuleRegistry.registerModules([
+  AllCommunityModule,
+  RichSelectModule,
+  ClipboardModule,        // copy / cut / paste
+  CellSelectionModule,    // range selection + fill handle
+]);
+```
 
-## Loading
+`DataGrid` hard-codes a few shared grid options:
 
-<Canvas of={DataGridStories.Loading} />
+```ts
+{
+  stopEditingWhenCellsLoseFocus: true,
+  tooltipShowDelay: 400,
+  tooltipShowMode: 'whenTruncated',
+  ensureDomOrder: true,
+}
+```
+
+Plus Arda theming (`themeQuartz` with design-system token mapping), focus ring, Enter-to-edit, drag-to-scroll, debounced search, empty/loading overlays, and pinned-right `actionsColumn` support.
+
+---
+
+## Opt-in capabilities
+
+Everything spreadsheet-like is **off by default** so a simple list view stays cheap. Turn on per grid:
+
+<table>
+  <thead>
+    <tr><th>Prop</th><th>What it does</th><th>When to use</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>editable</code></td>
+      <td>Enables cell editing (double-click or Enter).</td>
+      <td>Any grid that allows edits.</td>
+    </tr>
+    <tr>
+      <td><code>cellSelection</code></td>
+      <td>Range selection. <code>handle.mode: 'fill'</code> turns on the drag-to-fill handle.</td>
+      <td>Spreadsheet-style entry.</td>
+    </tr>
+    <tr>
+      <td><code>clipboardPaste</code></td>
+      <td>Paste policy: <code>'range'</code> (default), <code>'single'</code>, or <code>'off'</code>.</td>
+      <td>Tighter paste behavior on read-only or single-cell grids.</td>
+    </tr>
+    <tr>
+      <td><code>undoRedoLimit</code></td>
+      <td>AG Grid cell-edit undo/redo stack size (0&#8211;20). Covers edits, paste, fill, cut, delete-content.</td>
+      <td>Whenever editing is enabled. <strong>Does not cover row add/remove</strong> &#8212; that's structural undo (separate stack, not yet wired).</td>
+    </tr>
+    <tr>
+      <td><code>enableRowSelection</code></td>
+      <td>Selection checkboxes.</td>
+      <td>Bulk actions on rows.</td>
+    </tr>
+    <tr>
+      <td><code>searchConfig</code></td>
+      <td>Client-side debounced search bar across configured fields.</td>
+      <td>Lists with text-searchable fields.</td>
+    </tr>
+    <tr>
+      <td><code>dataTypeDefinitions</code> + <code>columnTypes</code></td>
+      <td>Rich cell data types (tokens, address, &#8230;).</td>
+      <td>Token, address, color, image columns &#8212; never hand-roll <code>cellRenderer</code> + <code>cellEditor</code> for these.</td>
+    </tr>
+    <tr>
+      <td><code>actionsColumn</code></td>
+      <td>Pinned-right actions column for row-level actions.</td>
+      <td>"&#8943;" menus, inline view/edit/delete buttons.</td>
+    </tr>
+    <tr>
+      <td><code>onPasteEnd</code> / <code>onFillEnd</code> / <code>onCutEnd</code></td>
+      <td>Bulk-flush hooks &#8212; fire once after the *End event, not per affected cell.</td>
+      <td>The container's commit pipeline already composes these; only set on bare <code>DataGrid</code> for custom side effects.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Row editing API (in-memory)
+
+Both wrappers expose the same row-add/remove mechanics on their ref. The container delegates to the molecule:
+
+```ts
+ref.addRow(seed?: Partial<T>, opts?: {
+  addIndex?: number;            // default 0 (top)
+  startEditingField?: keyof T & string;
+  history?: boolean;            // default true; pass false for rollback re-inserts
+}): string;
+
+ref.removeRows(ids: string[], opts?: { history?: boolean }): void;
+ref.undo(): void;
+ref.redo(): void;
+```
+
+Plus callbacks so a container can react:
+
+```ts
+onRowsAdded?:   (p: { rows: T[]; source: 'user' | 'undo' | 'redo' }) => void;
+onRowsRemoved?: (p: { rows: T[]; source: 'user' | 'undo' | 'redo' }) => void;
+getNewRowId?:   () => string;     // default: `new-${crypto.randomUUID()}`
+```
+
+> **Status (2026-06-01).** `addRow` and the events are shipped on the canary branch. **Structural undo/redo of add/remove** (Ctrl+Z removes the just-added row) is designed but **not yet wired** &#8212; track in the add-rows &amp; row-actions design.
+
+A newly-added row defers `startEditingCell` via `setTimeout` past AG Grid's `rowData` reconcile &#8212; without the defer the edit is cancelled. The molecule handles this internally; consumers just call `addRow`.
+
+<Canvas of={DataGridStories.Playground} />
+
+---
+
+## Rich cell data types
+
+A rich/editable column &#8212; tokens, address, color, image &#8212; **must** declare a <code>cellDataType</code>. Reason: <code>cellRenderer</code> is cosmetic only; copy/paste/fill/filter/export run against the underlying value via <code>valueFormatter</code> / <code>valueParser</code> / <code>keyCreator</code>. A hand-rolled renderer that returns badges will look right but break all of those silently.
+
+Existing data types ship in <code>canary/molecules/data-grid/cell-data-types/</code>:
+
+<table>
+  <thead>
+    <tr><th>Type</th><th>Use</th><th>Renderer</th><th>Editor</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>roles</code></td><td>Multi-select tokens (e.g. <code>["Vendor", "Carrier"]</code>)</td><td><code>TokenList</code></td><td>Multiselect typeahead with checkboxes</td></tr>
+    <tr><td><code>orderMethod</code></td><td>Single token (e.g. <code>"Online"</code>)</td><td><code>TokenList</code> (one badge)</td><td>Single typeahead, <code>clearOnFocus</code></td></tr>
+    <tr><td>Address (coming next)</td><td>Composite object &#8212; renders as one line, edits as a multi-field popup.</td><td>Single-line formatter</td><td>Popup form (<code>cellEditorPopup: true</code>)</td></tr>
+  </tbody>
+</table>
+
+Reference an existing data type by name on the ColDef:
+
+```ts
+{ field: 'roles',       headerName: 'Role',         editable: true, cellDataType: 'roles' },
+{ field: 'orderMethod', headerName: 'Order Method', editable: true, cellDataType: 'orderMethod' },
+```
+
+To create a new one, use the factory pattern (see [AG Grid Usage &gt; Creating a new rich cell data type](https://arda-cards.github.io/documentation/process/craft/implementation/ag-grid-usage/#creating-a-new-rich-cell-data-type)). Don't put a bespoke `cellRenderer` + `cellEditor` on the ColDef.
+
+<Canvas of={DataGridStories.WithTokenCellDataTypes} />
+
+---
+
+## Required wiring
+
+Minimum props for a working `DataGrid`:
+
+<table>
+  <thead><tr><th>Prop</th><th>Required?</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><code>rowData: T[]</code></td><td>yes</td><td>The data array.</td></tr>
+    <tr><td><code>columnDefs: ColDef&lt;T&gt;[]</code></td><td>yes</td><td>Column model.</td></tr>
+    <tr><td><code>defaultColDef</code></td><td>recommended</td><td>Usually <code>{`{ sortable: true, resizable: true }`}</code>.</td></tr>
+    <tr><td>A stable id on each row</td><td>yes</td><td>Auto-resolved from <code>entityId</code> / <code>eId</code> / <code>id</code>. If your rows don't carry one, supply <code>getRowId</code> via passthrough.</td></tr>
+  </tbody>
+</table>
+
+---
+
+## Pitfalls
+
+- **Don't register your own AG Grid modules.** They're registered centrally; duplicate registration leads to inconsistent state.
+- **Don't reach into `.ag-*` / `.arda-grid-*` selectors in tests.** They're internal and shift with version bumps (this has caused test breakage on the rich-cells refactor).
+- **Don't hand-roll `cellRenderer` for an editable rich column.** Use a `cellDataType` factory.
+- **Don't wire `onCellValueChanged` *and* an update seam (`onCommit`/`onRowPublish`) without a draft guard.** Auto-publish churn steals cell focus and breaks undo. (Mostly a concern on the `ConnectedDataGrid`, but bare `DataGrid` consumers with their own write logic should mind it too.)
+- **Native cell undo (`undoRedoLimit`) does not cover row add/remove.** That's a separate structural undo stack, designed but not yet wired. For now, removing a just-added row requires the consumer to call `ref.removeRows`.
+
+---
+
+## Story Index
+
+<table>
+  <thead><tr><th>Story</th><th>What it demonstrates</th></tr></thead>
+  <tbody>
+    <tr><td><a href="?path=/story/components-canary-molecules-datagrid--default">Default</a></td><td>Bare grid with row data and column defs.</td></tr>
+    <tr><td><a href="?path=/story/components-canary-molecules-datagrid--with-search">WithSearch</a></td><td>Debounced client-side search + count display.</td></tr>
+    <tr><td><a href="?path=/story/components-canary-molecules-datagrid--empty">Empty</a></td><td>Empty state overlay.</td></tr>
+    <tr><td><a href="?path=/story/components-canary-molecules-datagrid--loading">Loading</a></td><td>Loading overlay.</td></tr>
+    <tr><td><a href="?path=/story/components-canary-molecules-datagrid--playground">Playground</a></td><td>Argtypes-driven sandbox covering editing, selection, paste, fill, undo, add/remove rows.</td></tr>
+    <tr><td><a href="?path=/story/components-canary-molecules-datagrid--with-token-cell-data-types">WithTokenCellDataTypes</a></td><td>The <code>roles</code> + <code>orderMethod</code> data types in action.</td></tr>
+    <tr><td><a href="?path=/story/components-canary-molecules-datagrid--token-multi-select-editing">TokenMultiSelectEditing</a></td><td>Multiselect token editor edit lifecycle.</td></tr>
+    <tr><td><a href="?path=/story/components-canary-molecules-datagrid--with-multi-select-editor">WithMultiSelectEditor</a></td><td>Multi-select typeahead editor in isolation.</td></tr>
+    <tr><td><a href="?path=/story/components-canary-molecules-datagrid--with-combined-address">WithCombinedAddress</a></td><td>Early composite-cell exploration ahead of the address data type.</td></tr>
+  </tbody>
+</table>
+
+---
+
+## Related
+
+- [AG Grid Usage guide](https://arda-cards.github.io/documentation/process/craft/implementation/ag-grid-usage/) &#8212; canonical reference; decision matrix, default settings, rich-cell recipe, mobile gaps.
+- [ConnectedDataGrid](?path=/docs/components-canary-organisms-shared-connected-data-grid--docs) &#8212; the persistent container that wraps this molecule.
+- [AG Grid Cell Editors from Inputs](https://arda-cards.github.io/documentation/process/craft/implementation/ag-grid-cell-editors/) &#8212; the adapter layer that turns Arda inputs into AG Grid cell editors.
+- [Rich Cell Data Types design](https://arda-cards.github.io/documentation/roadmap/in-progress/vendor-page-and-standard-layout/rich-cell-data-types-design/) &#8212; full architecture and the address bonus example.
+- [Add-rows &amp; Row-actions design](https://arda-cards.github.io/documentation/roadmap/in-progress/vendor-page-and-standard-layout/add-rows-and-row-actions-design/) &#8212; the draft-row lifecycle and structural undo contract.

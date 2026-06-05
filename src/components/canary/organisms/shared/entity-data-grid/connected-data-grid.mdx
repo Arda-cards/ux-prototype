@@ -20,6 +20,36 @@ import * as Stories from './connected-data-grid.stories';
 
 ---
 
+## When to choose this over `DataGrid`
+
+<table>
+  <thead>
+    <tr><th>Reach for <code>ConnectedDataGrid</code> when&#8230;</th><th>The bare <code>DataGrid</code> molecule is enough when&#8230;</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>The grid is an authoritative entity view (vendors, items, suppliers).</td>
+      <td>The grid is ephemeral &#8212; read-once, no persistence (e.g. a PO list rendered into a PDF).</td>
+    </tr>
+    <tr>
+      <td>Edits must round-trip to the server (single edits and/or bulk paste/fill).</td>
+      <td>Edits are scratch and discarded on refresh.</td>
+    </tr>
+    <tr>
+      <td>Adding rows must persist (draft &#8594; create on required-field completion).</td>
+      <td>No add-row flow, or add stays purely local.</td>
+    </tr>
+    <tr>
+      <td>You need server-side row model (SSRM) for large tables.</td>
+      <td>All rows fit comfortably in the client.</td>
+    </tr>
+  </tbody>
+</table>
+
+When in doubt, choose <code>ConnectedDataGrid</code>. Hand-rolling persistence around a bare <code>DataGrid</code> is the failure mode this two-tier split exists to prevent. See the [AG Grid Usage guide](https://arda-cards.github.io/documentation/process/craft/implementation/ag-grid-usage/) for the canonical decision matrix.
+
+---
+
 ## Read model &#8212; `dataSource` (DQ-002)
 
 The read model is a **discriminated union** so invalid combinations are unrepresentable:
@@ -85,6 +115,132 @@ When <code>onCommit</code> is provided it takes precedence and the bulk pipeline
 - <code>clipboardPaste</code> &#8212; paste policy (<code>range</code> / <code>single</code> / <code>off</code>)
 - <code>undoRedoLimit</code> &#8212; undo/redo stack size
 - <code>onPasteEnd</code> / <code>onFillEnd</code> / <code>onCutEnd</code> &#8212; bulk flush points (composed with the pipeline)
+
+---
+
+## Required wiring checklist
+
+Minimum wiring to instantiate a persistent grid:
+
+<table>
+  <thead>
+    <tr><th>Prop / config</th><th>Required?</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>displayName</code>, <code>persistenceKeyPrefix</code></td>
+      <td>yes</td>
+      <td>Identity for the factory + localStorage column state.</td>
+    </tr>
+    <tr>
+      <td><code>columnDefs</code>, <code>defaultColDef</code></td>
+      <td>yes</td>
+      <td>Column model.</td>
+    </tr>
+    <tr>
+      <td><code>getEntityId(entity)</code></td>
+      <td>yes</td>
+      <td>Grid row id; <strong>must stay stable across the row's lifetime</strong>. For a draft row that auto-saves, keep the temp id; carry the server id separately.</td>
+    </tr>
+    <tr>
+      <td><code>dataSource</code></td>
+      <td>yes (<code>server</code> mode lands in Phase 2)</td>
+      <td><code>{`{ mode: 'client', data }`}</code> or <code>{`{ mode: 'server', getRows }`}</code>.</td>
+    </tr>
+    <tr>
+      <td><code>getServerId?(entity)</code></td>
+      <td>when add/update/delete are enabled</td>
+      <td>Returns the URL id for <code>PUT</code>/<code>DELETE</code>. Default: <code>getEntityId</code>. Override when a row's grid id is a draft temp id and the server id rides separately.</td>
+    </tr>
+    <tr>
+      <td><code>onCommit</code> <em>or</em> <code>onRowPublish</code></td>
+      <td>when editing</td>
+      <td><code>onCommit</code> is the bulk seam (preferred); <code>onRowPublish</code> is the per-row legacy seam.</td>
+    </tr>
+    <tr>
+      <td><code>requiredFields</code>, <code>newRowDefaults</code>, <code>onCreate</code></td>
+      <td>when adding rows</td>
+      <td>Draft &#8594; create lifecycle. See the next section.</td>
+    </tr>
+    <tr>
+      <td><code>onDelete</code></td>
+      <td>when deleting saved rows</td>
+      <td><strong>Designed, not yet wired.</strong> See <a href="https://arda-cards.github.io/documentation/roadmap/in-progress/vendor-page-and-standard-layout/add-rows-and-row-actions-design/">add-rows &amp; row-actions design</a>.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Draft &#8594; create &#8594; delete lifecycle
+
+Persistent grids that allow adding rows use a **draft** lifecycle: a freshly-added row lives only in the client until its required fields complete, at which point the container calls <code>onCreate</code> (a <code>POST</code> seam, separate from the <code>PUT</code> update path).
+
+**Status (2026-06-01):** the **add-only slice** is shipped on canary. Per-row delete, the structural undo of add/remove, and the "Ctrl+Z of a saved delete re-creates via POST" rule are designed but **not yet wired**.
+
+### What the container does
+
+<table>
+  <thead><tr><th>Step</th><th>Behavior</th></tr></thead>
+  <tbody>
+    <tr><td>Add</td><td><code>ref.addRow()</code> &#8594; molecule inserts a row with <code>newRowDefaults</code> + a temp grid id; container marks it <strong>draft</strong> (excluded from the <code>PUT</code> pipeline via an injected <code>isDraft</code> predicate).</td></tr>
+    <tr><td>Compose</td><td>User edits cells on the draft. Edits accumulate locally; the commit pipeline does <strong>not</strong> fire a <code>PUT</code> (no server id yet).</td></tr>
+    <tr><td>Complete</td><td>On row blur (or paste/fill flush), if every field in <code>requiredFields</code> is non-empty, the container calls <code>onCreate(row)</code>.</td></tr>
+    <tr><td>Reconcile</td><td>Container receives the authoritative entity back; merges via <code>applyTransaction({`{ update }`})</code>, marks the row <strong>saved</strong>. <strong>The grid id (<code>eId</code>) is unchanged</strong> &#8212; the server id rides on <code>serverId</code> (or wherever <code>getServerId</code> reads it).</td></tr>
+    <tr><td>Refresh</td><td>Drafts are client-only. A page refresh discards every row that never completed; saved rows persist.</td></tr>
+  </tbody>
+</table>
+
+### Vendor-page wiring (a working example)
+
+```tsx
+const { Component: VendorGrid } = createConnectedDataGrid<VendorRow>({
+  displayName: 'VendorGrid',
+  persistenceKeyPrefix: 'vendor-grid',
+  columnDefs,
+  defaultColDef: { sortable: true, resizable: true },
+  getEntityId: (v) => v.eId,
+  getServerId: (v) => v.serverId,            // separate from the grid id
+  requiredFields: ['name'],                  // the row auto-creates when name is non-empty
+  newRowDefaults: { roles: ['Vendor'], orderMethod: 'Online' },
+});
+
+function VendorsPage() {
+  const ref = useRef<ConnectedDataGridRef>(null);
+
+  return (
+    <VendorGrid
+      ref={ref}
+      dataSource={{ mode: 'client', data: vendors }}
+      enableCellEditing
+      undoRedoLimit={20}
+      cellSelection={{ handle: { mode: 'fill' } }}
+      onCreate={async (row) => {
+        const created = await fetch('/api/arda/business-affiliate', {
+          method: 'POST', body: JSON.stringify({ name: row.name }),
+        }).then((r) => r.json());
+        toast.success('New vendor saved');
+        return { ...row, serverId: created.data.payload.eId };  // eId preserved
+      }}
+      toolbar={
+        <ArdaActionToolbar
+          actions={[{ key: 'add', label: 'Add vendor', icon: Plus,
+                      onAction: () => ref.current?.addRow() }]}
+        />
+      }
+    />
+  );
+}
+```
+
+### Pitfalls
+
+- **Don't swap the grid id for the server id on reconcile.** Keep <code>eId</code> stable; AG Grid treats a changed row id as a new row (losing selection, edit focus, and undo continuity).
+- **Don't tint draft rows.** AG Grid does not re-run <code>getRowClass</code> on React state alone (a redraw is required), and a stuck tint is worse than no tint. The container deliberately leaves drafts untinted.
+- **Don't wire your own <code>onCellValueChanged</code> *and* an update seam without a draft guard.** The container's <code>isDraft</code> predicate is the guard; auto-publish churn on drafts steals cell focus and breaks undo.
+- **Add-only shipped, delete not.** <code>onDelete</code> + the "&#8943;" actions column + structural undo of add/remove are designed but pending. Don't ship a delete affordance without the contract from the design doc.
+
+Full design (including the saved-delete-undo "re-create via POST" rule): [add-rows &amp; row-actions design](https://arda-cards.github.io/documentation/roadmap/in-progress/vendor-page-and-standard-layout/add-rows-and-row-actions-design/).
 
 ---
 
