@@ -51,6 +51,7 @@
       "import": "./dist/types-extras-date-time.js",
       "require": "./dist/types-extras-date-time.cjs"
     },
+    "./css": "./dist/design-system.css",
     "./styles": "./dist/styles/globals.css",
     "./styles/*": "./dist/styles/*",
     "./assets/*": "./dist/assets/*"
