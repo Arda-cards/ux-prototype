@@ -329,6 +329,10 @@ export function MultiSelectTypeaheadInput({
           break;
         case 'Backspace':
         case 'Delete':
+        case 'Enter':
+        case ' ':
+          // Enter / Space are the standard activation keys for a role="button"
+          // element; activating a token removes it, matching Backspace/Delete.
           e.preventDefault();
           {
             const removedValue = tokens[tokenIndex];
@@ -591,6 +595,9 @@ export function MultiSelectTypeaheadInput({
             tokenRefs.current[i] = el;
           }}
           data-token
+          role="button"
+          aria-label={`${tokenValue}, remove`}
+          aria-keyshortcuts="Delete Backspace Enter Space"
           tabIndex={-1}
           onPointerDown={(e) => {
             // Select the token (focus it for keyboard nav) and open the

@@ -51,7 +51,21 @@ function Checkbox({
     />
   );
 
-  if (!label && !description) return checkbox;
+  if (!label && !description) {
+    // Bare form (used inside grid cells and other tight surfaces). Wrap in a
+    // label so the tap surface grows to a 44×44 minimum on touch devices
+    // without changing the 16×16 visual on desktop. The label delegates
+    // clicks to the associated input via `htmlFor`, so AG Grid's row-select
+    // and other parent-cell handlers still see the bubbled click.
+    return (
+      <label
+        htmlFor={checkboxId}
+        className="inline-flex items-center justify-center [@media(pointer:coarse)]:min-h-11 [@media(pointer:coarse)]:min-w-11"
+      >
+        {checkbox}
+      </label>
+    );
+  }
 
   return (
     <div className={cn('flex items-start gap-2', wrapperClassName)}>
