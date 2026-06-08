@@ -94,13 +94,6 @@ export function Badge({
             e.stopPropagation();
             onDismiss();
           }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              e.stopPropagation();
-              onDismiss();
-            }
-          }}
           className="ml-0.5 inline-flex h-3 w-3 items-center justify-center rounded-sm text-current opacity-60 hover:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           aria-label="Remove"
         >

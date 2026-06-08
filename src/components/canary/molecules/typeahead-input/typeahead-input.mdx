@@ -73,7 +73,9 @@ container):
 - Blur **accepts** the typed value instead of reverting (unless `clearOnFocus`
   is set, which restores).
 - The dropdown is portaled via Radix Popover to escape `overflow: hidden`.
-- Borderless, transparent styling to sit flush in a grid cell.
+- Input keeps its normal chrome (opaque background, focus ring, minimum
+  width) — sized to the grid cell via `cellWidth` / `cellMinHeight` so it
+  doesn't shrink below the column.
 
 Wrap it with `createTypeaheadCellEditor({ lookup, allowCreate, placeholder })`
 to use as a `cellEditor` in a column definition. A live in-grid demo ships

@@ -373,7 +373,24 @@ export function TypeaheadInput({
           // editable cell). Just close the dropdown; do NOT preventDefault or
           // stopEditing ourselves, or focus escapes to the next row.
           if (cellEditorMode) {
+            // Push current intent (selection or typed value) BEFORE AG Grid
+            // reads getValue() — without this AG Grid commits the prior value
+            // because onValueChange only fires on select/create/blur, and the
+            // input box's typing-state never reaches the cell. Do NOT call
+            // onCommit/stopEditing here; AG Grid drives the focus move.
+            let nextValue: string | null = null;
+            if (hi >= 0 && hi < opts.length) {
+              nextValue = (opts[hi] as TypeaheadOption).value;
+            } else {
+              const trimmed = inputValueRef.current.trim();
+              if (trimmed) nextValue = trimmed;
+            }
+            if (nextValue !== null && nextValue !== valueRef.current) {
+              setInputValue(nextValue);
+              onValueChange(nextValue);
+            }
             setOpen(false);
+            setOptions([]);
             break;
           }
           if (hi >= 0 && hi < opts.length) {

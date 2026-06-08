@@ -101,7 +101,9 @@ const noResults = <div className="px-3 py-2 text-sm text-muted-foreground">No re
 /**
  * MultiSelectTypeaheadInput — async search input with multiselect.
  *
- * Shows selected values as dismissible Badge tokens in the input area.
+ * Shows selected values as Badge tokens in the input area. Tokens are
+ * keyboard-removable (Backspace / Delete with the token focused, or
+ * Backspace at the start of an empty input removes the last token).
  * Overflows to "+N more" when tokens exceed the container width.
  * Dropdown items show a checkmark when already selected.
  */
@@ -387,6 +389,9 @@ export function MultiSelectTypeaheadInput({
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault();
+          // Guard against opts.length === 0 (possible while loading/error):
+          // the modulo would produce NaN and break the highlight state.
+          if (opts.length === 0) break;
           setHighlightedIndex((prev) => (prev + 1) % opts.length);
           break;
         case 'ArrowUp':
@@ -394,7 +399,7 @@ export function MultiSelectTypeaheadInput({
           if (hi <= 0 && valueRef.current.length > 0) {
             // At top of dropdown → focus last token
             focusToken(valueRef.current.length - 1);
-          } else {
+          } else if (opts.length > 0) {
             setHighlightedIndex((prev) => (prev - 1 + opts.length) % opts.length);
           }
           break;

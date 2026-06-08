@@ -6,10 +6,12 @@ import * as MultiSelectStories from './multiselect-typeahead-input.stories';
 
 # MultiSelectTypeaheadInput
 
-Async search input with multiselect. Selected values render as dismissible
-Badge tokens in the input area, collapsing to "+N more" when they exceed the
-field width. The dropdown shows a checkmark for already-selected options.
-Works standalone and as an AG Grid cell editor.
+Async search input with multiselect. Selected values render as Badge tokens
+in the input area, collapsing to "+N more" when they exceed the field width.
+Tokens are keyboard-removable (Backspace / Delete with the token focused, or
+Backspace at the start of an empty input removes the last token). The
+dropdown shows a checkmark for already-selected options. Works standalone
+and as an AG Grid cell editor.
 
 **Molecule** &#8212; Canary | Import: `import { MultiSelectTypeaheadInput } from '@arda-cards/design-system/canary'`
 
