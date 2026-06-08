@@ -370,19 +370,40 @@ export type { ImageComparisonLayoutProps } from './components/canary/molecules/i
 export { ImageFormField } from './components/canary/molecules/form/image';
 export type { ImageFormFieldProps } from './components/canary/molecules/form/image';
 
-// Molecules: TokenList
-export { TokenList } from './components/canary/molecules/token-list';
-export type { TokenListProps } from './components/canary/molecules/token-list';
-
-export { DataGrid, GridImage, useColumnPersistence } from './components/canary/molecules/data-grid';
+export {
+  DataGrid,
+  GridImage,
+  createTokenDataType,
+  createCombinedColumn,
+  useColumnPersistence,
+  useDragToScroll,
+  useRowEditing,
+} from './components/canary/molecules/data-grid';
 export type {
   DataGridRef,
   DataGridProps,
   DataGridStaticConfig,
-  DataGridInitConfig,
   DataGridRuntimeConfig,
-  PaginationData,
+  TokenDataTypeConfig,
+  TokenDataType,
+  CombinedColumnConfig,
+  CombinedColumnMember,
+  CombinedFieldEditorProps,
+  AddRowOptions,
+  RowEditPayload,
 } from './components/canary/molecules/data-grid';
+
+// Geo model (mirrored from extras into canary) — used by combined Address columns.
+export { COUNTRY_SYMBOLS } from './types/canary/model/general/geo/postal-address';
+export type {
+  PostalAddress,
+  CountrySymbol,
+  GeoLocation,
+} from './types/canary/model/general/geo/postal-address';
+
+// Molecules: TokenList
+export { TokenList } from './components/canary/molecules/token-list';
+export type { TokenListProps } from './components/canary/molecules/token-list';
 
 // --- Molecules — Sidebar ---
 
@@ -431,11 +452,31 @@ export { itemGridFixtures } from './components/canary/molecules/item-grid/item-g
 // --- Organisms ---
 
 export {
+  // Canonical: ConnectedDataGrid (DQ-008)
+  createConnectedDataGrid,
+  useCommitPipeline,
+  // Deprecated alias
   createEntityDataGrid,
   useDirtyTracking,
   useRowAutoPublish,
 } from './components/canary/organisms/shared/entity-data-grid';
 export type {
+  // Canonical: ConnectedDataGrid (DQ-008)
+  ConnectedDataGridConfig,
+  ConnectedDataGridModelProps,
+  ConnectedDataGridViewProps,
+  ConnectedDataGridProps,
+  ConnectedDataGridRef,
+  ForwardedDataGridProps,
+  OwnedByContainer,
+  EntityDataSource,
+  BlockRequest,
+  // Bulk write path (DQ-003 / DQ-004)
+  RowChange,
+  CommitResult,
+  CommitPipelineHandle,
+  UseCommitPipelineOptions,
+  // Deprecated aliases
   EntityDataGridConfig,
   EntityDataGridModelProps,
   EntityDataGridViewProps,

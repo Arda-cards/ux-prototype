@@ -57,7 +57,7 @@ describe('createEntityDataGrid', () => {
       </div>,
     );
 
-    const container = document.querySelector('.arda-grid-container');
+    const container = document.querySelector('.ag-root-wrapper');
     expect(container).toBeInTheDocument();
   });
 
@@ -76,7 +76,7 @@ describe('createEntityDataGrid', () => {
       </div>,
     );
 
-    const container = document.querySelector('.arda-grid-container');
+    const container = document.querySelector('.ag-root-wrapper');
     expect(container).toBeInTheDocument();
   });
 
@@ -95,7 +95,7 @@ describe('createEntityDataGrid', () => {
       </div>,
     );
 
-    const container = document.querySelector('.arda-grid-container');
+    const container = document.querySelector('.ag-root-wrapper');
     expect(container).toBeInTheDocument();
   });
 
@@ -117,7 +117,7 @@ describe('createEntityDataGrid', () => {
       </div>,
     );
 
-    const grid = container.querySelector('.ag-theme-arda');
+    const grid = container.querySelector('.ag-root-wrapper');
     expect(grid).toBeInTheDocument();
     expect(enhanceEditableColumnDefs).toHaveBeenCalledWith(expect.any(Array), { enabled: true });
   });
@@ -231,11 +231,14 @@ describe('createEntityDataGrid', () => {
       </div>,
     );
 
-    const grid = container.querySelector('.ag-theme-arda');
+    const grid = container.querySelector('.ag-root-wrapper');
     expect(grid).toBeInTheDocument();
   });
 
-  it('renders pagination footer when paginationData provided (server mode)', () => {
+  it('accepts server paginationData props and renders the grid', () => {
+    // The server-pagination nav props are accepted but currently inert — a
+    // custom server footer is not rendered (SSRM arrives in Phase 2). This
+    // verifies the props pass through without breaking render.
     const onNextPage = vi.fn();
     const onPreviousPage = vi.fn();
     const onFirstPage = vi.fn();
@@ -249,7 +252,7 @@ describe('createEntityDataGrid', () => {
       paginationMode: 'server',
     });
 
-    render(
+    const { container } = render(
       <div style={{ height: '600px' }}>
         <Component
           data={testEntities}
@@ -268,8 +271,7 @@ describe('createEntityDataGrid', () => {
       </div>,
     );
 
-    const pagination = document.querySelector('.ag-pagination-footer');
-    expect(pagination).toBeInTheDocument();
+    expect(container.querySelector('.ag-root-wrapper')).toBeInTheDocument();
   });
 
   it('accepts Tier 3a event props without error', () => {
@@ -381,7 +383,7 @@ describe('createEntityDataGrid', () => {
       </div>,
     );
 
-    const grid = container.querySelector('.ag-theme-arda');
+    const grid = container.querySelector('.ag-root-wrapper');
     expect(grid).toBeInTheDocument();
   });
 
@@ -524,7 +526,7 @@ describe('createEntityDataGrid', () => {
     const footer = document.querySelector('.ag-pagination-footer');
     expect(footer).not.toBeInTheDocument();
     // AG Grid container is present.
-    expect(document.querySelector('.arda-grid-container')).toBeInTheDocument();
+    expect(document.querySelector('.ag-root-wrapper')).toBeInTheDocument();
   });
 
   it('no pagination mode: no pagination footer', () => {
@@ -562,7 +564,7 @@ describe('createEntityDataGrid', () => {
 
     const { container } = render(<Component data={testEntities.slice(0, 2)} activeTab="test" />);
 
-    const grid = container.querySelector('.ag-theme-arda');
+    const grid = container.querySelector('.ag-root-wrapper');
     expect(grid).toBeInTheDocument();
   });
 });

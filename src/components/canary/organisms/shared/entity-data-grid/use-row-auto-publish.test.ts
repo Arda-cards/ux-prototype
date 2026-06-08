@@ -306,7 +306,12 @@ describe('useRowAutoPublish', () => {
     expect(idleClass).toBeUndefined();
   });
 
-  it('getRowClass returns error class when publish fails', async () => {
+  it('publish failure on the auto-publish path silently reverts the row to idle', async () => {
+    // Behavior change: the auto-publish failure path now reverts the row to
+    // its last-saved baseline (via api.applyTransaction when getApi is wired)
+    // and sets state back to 'idle'. The caller still sees the rejection on
+    // its own promise chain and is expected to surface a toast. The persistent
+    // 'ag-row-error' state remains on the saveAll() path only.
     const onRowPublish = vi.fn().mockRejectedValue(new Error('Network error'));
 
     const { result } = renderHook(() =>
@@ -332,8 +337,8 @@ describe('useRowAutoPublish', () => {
       await Promise.resolve();
     });
 
-    const errorClass = result.current.getRowClass({ data: entity } as any);
-    expect(errorClass).toBe('ag-row-error');
+    expect(onRowPublish).toHaveBeenCalled();
+    expect(result.current.getRowClass({ data: entity } as any)).toBeUndefined();
   });
 
   it('getRowClass returns undefined for idle rows', () => {

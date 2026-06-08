@@ -1,37 +1,60 @@
 'use client';
 
 import React, {
-  forwardRef,
-  useImperativeHandle,
-  useRef,
-  useCallback,
+  memo,
   useState,
   useMemo,
+  useCallback,
+  useRef,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+  type ReactNode,
 } from 'react';
+import { Search, Loader2, Package } from 'lucide-react';
+import { cn } from '@/types/canary/utilities/utils';
+import { SelectionCheckboxCell } from './selection-checkbox';
 import { AgGridReact } from 'ag-grid-react';
 import {
-  ModuleRegistry,
   AllCommunityModule,
+  ModuleRegistry,
   themeQuartz,
+  type CellSelectionOptions,
   type ColDef,
+  type ColTypeDef,
+  type DataTypeDefinition,
   type GridApi,
-  type GridReadyEvent,
   type GridOptions,
-  type SelectionChangedEvent,
-  type CellValueChangedEvent,
-  type CellEditingStoppedEvent,
+  type GridReadyEvent,
   type RowClickedEvent,
   type RowClassParams,
+  type CellClickedEvent,
+  type CellValueChangedEvent,
+  type CellEditingStoppedEvent,
+  type SelectionChangedEvent,
+  type PasteEndEvent,
+  type FillEndEvent,
+  type CutEndEvent,
 } from 'ag-grid-community';
+import { RichSelectModule, ClipboardModule, CellSelectionModule } from 'ag-grid-enterprise';
 import '@/styles/canary/ag-theme-arda.css';
-import type { PaginationData } from '@/types/canary/utilities/pagination';
-import { useColumnPersistence } from './use-column-persistence';
-import { SortMenuHeader } from './sort-menu-header';
+import { useDragToScroll } from './use-drag-to-scroll';
+import { useRowEditing, type AddRowOptions, type RowEditPayload } from './use-row-editing';
+
+// ClipboardModule: copy / cut / paste (incl. bulk paste across a range).
+// CellSelectionModule: range selection + fill handle (spreadsheet-style fill-down).
+// Both are Enterprise; features watermark in Storybook (no license) and run
+// clean in arda-frontend-app, which sets the license globally.
+ModuleRegistry.registerModules([
+  AllCommunityModule,
+  RichSelectModule,
+  ClipboardModule,
+  CellSelectionModule,
+]);
 
 // --- Theme ---
 
-// Structural params — sizes, booleans, layout. Colors come from CSS vars below.
-const dataGridTheme = themeQuartz.withParams({
+const gridTheme = themeQuartz.withParams({
   fontFamily: 'var(--font-geist-sans)',
   fontSize: 14,
   headerFontSize: 13,
@@ -42,7 +65,7 @@ const dataGridTheme = themeQuartz.withParams({
   headerColumnResizeHandleWidth: 1,
   columnBorder: false,
   wrapperBorder: true,
-  wrapperBorderRadius: 8,
+  wrapperBorderRadius: 0,
   rowHeight: 48,
   headerHeight: 36,
   popupShadow: '0 4px 16px color-mix(in srgb, var(--foreground) 12%, transparent)',
@@ -53,498 +76,649 @@ const dataGridTheme = themeQuartz.withParams({
   spacing: 6,
 });
 
-// Color tokens — maps AG Grid CSS vars to design-system tokens from tokens.css.
-// Set on the grid container div so they cascade into AG Grid's internals.
-const dataGridColorVars: React.CSSProperties = {
-  '--ag-background-color': 'var(--background)',
-  '--ag-foreground-color': 'var(--foreground)',
-  '--ag-border-color': 'var(--border)',
-  '--ag-accent-color': 'var(--primary)',
-  '--ag-header-text-color': 'var(--foreground)',
-  '--ag-header-background-color': 'var(--secondary)',
-  '--ag-header-cell-hover-background-color': 'var(--border)',
-  '--ag-header-cell-moving-background-color': 'var(--border)',
-  '--ag-header-column-resize-handle-color': 'var(--border)',
+const gridColorVars = {
+  '--ag-background-color': 'var(--base-background)',
+  '--ag-foreground-color': 'var(--base-foreground)',
+  '--ag-border-color': 'var(--base-border)',
+  '--ag-accent-color': 'var(--base-primary)',
+  '--ag-header-text-color': 'var(--base-foreground)',
+  '--ag-header-background-color': 'var(--base-background)',
+  '--ag-header-cell-hover-background-color': 'var(--base-border)',
+  '--ag-header-cell-moving-background-color': 'var(--base-border)',
+  '--ag-header-column-resize-handle-color': 'var(--base-border)',
   '--ag-row-border-color': 'var(--secondary)',
-  '--ag-odd-row-background-color': 'var(--secondary)',
+  '--ag-odd-row-background-color': 'var(--base-background)',
   '--ag-row-hover-color': 'var(--secondary)',
-  '--ag-selected-row-background-color': 'var(--primary-muted)',
-  '--ag-checkbox-unchecked-border-color': 'var(--muted-foreground)',
-  '--ag-checkbox-unchecked-background-color': 'var(--background)',
+  '--ag-selected-row-background-color': 'var(--accent-light)',
+  '--ag-checkbox-unchecked-border-color': 'var(--base-muted-foreground)',
+  '--ag-checkbox-unchecked-background-color': 'var(--base-background)',
 } as React.CSSProperties;
 
-// Register AG-Grid modules
-ModuleRegistry.registerModules([AllCommunityModule]);
-
-// Re-export PaginationData from the canonical canary location
-export type { PaginationData } from '@/types/canary/utilities/pagination';
-
-export interface DataGridStaticConfig<T = Record<string, any>> {
-  /* --- Model / Data Binding --- */
-  columnDefs: ColDef<T>[];
-  defaultColDef?: ColDef<T>;
-
-  /* --- View / Layout / Controller --- */
-  persistenceKey?: string;
-  height?: string | number;
-  className?: string;
-  enableRowSelection?: boolean;
-  enableMultiRowSelection?: boolean;
-  enableSorting?: boolean;
-}
-
-export interface DataGridInitConfig<T> {
-  /* --- Model / Data Binding --- */
-  onGridReady?: (params: GridReadyEvent<T>) => void;
-
-  /* --- View / Layout / Controller --- */
-  // (No view props in InitConfig)
-}
-
-export interface DataGridRuntimeConfig<T> {
-  /* --- Model / Data Binding --- */
-  rowData: T[];
-  selectedItems?: T[];
-  onSelectionChanged?: (selectedRows: T[]) => void;
-  onCellValueChanged?: (event: CellValueChangedEvent<T>) => void;
-  /** Called when a cell stops editing. Passes through to AG Grid. */
-  onCellEditingStopped?: (event: CellEditingStoppedEvent<T>) => void;
-  onRowClicked?: (event: RowClickedEvent<T>) => void;
-  paginationData?: PaginationData;
-  onNextPage?: () => void;
-  onPreviousPage?: () => void;
-  onFirstPage?: () => void;
-  /** Function to return extra CSS class(es) for a row. Used for row visual states. */
-  getRowClass?: (params: RowClassParams<T>) => string | string[] | undefined;
-  /**
-  /* --- View / Layout / Controller --- */
-  loading?: boolean;
-  error?: string | null;
-  enableCellEditing?: boolean;
-  emptyStateComponent?: React.ReactNode;
-  /** Enable AG Grid's built-in client-side pagination. */
-  pagination?: boolean;
-  /** Number of rows per page (client-side pagination). */
-  paginationPageSize?: number;
-  /** Whether to show the page-size selector (defaults to false when pagination is on). */
-  paginationPageSizeSelector?: boolean;
-  /** AG Grid layout mode. `'autoHeight'` makes the grid grow to fit content. */
-  domLayout?: 'normal' | 'autoHeight' | 'print';
-}
-
-export interface DataGridProps<T>
-  extends DataGridStaticConfig<T>, DataGridInitConfig<T>, DataGridRuntimeConfig<T> {}
-
-export interface DataGridRef<T> {
-  getGridApi: () => GridApi<T> | null;
-  exportDataAsCsv: () => void;
-}
-
-// ============================================================================
-// Internal Components
-// ============================================================================
-
-/**
- * GridImage - renders image with fallback for image columns
- */
-export function GridImage({ value }: { value?: string }) {
-  const [imageError, setImageError] = useState(false);
-
-  if (!value) {
-    return (
-      <div
-        className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded"
-        title="No image"
-      >
-        <svg
-          className="w-4 h-4 text-gray-400"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-          />
-        </svg>
-      </div>
-    );
+const rowStateStyles = `
+  .ag-row-saving { background-color: color-mix(in srgb, var(--base-primary) 6%, var(--base-background)) !important; }
+  .ag-row-error  { background-color: color-mix(in srgb, var(--destructive) 8%, var(--base-background)) !important; }
+  /* Center the header checkbox in the narrowed selection column. */
+  .ag-header-cell.ag-selection-header-centered .ag-header-cell-comp-wrapper,
+  .ag-header-cell.ag-selection-header-centered .ag-header-select-all {
+    justify-content: center;
+    padding: 0;
   }
-
-  if (imageError) {
-    return (
-      <div
-        className="flex items-center justify-center w-8 h-8 bg-red-50 rounded"
-        title="Invalid image"
-      >
-        <svg
-          className="w-4 h-4 text-red-400"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
-          />
-        </svg>
-      </div>
-    );
+  /* While editing, round the cell and thicken its accent border to 2px to match
+     the editor's focus ring. A border (vs a box-shadow) stays inside the cell so
+     it isn't cropped by adjacent grid cells. */
+  .ag-cell.ag-cell-popup-editing,
+  .ag-cell.ag-cell-inline-editing {
+    border-radius: calc(var(--radius) - 2px);
+    border-width: 2px !important;
+    border-color: var(--ring) !important;
   }
+`;
 
-  return (
-    <img
-      src={value}
-      alt=""
-      className="w-8 h-8 object-cover rounded"
-      onError={() => setImageError(true)}
-    />
-  );
+// --- Static config (hoisted outside component) ---
+
+const staticGridOptions: GridOptions = {
+  stopEditingWhenCellsLoseFocus: true,
+  tooltipShowDelay: 400,
+  tooltipShowMode: 'whenTruncated' as const,
+  ensureDomOrder: true,
+};
+
+const AgGridMemo = memo(AgGridReact) as unknown as typeof AgGridReact;
+
+// `clipboardPaste="single"` — keep only the top-left cell of pasted clipboard
+// data so a range paste lands in the focused cell instead of spilling across
+// rows/columns. Returning the trimmed grid (vs null) still lets the single cell
+// paste; an empty clipboard cancels the paste.
+function clampPasteToSingleCell({ data }: { data: string[][] }): string[][] | null {
+  const firstCell = data[0]?.[0];
+  return firstCell === undefined ? null : [[firstCell]];
 }
 
-/**
- * LoadingOverlay - shown when loading is true
- */
+// --- Internal components ---
+
 function LoadingOverlay() {
   return (
-    <div className="flex items-center justify-center h-full" role="status" aria-label="Loading">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+    <div className="flex items-center gap-2 text-sm text-muted-foreground" role="status">
+      <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+      Loading…
     </div>
   );
 }
 
-/**
- * ErrorOverlay - shown when error is present
- */
-function ErrorOverlay({ error }: { error: string }) {
+function EmptyOverlay({ message }: { message?: string | undefined }) {
   return (
-    <div className="flex items-center justify-center h-full text-red-500">
-      <div className="text-center">
-        <p className="text-lg font-semibold">Error loading data</p>
-        <p className="text-sm">{error}</p>
+    <div className="flex flex-col items-center gap-3 py-12 text-center">
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
+        <Package className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
       </div>
+      <p className="text-sm text-muted-foreground">{message || 'No rows to display'}</p>
     </div>
   );
 }
 
-/**
- * EmptyStateOverlay - shown when no rows and emptyStateComponent provided
- */
-function EmptyStateOverlay({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      className="flex items-center justify-center h-full w-full"
-      style={{ pointerEvents: 'auto' }}
-    >
-      <div className="flex items-center justify-center w-full" style={{ pointerEvents: 'auto' }}>
-        {children}
-      </div>
-    </div>
-  );
+// --- Interfaces ---
+
+export interface DataGridStaticConfig<T = Record<string, unknown>> {
+  /** Column definitions. */
+  columnDefs: ColDef<T>[];
+  /** Default column definition applied to all columns. */
+  defaultColDef?: ColDef<T>;
+  /**
+   * Custom cell data type registry (e.g. `tokens`, `address`). Each entry owns
+   * the value <-> string round trip (formatter/parser/keyCreator) that drives
+   * copy/paste, bulk paste, fill-down, and export. Columns opt in via
+   * `cellDataType: '<name>'`. See `createTokenDataType`.
+   */
+  dataTypeDefinitions?: Record<string, DataTypeDefinition>;
+  /** Named column-type bundles referenced by data types (renderer/editor/keyCreator). */
+  columnTypes?: Record<string, ColTypeDef>;
+  /**
+   * Range selection + drag-to-fill handle. Each is a bulk-write source, so both
+   * are off unless you opt in:
+   * - omit this prop  → no range selection, no bulk range-edit/range-delete.
+   * - `true` / `{}`    → range selection only (copy a block) — no fill handle.
+   * - `{ handle: { mode: 'fill' } }` → adds the spreadsheet fill-down handle.
+   * Enterprise. Leave it off on grids whose save path can't absorb many
+   * concurrent row writes (see `clipboardPaste`).
+   */
+  cellSelection?: boolean | CellSelectionOptions;
+  /**
+   * Clipboard paste policy. A multi-cell paste maps to one save per affected
+   * row, so paste is the largest bulk-write source; copy is always allowed
+   * (read-only). Choose how much paste a grid's persistence layer can absorb:
+   * - `'range'` (default): multi-cell paste — fills a block from the clipboard.
+   * - `'single'`: paste into the focused cell only; range paste is clamped to 1 cell.
+   * - `'off'`: paste disabled entirely.
+   *
+   * To fully disable spreadsheet-style bulk editing during a phased rollout
+   * (e.g. the items grid): omit `cellSelection`, set `clipboardPaste="off"`,
+   * and leave `undoRedoLimit` at 0.
+   */
+  clipboardPaste?: 'range' | 'single' | 'off';
+  /**
+   * Cell-edit undo/redo stack size (0–20). `0` disables it. When > 0, Ctrl/Cmd+Z
+   * and Ctrl/Cmd+Y undo/redo edits, paste, fill, cut, and delete (grid must have
+   * focus). Defaults to 0 (off).
+   */
+  undoRedoLimit?: number;
+  /** Fixed height for the grid. Ignored when `autoHeight` is true. */
+  height?: string | number;
+  /** Grid grows to fit content. Disables vertical scroll. */
+  autoHeight?: boolean;
+  /** Enable row selection checkboxes. */
+  enableRowSelection?: boolean;
+  /** Enable cell editing (double-click or Enter to edit). */
+  editable?: boolean;
+  /** Enable pagination with page size. */
+  pageSize?: number;
+  /** Custom empty state message. */
+  emptyMessage?: string;
+  /** Custom empty state content — overrides emptyMessage. */
+  emptyContent?: ReactNode;
+  /** Pinned right-side actions column. Pass `actionCount` to auto-calculate width. */
+  actionsColumn?: ColDef<T> & { actionCount?: number };
+  /** Toolbar actions rendered to the right of the search bar. */
+  toolbar?: ReactNode;
+  /**
+   * Additional class names applied to the header bar (search input + row
+   * count + `toolbar` slot). Useful when the grid is rendered full-bleed in
+   * the page but the header bar should respect the page's horizontal gutters.
+   * Composed with the molecule's defaults via `cn(...)`.
+   */
+  toolbarClassName?: string;
+  /** Client-side search. Specify which fields to search across. */
+  searchConfig?: { fields: string[]; placeholder?: string };
+  /** Additional CSS class name. */
+  className?: string;
 }
 
-/**
- * DefaultEmptyState - default empty state message
- */
-function DefaultEmptyState() {
-  return (
-    <div className="text-center py-8">
-      <p className="text-gray-500">No rows to display</p>
-    </div>
-  );
-}
-
-/**
- * PaginationFooter - internal pagination component
- */
-function PaginationFooter({
-  paginationData,
-  onFirstPage,
-  onPreviousPage,
-  onNextPage,
-  loading,
-}: {
-  paginationData: PaginationData;
-  onFirstPage?: () => void;
-  onPreviousPage?: () => void;
-  onNextPage?: () => void;
+export interface DataGridRuntimeConfig<T = Record<string, unknown>> {
+  /** Row data array. */
+  rowData: T[];
+  /** Loading state. */
   loading?: boolean;
-}) {
-  return (
-    <div className="ag-pagination-footer">
-      <div className="pagination-content">
-        {/* Navigation controls */}
-        <div className="pagination-controls">
-          {/* First page button */}
-          <button
-            type="button"
-            onClick={onFirstPage}
-            disabled={!paginationData.hasPreviousPage || loading}
-            className="pagination-button"
-            aria-label="First page"
-          >
-            <span aria-hidden="true">&laquo;</span>
-          </button>
-
-          {/* Previous page button */}
-          <button
-            type="button"
-            onClick={onPreviousPage}
-            disabled={!paginationData.hasPreviousPage || loading}
-            className="pagination-button"
-            aria-label="Previous page"
-          >
-            <span aria-hidden="true">&lsaquo;</span>
-          </button>
-
-          {/* Page indicator */}
-          <div className="pagination-page-info">
-            Page <span className="font-bold">{paginationData.currentPage}</span>
-          </div>
-
-          {/* Next page button */}
-          <button
-            type="button"
-            onClick={onNextPage}
-            disabled={!paginationData.hasNextPage || loading}
-            className="pagination-button"
-            aria-label="Next page"
-          >
-            <span aria-hidden="true">&rsaquo;</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+  /** Called when a row is clicked. */
+  onRowClick?: (entity: T) => void;
+  /** Called when selection changes. */
+  onSelectionChange?: (entities: T[]) => void;
+  /** Called when a cell value changes. */
+  onCellValueChanged?: (event: CellValueChangedEvent<T>) => void;
+  /** Called when cell editing stops. */
+  onCellEditingStopped?: (event: CellEditingStoppedEvent<T>) => void;
+  /**
+   * Called once a range paste completes (not per cell). Bulk paste does not fire
+   * `onCellEditingStopped`, so a persistence layer flushes pending edits here.
+   */
+  onPasteEnd?: (event: PasteEndEvent<T>) => void;
+  /** Called once a fill-handle drag completes (not per cell). Flush point, like `onPasteEnd`. */
+  onFillEnd?: (event: FillEndEvent<T>) => void;
+  /** Called once a cut completes. Flush point for the cleared cells. */
+  onCutEnd?: (event: CutEndEvent<T>) => void;
+  /** Function to compute extra CSS classes for a row. */
+  getRowClass?: (params: RowClassParams<T>) => string | string[] | undefined;
+  /** Ref to access AG Grid API. */
+  gridRef?: React.RefObject<AgGridReact<T> | null>;
+  /** Fired after rows are inserted in-memory (add-row mechanics). */
+  onRowsAdded?: (payload: RowEditPayload<T>) => void;
+  /** Fired after rows are removed in-memory. */
+  onRowsRemoved?: (payload: RowEditPayload<T>) => void;
+  /** Mint a new row's grid id. Default ``() => `new-${crypto.randomUUID()}` ``. */
+  getNewRowId?: () => string;
 }
 
-// ============================================================================
-// Main Component
-// ============================================================================
+export interface DataGridProps<T = Record<string, unknown>>
+  extends DataGridStaticConfig<T>, DataGridRuntimeConfig<T> {}
+
+export interface DataGridRef<T = Record<string, unknown>> {
+  getGridApi: () => GridApi<T> | null;
+  exportDataAsCsv: () => void;
+  /** Insert a row in-memory; returns the new row's grid id. */
+  addRow: (seed?: Partial<T>, opts?: AddRowOptions<T>) => string;
+  /** Remove rows in-memory by grid id. */
+  removeRows: (ids: string[]) => void;
+}
+
+// --- Component ---
 
 export const DataGrid = forwardRef(
-  <T extends Record<string, any>>(
+  <T extends Record<string, unknown>>(
     {
-      // Static config
+      // Static
       columnDefs,
       defaultColDef,
-      persistenceKey,
+      dataTypeDefinitions,
+      columnTypes,
+      cellSelection,
+      clipboardPaste = 'range',
+      undoRedoLimit = 0,
       height = 600,
-      className = '',
-      enableRowSelection = true,
-      enableMultiRowSelection = true,
-      enableSorting = true,
+      autoHeight = false,
+      enableRowSelection = false,
+      editable = false,
+      pageSize,
+      emptyMessage,
+      emptyContent,
+      actionsColumn,
+      toolbar,
+      toolbarClassName,
+      searchConfig,
+      className,
 
-      // Init config
-      onGridReady,
-
-      // Runtime config
+      // Runtime
       rowData,
       loading = false,
-      error = null,
-      enableCellEditing = false,
-      selectedItems: _selectedItems = [],
-      onSelectionChanged,
+      onRowClick,
+      onSelectionChange,
       onCellValueChanged,
       onCellEditingStopped,
-      onRowClicked,
-      paginationData,
-      onNextPage,
-      onPreviousPage,
-      onFirstPage,
-      emptyStateComponent,
+      onPasteEnd,
+      onFillEnd,
+      onCutEnd,
       getRowClass,
-      pagination = false,
-      paginationPageSize,
-      paginationPageSizeSelector = false,
-      domLayout,
+      gridRef: externalGridRef,
+      onRowsAdded,
+      onRowsRemoved,
+      getNewRowId,
     }: DataGridProps<T>,
     ref: React.Ref<DataGridRef<T>>,
   ) => {
-    const gridRef = useRef<AgGridReact<T>>(null);
+    const internalGridRef = useRef<AgGridReact<T>>(null);
+    const gridRef = externalGridRef || internalGridRef;
+    const gridContainerRef = useRef<HTMLDivElement>(null);
     const [gridApi, setGridApi] = useState<GridApi<T> | null>(null);
 
-    // Column persistence hook
-    const { onColumnStateChanged, restoreColumnState } = useColumnPersistence(persistenceKey);
+    // Drag-to-scroll
+    useDragToScroll(gridContainerRef);
+
+    // Add-row mechanics (in-memory insert/remove + events)
+    const { addRow, removeRows } = useRowEditing<T>({
+      getApi: () => gridApi,
+      getNewRowId: getNewRowId ?? (() => `new-${crypto.randomUUID()}`),
+      ...(onRowsAdded ? { onRowsAdded } : {}),
+      ...(onRowsRemoved ? { onRowsRemoved } : {}),
+    });
 
     // Expose imperative API
     useImperativeHandle(ref, () => ({
       getGridApi: () => gridApi,
-      exportDataAsCsv: () => {
-        if (gridApi) {
-          gridApi.exportDataAsCsv();
-        }
-      },
+      exportDataAsCsv: () => gridApi?.exportDataAsCsv(),
+      addRow,
+      removeRows,
     }));
 
-    // Handle grid ready
-    const handleGridReady = useCallback(
-      (params: GridReadyEvent<T>) => {
-        setGridApi(params.api);
+    const handleGridReady = useCallback((params: GridReadyEvent<T>) => {
+      setGridApi(params.api);
+    }, []);
 
-        // Restore column state from localStorage
-        if (persistenceKey) {
-          restoreColumnState(params.api);
+    // --- Escape key: two-stage behavior ---
+    // First Escape exits edit mode (AG Grid default). Second clears focus ring.
+    // We track whether editing just stopped so we don't clear focus on the same keypress.
+    const wasEditingRef = useRef(false);
+
+    const handleCellEditingStarted = useCallback(() => {
+      wasEditingRef.current = true;
+    }, []);
+
+    // Type uses any to satisfy AG Grid's CellKeyDownEvent | FullWidthCellKeyDownEvent union
+    // under exactOptionalPropertyTypes
+    const handleCellKeyDown = useCallback(
+      (event: { event: Event | null | undefined; api: { clearFocusedCell(): void } }) => {
+        if ((event.event as KeyboardEvent)?.key === 'Escape') {
+          if (wasEditingRef.current) {
+            // Just exited edit mode — consume this Escape, keep focus
+            wasEditingRef.current = false;
+          } else {
+            // Not editing — clear the focus ring
+            event.api.clearFocusedCell();
+          }
         }
-
-        onGridReady?.(params);
       },
-      [persistenceKey, restoreColumnState, onGridReady],
+      [],
     );
 
-    // Handle selection changes
-    const handleSelectionChanged = useCallback(
-      (event: SelectionChangedEvent<T>) => {
-        const selectedRows = event.api.getSelectedRows();
-        onSelectionChanged?.(selectedRows);
-      },
-      [onSelectionChanged],
-    );
+    const handleCellEditingStopped = useCallback(() => {
+      // wasEditingRef stays true until the next Escape clears it
+    }, []);
 
-    // Handle row click - avoid triggering when clicking checkbox
+    // --- Mobile: tap-to-edit on an already-focused cell ---
+    // Touch devices have no natural double-click, so we open the editor when a
+    // user taps the same cell twice in a row (first tap focuses, second tap
+    // edits). Gated on `(pointer: coarse)` so hybrid devices keep AG Grid's
+    // double-click semantics under a fine pointer.
+    const isCoarsePointerRef = useRef(false);
+    useEffect(() => {
+      if (typeof window === 'undefined' || !window.matchMedia) return;
+      const mq = window.matchMedia('(pointer: coarse)');
+      isCoarsePointerRef.current = mq.matches;
+      const update = (e: MediaQueryListEvent) => {
+        isCoarsePointerRef.current = e.matches;
+      };
+      mq.addEventListener('change', update);
+      return () => mq.removeEventListener('change', update);
+    }, []);
+
+    const lastTappedCellKeyRef = useRef<string | null>(null);
+
+    const handleCellClicked = useCallback((event: CellClickedEvent<T>) => {
+      if (!isCoarsePointerRef.current) return;
+      const rowIndex = event.node.rowIndex;
+      if (typeof rowIndex !== 'number') return;
+      const colId = event.column.getColId();
+      const key = `${rowIndex}:${colId}`;
+      // If something is already in edit mode, just record the tapped cell.
+      if (event.api.getEditingCells().length > 0) {
+        lastTappedCellKeyRef.current = key;
+        return;
+      }
+      if (lastTappedCellKeyRef.current === key) {
+        // Second tap on the already-focused cell — open the editor.
+        event.api.startEditingCell({ rowIndex, colKey: colId });
+        lastTappedCellKeyRef.current = null;
+        // iOS Safari requires focus() to follow a user gesture for the
+        // keyboard to appear. AG Grid's default text editor focuses inside a
+        // useEffect that often misses that window. Nudge focus on the next
+        // frame — still within the tap's gesture grace period.
+        requestAnimationFrame(() => {
+          const input = document.querySelector<HTMLElement>(
+            '.ag-cell-edit-wrapper input, .ag-cell-edit-input, .ag-input-field-input',
+          );
+          input?.focus();
+        });
+      } else {
+        lastTappedCellKeyRef.current = key;
+      }
+    }, []);
+
+    // --- Search ---
+
+    const [searchInput, setSearchInput] = useState('');
+    const [search, setSearch] = useState('');
+    const [selectedCount, setSelectedCount] = useState(0);
+    const searchDebounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+    const handleSearchChange = useCallback((value: string) => {
+      setSearchInput(value);
+      clearTimeout(searchDebounceRef.current);
+      searchDebounceRef.current = setTimeout(() => setSearch(value), 150);
+    }, []);
+
+    useEffect(() => {
+      return () => clearTimeout(searchDebounceRef.current);
+    }, []);
+
+    const filteredRowData = useMemo(() => {
+      if (!search || !searchConfig) return rowData;
+      const q = search.toLowerCase();
+      return rowData.filter((row) =>
+        searchConfig.fields.some((field) => {
+          const val = (row as Record<string, unknown>)[field];
+          return typeof val === 'string' && val.toLowerCase().includes(q);
+        }),
+      );
+    }, [rowData, search, searchConfig]);
+
+    // --- Row click ---
+
     const handleRowClicked = useCallback(
       (event: RowClickedEvent<T>) => {
-        if (!onRowClicked) return;
-
-        // Check if clicking checkbox or select column
-        const nativeEvent = event.event;
-        if (nativeEvent) {
-          const target = nativeEvent.target as HTMLElement;
-
-          // Check if clicking checkbox
-          if (target?.tagName === 'INPUT' && (target as HTMLInputElement).type === 'checkbox') {
-            return;
-          }
-
-          // Check if clicking inside select column
-          if (target?.closest('.ag-cell[col-id="select"]')) {
-            return;
-          }
-        }
-
-        onRowClicked(event);
+        if (!onRowClick || !event.data) return;
+        onRowClick(event.data);
       },
-      [onRowClicked],
+      [onRowClick],
     );
 
-    // Row selection config using AG Grid native multiRow with header checkbox
+    // --- Selection ---
+
+    const handleSelectionChanged = useCallback(
+      (event: SelectionChangedEvent<T>) => {
+        const rows = event.api.getSelectedRows();
+        setSelectedCount(rows.length);
+        onSelectionChange?.(rows);
+      },
+      [onSelectionChange],
+    );
+
     const rowSelection = useMemo(
       () =>
         enableRowSelection
           ? {
-              mode: enableMultiRowSelection ? ('multiRow' as const) : ('singleRow' as const),
-              headerCheckbox: enableMultiRowSelection,
-              selectAll: 'all' as const,
-              enableClickSelection: true as const,
+              mode: 'multiRow' as const,
+              headerCheckbox: true,
+              // Suppress AG Grid's built-in checkbox — `selectionColumnDef`
+              // below provides Arda canary Checkbox renderers (body + header)
+              // and we don't want the default rendered alongside.
+              checkboxes: false,
             }
           : undefined,
-      [enableRowSelection, enableMultiRowSelection],
+      [enableRowSelection],
     );
 
-    // Default column definition — includes SortMenuHeader as headerComponent
-    const mergedDefaultColDef: ColDef<T> = {
-      sortable: enableSorting,
-      resizable: true,
-      suppressHeaderMenuButton: true,
-      suppressMovable: false,
-      headerComponent: SortMenuHeader,
-      ...defaultColDef,
-    };
+    // Narrow the row-selection column and render the Arda canary `Checkbox`
+    // atom in body cells so the selection control matches the Figma spec
+    // instead of AG Grid's default theme-driven checkbox.
+    //
+    // Header: we leave AG Grid's default select-all in place. In AG Grid v34
+    // the combination of `rowSelection.headerCheckbox: true` and a custom
+    // `headerComponent` renders both — and disabling `headerCheckbox` removes
+    // the column entirely. Until that's resolved we accept the small visual
+    // mismatch between header and body checkbox. Custom header lives in
+    // ./selection-checkbox.tsx for when the AG Grid behaviour changes.
+    const selectionColumnDef = useMemo<ColDef<T> | undefined>(
+      () =>
+        enableRowSelection
+          ? {
+              width: 40,
+              minWidth: 40,
+              maxWidth: 40,
+              suppressSizeToFit: true,
+              resizable: false,
+              cellStyle: {
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                padding: 0,
+              },
+              headerClass: 'ag-selection-header-centered',
+              cellRenderer: SelectionCheckboxCell,
+              // Enter on a focused selection cell toggles the row. Returning
+              // `true` from suppressKeyboardEvent tells AG Grid we handled it
+              // so the default Enter behaviour (which would otherwise be a
+              // no-op for non-editable cells) doesn't override ours.
+              suppressKeyboardEvent: (params) => {
+                if (params.editing) return false;
+                if (params.event.key !== 'Enter') return false;
+                const node = params.node;
+                if (!node) return false;
+                node.setSelected(!node.isSelected());
+                return true;
+              },
+            }
+          : undefined,
+      [enableRowSelection],
+    );
 
-    // Grid options
-    const gridOptions: GridOptions<T> = {
-      // Performance
-      suppressColumnVirtualisation: false,
-      suppressRowVirtualisation: false,
+    // --- Column defs with actions column ---
 
-      // Column dragging
-      suppressColumnMoveAnimation: true,
+    const resolvedColumnDefs = useMemo(() => {
+      if (!actionsColumn) return columnDefs;
+      const { actionCount, width: actionsWidth, ...actionsRest } = actionsColumn;
+      const computedWidth =
+        actionsWidth ?? (actionCount ? actionCount * 28 + (actionCount - 1) * 4 + 16 : 200);
+      return [
+        ...columnDefs,
+        {
+          ...actionsRest,
+          headerName: '',
+          sortable: false,
+          resizable: false,
+          editable: false,
+          pinned: 'right' as const,
+          lockPinned: true,
+          suppressHeaderMenuButton: true,
+          suppressNavigable: true,
+          suppressSizeToFit: true,
+          tooltipValueGetter: () => undefined,
+          width: computedWidth,
+          cellStyle: {
+            borderLeft: '1px solid var(--base-border)',
+            borderTop: 'none',
+            borderBottom: 'none',
+            borderRight: 'none',
+            padding: '0 4px',
+          },
+        } satisfies ColDef<T>,
+      ];
+    }, [columnDefs, actionsColumn]);
 
-      // Row ID for selection tracking
-      getRowId: (params) => {
-        const data = params.data as Record<string, unknown>;
-        if (data?.entityId) return String(data.entityId);
-        if (data?.id) return String(data.id);
-        if (data?.eId) return String(data.eId);
-        return `row-${JSON.stringify(data).slice(0, 50)}`;
-      },
+    // --- Default col def ---
 
-      // Cell editing
-      ...(enableCellEditing
-        ? {
-            singleClickEdit: false,
-            stopEditingWhenCellsLoseFocus: false,
-            enterNavigatesVertically: true,
-            enterNavigatesVerticallyAfterEdit: true,
-          }
-        : {}),
-    };
+    const mergedDefaultColDef: ColDef<T> = useMemo(
+      () => ({
+        sortable: true,
+        resizable: true,
+        // No "..." button on column headers; the same column menu is still
+        // available via right-click on the header. Consumers can re-enable
+        // it per-column or via defaultColDef.
+        suppressHeaderMenuButton: true,
+        ...(editable ? { editable: true } : { editable: false }),
+        ...defaultColDef,
+      }),
+      [editable, defaultColDef],
+    );
 
-    // Combined no rows overlay
-    const NoRowsOverlay = () => {
-      if (error) return <ErrorOverlay error={error} />;
-      if (emptyStateComponent) {
-        return <EmptyStateOverlay>{emptyStateComponent}</EmptyStateOverlay>;
-      }
-      return <DefaultEmptyState />;
-    };
+    // --- Grid options ---
+
+    const gridOptions = useMemo<GridOptions<T>>(
+      () => ({
+        ...staticGridOptions,
+        getRowId: (params) => {
+          const data = params.data as Record<string, unknown>;
+          if (data?.entityId) return String(data.entityId);
+          if (data?.eId) return String(data.eId);
+          if (data?.id) return String(data.id);
+          return `row-${JSON.stringify(data).slice(0, 50)}`;
+        },
+      }),
+      [],
+    );
+
+    // --- No rows overlay ---
+
+    const noRowsOverlay = useMemo(
+      () => (emptyContent ? () => emptyContent : () => <EmptyOverlay message={emptyMessage} />),
+      [emptyContent, emptyMessage],
+    );
+
+    // --- Render ---
+
+    const hasHeader = searchConfig || toolbar;
 
     return (
-      <div
-        className={`arda-grid-container ${className}`}
-        style={{
-          height: typeof height === 'number' ? `${height}px` : height,
-          ...dataGridColorVars,
-        }}
-      >
-        <div className="ag-theme-arda h-full">
-          <AgGridReact<T>
-            ref={gridRef}
-            theme={dataGridTheme}
-            rowData={rowData}
-            columnDefs={columnDefs}
-            defaultColDef={mergedDefaultColDef}
-            gridOptions={gridOptions}
-            {...(rowSelection !== undefined ? { rowSelection } : {})}
-            onGridReady={handleGridReady}
-            onSelectionChanged={handleSelectionChanged}
-            onRowClicked={handleRowClicked}
-            {...(onCellValueChanged !== undefined ? { onCellValueChanged } : {})}
-            {...(onCellEditingStopped !== undefined ? { onCellEditingStopped } : {})}
-            {...(getRowClass !== undefined ? { getRowClass } : {})}
-            onColumnMoved={onColumnStateChanged}
-            onColumnResized={onColumnStateChanged}
-            onColumnVisible={onColumnStateChanged}
-            onSortChanged={onColumnStateChanged}
-            {...(loading ? { loadingOverlayComponent: LoadingOverlay } : {})}
-            noRowsOverlayComponent={NoRowsOverlay}
-            {...(pagination ? { pagination, paginationPageSizeSelector } : {})}
-            {...(pagination && paginationPageSize !== undefined ? { paginationPageSize } : {})}
-            {...(domLayout !== undefined ? { domLayout } : {})}
-          />
+      <div className={className}>
+        <style dangerouslySetInnerHTML={{ __html: rowStateStyles }} />
 
-          {/* Pagination footer */}
-          {paginationData && (
-            <PaginationFooter
-              paginationData={paginationData}
-              {...(onFirstPage !== undefined ? { onFirstPage } : {})}
-              {...(onPreviousPage !== undefined ? { onPreviousPage } : {})}
-              {...(onNextPage !== undefined ? { onNextPage } : {})}
-              loading={loading}
-            />
-          )}
+        {/* Header: search + count + toolbar */}
+        {hasHeader && (
+          <div
+            className={cn(
+              'flex flex-wrap items-center gap-2 pb-4 sm:flex-nowrap sm:gap-3',
+              toolbarClassName,
+            )}
+          >
+            {searchConfig && (
+              <div className="relative w-full sm:w-auto sm:min-w-40 sm:max-w-72 sm:flex-1 lg:flex-none">
+                <Search
+                  className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"
+                  aria-hidden="true"
+                />
+                <input
+                  type="search"
+                  placeholder={searchConfig.placeholder ?? 'Search…'}
+                  value={searchInput}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm shadow-none placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label={searchConfig.placeholder ?? 'Search'}
+                />
+              </div>
+            )}
+            <span className="text-sm text-muted-foreground whitespace-nowrap">
+              {selectedCount > 0
+                ? `${selectedCount} of ${filteredRowData.length} selected`
+                : `${filteredRowData.length} row${filteredRowData.length !== 1 ? 's' : ''}`}
+            </span>
+            {toolbar && (
+              <div className="ml-auto flex min-w-0 flex-1 items-center justify-end gap-2">
+                {toolbar}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Grid */}
+        <div
+          ref={gridContainerRef}
+          style={{
+            ...(!autoHeight && {
+              height: typeof height === 'number' ? `${height}px` : height,
+            }),
+            ...gridColorVars,
+          }}
+        >
+          <AgGridMemo
+            ref={gridRef}
+            theme={gridTheme}
+            gridOptions={gridOptions}
+            domLayout={autoHeight ? 'autoHeight' : 'normal'}
+            columnDefs={resolvedColumnDefs}
+            defaultColDef={mergedDefaultColDef}
+            {...(dataTypeDefinitions ? { dataTypeDefinitions } : {})}
+            {...(columnTypes ? { columnTypes } : {})}
+            {...(selectionColumnDef ? { selectionColumnDef } : {})}
+            {...(cellSelection ? { cellSelection } : {})}
+            {...(clipboardPaste === 'off' ? { suppressClipboardPaste: true } : {})}
+            {...(clipboardPaste === 'single'
+              ? { processDataFromClipboard: clampPasteToSingleCell }
+              : {})}
+            {...(undoRedoLimit > 0
+              ? { undoRedoCellEditing: true, undoRedoCellEditingLimit: Math.min(20, undoRedoLimit) }
+              : {})}
+            rowData={filteredRowData}
+            loading={loading}
+            onGridReady={handleGridReady}
+            onCellClicked={handleCellClicked}
+            onCellKeyDown={handleCellKeyDown as never}
+            onCellEditingStarted={handleCellEditingStarted as never}
+            {...(rowSelection ? { rowSelection } : {})}
+            {...(getRowClass ? { getRowClass } : {})}
+            {...(enableRowSelection ? { onSelectionChanged: handleSelectionChanged } : {})}
+            {...(onRowClick ? { onRowClicked: handleRowClicked } : {})}
+            {...(onCellValueChanged ? { onCellValueChanged } : {})}
+            {...(onPasteEnd ? { onPasteEnd } : {})}
+            {...(onFillEnd ? { onFillEnd } : {})}
+            {...(onCutEnd ? { onCutEnd } : {})}
+            {...(onCellEditingStopped
+              ? {
+                  onCellEditingStopped: (e: CellEditingStoppedEvent) => {
+                    handleCellEditingStopped();
+                    onCellEditingStopped(e);
+                  },
+                }
+              : { onCellEditingStopped: handleCellEditingStopped })}
+            loadingOverlayComponent={LoadingOverlay}
+            noRowsOverlayComponent={noRowsOverlay}
+            pagination={!!pageSize}
+            {...(pageSize ? { paginationPageSize: pageSize } : {})}
+            paginationPageSizeSelector={false}
+          />
         </div>
       </div>
     );
   },
-) as <T extends Record<string, any>>(
+) as <T extends Record<string, unknown>>(
   props: DataGridProps<T> & { ref?: React.Ref<DataGridRef<T>> },
 ) => React.ReactElement;
 
 (DataGrid as unknown as { displayName: string }).displayName = 'DataGrid';
+
+// Re-export for convenience
+export { GridImage } from './grid-image';
