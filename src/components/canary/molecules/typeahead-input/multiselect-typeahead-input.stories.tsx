@@ -83,21 +83,6 @@ export const Disabled: StoryObj = {
   ),
 };
 
-/** Cell editor mode — no border, transparent bg, for use inside AG Grid cells. */
-export const CellEditorMode: StoryObj = {
-  render: () => (
-    <div className="p-8">
-      <p className="text-sm text-muted-foreground mb-4">
-        Cell editor mode: no border, transparent background. Dropdown is portaled.
-      </p>
-      <div className="w-80 overflow-hidden border border-border rounded-md p-2">
-        <MultiSelectDemo
-          lookup={lookupRoles}
-          initialValue={['Vendor']}
-          cellEditorMode
-          placeholder="Select roles..."
-        />
-      </div>
-    </div>
-  ),
-};
+// Cell-editor behavior is demonstrated end-to-end by the `InGrid` story shipped
+// with the DataGrid molecule — no standalone `CellEditorMode` story is needed
+// here.

@@ -91,24 +91,9 @@ export const Disabled: StoryObj = {
   ),
 };
 
-/** Cell editor mode — blur accepts typed value, dropdown portaled via Popover. */
-export const CellEditorMode: StoryObj = {
-  render: () => (
-    <div className="p-8">
-      <p className="text-sm text-muted-foreground mb-4">
-        Cell editor mode: blur accepts typed value instead of reverting. Dropdown is portaled.
-      </p>
-      <div className="w-64 overflow-hidden border border-border rounded-md p-2">
-        <TypeaheadDemo
-          lookup={lookupUnits}
-          allowCreate
-          cellEditorMode
-          placeholder="Search units (cell editor)..."
-        />
-      </div>
-    </div>
-  ),
-};
+// Cell-editor behavior is demonstrated end-to-end by the `InGrid` story shipped
+// with the DataGrid molecule — no standalone `CellEditorMode` story is needed
+// here.
 
 // ---------------------------------------------------------------------------
 // Playground
