@@ -11,11 +11,11 @@ export function GridImage({ value }: { value?: string }) {
   if (!value) {
     return (
       <div
-        className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded"
+        className="flex items-center justify-center w-8 h-8 bg-secondary rounded"
         title="No image"
       >
         <svg
-          className="w-4 h-4 text-gray-400"
+          className="w-4 h-4 text-muted-foreground"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -35,11 +35,11 @@ export function GridImage({ value }: { value?: string }) {
   if (imageError) {
     return (
       <div
-        className="flex items-center justify-center w-8 h-8 bg-red-50 rounded"
+        className="flex items-center justify-center w-8 h-8 bg-destructive/10 rounded"
         title="Invalid image"
       >
         <svg
-          className="w-4 h-4 text-red-400"
+          className="w-4 h-4 text-destructive"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

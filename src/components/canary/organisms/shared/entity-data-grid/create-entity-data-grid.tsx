@@ -679,7 +679,11 @@ export function createConnectedDataGrid<T extends Record<string, any>>(
                 ? config.newRowDefaults()
                 : (config.newRowDefaults ?? {});
             const seed = { ...defaults, ...(overrides ?? {}) } as Partial<T>;
-            const startField = requiredFields[0] as (keyof T & string) | undefined;
+            // Read from `config` (closure-stable) rather than the local
+            // render-time `requiredFields` const, so the imperative handle
+            // doesn't capture a stale array when only `useCommit` changes
+            // between renders.
+            const startField = (config.requiredFields ?? [])[0] as (keyof T & string) | undefined;
             return (
               gridRef.current?.addRow(
                 seed,

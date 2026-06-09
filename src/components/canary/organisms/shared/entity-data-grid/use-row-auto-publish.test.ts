@@ -306,12 +306,12 @@ describe('useRowAutoPublish', () => {
     expect(idleClass).toBeUndefined();
   });
 
-  it('publish failure on the auto-publish path silently reverts the row to idle', async () => {
-    // Behavior change: the auto-publish failure path now reverts the row to
-    // its last-saved baseline (via api.applyTransaction when getApi is wired)
-    // and sets state back to 'idle'. The caller still sees the rejection on
-    // its own promise chain and is expected to surface a toast. The persistent
-    // 'ag-row-error' state remains on the saveAll() path only.
+  it('publish failure on the auto-publish path keeps the typed value and marks the row error', async () => {
+    // Panel-review decision (write-path semantics, Option 2): on publish
+    // failure the auto-publish path KEEPS the user's typed value (no silent
+    // revert) and sets the row state to 'error' so the failure is
+    // persistently visible. Aligns the auto-publish path with the saveAll()
+    // path which already behaved this way.
     const onRowPublish = vi.fn().mockRejectedValue(new Error('Network error'));
 
     const { result } = renderHook(() =>
@@ -338,7 +338,7 @@ describe('useRowAutoPublish', () => {
     });
 
     expect(onRowPublish).toHaveBeenCalled();
-    expect(result.current.getRowClass({ data: entity } as any)).toBeUndefined();
+    expect(result.current.getRowClass({ data: entity } as any)).toBe('ag-row-error');
   });
 
   it('getRowClass returns undefined for idle rows', () => {
@@ -540,5 +540,132 @@ describe('useRowAutoPublish', () => {
 
     // Should only be called once (double-publish prevention).
     expect(onRowPublish).toHaveBeenCalledTimes(1);
+  });
+
+  // -------------------------------------------------------------------------
+  // User-story-driven tests added per panel review
+  // -------------------------------------------------------------------------
+
+  it('does not publish a row that isDraft reports as still a draft', async () => {
+    // User story: as a purchaser I click "Add row" but realize I'm on the
+    // wrong screen and click away before typing anything. The empty row
+    // should remain a local draft. Arda must not silently PUT an empty /
+    // partial vendor to the server before I've supplied its name (the only
+    // required field for the vendor entity).
+    const onRowPublish = vi.fn().mockResolvedValue(undefined);
+    const onDirtyChange = vi.fn();
+
+    const { result } = renderHook(() =>
+      useRowAutoPublish<TestEntity>({
+        getEntityId,
+        onRowPublish,
+        // Draft rows are excluded — the consumer (useDraftPersistence in
+        // production) decides what counts as a draft. Here we mark every
+        // row as a draft to assert the suppression contract.
+        isDraft: () => true,
+        onDirtyChange,
+      }),
+    );
+
+    const entity: TestEntity = { id: 'draft-1', name: '' };
+
+    act(() => {
+      result.current.handleCellValueChanged(makeCellValueChangedEvent(entity, 'name', '') as any);
+      result.current.handleCellEditingStopped(makeCellEditingStoppedEvent(entity, 0) as any);
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(60);
+      await Promise.resolve();
+    });
+
+    expect(onRowPublish).not.toHaveBeenCalled();
+    expect(onDirtyChange).not.toHaveBeenCalled();
+  });
+
+  it('handlePasteEnd flushes every dirty row through onRowPublish', async () => {
+    // User story: as a purchaser I paste 3 phone numbers across 3 vendor
+    // rows in a workflow where every edit auto-saves immediately (per-row
+    // mode). Each of the 3 changes must round-trip to the server — none
+    // silently dropped by the debounce batching.
+    //
+    // Note: for paste-heavy workflows the consumer should usually wire
+    // `onCommit` (batched) instead of `onRowPublish` (per-row). This test
+    // asserts the per-row contract, which is what useRowAutoPublish owns.
+    const onRowPublish = vi.fn().mockResolvedValue(undefined);
+
+    const { result } = renderHook(() =>
+      useRowAutoPublish<TestEntity>({ getEntityId, onRowPublish }),
+    );
+
+    const entities: TestEntity[] = [
+      { id: 'r1', name: 'Acme' },
+      { id: 'r2', name: 'Bolt' },
+      { id: 'r3', name: 'Circuit' },
+    ];
+
+    // Stage a value change on each row (paste flow doesn't fire
+    // cellEditingStopped, so the rows accumulate as dirty).
+    act(() => {
+      for (const entity of entities) {
+        result.current.handleCellValueChanged(
+          makeCellValueChangedEvent(entity, 'name', 'paste-' + entity.id) as any,
+        );
+      }
+    });
+
+    // Fire the bulk-flush handler with a mock api that resolves row ids.
+    const api = {
+      getRowNode: (id: string) => {
+        const found = entities.find((e) => e.id === id);
+        return found ? { data: found } : null;
+      },
+    };
+    act(() => {
+      result.current.handlePasteEnd({ api } as any);
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(onRowPublish).toHaveBeenCalledTimes(3);
+    const callRowIds = onRowPublish.mock.calls.map((call) => call[0]).sort();
+    expect(callRowIds).toEqual(['r1', 'r2', 'r3']);
+  });
+
+  it('discardAll cancels a pending publish so no PUT is fired', async () => {
+    // User story: as a purchaser I type a typo in a cell and immediately
+    // press Escape / Discard before the debounce fires. Arda must not fire
+    // a PUT for the discarded value.
+    const onRowPublish = vi.fn().mockResolvedValue(undefined);
+    const handleRef = { current: null } as { current: any };
+
+    const { result } = renderHook(() =>
+      useRowAutoPublish<TestEntity>({ getEntityId, onRowPublish, handleRef }),
+    );
+
+    const entity: TestEntity = { id: '1', name: 'Updated' };
+
+    act(() => {
+      result.current.handleCellValueChanged(
+        makeCellValueChangedEvent(entity, 'name', 'Typo') as any,
+      );
+      result.current.handleCellEditingStopped(makeCellEditingStoppedEvent(entity, 0) as any);
+    });
+
+    // Discard BEFORE the 60ms debounce can fire publishRow.
+    act(() => {
+      handleRef.current?.discardAll();
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(120);
+      await Promise.resolve();
+    });
+
+    expect(onRowPublish).not.toHaveBeenCalled();
+    expect(handleRef.current?.getDirtyRowIds()).toEqual([]);
   });
 });

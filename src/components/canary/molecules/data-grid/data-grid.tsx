@@ -338,13 +338,19 @@ export const DataGrid = forwardRef(
       ...(onRowsRemoved ? { onRowsRemoved } : {}),
     });
 
-    // Expose imperative API
-    useImperativeHandle(ref, () => ({
-      getGridApi: () => gridApi,
-      exportDataAsCsv: () => gridApi?.exportDataAsCsv(),
-      addRow,
-      removeRows,
-    }));
+    // Expose imperative API. Deps stabilize the handle so it only rebuilds
+    // when an exposed identity actually changes; without them the handle
+    // was rebuilt on every parent render.
+    useImperativeHandle(
+      ref,
+      () => ({
+        getGridApi: () => gridApi,
+        exportDataAsCsv: () => gridApi?.exportDataAsCsv(),
+        addRow,
+        removeRows,
+      }),
+      [gridApi, addRow, removeRows],
+    );
 
     const handleGridReady = useCallback((params: GridReadyEvent<T>) => {
       setGridApi(params.api);

@@ -945,6 +945,18 @@ body .ag-dnd-ghost * {
     font-size: 12px;
     min-width: 32px;
   }
+}
+
+/* On any touch-capable device (regardless of viewport width), force the
+ * pagination buttons to a 44×44 minimum tap target. Overrides the visual
+ * 32-min and small font-size set in the narrow-viewport block above. */
+@media (pointer: coarse) {
+  .ag-theme-arda .ag-pagination-footer .pagination-button {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px 10px;
+    font-size: 14px;
+  }
 
   .ag-theme-arda .ag-pagination-footer .pagination-page-info {
     font-size: 11px;
@@ -1043,7 +1055,7 @@ body .ag-dnd-ghost * {
 
   /* Override inherited grab cursor */
   cursor: pointer;
-  color: #737373;
+  color: var(--base-muted-foreground);
   font-size: 16px;
   line-height: 1;
   opacity: 0;
@@ -1066,8 +1078,8 @@ body .ag-dnd-ghost * {
 }
 
 .ag-theme-arda .ag-header-cell .arda-sort-header-btn:hover {
-  background-color: #e5e5e5;
-  color: #0a0a0a;
+  background-color: var(--base-border);
+  color: var(--base-foreground);
   opacity: 1;
 }
 
@@ -1075,8 +1087,8 @@ body .ag-dnd-ghost * {
 .arda-sort-menu-dropdown {
   position: fixed;
   z-index: 9999;
-  background: #fff;
-  border: 1px solid #e5e5e5;
+  background: var(--base-background);
+  border: 1px solid var(--base-border);
   border-radius: 8px;
   box-shadow:
     0 4px 6px -1px rgb(0 0 0 / 10%),
@@ -1098,12 +1110,12 @@ body .ag-dnd-ghost * {
   cursor: pointer;
   font-size: 14px;
   font-family: var(--ag-font-family, 'Geist', sans-serif);
-  color: #0a0a0a;
+  color: var(--base-foreground);
   text-align: left;
 }
 
 .arda-sort-menu-dropdown button:hover {
-  background-color: #f5f5f5;
+  background-color: var(--secondary);
 }
 
 } /* @layer base */

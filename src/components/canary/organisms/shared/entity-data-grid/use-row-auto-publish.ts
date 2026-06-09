@@ -55,12 +55,23 @@ export interface UseRowAutoPublishOptions<T> {
   /** Optional ref to expose `saveAll`, `discardAll`, `getDirtyRowIds` to a parent. */
   handleRef?: Ref<RowAutoPublishHandle> | undefined;
   /**
-   * Live AG Grid API getter — required for revert-on-failure. The hook captures
-   * `oldValue` per (rowId, field) on the first `cellValueChanged` for each row,
-   * and on a publish failure applies the captured oldValues back through
-   * `api.applyTransaction({ update: [row] })`. Without this, a failed publish
-   * leaves the row dirty in the `'error'` state and the user has to clear it
-   * manually.
+   * Live AG Grid API getter. Used for two things:
+   *
+   * 1. **Row-class redraw.** Calling `setRowState` synchronously updates the
+   *    state map but the `'ag-row-saving'` / `'ag-row-error'` classes only
+   *    become visible after AG Grid re-evaluates `getRowClass` — this getter
+   *    lets the hook call `api.redrawRows({ rowNodes })` for just the row
+   *    whose state flipped.
+   *
+   * 2. **Discard-to-baseline.** On `discardAll()` the hook reads the captured
+   *    `oldValue` per `(rowId, field)` and writes it back via
+   *    `api.applyTransaction({ update: [row] })`. Without `getApi`, discard
+   *    only clears the dirty flag — the bad cell value stays on screen.
+   *
+   * Publish failures themselves do NOT auto-revert (panel-review decision):
+   * the typed value is kept and the row goes to `'error'` state, so the
+   * user sees the failure persistently and can choose to retry or discard.
+   * `ConnectedDataGrid` wires this automatically.
    */
   getApi?: () => import('ag-grid-community').GridApi<T> | null;
 }
@@ -223,20 +234,27 @@ export function useRowAutoPublish<T extends Record<string, any>>({
         snapshotFieldsRef.current.delete(rowId);
         setRowState(rowId, 'idle');
       } catch {
-        // Revert the row's cells to the captured oldValues. After revert there
-        // are no pending changes, no dirty state, and no snapshot — the row is
-        // back to its last-saved baseline. The caller still saw the rejection
-        // and should toast it; we just don't strand the bad value in the grid.
-        revertRowToSnapshot(rowId);
-        delete pendingChangesRef.current[rowId];
-        snapshotFieldsRef.current.delete(rowId);
-        setRowState(rowId, 'idle');
+        // Panel-review decision (write-path semantics, Option 2):
+        // KEEP the user's typed value AND mark the row 'error' so the
+        // failure is persistently visible. We deliberately do NOT revert
+        // the cells: silent revert violates Arda's "never silently change
+        // data" principle and is easy to miss on a busy shop-floor screen.
+        // The caller still sees the rejection on its own promise chain and
+        // should toast — the 'error' row class is the persistent
+        // on-screen signal that complements the toast.
+        //
+        // Pending changes + snapshot are preserved so a retry (e.g., via
+        // saveAll() or future per-row retry affordance) can re-attempt the
+        // same edit, and discardAll() can revert the visible cells to the
+        // captured baseline.
+        dirtyRowIdsRef.current.add(rowId);
+        setRowState(rowId, 'error');
       } finally {
         publishingRef.current.delete(rowId);
         notifyDirty();
       }
     },
-    [setRowState, notifyDirty, revertRowToSnapshot],
+    [setRowState, notifyDirty],
   );
 
   // -------------------------------------------------------------------------
@@ -359,6 +377,14 @@ export function useRowAutoPublish<T extends Record<string, any>>({
           clearTimeout(timer);
         }
         debounceTimersRef.current = {};
+        // Revert each row's visible cells to its last-saved baseline before
+        // clearing pending state. With Option 2 (panel-review), publish
+        // failures keep the user's typed value visible; without this revert,
+        // discardAll would only clear the dirty FLAG, leaving the bad cell
+        // value on screen. No-op when `getApi` isn't wired.
+        for (const rowId of snapshotFieldsRef.current.keys()) {
+          revertRowToSnapshot(rowId);
+        }
         pendingChangesRef.current = {};
         dirtyRowIdsRef.current.clear();
         snapshotFieldsRef.current.clear();
@@ -379,7 +405,7 @@ export function useRowAutoPublish<T extends Record<string, any>>({
       },
       getDirtyRowIds: () => Array.from(dirtyRowIdsRef.current),
     }),
-    [setRowState, notifyDirty],
+    [setRowState, notifyDirty, revertRowToSnapshot],
   );
 
   // -------------------------------------------------------------------------
