@@ -333,27 +333,11 @@ describe('createEntityDataGrid', () => {
     expect(onDirtyChange).not.toHaveBeenCalledWith(true);
   });
 
-  it('row state CSS styles are injected', () => {
-    const { Component } = createEntityDataGrid<TestEntity>({
-      displayName: 'TestEntityDataGrid',
-      persistenceKeyPrefix: 'test-entity-grid',
-      columnDefs: testColumnDefs,
-      defaultColDef: testDefaultColDef,
-      getEntityId: (entity) => entity.id,
-    });
-
-    const { container } = render(
-      <div style={{ height: '600px' }}>
-        <Component data={testEntities.slice(0, 2)} activeTab="test" />
-      </div>,
-    );
-
-    // The <style> tag with row state CSS should be present.
-    const styleTag = container.querySelector('style');
-    expect(styleTag).toBeInTheDocument();
-    expect(styleTag?.textContent).toContain('ag-row-saving');
-    expect(styleTag?.textContent).toContain('ag-row-error');
-  });
+  // Row-state styling (.ag-row-saving, .ag-row-error) is owned by DataGrid.
+  // The container's behavioral contract — that getRowClass returns the right
+  // class for each row state — is covered by use-row-auto-publish.test.ts and
+  // use-commit-pipeline.test.ts. Whether the styles actually paint red is a
+  // VRT concern, not a unit test.
 
   // ============================================================================
   // Actions column (5b)

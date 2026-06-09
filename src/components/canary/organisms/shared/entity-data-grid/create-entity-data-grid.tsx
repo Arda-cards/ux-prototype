@@ -44,16 +44,6 @@ import { useDraftPersistence } from './use-draft-persistence';
 import { cn } from '@/types/canary/utilities/utils';
 
 // ============================================================================
-// CSS — Row visual state styles
-// ============================================================================
-
-/** Injected once inside the grid container; scoped by AG Grid's class hierarchy. */
-const ROW_STATE_STYLES = `
-  .ag-row-saving { background-color: color-mix(in srgb, var(--primary) 6%, var(--background)) !important; }
-  .ag-row-error  { background-color: color-mix(in srgb, var(--destructive) 8%, var(--background)) !important; }
-`;
-
-// ============================================================================
 // Types — Read model: discriminated data source (DQ-002)
 // ============================================================================
 
@@ -383,40 +373,6 @@ export function createConnectedDataGrid<T extends Record<string, any>>(
   config: ConnectedDataGridConfig<T>,
 ) {
   // -------------------------------------------------------------------------
-  // Hoist computed values that don't depend on props
-  // -------------------------------------------------------------------------
-
-  // Actions column — computed once at factory creation (InitConfig).
-  const actionsColDef: ColDef<T> | null = config.actionsColumn
-    ? (() => {
-        const { actionCount, width: actionsWidth, ...rest } = config.actionsColumn;
-        const computedWidth =
-          actionsWidth ?? (actionCount ? actionCount * 28 + (actionCount - 1) * 4 + 16 : 200);
-        return {
-          ...rest,
-          headerName: rest.headerName ?? '',
-          sortable: false,
-          resizable: false,
-          editable: false,
-          pinned: 'right' as const,
-          lockPinned: true,
-          suppressHeaderMenuButton: true,
-          suppressNavigable: true,
-          suppressSizeToFit: true,
-          tooltipValueGetter: () => undefined,
-          width: computedWidth,
-          cellStyle: {
-            borderLeft: '1px solid var(--border)',
-            borderTop: 'none',
-            borderBottom: 'none',
-            borderRight: 'none',
-            padding: '0 4px',
-          },
-        };
-      })()
-    : null;
-
-  // -------------------------------------------------------------------------
   // Component
   // -------------------------------------------------------------------------
 
@@ -735,85 +691,6 @@ export function createConnectedDataGrid<T extends Record<string, any>>(
       }, [clientData, searchQuery]);
 
       // ----------------------------------------------------------------
-      // Drag-to-scroll
-      // ----------------------------------------------------------------
-
-      useEffect(() => {
-        if (!config.enableDragToScroll) return;
-        const el = gridContainerRef.current;
-        if (!el) return;
-
-        let isDown = false;
-        let hasDragged = false;
-        let startX = 0;
-        let scrollLeft = 0;
-        let viewport: HTMLElement | null = null;
-        const dragThreshold = 5;
-
-        const getViewport = () => {
-          if (!viewport) viewport = el.querySelector('.ag-center-cols-viewport');
-          return viewport;
-        };
-
-        const onMouseDown = (e: MouseEvent) => {
-          const vp = getViewport();
-          if (!vp) return;
-          const target = e.target as HTMLElement;
-          if (
-            target.closest('.ag-header') ||
-            target.closest('.ag-popup') ||
-            target.closest('input') ||
-            target.closest('button')
-          )
-            return;
-          isDown = true;
-          hasDragged = false;
-          startX = e.pageX;
-          scrollLeft = vp.scrollLeft;
-        };
-
-        const onMouseMove = (e: MouseEvent) => {
-          if (!isDown) return;
-          const dx = e.pageX - startX;
-          if (!hasDragged && Math.abs(dx) > dragThreshold) {
-            hasDragged = true;
-            el.style.cursor = 'grabbing';
-            (document.activeElement as HTMLElement | null)?.blur?.();
-          }
-          const vp = getViewport();
-          if (!vp || !hasDragged) return;
-          vp.scrollLeft = scrollLeft - dx;
-        };
-
-        const onMouseUp = () => {
-          if (!isDown) return;
-          isDown = false;
-          el.style.cursor = '';
-          if (hasDragged) {
-            const suppressClick = (e: MouseEvent) => {
-              e.stopPropagation();
-              e.preventDefault();
-            };
-            el.addEventListener('click', suppressClick, { capture: true, once: true });
-            setTimeout(
-              () => el.removeEventListener('click', suppressClick, { capture: true }),
-              100,
-            );
-          }
-        };
-
-        el.addEventListener('mousedown', onMouseDown);
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('mouseup', onMouseUp);
-
-        return () => {
-          el.removeEventListener('mousedown', onMouseDown);
-          window.removeEventListener('mousemove', onMouseMove);
-          window.removeEventListener('mouseup', onMouseUp);
-        };
-      }, []);
-
-      // ----------------------------------------------------------------
       // Column Pipeline
       // ----------------------------------------------------------------
 
@@ -869,11 +746,9 @@ export function createConnectedDataGrid<T extends Record<string, any>>(
           defs = defs.map((col) => ({ ...col, filter: true }));
         }
 
-        // Inject actions column last (pinned right).
-        if (actionsColDef) {
-          defs = [...defs, actionsColDef];
-        }
-
+        // Actions column construction lives on the DataGrid molecule and is
+        // applied via the `actionsColumn` prop we forward below — the
+        // container only sources it from config.
         return defs;
       }, [applyColumnVisibility, applyColumnOrder, enableCellEditing, enableFiltering]);
 
@@ -913,8 +788,6 @@ export function createConnectedDataGrid<T extends Record<string, any>>(
 
       return (
         <div className="flex flex-col h-full">
-          <style dangerouslySetInnerHTML={{ __html: ROW_STATE_STYLES }} />
-
           {/* Search bar + toolbar row */}
           {hasSearchOrToolbar && (
             <div
@@ -963,6 +836,8 @@ export function createConnectedDataGrid<T extends Record<string, any>>(
               {...passthrough}
               columnDefs={finalColumnDefs}
               defaultColDef={config.defaultColDef}
+              enableDragToScroll={config.enableDragToScroll ?? true}
+              {...(config.actionsColumn && { actionsColumn: config.actionsColumn })}
               rowData={filteredData}
               loading={loading}
               editable={enableCellEditing}

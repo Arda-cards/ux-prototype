@@ -9,9 +9,16 @@ import { useEffect, type RefObject } from 'react';
  * after a drag so row-click handlers don't fire accidentally.
  *
  * Ignores drags that start on headers, popups, inputs, or buttons.
+ *
+ * Pass `enabled: false` to opt out (e.g., for touch-only surfaces where
+ * AG Grid's native touch scrolling is preferable). Defaults to enabled.
  */
-export function useDragToScroll(containerRef: RefObject<HTMLDivElement | null>) {
+export function useDragToScroll(
+  containerRef: RefObject<HTMLDivElement | null>,
+  enabled: boolean = true,
+) {
   useEffect(() => {
+    if (!enabled) return;
     const el = containerRef.current;
     if (!el) return;
 
@@ -85,5 +92,5 @@ export function useDragToScroll(containerRef: RefObject<HTMLDivElement | null>) 
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
     };
-  }, [containerRef]);
+  }, [containerRef, enabled]);
 }

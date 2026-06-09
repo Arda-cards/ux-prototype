@@ -217,6 +217,12 @@ export interface DataGridStaticConfig<T = Record<string, unknown>> {
   emptyContent?: ReactNode;
   /** Pinned right-side actions column. Pass `actionCount` to auto-calculate width. */
   actionsColumn?: ColDef<T> & { actionCount?: number };
+  /**
+   * Enable horizontal drag-to-scroll on the grid body via `useDragToScroll`.
+   * Defaults to `true`. Pass `false` to opt out (e.g., for touch-only
+   * surfaces where AG Grid's native touch scrolling is preferable).
+   */
+  enableDragToScroll?: boolean;
   /** Toolbar actions rendered to the right of the search bar. */
   toolbar?: ReactNode;
   /**
@@ -299,6 +305,7 @@ export const DataGrid = forwardRef(
       emptyMessage,
       emptyContent,
       actionsColumn,
+      enableDragToScroll = true,
       toolbar,
       toolbarClassName,
       searchConfig,
@@ -327,8 +334,8 @@ export const DataGrid = forwardRef(
     const gridContainerRef = useRef<HTMLDivElement>(null);
     const [gridApi, setGridApi] = useState<GridApi<T> | null>(null);
 
-    // Drag-to-scroll
-    useDragToScroll(gridContainerRef);
+    // Drag-to-scroll (defaults on; consumers can opt out via prop)
+    useDragToScroll(gridContainerRef, enableDragToScroll);
 
     // Add-row mechanics (in-memory insert/remove + events)
     const { addRow, removeRows } = useRowEditing<T>({
