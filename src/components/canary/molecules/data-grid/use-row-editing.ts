@@ -58,7 +58,7 @@ export interface UseRowEditingOptions<T> {
  * Structural undo/redo (the unified command stack) is intentionally **not** in
  * this slice; AG Grid's native cell undo is unaffected.
  */
-export function useRowEditing<T extends Record<string, any>>({
+export function useRowEditing<T extends Record<string, unknown>>({
   getApi,
   getNewRowId,
   onRowsAdded,

@@ -27,10 +27,24 @@ export function useDragToScroll(
     let startX = 0;
     let scrollLeft = 0;
     let viewport: HTMLElement | null = null;
+    let didWarnMissingViewport = false;
     const dragThreshold = 5;
 
     const getViewport = () => {
-      if (!viewport) viewport = el.querySelector('.ag-center-cols-viewport');
+      if (!viewport) {
+        viewport = el.querySelector('.ag-center-cols-viewport');
+        if (!viewport && !didWarnMissingViewport) {
+          didWarnMissingViewport = true;
+          // The selector is an AG Grid internal class. If AG Grid changes it
+          // (across major versions) or the grid hasn't mounted yet, every
+          // subsequent drag would be a silent no-op without this warning.
+          console.warn(
+            '[DataGrid] Drag-to-scroll: AG Grid viewport element ' +
+              '(.ag-center-cols-viewport) not found. Drag-to-scroll will be ' +
+              'inactive until the grid mounts or the selector is updated.',
+          );
+        }
+      }
       return viewport;
     };
 

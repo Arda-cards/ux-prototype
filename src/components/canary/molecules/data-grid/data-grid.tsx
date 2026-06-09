@@ -44,13 +44,25 @@ import { useRowEditing, type AddRowOptions, type RowEditPayload } from './use-ro
 // ClipboardModule: copy / cut / paste (incl. bulk paste across a range).
 // CellSelectionModule: range selection + fill handle (spreadsheet-style fill-down).
 // Both are Enterprise; features watermark in Storybook (no license) and run
-// clean in arda-frontend-app, which sets the license globally.
-ModuleRegistry.registerModules([
-  AllCommunityModule,
-  RichSelectModule,
-  ClipboardModule,
-  CellSelectionModule,
-]);
+// clean in arda-frontend-app, which sets the license globally. The try/catch
+// guards against AG Grid throwing on an unrelated registration error — without
+// it, a consumer without a license would silently lose clipboard and
+// cell-selection features and have no log to trace it to.
+try {
+  ModuleRegistry.registerModules([
+    AllCommunityModule,
+    RichSelectModule,
+    ClipboardModule,
+    CellSelectionModule,
+  ]);
+} catch (error) {
+  console.warn(
+    '[DataGrid] AG Grid Enterprise modules (Clipboard, CellSelection) failed ' +
+      'to register. Clipboard / range-selection / fill-handle features will be ' +
+      'unavailable.',
+    error,
+  );
+}
 
 // --- Theme ---
 
