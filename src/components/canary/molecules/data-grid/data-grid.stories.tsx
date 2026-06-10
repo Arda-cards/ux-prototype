@@ -560,8 +560,11 @@ export const TokenMultiSelectEditing: StoryObj = {
 
     await userEvent.dblClick(await roleCell());
 
-    // The dropdown is portaled to <body>; "Operator" appears only there.
-    const operator = await screen.findByText('Operator', {}, { timeout: 5000 });
+    // The dropdown is portaled to <body>. Query by `role="option"` (not by
+    // text) so we don't match `Operator` Badge tokens that other supplier
+    // rows render in their own cells — only the dropdown option carries
+    // the option role.
+    const operator = await screen.findByRole('option', { name: /^Operator$/ }, { timeout: 5000 });
     await userEvent.click(operator);
 
     // defaultOne commits + closes on pick — the cell should now include Operator.
