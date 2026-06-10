@@ -36,30 +36,24 @@ import {
   type FillEndEvent,
   type CutEndEvent,
 } from 'ag-grid-community';
-import { RichSelectModule, ClipboardModule, CellSelectionModule } from 'ag-grid-enterprise';
+import { AllEnterpriseModule } from 'ag-grid-enterprise';
 import '@/styles/canary/ag-theme-arda.css';
 import { useDragToScroll } from './use-drag-to-scroll';
 import { useRowEditing, type AddRowOptions, type RowEditPayload } from './use-row-editing';
 
-// ClipboardModule: copy / cut / paste (incl. bulk paste across a range).
-// CellSelectionModule: range selection + fill handle (spreadsheet-style fill-down).
-// Both are Enterprise; features watermark in Storybook (no license) and run
-// clean in arda-frontend-app, which sets the license globally. The try/catch
-// guards against AG Grid throwing on an unrelated registration error — without
-// it, a consumer without a license would silently lose clipboard and
-// cell-selection features and have no log to trace it to.
+// Match arda-frontend-app's pattern (ArdaGrid.tsx): register all Community +
+// all Enterprise modules. That covers clipboard, cell-selection (range +
+// fill handle), rich select, header column menu, right-click context menu,
+// columns/filters tool panels — everything we use across grids. Enterprise
+// features watermark in Storybook (no license set) and run clean in
+// arda-frontend-app, which sets the license globally. The try/catch guards
+// against AG Grid throwing on an unrelated registration error.
 try {
-  ModuleRegistry.registerModules([
-    AllCommunityModule,
-    RichSelectModule,
-    ClipboardModule,
-    CellSelectionModule,
-  ]);
+  ModuleRegistry.registerModules([AllCommunityModule, AllEnterpriseModule]);
 } catch (error) {
   console.warn(
-    '[DataGrid] AG Grid Enterprise modules (Clipboard, CellSelection) failed ' +
-      'to register. Clipboard / range-selection / fill-handle features will be ' +
-      'unavailable.',
+    '[DataGrid] AG Grid Enterprise modules failed to register. Clipboard / ' +
+      'cell-selection / context menu / column menu features will be unavailable.',
     error,
   );
 }
