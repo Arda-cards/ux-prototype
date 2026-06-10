@@ -538,21 +538,36 @@ export const TokenMultiSelectEditing: StoryObj = {
   render: () => <TokenGridDemo />,
   play: async ({ canvasElement }) => {
     // Supplier 4's Role cell starts as ["Vendor"]; "Operator" is never pre-selected.
-    const roleCell = (): HTMLElement => {
-      const el = canvasElement.querySelector('[row-id="sup-4"] [col-id="roles"]');
-      if (!el) throw new Error('Role cell for sup-4 not found');
-      return el as HTMLElement;
+    //
+    // The cell is re-queried on every call: AG Grid replaces the cell DOM
+    // node on commit, so a cached reference would go stale after the option
+    // pick. The waitFor wrap also covers the initial render: AG Grid renders
+    // rows asynchronously (and the exact frame depends on which Enterprise
+    // modules are registered — some add row wrappers and shift the resolution
+    // path). Without it, a query that races ahead of the first render
+    // returns null and the test fails for reasons unrelated to the editor
+    // behavior we're asserting.
+    const roleCell = async (): Promise<HTMLElement> => {
+      return await waitFor(
+        () => {
+          const el = canvasElement.querySelector('[row-id="sup-4"] [col-id="roles"]');
+          if (!el) throw new Error('Role cell for sup-4 not found');
+          return el as HTMLElement;
+        },
+        { timeout: 5000 },
+      );
     };
 
-    await userEvent.dblClick(roleCell());
+    await userEvent.dblClick(await roleCell());
 
     // The dropdown is portaled to <body>; "Operator" appears only there.
     const operator = await screen.findByText('Operator', {}, { timeout: 5000 });
     await userEvent.click(operator);
 
     // defaultOne commits + closes on pick — the cell should now include Operator.
-    await waitFor(() => expect(within(roleCell()).getByText('Operator')).toBeInTheDocument(), {
-      timeout: 5000,
-    });
+    await waitFor(
+      async () => expect(within(await roleCell()).getByText('Operator')).toBeInTheDocument(),
+      { timeout: 5000 },
+    );
   },
 };
