@@ -200,16 +200,31 @@ export function TypeaheadInput({
     [doSearch],
   );
 
-  // Cleanup on unmount. Note: we intentionally do NOT abort the in-flight
-  // lookup here. Under React StrictMode the mount effect is double-invoked
-  // (mount → cleanup → mount) on the same DOM; aborting would cancel the
-  // dropdown's initial search while the re-run focus() is a no-op (the input
-  // is already focused), leaving `loading` stuck. Search-racing is already
-  // handled by the abort inside doSearch; stale setState after a real unmount
-  // is a safe no-op in React 18+.
+  // Cleanup on unmount: abort any in-flight lookup so we don't waste server
+  // work or land stale responses on a remount of a similar component.
+  //
+  // React StrictMode complicates this: in dev the mount effect is double-
+  // invoked (mount → cleanup → mount) synchronously on the same DOM. Aborting
+  // in that synthetic cleanup would cancel the dropdown's initial search and
+  // leave `loading` stuck (the remount's focus() is a no-op since the input
+  // is already focused).
+  //
+  // The fix defers the abort one event-loop tick. StrictMode's remount runs
+  // synchronously, so the next effect call cancels the queued abort before it
+  // fires. A real unmount has no follow-up effect, so the abort proceeds.
+  const pendingAbortRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   React.useEffect(() => {
+    // Remount: cancel any abort queued by a previous synthetic cleanup.
+    if (pendingAbortRef.current) {
+      clearTimeout(pendingAbortRef.current);
+      pendingAbortRef.current = null;
+    }
     return () => {
       clearTimeout(debounceRef.current);
+      pendingAbortRef.current = setTimeout(() => {
+        abortRef.current?.abort();
+        pendingAbortRef.current = null;
+      }, 0);
     };
   }, []);
 

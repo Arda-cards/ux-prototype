@@ -272,10 +272,16 @@ export function MultiSelectTypeaheadInput({
     }
   }, [open, doSearch]);
 
-  // Close on outside click
+  // Close on outside click. Attach the listener once on mount and read `open`
+  // via a ref so the listener isn't torn down + re-added on every open/close
+  // cycle — the previous `[open]` dep created a one-frame window during the
+  // transition where no listener was active, and a fast click in that window
+  // would slip through and leave the dropdown open.
+  const openRef = React.useRef(open);
+  openRef.current = open;
   React.useEffect(() => {
-    if (!open) return;
     const handleClickOutside = (e: MouseEvent) => {
+      if (!openRef.current) return;
       const target = e.target as Node;
       if (
         wrapperRef.current &&
@@ -288,7 +294,7 @@ export function MultiSelectTypeaheadInput({
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [open]);
+  }, []);
 
   // --- Focus helpers ---
   const focusToken = React.useCallback((index: number) => {
