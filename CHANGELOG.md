@@ -18,6 +18,22 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [5.4.0] - 2026-06-08
+
+### Added
+- **`Checkbox` canary atom** — Arda-styled wrapper around the canary primitive (Figma node `46:112`) with `shadow-sm`, optional `label` + `description` + `required` layout, and `[&_svg]:size-4` so the Lucide checkmark fills the 16px box. Exported from `canary.ts` as `Checkbox` / `CheckboxProps`.
+- **`TypeaheadInput` and `MultiSelectTypeaheadInput` molecules** — debounced async lookup, allowCreate, keyboard navigation (arrow keys, Enter, Escape, Home/End, Tab), `defaultOne`, expand-on-edit, `maxResults`, `clearOnFocus`, array lookup, click-to-open.
+- **Typeahead cell-editor factories** — `createTypeaheadCellEditor` and `createMultiSelectCellEditor` adapt the inputs as AG Grid popup editors via a shared `useCellEditorGeometry` hook.
+- **`TokenList` molecule** — pill renderer for tagged values.
+- **Mobile keyboard on cell-editor open** — `TypeaheadInput` sets `autoFocus` while in `cellEditorMode` so iOS Safari reliably brings up the keyboard (the existing `useEffect`-on-mount `focus()` fell outside the user-gesture window).
+- **Mobile typeahead option select** — typeahead options now select on `onPointerDown` instead of `onMouseDown`. On iOS the synthesized mousedown could fire on the document before reaching the option, letting the outside-click handler close the dropdown without selecting. PointerEvents normalize mouse + touch and fire before that race. Applied to both `TypeaheadInput` and `MultiSelectTypeaheadInput` (the latter also to the token-click handler).
+- **`Badge.onDismiss`** — accessible close affordance for dismissible badges.
+- `./css` package export for the `design-system.css` bundle.
+
+### Fixed
+- Cell-editor search no longer stalls under React StrictMode.
+- Multiselect collapses to a single line; `defaultOne` click closes the dropdown; the typeahead cell editor fills the cell cleanly.
+
 ## [5.3.0] - 2026-05-16
 
 ### Added

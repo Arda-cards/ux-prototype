@@ -1,0 +1,219 @@
+{/* typeahead-input.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as TypeaheadStories from './typeahead-input.stories';
+
+<Meta of={TypeaheadStories} />
+
+# TypeaheadInput
+
+Async search input with a filtered dropdown. Debounces lookups, auto-highlights
+the first result, supports keyboard navigation, and optionally lets users create
+values not in the list. Works as a standalone form input and as an AG Grid cell
+editor.
+
+**Molecule** &#8212; Canary | Import: `import { TypeaheadInput } from '@arda-cards/design-system/canary'`
+
+---
+
+## Playground
+
+Use the controls panel to explore every prop: `allowCreate`, `disabled`,
+`cellEditorMode`, `clearOnFocus`, and `maxResults`.
+
+<Canvas of={TypeaheadStories.Playground} />
+
+---
+
+## Behaviors
+
+- **Focus shows results** &#8212; focusing the input runs the lookup with the
+  current text (empty by default), so the user sees results immediately.
+- **First result highlighted** &#8212; the top result is auto-highlighted so
+  pressing Enter commits it without arrow-keying.
+- **Debounced search** &#8212; typing debounces the lookup (250ms) and aborts
+  in-flight requests.
+- **Create-on-the-fly** &#8212; with `allowCreate`, a "create" row appears for
+  text that doesn't match an existing option.
+
+---
+
+## Static list
+
+`lookup` accepts a static array instead of a function — pass a `string[]` or
+`TypeaheadOption[]` and the component filters it client-side by label. Useful
+for small fixed enums (e.g. order methods, units).
+
+```tsx
+<TypeaheadInput value={value} onValueChange={setValue} lookup={['each', 'case', 'box']} />
+```
+
+<Canvas of={TypeaheadStories.StaticList} />
+
+---
+
+## clearOnFocus
+
+When `clearOnFocus` is enabled, the input behaves like a re-pick selector:
+
+- **On focus** &#8212; the input clears so the user sees an unfiltered list.
+- **Escape / blur without picking** &#8212; the original value is restored.
+- **Delete / Backspace with empty input** &#8212; clears the value
+  (`onValueChange('')`) and blurs.
+
+Use this for cells/fields where the common action is replacing the existing
+selection rather than editing its text.
+
+---
+
+## Cell editor mode
+
+`cellEditorMode` adapts the input for AG Grid (or any overflow-clipped
+container):
+
+- Blur **accepts** the typed value instead of reverting (unless `clearOnFocus`
+  is set, which restores).
+- The dropdown is portaled via Radix Popover to escape `overflow: hidden`.
+- Input keeps its normal chrome (opaque background, focus ring, minimum
+  width) — sized to the grid cell via `cellWidth` / `cellMinHeight` so it
+  doesn't shrink below the column.
+
+Wrap it with `createTypeaheadCellEditor({ lookup, allowCreate, placeholder })`
+to use as a `cellEditor` in a column definition. A live in-grid demo ships
+with the DataGrid molecule.
+
+---
+
+## Keyboard
+
+<table>
+  <thead>
+    <tr>
+      <th>Key</th>
+      <th>Behavior</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>ArrowDown</code> / <code>ArrowUp</code></td>
+      <td>Move the highlight through results (opens the dropdown if closed).</td>
+    </tr>
+    <tr>
+      <td><code>Enter</code></td>
+      <td>Select the highlighted result, or create the typed value when <code>allowCreate</code>.</td>
+    </tr>
+    <tr>
+      <td><code>Escape</code></td>
+      <td>Close the dropdown and revert to the confirmed value.</td>
+    </tr>
+    <tr>
+      <td><code>Tab</code></td>
+      <td>Commit the highlighted result (or typed value) and move focus on.</td>
+    </tr>
+    <tr>
+      <td><code>Delete</code> / <code>Backspace</code></td>
+      <td>With <code>clearOnFocus</code> and an empty input, clears the value and blurs.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>value</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Current value (controlled).</td>
+    </tr>
+    <tr>
+      <td><code>onValueChange</code></td>
+      <td><code>(value: string) =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Called when the user selects or creates a value.</td>
+    </tr>
+    <tr>
+      <td><code>lookup</code></td>
+      <td><code>((search: string) =&gt; Promise&lt;TypeaheadOption[]&gt;) | TypeaheadOption[] | string[]</code></td>
+      <td>&#8212;</td>
+      <td>Options source. Pass an async function (receives search text, returns matches), or a static list of <code>TypeaheadOption</code>s or plain strings that is filtered client-side by label.</td>
+    </tr>
+    <tr>
+      <td><code>allowCreate</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Show a "create" row for text that doesn't match an existing option.</td>
+    </tr>
+    <tr>
+      <td><code>placeholder</code></td>
+      <td><code>string</code></td>
+      <td><code>'Search…'</code></td>
+      <td>Input placeholder text.</td>
+    </tr>
+    <tr>
+      <td><code>aria-label</code></td>
+      <td><code>string</code></td>
+      <td><code>placeholder</code></td>
+      <td>Accessible label for the input.</td>
+    </tr>
+    <tr>
+      <td><code>disabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Disable the input.</td>
+    </tr>
+    <tr>
+      <td><code>cellEditorMode</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Adapt for AG Grid: blur accepts the typed value and the dropdown is portaled.</td>
+    </tr>
+    <tr>
+      <td><code>maxResults</code></td>
+      <td><code>number</code></td>
+      <td><code>8</code></td>
+      <td>Maximum number of dropdown results to show.</td>
+    </tr>
+    <tr>
+      <td><code>clearOnFocus</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Clear the input on focus to show an unfiltered list. Restores the original value on Escape/blur; Delete/Backspace on an empty input clears the value and blurs.</td>
+    </tr>
+    <tr>
+      <td><code>className</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Additional CSS classes on the wrapper.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Accessibility
+
+- The input is a `role="combobox"` with `aria-expanded`, `aria-controls`, and
+  `aria-activedescendant` wired to the listbox and highlighted option.
+- A visually hidden live region announces result counts and loading/error
+  states.
+- Dropdown options use `role="option"` with `aria-selected` on the highlight.
+
+---
+
+## Import
+
+```tsx
+import { TypeaheadInput } from '@arda-cards/design-system/canary';
+import { createTypeaheadCellEditor } from '@arda-cards/design-system/canary';
+```

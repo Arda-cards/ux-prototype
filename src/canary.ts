@@ -108,6 +108,10 @@ export type {
   ArdaButtonGroupStaticConfig,
 } from './components/canary/atoms/button-group/button-group';
 
+// Atoms: Checkbox (Arda-styled wrapper around the canary primitive)
+export { Checkbox } from './components/canary/atoms/checkbox/checkbox';
+export type { CheckboxProps } from './components/canary/atoms/checkbox/checkbox';
+
 // Atoms: SplitButton
 export { SplitButton } from './components/canary/atoms/split-button/split-button';
 export type {
@@ -366,6 +370,10 @@ export type { ImageComparisonLayoutProps } from './components/canary/molecules/i
 export { ImageFormField } from './components/canary/molecules/form/image';
 export type { ImageFormFieldProps } from './components/canary/molecules/form/image';
 
+// Molecules: TokenList
+export { TokenList } from './components/canary/molecules/token-list';
+export type { TokenListProps } from './components/canary/molecules/token-list';
+
 export { DataGrid, GridImage, useColumnPersistence } from './components/canary/molecules/data-grid';
 export type {
   DataGridRef,
@@ -507,11 +515,22 @@ export type {
 export { TypeaheadInput } from './components/canary/molecules/typeahead-input/typeahead-input';
 export type {
   TypeaheadOption,
+  TypeaheadSource,
   TypeaheadInputProps,
 } from './components/canary/molecules/typeahead-input/typeahead-input';
 
 export { createTypeaheadCellEditor } from './components/canary/molecules/typeahead-input/typeahead-cell-editor';
 export type { TypeaheadCellEditorConfig } from './components/canary/molecules/typeahead-input/typeahead-cell-editor';
+
+export { MultiSelectTypeaheadInput } from './components/canary/molecules/typeahead-input/multiselect-typeahead-input';
+export type {
+  MultiSelectOption,
+  MultiSelectSource,
+  MultiSelectTypeaheadInputProps,
+} from './components/canary/molecules/typeahead-input/multiselect-typeahead-input';
+
+export { createMultiSelectCellEditor } from './components/canary/molecules/typeahead-input/multiselect-cell-editor';
+export type { MultiSelectCellEditorConfig } from './components/canary/molecules/typeahead-input/multiselect-cell-editor';
 
 // --- Organisms — ItemCardEditor ---
 

@@ -12,13 +12,39 @@ export interface TypeaheadOption {
   value: string;
 }
 
+/**
+ * Source of typeahead options. Either:
+ * - an async function that receives the search text and returns matches, or
+ * - a static list (of `TypeaheadOption`s or plain strings) that is filtered
+ *   client-side by label.
+ */
+export type TypeaheadSource =
+  | ((search: string) => Promise<TypeaheadOption[]>)
+  | TypeaheadOption[]
+  | string[];
+
+/** Normalize a TypeaheadSource into an async lookup function. */
+function normalizeLookup(source: TypeaheadSource): (search: string) => Promise<TypeaheadOption[]> {
+  if (typeof source === 'function') return source;
+  const options: TypeaheadOption[] = source.map((o) =>
+    typeof o === 'string' ? { label: o, value: o } : o,
+  );
+  return async (search: string) => {
+    const q = search.trim().toLowerCase();
+    return q ? options.filter((o) => o.label.toLowerCase().includes(q)) : options;
+  };
+}
+
 export interface TypeaheadInputProps extends Omit<React.ComponentProps<'div'>, 'onChange'> {
   /** Current value. */
   value: string;
   /** Called when the user selects or creates a value. */
   onValueChange: (value: string) => void;
-  /** Async lookup function — receives search text, returns matching options. */
-  lookup: (search: string) => Promise<TypeaheadOption[]>;
+  /**
+   * Options source — an async lookup function, or a static list of options
+   * (`TypeaheadOption[]` or `string[]`) filtered client-side by label.
+   */
+  lookup: TypeaheadSource;
   /** Allow creating new values not in the lookup results. */
   allowCreate?: boolean;
   /** Input placeholder text. */
@@ -33,9 +59,30 @@ export interface TypeaheadInputProps extends Omit<React.ComponentProps<'div'>, '
    * is portaled via Radix Popover to escape overflow clipping.
    */
   cellEditorMode?: boolean;
+  /** Maximum number of dropdown results to show. Defaults to 8. */
+  maxResults?: number;
+  /**
+   * When true, clears the input on focus to show an unfiltered list of results.
+   * The original value is restored if the user exits without picking (Escape or
+   * blur). Pressing Delete/Backspace while the input is empty clears the value
+   * (calls `onValueChange('')`) and blurs.
+   */
+  clearOnFocus?: boolean;
+  /**
+   * Called when the user commits a value (selecting an option, creating one, or
+   * Tab). In a cell editor this signals "stop editing".
+   */
+  onCommit?: () => void;
+  /**
+   * Cell geometry for `cellEditorMode` (popup). The editor matches the cell's
+   * pixel width and uses the row height as its minimum, so the popup aligns with
+   * the cell. See `useCellEditorGeometry`.
+   */
+  cellWidth?: number;
+  cellMinHeight?: number;
 }
 
-const MAX_RESULTS = 8;
+const DEFAULT_MAX_RESULTS = 8;
 const DEBOUNCE_MS = 250;
 // LISTBOX_ID generated per instance via useId() — see component body
 
@@ -66,9 +113,18 @@ export function TypeaheadInput({
   'aria-label': ariaLabel,
   disabled = false,
   cellEditorMode = false,
+  maxResults = DEFAULT_MAX_RESULTS,
+  clearOnFocus = false,
+  onCommit,
+  cellWidth,
+  cellMinHeight,
   className,
   ...rest
 }: TypeaheadInputProps) {
+  // Normalize the lookup source (function | options[] | string[]) into a
+  // single async lookup function.
+  const lookupFn = React.useMemo(() => normalizeLookup(lookup), [lookup]);
+
   const [inputValue, setInputValue] = React.useState(value);
   const [options, setOptions] = React.useState<TypeaheadOption[]>([]);
   const [highlightedIndex, setHighlightedIndex] = React.useState(-1);
@@ -101,6 +157,14 @@ export function TypeaheadInput({
     setInputValue(value);
   }, [value]);
 
+  // Auto-focus on mount in cell editor mode so the editor is ready immediately
+  // (opens the dropdown; with clearOnFocus, clears to show the full list).
+  React.useEffect(() => {
+    if (cellEditorMode) {
+      inputRef.current?.focus();
+    }
+  }, [cellEditorMode]);
+
   // --- Search ---
   const doSearch = React.useCallback(
     async (search: string) => {
@@ -112,10 +176,11 @@ export function TypeaheadInput({
       setError(false);
 
       try {
-        const results = await lookup(search);
+        const results = await lookupFn(search);
         if (controller.signal.aborted) return;
-        setOptions(results.slice(0, MAX_RESULTS));
-        setHighlightedIndex(-1);
+        const sliced = results.slice(0, maxResults);
+        setOptions(sliced);
+        setHighlightedIndex(sliced.length > 0 ? 0 : -1);
         setLoading(false);
       } catch {
         if (controller.signal.aborted) return;
@@ -124,7 +189,7 @@ export function TypeaheadInput({
         setOptions([]);
       }
     },
-    [lookup],
+    [lookupFn, maxResults],
   );
 
   const debouncedSearch = React.useCallback(
@@ -135,11 +200,31 @@ export function TypeaheadInput({
     [doSearch],
   );
 
-  // Cleanup on unmount
+  // Cleanup on unmount: abort any in-flight lookup so we don't waste server
+  // work or land stale responses on a remount of a similar component.
+  //
+  // React StrictMode complicates this: in dev the mount effect is double-
+  // invoked (mount → cleanup → mount) synchronously on the same DOM. Aborting
+  // in that synthetic cleanup would cancel the dropdown's initial search and
+  // leave `loading` stuck (the remount's focus() is a no-op since the input
+  // is already focused).
+  //
+  // The fix defers the abort one event-loop tick. StrictMode's remount runs
+  // synchronously, so the next effect call cancels the queued abort before it
+  // fires. A real unmount has no follow-up effect, so the abort proceeds.
+  const pendingAbortRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   React.useEffect(() => {
+    // Remount: cancel any abort queued by a previous synthetic cleanup.
+    if (pendingAbortRef.current) {
+      clearTimeout(pendingAbortRef.current);
+      pendingAbortRef.current = null;
+    }
     return () => {
       clearTimeout(debounceRef.current);
-      abortRef.current?.abort();
+      pendingAbortRef.current = setTimeout(() => {
+        abortRef.current?.abort();
+        pendingAbortRef.current = null;
+      }, 0);
     };
   }, []);
 
@@ -150,8 +235,9 @@ export function TypeaheadInput({
       onValueChange(opt.value);
       setOpen(false);
       setOptions([]);
+      onCommit?.();
     },
-    [onValueChange],
+    [onValueChange, onCommit],
   );
 
   const createValue = React.useCallback(
@@ -162,8 +248,9 @@ export function TypeaheadInput({
       onValueChange(trimmed);
       setOpen(false);
       setOptions([]);
+      onCommit?.();
     },
-    [onValueChange],
+    [onValueChange, onCommit],
   );
 
   // --- Derived state ---
@@ -184,8 +271,23 @@ export function TypeaheadInput({
 
   const handleFocus = React.useCallback(() => {
     setOpen(true);
-    doSearch(inputValueRef.current);
-  }, [doSearch]);
+    if (clearOnFocus) {
+      setInputValue('');
+      doSearch('');
+    } else {
+      doSearch(inputValueRef.current);
+    }
+  }, [doSearch, clearOnFocus]);
+
+  // Clicking the input reopens the dropdown when it's already focused (focus
+  // alone won't re-fire, e.g. after selecting an option closed it).
+  const handleInputClick = React.useCallback(() => {
+    if (!open) {
+      setOpen(true);
+      doSearch(clearOnFocus ? '' : inputValueRef.current);
+      if (clearOnFocus) setInputValue('');
+    }
+  }, [open, doSearch, clearOnFocus]);
 
   // Close on outside click — deps narrowed to [open, cellEditorMode] via refs
   React.useEffect(() => {
@@ -199,7 +301,10 @@ export function TypeaheadInput({
         !popoverRef.current?.contains(target)
       ) {
         setOpen(false);
-        if (cellEditorMode) {
+        if (clearOnFocus) {
+          // clearOnFocus: blur without selecting → restore the original value
+          setInputValue(valueRef.current);
+        } else if (cellEditorMode) {
           // Cell editor: accept typed value on blur
           const trimmed = inputValueRef.current.trim();
           if (trimmed && trimmed !== valueRef.current) {
@@ -215,11 +320,26 @@ export function TypeaheadInput({
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [open, cellEditorMode, onValueChange]);
+  }, [open, cellEditorMode, clearOnFocus, onValueChange]);
 
   // --- Keyboard — uses refs for stable callback ---
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent) => {
+      // clearOnFocus: Delete/Backspace with empty input clears the value and blurs
+      if (
+        clearOnFocus &&
+        (e.key === 'Delete' || e.key === 'Backspace') &&
+        inputValueRef.current === ''
+      ) {
+        e.preventDefault();
+        if (valueRef.current !== '') {
+          onValueChange('');
+        }
+        setOpen(false);
+        inputRef.current?.blur();
+        return;
+      }
+
       if (!open) {
         if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
           e.preventDefault();
@@ -264,18 +384,50 @@ export function TypeaheadInput({
           setInputValue(valueRef.current);
           break;
         case 'Tab':
+          // In a grid, let AG Grid handle Tab (commit + move to the next
+          // editable cell). Just close the dropdown; do NOT preventDefault or
+          // stopEditing ourselves, or focus escapes to the next row.
+          if (cellEditorMode) {
+            // Push current intent (selection or typed value) BEFORE AG Grid
+            // reads getValue() — without this AG Grid commits the prior value
+            // because onValueChange only fires on select/create/blur, and the
+            // input box's typing-state never reaches the cell. Do NOT call
+            // onCommit/stopEditing here; AG Grid drives the focus move.
+            let nextValue: string | null = null;
+            if (hi >= 0 && hi < opts.length) {
+              nextValue = (opts[hi] as TypeaheadOption).value;
+            } else {
+              const trimmed = inputValueRef.current.trim();
+              if (trimmed) nextValue = trimmed;
+            }
+            if (nextValue !== null && nextValue !== valueRef.current) {
+              setInputValue(nextValue);
+              onValueChange(nextValue);
+            }
+            setOpen(false);
+            setOptions([]);
+            break;
+          }
           if (hi >= 0 && hi < opts.length) {
             selectOption(opts[hi] as TypeaheadOption);
           } else if (inputValueRef.current.trim() && allowCreate) {
             createValue(inputValueRef.current.trim());
-          } else if (cellEditorMode && inputValueRef.current.trim()) {
-            onValueChange(inputValueRef.current.trim());
           }
           setOpen(false);
           break;
       }
     },
-    [open, allowCreate, cellEditorMode, doSearch, selectOption, createValue, onValueChange],
+    [
+      open,
+      allowCreate,
+      cellEditorMode,
+      clearOnFocus,
+      doSearch,
+      selectOption,
+      createValue,
+      onValueChange,
+      onCommit,
+    ],
   );
 
   // Scroll highlighted item into view
@@ -323,10 +475,13 @@ export function TypeaheadInput({
             role="option"
             aria-selected={i === highlightedIndex}
             className={cn(
-              'px-3 py-2 text-sm cursor-pointer',
-              i === highlightedIndex ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50',
+              'cursor-pointer rounded-sm px-2 py-1.5 text-sm',
+              i === highlightedIndex && 'bg-accent text-accent-foreground',
             )}
-            onMouseDown={(e) => {
+            // Use pointerdown so the option-select fires consistently on touch
+            // (mouse-down events are sometimes swallowed on iOS, letting the
+            // document-level outside-click handler close the dropdown first).
+            onPointerDown={(e) => {
               e.preventDefault();
               selectOption(opt);
             }}
@@ -342,10 +497,10 @@ export function TypeaheadInput({
           role="option"
           aria-selected={highlightedIndex === options.length}
           className={cn(
-            'flex items-center gap-2 px-3 py-2 text-sm cursor-pointer text-primary',
-            highlightedIndex === options.length ? 'bg-accent text-primary' : 'hover:bg-accent/50',
+            'flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-primary',
+            highlightedIndex === options.length && 'bg-accent text-primary',
           )}
-          onMouseDown={(e) => {
+          onPointerDown={(e) => {
             e.preventDefault();
             createValue(trimmedInput);
           }}
@@ -367,9 +522,15 @@ export function TypeaheadInput({
       value={inputValue}
       onChange={handleInputChange}
       onFocus={handleFocus}
+      onClick={handleInputClick}
       onKeyDownCapture={handleKeyDown}
       placeholder={placeholder}
       disabled={disabled}
+      // iOS Safari blocks programmatic focus() outside a fresh user-gesture
+      // frame, which the useEffect-on-mount focus call usually misses. The
+      // autoFocus attribute is applied during the first render and is honored
+      // as user-driven, so the keyboard reliably comes up.
+      autoFocus={cellEditorMode}
       role="combobox"
       aria-expanded={showDropdown}
       aria-haspopup="listbox"
@@ -378,17 +539,23 @@ export function TypeaheadInput({
       aria-label={ariaLabel ?? placeholder}
       autoComplete="off"
       className={
+        // Popup editor (floats over the cell): keep the normal input chrome —
+        // rounded border + focus ring — since AG Grid does not draw a cell edit
+        // border around a popup. Make the background opaque, drop the input's own
+        // shadow (the popup provides one), apply the min-width, and use a thin
+        // (1px) full-opacity accent ring (`ring-1 ring-ring`) — 3px reads too bold.
         cellEditorMode
-          ? 'border-0 shadow-none bg-transparent focus-visible:ring-0 focus-visible:border-transparent h-full'
+          ? 'min-w-60 bg-background shadow-none focus-visible:ring-2 focus-visible:ring-ring'
           : undefined
       }
+      style={cellEditorMode ? { width: cellWidth, minHeight: cellMinHeight } : undefined}
     />
   );
 
   return (
     <div
       ref={wrapperRef}
-      className={cn('relative', className)}
+      className={cn('relative', cellEditorMode && 'w-fit', className)}
       data-slot="typeahead-input"
       data-state={open ? 'open' : 'closed'}
       data-loading={loading || undefined}
@@ -407,7 +574,7 @@ export function TypeaheadInput({
           ref={popoverRef}
           align="start"
           sideOffset={4}
-          className="w-(--radix-popover-trigger-width) p-0 max-h-52 overflow-auto"
+          className="w-(--radix-popover-trigger-width) p-1 max-h-52 overflow-auto"
           onOpenAutoFocus={(e) => e.preventDefault()}
           onCloseAutoFocus={(e) => e.preventDefault()}
         >

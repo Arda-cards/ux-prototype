@@ -1,0 +1,224 @@
+{/* multiselect-typeahead-input.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as MultiSelectStories from './multiselect-typeahead-input.stories';
+
+<Meta of={MultiSelectStories} />
+
+# MultiSelectTypeaheadInput
+
+Async search input with multiselect. Selected values render as Badge tokens
+in the input area, collapsing to "+N more" when they exceed the field width.
+Tokens are keyboard-removable (Backspace / Delete with the token focused, or
+Backspace at the start of an empty input removes the last token). The
+dropdown shows a checkmark for already-selected options. Works standalone
+and as an AG Grid cell editor.
+
+**Molecule** &#8212; Canary | Import: `import { MultiSelectTypeaheadInput } from '@arda-cards/design-system/canary'`
+
+---
+
+## Default
+
+<Canvas of={MultiSelectStories.Default} />
+
+## Pre-populated
+
+<Canvas of={MultiSelectStories.PrePopulated} />
+
+## Overflow
+
+Tokens that don't fit on one line collapse into a "+N more" label. The visible
+count is measured dynamically against the field width (no fixed limit).
+
+<Canvas of={MultiSelectStories.Overflow} />
+
+---
+
+## Expand on edit
+
+When collapsed, the field is a single line with overflow clipped — it never
+grows tall. On focus it expands (as a floating overlay in standalone mode) to
+show **all** tokens so they're reachable via the keyboard, then collapses back
+to one line on blur.
+
+---
+
+## defaultOne
+
+`defaultOne` controls what Enter (and clicking an option) does:
+
+<table>
+  <thead>
+    <tr>
+      <th>Value</th>
+      <th>Behavior</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>true</code> (default)</td>
+      <td>Selecting an option (Enter or click) adds it, commits, and closes the dropdown. Never unchecks via Enter/click.</td>
+    </tr>
+    <tr>
+      <td><code>false</code></td>
+      <td>Selecting toggles the option and keeps the dropdown open for continued multi-selection. Exit with Escape, Tab, or by clicking away.</td>
+    </tr>
+  </tbody>
+</table>
+
+After the dropdown closes, clicking the input again reopens it.
+
+---
+
+## Cell editor
+
+`cellEditorMode` adapts the component for AG Grid. Auto-focuses on mount so the
+dropdown opens immediately, the dropdown is portaled via Radix Popover, and the
+field height matches the grid row height. Wrap it with
+`createMultiSelectCellEditor({ lookup, placeholder, defaultOne })` to use as a
+column `cellEditor`.
+
+---
+
+## Keyboard
+
+<table>
+  <thead>
+    <tr>
+      <th>Key</th>
+      <th>Behavior</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>ArrowDown</code> / <code>ArrowUp</code></td>
+      <td>Move the dropdown highlight. <code>ArrowUp</code> from the top result moves focus to the last token.</td>
+    </tr>
+    <tr>
+      <td><code>Enter</code></td>
+      <td>Choose the highlighted option (see <code>defaultOne</code>).</td>
+    </tr>
+    <tr>
+      <td><code>ArrowLeft</code> / <code>ArrowRight</code></td>
+      <td>From an empty input, Left focuses the last token; Left/Right then navigate between tokens. Right past the last token returns to the input.</td>
+    </tr>
+    <tr>
+      <td><code>Delete</code> / <code>Backspace</code></td>
+      <td>On a focused token, removes it. Backspace with an empty input removes the last token.</td>
+    </tr>
+    <tr>
+      <td>Typing on a token</td>
+      <td>Returns focus to the input and starts filtering.</td>
+    </tr>
+    <tr>
+      <td><code>Escape</code></td>
+      <td>Close the dropdown.</td>
+    </tr>
+    <tr>
+      <td><code>Tab</code></td>
+      <td>Commit and move focus on.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>value</code></td>
+      <td><code>string[]</code></td>
+      <td>&#8212;</td>
+      <td>Currently selected values (controlled).</td>
+    </tr>
+    <tr>
+      <td><code>onValueChange</code></td>
+      <td><code>(value: string[]) =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Called when the selection changes.</td>
+    </tr>
+    <tr>
+      <td><code>lookup</code></td>
+      <td><code>((search: string) =&gt; Promise&lt;MultiSelectOption[]&gt;) | MultiSelectOption[] | string[]</code></td>
+      <td>&#8212;</td>
+      <td>Options source. Pass an async function, or a static list of options or plain strings filtered client-side by label.</td>
+    </tr>
+    <tr>
+      <td><code>placeholder</code></td>
+      <td><code>string</code></td>
+      <td><code>'Search…'</code></td>
+      <td>Placeholder shown when no tokens are selected.</td>
+    </tr>
+    <tr>
+      <td><code>defaultOne</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Enter/click selects-and-closes (true) vs. additive toggle that stays open (false). Never unchecks via Enter/click.</td>
+    </tr>
+    <tr>
+      <td><code>onCommit</code></td>
+      <td><code>() =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Called when the selection is committed (Enter with <code>defaultOne</code>, or Tab). In a cell editor, signals "stop editing".</td>
+    </tr>
+    <tr>
+      <td><code>maxResults</code></td>
+      <td><code>number</code></td>
+      <td><code>8</code></td>
+      <td>Maximum number of dropdown results to show.</td>
+    </tr>
+    <tr>
+      <td><code>cellEditorMode</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Adapt for AG Grid: auto-focus on mount, portaled dropdown, row-height sizing.</td>
+    </tr>
+    <tr>
+      <td><code>disabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Disable the input.</td>
+    </tr>
+    <tr>
+      <td><code>aria-label</code></td>
+      <td><code>string</code></td>
+      <td><code>placeholder</code></td>
+      <td>Accessible label for the input.</td>
+    </tr>
+    <tr>
+      <td><code>className</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Additional CSS classes on the wrapper.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Accessibility
+
+- The input is a `role="combobox"`; the dropdown is a `role="listbox"` with
+  `aria-multiselectable="true"` and `aria-selected` on each option.
+- A visually hidden live region announces result counts and loading/error
+  states.
+- Tokens are focusable for keyboard removal.
+
+---
+
+## Import
+
+```tsx
+import { MultiSelectTypeaheadInput } from '@arda-cards/design-system/canary';
+import { createMultiSelectCellEditor } from '@arda-cards/design-system/canary';
+```
