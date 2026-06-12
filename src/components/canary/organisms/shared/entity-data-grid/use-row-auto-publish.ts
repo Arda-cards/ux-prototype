@@ -110,9 +110,14 @@ export function useRowAutoPublish<T extends Record<string, any>>({
   /** Timer IDs keyed by rowId — allows cancelling the 50ms debounce. */
   const debounceTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   /**
-   * Snapshots of `oldValue` per (rowId, field) captured on the FIRST
-   * `cellValueChanged` for a given row → field. Used to revert a row to its
-   * last-saved state when a publish fails. Cleared on publish success.
+   * Pre-edit snapshots of `oldValue` per (rowId, field) captured on the FIRST
+   * `cellValueChanged` for a given row → field. Used by `discardAll()` (and any
+   * future explicit-revert flow) to restore the row to its last-saved state.
+   *
+   * Auto-publish does NOT revert on failure: the row keeps its typed value,
+   * its pending dirty cells are preserved, and the row is marked `'error'` so
+   * the user can see what they typed and what failed. Cleared on publish
+   * success and on `discardAll()`.
    */
   const snapshotFieldsRef = useRef<Map<string, Map<string, unknown>>>(new Map());
   /** Stable refs so callbacks don't go stale in closures. */

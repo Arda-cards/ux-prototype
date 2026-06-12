@@ -370,34 +370,24 @@ export const DataGrid = forwardRef(
     }, []);
 
     // --- Escape key: two-stage behavior ---
-    // First Escape exits edit mode (AG Grid default). Second clears focus ring.
-    // We track whether editing just stopped so we don't clear focus on the same keypress.
-    const wasEditingRef = useRef(false);
-
-    const handleCellEditingStarted = useCallback(() => {
-      wasEditingRef.current = true;
-    }, []);
-
-    // Type uses any to satisfy AG Grid's CellKeyDownEvent | FullWidthCellKeyDownEvent union
-    // under exactOptionalPropertyTypes
+    // First Escape exits edit mode (AG Grid default — we don't intervene).
+    // Second Escape (no cell editing) clears the focus ring.
+    // We read the live editing state from the api instead of tracking it in a
+    // ref so commits via Enter / Tab / click-away don't leave a stale "was
+    // editing" flag that would waste the next Escape.
     const handleCellKeyDown = useCallback(
-      (event: { event: Event | null | undefined; api: { clearFocusedCell(): void } }) => {
-        if ((event.event as KeyboardEvent)?.key === 'Escape') {
-          if (wasEditingRef.current) {
-            // Just exited edit mode — consume this Escape, keep focus
-            wasEditingRef.current = false;
-          } else {
-            // Not editing — clear the focus ring
-            event.api.clearFocusedCell();
-          }
-        }
+      (event: {
+        event: Event | null | undefined;
+        api: Pick<GridApi, 'clearFocusedCell' | 'getEditingCells'>;
+      }) => {
+        if ((event.event as KeyboardEvent)?.key !== 'Escape') return;
+        // If a cell is currently editing, AG Grid will consume this Escape to
+        // stop the edit — don't also clear focus on the same keypress.
+        if (event.api.getEditingCells().length > 0) return;
+        event.api.clearFocusedCell();
       },
       [],
     );
-
-    const handleCellEditingStopped = useCallback(() => {
-      // wasEditingRef stays true until the next Escape clears it
-    }, []);
 
     // --- Mobile: tap-to-edit on an already-focused cell ---
     // Touch devices have no natural double-click, so we open the editor when a
@@ -706,7 +696,6 @@ export const DataGrid = forwardRef(
             onGridReady={handleGridReady}
             onCellClicked={handleCellClicked}
             onCellKeyDown={handleCellKeyDown as never}
-            onCellEditingStarted={handleCellEditingStarted as never}
             {...(rowSelection ? { rowSelection } : {})}
             {...(getRowClass ? { getRowClass } : {})}
             {...(enableRowSelection ? { onSelectionChanged: handleSelectionChanged } : {})}
@@ -715,14 +704,7 @@ export const DataGrid = forwardRef(
             {...(onPasteEnd ? { onPasteEnd } : {})}
             {...(onFillEnd ? { onFillEnd } : {})}
             {...(onCutEnd ? { onCutEnd } : {})}
-            {...(onCellEditingStopped
-              ? {
-                  onCellEditingStopped: (e: CellEditingStoppedEvent) => {
-                    handleCellEditingStopped();
-                    onCellEditingStopped(e);
-                  },
-                }
-              : { onCellEditingStopped: handleCellEditingStopped })}
+            {...(onCellEditingStopped ? { onCellEditingStopped } : {})}
             loadingOverlayComponent={LoadingOverlay}
             noRowsOverlayComponent={noRowsOverlay}
             pagination={!!pageSize}

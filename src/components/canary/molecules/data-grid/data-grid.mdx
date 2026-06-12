@@ -50,16 +50,14 @@ When in doubt, choose `ConnectedDataGrid`. Hand-rolling persistence around a bar
 
 ## What you get by default
 
-Both wrappers register the same module set centrally &#8212; **never re-register modules in a consumer**:
+Both wrappers register the AG Grid module bundle centrally inside `DataGrid` &#8212; **consumers do not need to register modules**:
 
 ```ts
-ModuleRegistry.registerModules([
-  AllCommunityModule,
-  RichSelectModule,
-  ClipboardModule,        // copy / cut / paste
-  CellSelectionModule,    // range selection + fill handle
-]);
+// Done once inside DataGrid, wrapped in try/catch so repeat registration is a no-op
+ModuleRegistry.registerModules([AllCommunityModule, AllEnterpriseModule]);
 ```
+
+This includes the Enterprise Clipboard and CellSelection modules used by the paste / fill / range-selection capabilities below, plus the Enterprise context menus (right-click on a header, row, or cell). An AG Grid Enterprise license key is **not** required for development &#8212; you'll see a watermark and console warning in Storybook, but functionality works.
 
 `DataGrid` hard-codes a few shared grid options:
 
