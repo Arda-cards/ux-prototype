@@ -156,9 +156,9 @@ export function createEntityDataGridShim<T extends Record<string, any>>(
 
       const resolvedEmptyState = useMemo(() => {
         if (emptyStateComponentProp !== undefined) return emptyStateComponentProp;
-        if (hasActiveSearch && baseProps.data.length === 0) return NO_ITEMS_FOUND_COMPONENT;
+        if (hasActiveSearch && (baseProps.data?.length ?? 0) === 0) return NO_ITEMS_FOUND_COMPONENT;
         return undefined;
-      }, [emptyStateComponentProp, hasActiveSearch, baseProps.data.length]);
+      }, [emptyStateComponentProp, hasActiveSearch, baseProps.data?.length]);
 
       // ----------------------------------------------------------------
       // Extended ref API
@@ -173,6 +173,7 @@ export function createEntityDataGridShim<T extends Record<string, any>>(
           },
           discardAll: () => baseRef.current?.discardAll(),
           getDirtyRowIds: () => baseRef.current?.getDirtyRowIds() ?? [],
+          addRow: (overrides?: Record<string, unknown>) => baseRef.current?.addRow(overrides) ?? '',
           getGridApi: () => baseRef.current?.getGridApi() ?? null,
 
           // Legacy alias delegates

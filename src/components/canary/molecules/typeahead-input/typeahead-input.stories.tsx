@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { ColDef } from 'ag-grid-community';
 
 import { TypeaheadInput, type TypeaheadSource } from './typeahead-input';
 import { MultiSelectTypeaheadInput } from './multiselect-typeahead-input';
+import { createTypeaheadCellEditor } from './typeahead-cell-editor';
+import { DataGrid } from '../data-grid/data-grid';
 import { lookupUnits } from '@/components/canary/__mocks__/unit-lookup';
 import { lookupRoles } from '@/components/canary/__mocks__/role-lookup';
 import { unitLookupHandler } from '@/components/canary/__mocks__/handlers/unit-lookup';
@@ -185,4 +188,57 @@ export const Playground: StoryObj<PlaygroundArgs> = {
     maxResults: { control: { type: 'number', min: 1, max: 20, step: 1 } },
   },
   render: (args) => <PlaygroundDemo {...args} />,
+};
+
+interface UnitRow {
+  [key: string]: unknown;
+  item: string;
+  qty: number;
+  unit: string;
+}
+
+/** Cell editor in the canary DataGrid — double-click the Unit column to edit. */
+export const InGrid: StoryObj = {
+  render: () => {
+    const UnitCellEditor = useMemo(
+      () =>
+        createTypeaheadCellEditor({
+          lookup: lookupUnits,
+          allowCreate: true,
+          placeholder: 'Search units...',
+        }),
+      [],
+    );
+
+    const [rowData] = useState<UnitRow[]>([
+      { item: 'Hex Bolt M10x30', qty: 100, unit: 'each' },
+      { item: 'Flat Washer 3/8"', qty: 500, unit: 'box' },
+      { item: 'Spring Pin 4x20', qty: 50, unit: '' },
+    ]);
+
+    const columnDefs = useMemo<ColDef<UnitRow>[]>(
+      () => [
+        { field: 'item', headerName: 'Item', flex: 2 },
+        { field: 'qty', headerName: 'Qty', width: 80 },
+        {
+          field: 'unit',
+          headerName: 'Unit',
+          flex: 1,
+          editable: true,
+          cellEditor: UnitCellEditor,
+          cellEditorPopup: true,
+        },
+      ],
+      [UnitCellEditor],
+    );
+
+    return (
+      <div className="p-8">
+        <p className="text-sm text-muted-foreground mb-4">
+          Double-click the <strong>Unit</strong> column to open the typeahead cell editor.
+        </p>
+        <DataGrid<UnitRow> rowData={rowData} columnDefs={columnDefs} height={220} editable />
+      </div>
+    );
+  },
 };

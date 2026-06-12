@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { ColDef } from 'ag-grid-community';
 
 import { MultiSelectTypeaheadInput } from './multiselect-typeahead-input';
+import { createMultiSelectCellEditor } from './multiselect-cell-editor';
+import { DataGrid } from '../data-grid/data-grid';
 import { lookupRoles } from '@/components/canary/__mocks__/role-lookup';
 import { roleLookupHandler } from '@/components/canary/__mocks__/handlers/role-lookup';
 
@@ -83,6 +86,68 @@ export const Disabled: StoryObj = {
   ),
 };
 
-// Cell-editor behavior is demonstrated end-to-end by the `InGrid` story shipped
-// with the DataGrid molecule — no standalone `CellEditorMode` story is needed
-// here.
+interface SupplierRow {
+  [key: string]: unknown;
+  name: string;
+  city: string;
+  roles: string[];
+}
+
+/** Cell editor in the canary DataGrid — double-click the Roles column to edit. */
+export const InGrid: StoryObj = {
+  render: () => {
+    const RoleCellEditor = useMemo(
+      () =>
+        createMultiSelectCellEditor({
+          lookup: lookupRoles,
+          placeholder: 'Select roles...',
+        }),
+      [],
+    );
+
+    const [rowData] = useState<SupplierRow[]>([
+      { name: 'Apex Medical', city: 'Denver', roles: ['Vendor'] },
+      { name: 'BioTech Supplies', city: 'Boston', roles: ['Vendor', 'Carrier'] },
+      { name: 'Delta Pharma', city: 'Atlanta', roles: ['Vendor', 'Customer', 'Carrier'] },
+    ]);
+
+    const columnDefs = useMemo<ColDef<SupplierRow>[]>(
+      () => [
+        { field: 'name', headerName: 'Name', flex: 2 },
+        { field: 'city', headerName: 'City', width: 120 },
+        {
+          field: 'roles',
+          headerName: 'Roles',
+          flex: 2,
+          editable: true,
+          cellEditor: RoleCellEditor,
+          cellRenderer: (params: { value?: string[] }) => {
+            const roles = params.value ?? [];
+            return (
+              <div className="flex gap-1 items-center h-full">
+                {roles.map((role) => (
+                  <span
+                    key={role}
+                    className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium"
+                  >
+                    {role}
+                  </span>
+                ))}
+              </div>
+            );
+          },
+        },
+      ],
+      [RoleCellEditor],
+    );
+
+    return (
+      <div className="p-8">
+        <p className="text-sm text-muted-foreground mb-4">
+          Double-click the <strong>Roles</strong> column to open the multiselect cell editor.
+        </p>
+        <DataGrid<SupplierRow> rowData={rowData} columnDefs={columnDefs} height={220} editable />
+      </div>
+    );
+  },
+};

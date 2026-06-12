@@ -18,6 +18,39 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [6.0.0] - 2026-06-12
+
+### Added
+- **DataGrid molecule rewrite** — rebuilt on the AG Grid v34 Theming API (`themeQuartz`) with Arda design-token mapping. Squared corners, all-white rows, 1px outer wrapper border, and a 2px header bottom border via theming-API params plus a small set of counter-rules in `canary/ag-theme-arda.css` that override the legacy global blanket killing border colors.
+- **AG Grid Enterprise context menus on `DataGrid`** — registers `AllEnterpriseModule` (was Community-only), restoring the column-header menu (right-click), the row context menu, and the cell context menu. Module registration is wrapped in `try/catch` so consumers that also register modules don't blow up on duplicates.
+- **`DataGrid` owns drag-to-scroll, row-state styles, and the actions column** — previously inlined into `createEntityDataGrid`. The molecule now exposes `enableDragToScroll` (default `true`) and `actionsColumn` as first-class props, and `ConnectedDataGrid` forwards them. A bare `DataGrid` ships with all three behaviors out of the box without container scaffolding.
+- **Rich cell data types** — token cell data types and popup cell editors; columns opt in via `cellDataType` and own the value↔string round trip that drives copy/paste, fill, and CSV export.
+- **`createConnectedDataGrid<T>()` container (DQ-008)** — write-path-capable successor to `createEntityDataGrid`. Discriminated `dataSource` (`client` mode wired; `server`/SSRM arrives in a later phase — DQ-002), bulk `onCommit` commit-pipeline seam (`useCommitPipeline`) alongside per-row `onRowPublish` (DQ-003), and `Omit<DataGridProps, OwnedByContainer>` prop forwarding so molecule capability props pass through while owned props are a compile error (DQ-006).
+- **Spreadsheet capabilities on DataGrid** — `clipboardPaste` policy (`range`/`single`/`off`), `cellSelection` (range selection + fill handle), `undoRedoLimit`, and `onPasteEnd` / `onFillEnd` / `onCutEnd` flush points; registers the AG Grid Enterprise Clipboard and CellSelection modules.
+- **Add-row mechanics** — `DataGrid.ref.addRow()` / `ref.removeRows()` (`useRowEditing`) plus `onRowsAdded` / `onRowsRemoved` / `getNewRowId`; a new row focuses and opens its first editable cell.
+- **Draft → create lifecycle on ConnectedDataGrid** — `onCreate` seam + `requiredFields` / `newRowDefaults` / `getServerId` config (`useDraftPersistence`). Added rows stay client-only drafts (excluded from the `PUT` path via `isDraft`) until required fields are filled, then auto-create on row blur / paste-fill flush and reconcile, keeping the grid id stable.
+- **Combined column** — `createCombinedColumn({ headerName, members })` shows a group of fields as one line and edits them in a popup (one input per field). Edits write back to underlying fields; copy/fill/paste round-trip; Tab steps through the fields. Address is the first consumer (`PostalAddress` mirrored from extras into `types/canary/.../geo`).
+- **Selection column** — narrow centered 40px column with the canary `Checkbox` in body cells (`DataGrid.selectionColumnDef`) when `enableRowSelection` is true. Enter toggles selection on a focused selection cell.
+- **Bulk auto-publish flush** — `useRowAutoPublish` exposes `handlePasteEnd` / `handleFillEnd` / `handleCutEnd` that publish every non-draft dirty row. `ConnectedDataGrid` wires them on the non-commit branch so per-row consumers get their `PUT` per row after paste / fill / cut, not just after `cellEditingStopped`.
+- **Per-row publish state on auto-publish** — `useRowAutoPublish` tracks `'idle' | 'saving' | 'error'` per row and drives `getRowClass` (`ag-row-saving`, `ag-row-error`). On publish failure the row **keeps the typed value, retains its pending dirty cells, and is marked `'error'`** (red row state) so consumers see what they typed and what failed; the pre-edit snapshot is preserved for explicit revert via `discardAll()` (or future explicit-revert flows). `ConnectedDataGrid` wires `getApi` automatically.
+- **Mobile tap-to-edit on DataGrid** — on touch devices (`(pointer: coarse)`), tapping an already-focused cell opens its editor. Desktop double-click behavior is unchanged.
+- **`toolbarClassName` escape hatch** — both `DataGrid` and `ConnectedDataGrid` accept an optional `toolbarClassName?: string` that composes onto the search + count + toolbar row via `cn(...)`.
+- **`InGrid` demo stories on `TypeaheadInput` and `MultiSelectTypeaheadInput`** — reintroduced (deferred from #121) now that the DataGrid supports the `editable` prop and cell-editor wiring.
+- **`PostalAddress` type** mirrored from extras into `types/canary/.../geo` for combined-address consumers.
+- `ag-grid-enterprise` dependency (for Clipboard + CellSelection modules).
+
+### Changed
+- DataGrid now suppresses the column-header "…" menu button by default (`suppressHeaderMenuButton` on `defaultColDef`); the column menu is still reachable via right-click on the header.
+
+### Deprecated
+- `createEntityDataGrid` and the `EntityDataGrid*` types — renamed to `createConnectedDataGrid` / `ConnectedDataGrid*`; the old names remain as re-export aliases via the new `entity-data-grid-shim` so all existing consumers compile untouched.
+
+### Fixed
+- Auto-publish `'saving'` / `'error'` row class no longer sticks after the publish finishes. `useRowAutoPublish` keeps `rowStates` in a synchronous ref so `getRowClass` always reflects the latest `setRowState` call, and `setRowState` calls `api.redrawRows({ rowNodes: [node] })` (skipped while the row has a cell in edit mode so it can't cancel typing).
+- The write path (auto-publish / commit pipeline) keys a cell change on `colId` when the column has no `field`, so combined-column edits (e.g. Address) mark the row dirty for publish.
+- Two-stage Escape in DataGrid (first exits edit mode, second clears the focus ring); AG Grid now handles Tab in cell-editor mode.
+- `TokenMultiSelectEditing` play function no longer races on the role cell mount and no longer matches Badge tokens in other rows when picking an option — waits for the cell via `waitFor` and selects by `role="option"`.
+
 ## [5.4.0] - 2026-06-08
 
 ### Added
