@@ -18,10 +18,12 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
-## [5.5.0] - 2026-06-08
+## [6.0.0] - 2026-06-12
 
 ### Added
 - **DataGrid molecule rewrite** — rebuilt on the AG Grid v34 Theming API (`themeQuartz`) with Arda design-token mapping. Squared corners, all-white rows, 1px outer wrapper border, and a 2px header bottom border via theming-API params plus a small set of counter-rules in `canary/ag-theme-arda.css` that override the legacy global blanket killing border colors.
+- **AG Grid Enterprise context menus on `DataGrid`** — registers `AllEnterpriseModule` (was Community-only), restoring the column-header menu (right-click), the row context menu, and the cell context menu. Module registration is wrapped in `try/catch` so consumers that also register modules don't blow up on duplicates.
+- **`DataGrid` owns drag-to-scroll, row-state styles, and the actions column** — previously inlined into `createEntityDataGrid`. The molecule now exposes `enableDragToScroll` (default `true`) and `actionsColumn` as first-class props, and `ConnectedDataGrid` forwards them. A bare `DataGrid` ships with all three behaviors out of the box without container scaffolding.
 - **Rich cell data types** — token cell data types and popup cell editors; columns opt in via `cellDataType` and own the value↔string round trip that drives copy/paste, fill, and CSV export.
 - **`createConnectedDataGrid<T>()` container (DQ-008)** — write-path-capable successor to `createEntityDataGrid`. Discriminated `dataSource` (`client` mode wired; `server`/SSRM arrives in a later phase — DQ-002), bulk `onCommit` commit-pipeline seam (`useCommitPipeline`) alongside per-row `onRowPublish` (DQ-003), and `Omit<DataGridProps, OwnedByContainer>` prop forwarding so molecule capability props pass through while owned props are a compile error (DQ-006).
 - **Spreadsheet capabilities on DataGrid** — `clipboardPaste` policy (`range`/`single`/`off`), `cellSelection` (range selection + fill handle), `undoRedoLimit`, and `onPasteEnd` / `onFillEnd` / `onCutEnd` flush points; registers the AG Grid Enterprise Clipboard and CellSelection modules.
@@ -47,6 +49,7 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
 - Auto-publish `'saving'` / `'error'` row class no longer sticks after the publish finishes. `useRowAutoPublish` keeps `rowStates` in a synchronous ref so `getRowClass` always reflects the latest `setRowState` call, and `setRowState` calls `api.redrawRows({ rowNodes: [node] })` (skipped while the row has a cell in edit mode so it can't cancel typing).
 - The write path (auto-publish / commit pipeline) keys a cell change on `colId` when the column has no `field`, so combined-column edits (e.g. Address) mark the row dirty for publish.
 - Two-stage Escape in DataGrid (first exits edit mode, second clears the focus ring); AG Grid now handles Tab in cell-editor mode.
+- `TokenMultiSelectEditing` play function no longer races on the role cell mount and no longer matches Badge tokens in other rows when picking an option — waits for the cell via `waitFor` and selects by `role="option"`.
 
 ## [5.4.0] - 2026-06-08
 
