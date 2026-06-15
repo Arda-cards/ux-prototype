@@ -18,6 +18,11 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [6.0.1] - 2026-06-15
+
+### Fixed
+- **Native cell-edit Ctrl-Z now survives auto-publish on `ConnectedDataGrid`.** The per-row publish lifecycle in `useRowAutoPublish` previously called `api.redrawRows({ rowNodes: [node] })` to flip `'ag-row-saving'` / `'ag-row-error'` classes; redrawRows tears down the row's DOM and AG Grid's per-row cell-edit state, which silently dropped the native Ctrl-Z undo stack for any row that auto-published. The hook now updates the row class via direct DOM mutation; `getRowClass` remains the source of truth for AG Grid's own re-renders (scroll virtualization, sort, filter), so a row that scrolls out of view and back in still picks up the right class on rebuild. **Known limitation:** multi-Ctrl-Z while a publish is in flight can still silently lose intermediate undos because the publish queue drops concurrent requests and a successful publish wipes pending changes — tracked separately and intentionally out of scope for this patch.
+
 ## [6.0.0] - 2026-06-12
 
 ### Added
