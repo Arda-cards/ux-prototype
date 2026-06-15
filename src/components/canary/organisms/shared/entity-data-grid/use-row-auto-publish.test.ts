@@ -349,6 +349,79 @@ describe('useRowAutoPublish', () => {
     expect(cls).toBeUndefined();
   });
 
+  it('row state updates via direct DOM class mutation, not redrawRows', async () => {
+    // Regression: previously `setRowState` called `api.redrawRows({ rowNodes: [node] })`
+    // to flip the row class, but redrawRows destroys and recreates the row's DOM and
+    // tears down AG Grid's per-row cell-edit state — which silently drops the
+    // native Ctrl-Z undo stack for the edited row.
+    //
+    // This test pins the contract: while a publish is in flight, the row's
+    // class is updated *directly on the DOM element* and `redrawRows` is NOT
+    // called. AG Grid's `getRowClass` callback continues to return the right
+    // class as a backstop for AG Grid's own re-renders (scroll virtualization,
+    // sort, filter).
+    let resolveFn: () => void;
+    const publishPromise = new Promise<void>((resolve) => {
+      resolveFn = resolve;
+    });
+    const onRowPublish = vi.fn().mockReturnValue(publishPromise);
+
+    // Mount a row element matching the selector used by `findRowElement`.
+    const rowEl = document.createElement('div');
+    rowEl.className = 'ag-row';
+    rowEl.setAttribute('row-id', '1');
+    document.body.appendChild(rowEl);
+
+    const redrawRows = vi.fn();
+    const api = {
+      getRowNode: (id: string) => (id === '1' ? { rowIndex: 0 } : null),
+      getEditingCells: () => [],
+      redrawRows,
+    };
+
+    const { result } = renderHook(() =>
+      useRowAutoPublish<TestEntity>({
+        getEntityId,
+        onRowPublish,
+        getApi: () => api as any,
+      }),
+    );
+
+    const entity: TestEntity = { id: '1', name: 'Updated' };
+
+    act(() => {
+      result.current.handleCellValueChanged(
+        makeCellValueChangedEvent(entity, 'name', 'Updated') as any,
+      );
+    });
+    act(() => {
+      result.current.handleCellEditingStopped(makeCellEditingStoppedEvent(entity, 0) as any);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(60);
+      await Promise.resolve();
+    });
+
+    // While publishing: DOM has 'ag-row-saving' AND redrawRows was never called.
+    expect(rowEl.classList.contains('ag-row-saving')).toBe(true);
+    expect(redrawRows).not.toHaveBeenCalled();
+    // And getRowClass still returns the same string as a backstop.
+    expect(result.current.getRowClass({ data: entity } as any)).toBe('ag-row-saving');
+
+    await act(async () => {
+      resolveFn!();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    // After publish success: class is off the DOM AND redrawRows was still never called.
+    expect(rowEl.classList.contains('ag-row-saving')).toBe(false);
+    expect(rowEl.classList.contains('ag-row-error')).toBe(false);
+    expect(redrawRows).not.toHaveBeenCalled();
+
+    document.body.removeChild(rowEl);
+  });
+
   // -------------------------------------------------------------------------
   // Imperative handle: saveAll, discardAll, getDirtyRowIds
   // -------------------------------------------------------------------------

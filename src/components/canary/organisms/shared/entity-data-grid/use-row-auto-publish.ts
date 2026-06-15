@@ -77,6 +77,33 @@ export interface UseRowAutoPublishOptions<T> {
 }
 
 // ============================================================================
+// DOM helpers
+// ============================================================================
+
+/**
+ * Find a row's DOM element by its grid row id.
+ *
+ * AG Grid renders each row with a `row-id="<entity-id>"` attribute; we use
+ * that as a stable selector to update the row's class without going through
+ * `api.redrawRows`, which would destroy the per-row cell-edit state and
+ * silently drop the native Ctrl-Z undo stack for the row.
+ *
+ * Returns `null` when not in a DOM environment (SSR / Vitest jsdom edge
+ * cases) or when no row with that id is currently rendered (e.g. it was
+ * virtualized out of view — that's fine, `getRowClass` will paint the
+ * right class when AG Grid rebuilds the row on scroll-in).
+ */
+function findRowElement(rowId: string): HTMLElement | null {
+  if (typeof document === 'undefined') return null;
+  // `.ag-row[row-id="..."]` scopes us to AG Grid-rendered rows. Row IDs are
+  // entity identifiers (UUIDs / DB ids) and are unique across the document
+  // in the consumer apps that use ConnectedDataGrid; if two grids on the
+  // same page ever share a row id, this will need an explicit grid-root
+  // scope, but no consumer has that shape today.
+  return document.querySelector<HTMLElement>(`.ag-row[row-id="${CSS.escape(rowId)}"]`);
+}
+
+// ============================================================================
 // Hook
 // ============================================================================
 
@@ -183,17 +210,33 @@ export function useRowAutoPublish<T extends Record<string, any>>({
       if (prev[rowId] === state) return prev;
       return { ...prev, [rowId]: state };
     });
-    // 3. Ask AG Grid to re-evaluate getRowClass for just this row. Without
-    //    this, the previous class (e.g. 'ag-row-saving') stays on the DOM
-    //    forever even after the state map shows 'idle'. Skip while the row is
-    //    being edited so we don't cancel the user's typing.
+    // 3. Update the row's class on the DOM without destroying AG Grid's row
+    //    state. We previously called `api.redrawRows({ rowNodes: [node] })`
+    //    so AG Grid would re-evaluate `getRowClass`, but redrawRows tears
+    //    down and recreates the row's DOM and its associated cell-edit
+    //    state — which silently drops AG Grid's native Ctrl-Z undo stack
+    //    for that row. The cheapest way to update the class without that
+    //    side effect is to mutate the row element's classList directly;
+    //    `getRowClass` remains the source of truth for AG Grid's own
+    //    re-renders (e.g. scroll virtualization, sort, filter), so a row
+    //    that scrolls out of view and back in still picks up the right
+    //    class on rebuild.
+    //
+    //    Skip the mutation while the row has a cell in edit mode — the
+    //    class flip itself is harmless, but the original implementation
+    //    skipped here to avoid AG Grid edit-state churn and we keep the
+    //    same guard for parity.
     const api = getApiRef.current?.();
     if (!api) return;
     const node = api.getRowNode(rowId);
     if (!node) return;
     const rowIsEditing = api.getEditingCells().some((cell) => cell.rowIndex === node.rowIndex);
     if (rowIsEditing) return;
-    api.redrawRows({ rowNodes: [node] });
+    const rowEl = findRowElement(rowId);
+    if (rowEl) {
+      rowEl.classList.toggle('ag-row-saving', state === 'saving');
+      rowEl.classList.toggle('ag-row-error', state === 'error');
+    }
   }, []);
 
   const notifyDirty = useCallback(() => {
@@ -398,14 +441,16 @@ export function useRowAutoPublish<T extends Record<string, any>>({
         rowStateMapRef.current.clear();
         setRowStates({});
         notifyDirty();
-        // Redraw rows that had a non-idle state so 'ag-row-saving' /
-        // 'ag-row-error' classes actually come off.
-        const api = getApiRef.current?.();
-        if (api && idsToRedraw.length > 0) {
-          const nodes = idsToRedraw
-            .map((id) => api.getRowNode(id))
-            .filter((n): n is NonNullable<typeof n> => n !== null && n !== undefined);
-          if (nodes.length > 0) api.redrawRows({ rowNodes: nodes });
+        // Strip 'ag-row-saving' / 'ag-row-error' classes from the rows that
+        // had a non-idle state. Direct DOM mutation here for the same reason
+        // as in setRowState — `redrawRows` would tear down per-row cell-edit
+        // state and break native Ctrl-Z undo on any row that wasn't being
+        // discarded but happened to share a redraw batch.
+        for (const id of idsToRedraw) {
+          const rowEl = findRowElement(id);
+          if (rowEl) {
+            rowEl.classList.remove('ag-row-saving', 'ag-row-error');
+          }
         }
       },
       getDirtyRowIds: () => Array.from(dirtyRowIdsRef.current),
