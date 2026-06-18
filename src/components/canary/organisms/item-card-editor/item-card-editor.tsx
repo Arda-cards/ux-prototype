@@ -19,29 +19,24 @@ import type {
 } from '@/types/canary/utilities/image-field-config';
 import { useImageUploader } from '@/types/canary/utilities/image-uploader';
 
+import {
+  applyFieldUpdate,
+  deriveOrderTouched,
+  EMPTY_ITEM_CARD_FIELDS,
+  MIN_UNIT,
+  MIN_QTY,
+  ORDER_QTY,
+  ORDER_UNIT,
+  type ItemCardFields,
+} from './item-card-editor-state';
+
 import qrCodeDefaultUrl from './qr-code.png';
 
+// Re-export the data model so existing barrel imports
+// (`./item-card-editor`) keep resolving.
+export { EMPTY_ITEM_CARD_FIELDS, type ItemCardFields };
+
 // --- Interfaces ---
-
-/** Field values for the item card. */
-export interface ItemCardFields {
-  title: string;
-  minQty: string;
-  minUnit: string;
-  orderQty: string;
-  orderUnit: string;
-  imageUrl: string | null;
-  accentColor: string;
-}
-
-// Field-key constants. The MIN→ORDER mirror state machine compares `key`
-// equality against these literals; defining them once keeps the runtime
-// checks and the `ItemCardFields` interface in sync if a field is ever
-// renamed.
-const MIN_QTY = 'minQty' as const satisfies keyof ItemCardFields;
-const MIN_UNIT = 'minUnit' as const satisfies keyof ItemCardFields;
-const ORDER_QTY = 'orderQty' as const satisfies keyof ItemCardFields;
-const ORDER_UNIT = 'orderUnit' as const satisfies keyof ItemCardFields;
 
 /** Init configuration for ItemCardEditor. */
 export interface ItemCardEditorInitProps {
@@ -182,47 +177,26 @@ export function ItemCardEditor({
   const onUploadErrorRef = React.useRef(onUploadError);
   onUploadErrorRef.current = onUploadError;
 
-  // Track whether the user has manually diverged the ORDER side of the card
-  // from MINIMUM, per-cell (qty and unit independent). While a cell is not
-  // touched, MINIMUM edits auto-mirror into ORDER. Seeded from the initial
-  // `fields` and reseeded whenever `formInstanceKey` changes.
-  const orderQtyTouchedRef = React.useRef(fields.minQty !== fields.orderQty);
-  const orderUnitTouchedRef = React.useRef(fields.minUnit !== fields.orderUnit);
+  // Track whether the user has manually diverged the ORDER side of the
+  // card from MINIMUM, per-cell. While a cell is not touched, MINIMUM
+  // edits auto-mirror into ORDER. The transition rules live in
+  // `applyFieldUpdate`; the ref just persists the current touched state
+  // across renders without causing one.
+  const orderTouchedRef = React.useRef(deriveOrderTouched(fields));
 
   // Reseed from the current `fields` prop on form-identity changes. We omit
   // `fields` from deps intentionally — async `fields` updates that arrive
   // without an identity bump must NOT silently re-derive touched flags (that
   // would let a host's just-typed values reset divergence tracking).
   React.useEffect(() => {
-    orderQtyTouchedRef.current = fields.minQty !== fields.orderQty;
-    orderUnitTouchedRef.current = fields.minUnit !== fields.orderUnit;
+    orderTouchedRef.current = deriveOrderTouched(fields);
   }, [formInstanceKey]);
 
   const updateField = React.useCallback(
     <K extends keyof ItemCardFields>(key: K, value: ItemCardFields[K]) => {
-      const current = fieldsRef.current;
-
-      // ORDER edits: mark the matching cell as diverged once the user
-      // changes it to a value that differs from the current MINIMUM.
-      if (key === ORDER_QTY && value !== current.minQty) {
-        orderQtyTouchedRef.current = true;
-      } else if (key === ORDER_UNIT && value !== current.minUnit) {
-        orderUnitTouchedRef.current = true;
-      }
-
-      // MINIMUM edits: auto-mirror into ORDER while the matching cell is
-      // still linked. The `typeof` check narrows the generic `value` to
-      // `string` so the mirrored writes are type-safe without a cast.
-      if (key === MIN_QTY && !orderQtyTouchedRef.current && typeof value === 'string') {
-        onChangeRef.current({ ...current, minQty: value, orderQty: value });
-        return;
-      }
-      if (key === MIN_UNIT && !orderUnitTouchedRef.current && typeof value === 'string') {
-        onChangeRef.current({ ...current, minUnit: value, orderUnit: value });
-        return;
-      }
-
-      onChangeRef.current({ ...current, [key]: value });
+      const result = applyFieldUpdate(fieldsRef.current, orderTouchedRef.current, key, value);
+      orderTouchedRef.current = result.touched;
+      onChangeRef.current(result.fields);
     },
     [],
   );
@@ -489,14 +463,3 @@ export function ItemCardEditor({
     </>
   );
 }
-
-/** Default empty fields for creating a new item. */
-export const EMPTY_ITEM_CARD_FIELDS: ItemCardFields = {
-  title: '',
-  minQty: '',
-  minUnit: '',
-  orderQty: '',
-  orderUnit: '',
-  imageUrl: null,
-  accentColor: 'GRAY',
-};
