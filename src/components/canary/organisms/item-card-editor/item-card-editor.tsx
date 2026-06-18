@@ -211,21 +211,14 @@ export function ItemCardEditor({
       }
 
       // MINIMUM edits: auto-mirror into ORDER while the matching cell is
-      // still linked. Emits a single `onChange` with both fields set.
-      if (key === MIN_QTY && !orderQtyTouchedRef.current) {
-        onChangeRef.current({
-          ...current,
-          minQty: value as string,
-          orderQty: value as string,
-        });
+      // still linked. The `typeof` check narrows the generic `value` to
+      // `string` so the mirrored writes are type-safe without a cast.
+      if (key === MIN_QTY && !orderQtyTouchedRef.current && typeof value === 'string') {
+        onChangeRef.current({ ...current, minQty: value, orderQty: value });
         return;
       }
-      if (key === MIN_UNIT && !orderUnitTouchedRef.current) {
-        onChangeRef.current({
-          ...current,
-          minUnit: value as string,
-          orderUnit: value as string,
-        });
+      if (key === MIN_UNIT && !orderUnitTouchedRef.current && typeof value === 'string') {
+        onChangeRef.current({ ...current, minUnit: value, orderUnit: value });
         return;
       }
 
