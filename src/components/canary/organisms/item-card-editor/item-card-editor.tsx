@@ -34,6 +34,15 @@ export interface ItemCardFields {
   accentColor: string;
 }
 
+// Field-key constants. The MIN→ORDER mirror state machine compares `key`
+// equality against these literals; defining them once keeps the runtime
+// checks and the `ItemCardFields` interface in sync if a field is ever
+// renamed.
+const MIN_QTY = 'minQty' as const satisfies keyof ItemCardFields;
+const MIN_UNIT = 'minUnit' as const satisfies keyof ItemCardFields;
+const ORDER_QTY = 'orderQty' as const satisfies keyof ItemCardFields;
+const ORDER_UNIT = 'orderUnit' as const satisfies keyof ItemCardFields;
+
 /** Init configuration for ItemCardEditor. */
 export interface ItemCardEditorInitProps {
   /** Image field configuration (accepted formats, aspect ratio, etc.). */
@@ -195,15 +204,15 @@ export function ItemCardEditor({
 
       // ORDER edits: mark the matching cell as diverged once the user
       // changes it to a value that differs from the current MINIMUM.
-      if (key === 'orderQty' && value !== current.minQty) {
+      if (key === ORDER_QTY && value !== current.minQty) {
         orderQtyTouchedRef.current = true;
-      } else if (key === 'orderUnit' && value !== current.minUnit) {
+      } else if (key === ORDER_UNIT && value !== current.minUnit) {
         orderUnitTouchedRef.current = true;
       }
 
       // MINIMUM edits: auto-mirror into ORDER while the matching cell is
       // still linked. Emits a single `onChange` with both fields set.
-      if (key === 'minQty' && !orderQtyTouchedRef.current) {
+      if (key === MIN_QTY && !orderQtyTouchedRef.current) {
         onChangeRef.current({
           ...current,
           minQty: value as string,
@@ -211,7 +220,7 @@ export function ItemCardEditor({
         });
         return;
       }
-      if (key === 'minUnit' && !orderUnitTouchedRef.current) {
+      if (key === MIN_UNIT && !orderUnitTouchedRef.current) {
         onChangeRef.current({
           ...current,
           minUnit: value as string,
@@ -287,16 +296,16 @@ export function ItemCardEditor({
     {
       icon: PackageMinus,
       label: 'Minimum',
-      qtyKey: 'minQty' as const,
-      unitKey: 'minUnit' as const,
+      qtyKey: MIN_QTY,
+      unitKey: MIN_UNIT,
       qtyPlaceholder: 'Min qty',
       unitPlaceholder: 'Units',
     },
     {
       icon: Package,
       label: 'Order',
-      qtyKey: 'orderQty' as const,
-      unitKey: 'orderUnit' as const,
+      qtyKey: ORDER_QTY,
+      unitKey: ORDER_UNIT,
       qtyPlaceholder: 'Order qty',
       unitPlaceholder: 'Units',
     },
