@@ -145,6 +145,34 @@ describe('ItemCardEditor — QR placeholder (#750 issue 3)', () => {
   });
 });
 
+describe('ItemCardEditor — title search link', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    lastDialogProps = undefined;
+  });
+
+  it('hides the Google search link when the title is empty', () => {
+    renderEditor();
+
+    expect(screen.queryByRole('link', { name: /search google for this item/i })).toBeNull();
+  });
+
+  it('renders a privacy-preserving Google search link for a non-empty title', () => {
+    renderEditor({
+      fields: {
+        ...EMPTY_ITEM_CARD_FIELDS,
+        title: '  Hex Bolt M10x30  ',
+      },
+    });
+
+    const link = screen.getByRole('link', { name: /search google for this item/i });
+    expect(link).toHaveAttribute('href', 'https://www.google.com/search?q=Hex%20Bolt%20M10x30');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    expect(link).toHaveAttribute('referrerpolicy', 'no-referrer');
+  });
+});
+
 describe('ItemCardEditor — drop-zone direct upload via ImageUploader Context', () => {
   beforeEach(() => {
     vi.clearAllMocks();
