@@ -1,14 +1,27 @@
 import { useState, useMemo } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { AgGridReact } from 'ag-grid-react';
-import { ModuleRegistry, AllCommunityModule, type ColDef } from 'ag-grid-community';
+import type { ColDef } from 'ag-grid-community';
 
-ModuleRegistry.registerModules([AllCommunityModule]);
-
-import { TypeaheadInput } from './typeahead-input';
+import { TypeaheadInput, type TypeaheadSource } from './typeahead-input';
+import { MultiSelectTypeaheadInput } from './multiselect-typeahead-input';
 import { createTypeaheadCellEditor } from './typeahead-cell-editor';
+import { DataGrid } from '../data-grid/data-grid';
 import { lookupUnits } from '@/components/canary/__mocks__/unit-lookup';
+import { lookupRoles } from '@/components/canary/__mocks__/role-lookup';
 import { unitLookupHandler } from '@/components/canary/__mocks__/handlers/unit-lookup';
+import { roleLookupHandler } from '@/components/canary/__mocks__/handlers/role-lookup';
+
+// ---------------------------------------------------------------------------
+// Playground data sources — async lookup functions + a static array
+// ---------------------------------------------------------------------------
+
+const STATIC_UNITS = ['each', 'case', 'box', 'pallet', 'pair', 'kg', 'lb', 'liter', 'gallon'];
+
+const DATA_SOURCES: Record<string, TypeaheadSource> = {
+  'Units (async fn)': lookupUnits,
+  'Roles (async fn)': lookupRoles,
+  'Static array': STATIC_UNITS,
+};
 
 // ---------------------------------------------------------------------------
 // Wrapper
@@ -39,7 +52,7 @@ function TypeaheadDemo({
 const meta: Meta = {
   title: 'Components/Canary/Molecules/TypeaheadInput',
   parameters: {
-    msw: { handlers: [unitLookupHandler] },
+    msw: { handlers: [unitLookupHandler, roleLookupHandler] },
   },
 };
 
@@ -59,6 +72,16 @@ export const AllowCreate: StoryObj = {
   ),
 };
 
+/** Static list — pass a plain `string[]` (or `TypeaheadOption[]`) instead of a lookup function. */
+export const StaticList: StoryObj = {
+  render: () => (
+    <TypeaheadDemo
+      lookup={['each', 'case', 'box', 'pallet', 'pair', 'kg', 'lb', 'liter', 'gallon']}
+      placeholder="Select unit..."
+    />
+  ),
+};
+
 export const PrePopulated: StoryObj = {
   render: () => (
     <TypeaheadDemo lookup={lookupUnits} initialValue="each" placeholder="Select unit..." />
@@ -71,26 +94,110 @@ export const Disabled: StoryObj = {
   ),
 };
 
-/** Cell editor mode — blur accepts typed value, dropdown portaled via Popover. */
-export const CellEditorMode: StoryObj = {
-  render: () => (
-    <div className="p-8">
-      <p className="text-sm text-muted-foreground mb-4">
-        Cell editor mode: blur accepts typed value instead of reverting. Dropdown is portaled.
-      </p>
-      <div className="w-64 overflow-hidden border border-border rounded-md p-2">
-        <TypeaheadDemo
-          lookup={lookupUnits}
-          allowCreate
-          cellEditorMode
-          placeholder="Search units (cell editor)..."
+// Cell-editor behavior is demonstrated end-to-end by the `InGrid` story shipped
+// with the DataGrid molecule — no standalone `CellEditorMode` story is needed
+// here.
+
+// ---------------------------------------------------------------------------
+// Playground
+// ---------------------------------------------------------------------------
+
+interface PlaygroundArgs {
+  dataSource: string;
+  multiselect: boolean;
+  placeholder: string;
+  allowCreate: boolean;
+  defaultOne: boolean;
+  disabled: boolean;
+  cellEditorMode: boolean;
+  clearOnFocus: boolean;
+  maxResults: number;
+}
+
+function PlaygroundDemo(args: PlaygroundArgs) {
+  const source = DATA_SOURCES[args.dataSource] ?? lookupUnits;
+  const [single, setSingle] = useState('');
+  const [multi, setMulti] = useState<string[]>([]);
+
+  return (
+    <div className="w-80 p-8">
+      {args.multiselect ? (
+        <MultiSelectTypeaheadInput
+          value={multi}
+          onValueChange={setMulti}
+          lookup={source}
+          placeholder={args.placeholder}
+          defaultOne={args.defaultOne}
+          disabled={args.disabled}
+          cellEditorMode={args.cellEditorMode}
+          maxResults={args.maxResults}
         />
-      </div>
+      ) : (
+        <TypeaheadInput
+          value={single}
+          onValueChange={setSingle}
+          lookup={source}
+          placeholder={args.placeholder}
+          allowCreate={args.allowCreate}
+          disabled={args.disabled}
+          cellEditorMode={args.cellEditorMode}
+          clearOnFocus={args.clearOnFocus}
+          maxResults={args.maxResults}
+        />
+      )}
+      <p className="mt-2 text-xs text-muted-foreground">
+        Value:{' '}
+        <code>
+          {args.multiselect
+            ? multi.length > 0
+              ? multi.join(', ')
+              : '(empty)'
+            : single || '(empty)'}
+        </code>
+      </p>
     </div>
-  ),
+  );
+}
+
+/**
+ * Playground — toggle every prop via the controls panel. Pick a data source
+ * (two async lookups or a static array), switch between single and multiselect,
+ * and try `clearOnFocus`, `allowCreate`, `defaultOne`, `maxResults`, etc.
+ */
+export const Playground: StoryObj<PlaygroundArgs> = {
+  args: {
+    dataSource: 'Units (async fn)',
+    multiselect: false,
+    placeholder: 'Select…',
+    allowCreate: false,
+    defaultOne: true,
+    disabled: false,
+    cellEditorMode: false,
+    clearOnFocus: false,
+    maxResults: 8,
+  },
+  argTypes: {
+    dataSource: { control: 'select', options: Object.keys(DATA_SOURCES) },
+    multiselect: { control: 'boolean', description: 'Render MultiSelectTypeaheadInput' },
+    placeholder: { control: 'text' },
+    allowCreate: { control: 'boolean', description: 'Single-select only' },
+    defaultOne: { control: 'boolean', description: 'Multiselect only' },
+    disabled: { control: 'boolean' },
+    cellEditorMode: { control: 'boolean' },
+    clearOnFocus: { control: 'boolean', description: 'Single-select only' },
+    maxResults: { control: { type: 'number', min: 1, max: 20, step: 1 } },
+  },
+  render: (args) => <PlaygroundDemo {...args} />,
 };
 
-/** Cell editor in an AG Grid — double-click the Unit column to edit. */
+interface UnitRow {
+  [key: string]: unknown;
+  item: string;
+  qty: number;
+  unit: string;
+}
+
+/** Cell editor in the canary DataGrid — double-click the Unit column to edit. */
 export const InGrid: StoryObj = {
   render: () => {
     const UnitCellEditor = useMemo(
@@ -103,13 +210,13 @@ export const InGrid: StoryObj = {
       [],
     );
 
-    const [rowData] = useState([
+    const [rowData] = useState<UnitRow[]>([
       { item: 'Hex Bolt M10x30', qty: 100, unit: 'each' },
       { item: 'Flat Washer 3/8"', qty: 500, unit: 'box' },
       { item: 'Spring Pin 4x20', qty: 50, unit: '' },
     ]);
 
-    const columnDefs = useMemo<ColDef[]>(
+    const columnDefs = useMemo<ColDef<UnitRow>[]>(
       () => [
         { field: 'item', headerName: 'Item', flex: 2 },
         { field: 'qty', headerName: 'Qty', width: 80 },
@@ -119,6 +226,7 @@ export const InGrid: StoryObj = {
           flex: 1,
           editable: true,
           cellEditor: UnitCellEditor,
+          cellEditorPopup: true,
         },
       ],
       [UnitCellEditor],
@@ -129,9 +237,7 @@ export const InGrid: StoryObj = {
         <p className="text-sm text-muted-foreground mb-4">
           Double-click the <strong>Unit</strong> column to open the typeahead cell editor.
         </p>
-        <div className="ag-theme-quartz w-[500px] h-[200px]">
-          <AgGridReact rowData={rowData} columnDefs={columnDefs} />
-        </div>
+        <DataGrid<UnitRow> rowData={rowData} columnDefs={columnDefs} height={220} editable />
       </div>
     );
   },

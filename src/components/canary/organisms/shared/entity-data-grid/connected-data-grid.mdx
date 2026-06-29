@@ -1,0 +1,317 @@
+{/* connected-data-grid.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as Stories from './connected-data-grid.stories';
+
+<Meta of={Stories} />
+
+# Connected Data Grid
+
+`createConnectedDataGrid<T>(config)` is the **stateful container** for persistent entity grids (vendors, items). It wraps the presentational [DataGrid molecule](?path=/docs/components-canary-molecules-datagrid--docs) and adds the two things a persistent grid needs: a **read source** and a **write/commit pipeline**. It is the renamed, write-path-capable successor to `createEntityDataGrid` (DQ-008).
+
+**Organism** &#8212; Canary | Factory: `createConnectedDataGrid<T>(config)` | Import: `@arda-cards/design-system/canary`
+
+> **Two tiers.** `DataGrid` is the ephemeral, read-once widget (e.g. a PO table that exists only to make a PDF). `ConnectedDataGrid` is the persistent container. See the [write-path design](https://arda-cards.github.io/documentation/roadmap/in-progress/vendor-page-and-standard-layout/connected-data-grid-write-path-design/) on the Arda documentation site for the full rationale and roadmap.
+
+---
+
+## Demo
+
+<Canvas of={Stories.Default} />
+
+---
+
+## When to choose this over `DataGrid`
+
+<table>
+  <thead>
+    <tr><th>Reach for <code>ConnectedDataGrid</code> when&#8230;</th><th>The bare <code>DataGrid</code> molecule is enough when&#8230;</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>The grid is an authoritative entity view (vendors, items, suppliers).</td>
+      <td>The grid is ephemeral &#8212; read-once, no persistence (e.g. a PO list rendered into a PDF).</td>
+    </tr>
+    <tr>
+      <td>Edits must round-trip to the server (single edits and/or bulk paste/fill).</td>
+      <td>Edits are scratch and discarded on refresh.</td>
+    </tr>
+    <tr>
+      <td>Adding rows must persist (draft &#8594; create on required-field completion).</td>
+      <td>No add-row flow, or add stays purely local.</td>
+    </tr>
+    <tr>
+      <td>You need server-side row model (SSRM) for large tables.</td>
+      <td>All rows fit comfortably in the client.</td>
+    </tr>
+  </tbody>
+</table>
+
+When in doubt, choose <code>ConnectedDataGrid</code>. Hand-rolling persistence around a bare <code>DataGrid</code> is the failure mode this two-tier split exists to prevent. See the [AG Grid Usage guide](https://arda-cards.github.io/documentation/process/craft/implementation/ag-grid-usage/) for the canonical decision matrix.
+
+---
+
+## Read model &#8212; `dataSource` (DQ-002)
+
+The read model is a **discriminated union** so invalid combinations are unrepresentable:
+
+<table>
+  <thead>
+    <tr><th>Mode</th><th>Shape</th><th>Use</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>client</code></td>
+      <td><code>{'{ mode: "client"; data: T[] }'}</code></td>
+      <td>Every row in memory; filter/sort/paginate in the browser. The idiomatic default for small/medium tables.</td>
+    </tr>
+    <tr>
+      <td><code>server</code></td>
+      <td><code>{'{ mode: "server"; getRows: (block) => Promise<{ rows; lastRow }> }'}</code></td>
+      <td>SSRM &#8212; blocks fetched from the server. Required for large tables (items). <strong>Wired in Phase 2</strong>; until then it renders no rows.</td>
+    </tr>
+  </tbody>
+</table>
+
+The deprecated flat <code>data: T[]</code> prop still works as implicit client mode (<code>dataSource</code> takes precedence), so existing consumers keep rendering untouched.
+
+---
+
+## Write path &#8212; `onCommit` vs `onRowPublish` (DQ-003)
+
+Every mutating grid operation &#8212; single edit, range paste, fill-down, cut and undo &#8212; surfaces as a stream of <code>cellValueChanged</code> events. One pipeline handles them all:
+
+> **accumulate dirty rows &#8594; flush on settle &#8594; (route by size &#8594; reconcile)**
+
+<table>
+  <thead>
+    <tr><th>Seam</th><th>Granularity</th><th>When to use</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>onCommit(changes)</code></td>
+      <td>Bulk &#8212; one batch per flush</td>
+      <td>Spreadsheet persistence (paste, fill, undo). Flushes on row-blur <em>and</em> <code>onPasteEnd</code>/<code>onFillEnd</code>/<code>onCutEnd</code>. The consumer routes by size (single <code>PUT …/{'{id}'}</code> vs atomic <code>PUT …/bulk</code>) and returns per-row results.</td>
+    </tr>
+    <tr>
+      <td><code>onRowPublish(rowId, changes, entity?)</code></td>
+      <td>Per row &#8212; one call per dirty row on blur</td>
+      <td>Legacy single-row auto-publish. Kept for backward compatibility.</td>
+    </tr>
+  </tbody>
+</table>
+
+When <code>onCommit</code> is provided it takes precedence and the bulk pipeline is active; otherwise the per-row path runs. Per-row results drive the <code>.ag-row-saving</code> / <code>.ag-row-error</code> visuals; because <code>/bulk</code> is atomic, a thrown <code>onCommit</code> marks the whole batch as error and keeps it dirty.
+
+> **Phase 0 scope.** This release introduces the **seam**: <code>dataSource</code> (client), the <code>onCommit</code> pipeline (accumulate &#8594; flush), and the forwarding below. Route-by-size, <code>valueParser</code> pre-validation and reconcile-from-response land in **Phase 1** (vendor write-back).
+
+---
+
+## Prop forwarding &#8212; `Omit`-extend (DQ-006)
+
+`ConnectedDataGridProps<T> extends Omit<DataGridProps<T>, OwnedByContainer>`. The container **owns** data + write-lifecycle + layout props (<code>rowData</code>, <code>columnDefs</code>, <code>onCellValueChanged</code>, <code>searchConfig</code>, …) &#8212; passing any of them is a **compile error**. Every other molecule prop flows through for free, so new capability props need no container edit:
+
+- <code>dataTypeDefinitions</code>, <code>columnTypes</code> &#8212; rich cell data types
+- <code>cellSelection</code> &#8212; range selection + fill handle
+- <code>clipboardPaste</code> &#8212; paste policy (<code>range</code> / <code>single</code> / <code>off</code>)
+- <code>undoRedoLimit</code> &#8212; undo/redo stack size
+- <code>onPasteEnd</code> / <code>onFillEnd</code> / <code>onCutEnd</code> &#8212; bulk flush points (composed with the pipeline)
+
+---
+
+## Required wiring checklist
+
+Minimum wiring to instantiate a persistent grid:
+
+<table>
+  <thead>
+    <tr><th>Prop / config</th><th>Required?</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>displayName</code>, <code>persistenceKeyPrefix</code></td>
+      <td>yes</td>
+      <td>Identity for the factory + localStorage column state.</td>
+    </tr>
+    <tr>
+      <td><code>columnDefs</code>, <code>defaultColDef</code></td>
+      <td>yes</td>
+      <td>Column model.</td>
+    </tr>
+    <tr>
+      <td><code>getEntityId(entity)</code></td>
+      <td>yes</td>
+      <td>Grid row id; <strong>must stay stable across the row's lifetime</strong>. For a draft row that auto-saves, keep the temp id; carry the server id separately.</td>
+    </tr>
+    <tr>
+      <td><code>dataSource</code></td>
+      <td>yes (<code>server</code> mode lands in Phase 2)</td>
+      <td><code>{`{ mode: 'client', data }`}</code> or <code>{`{ mode: 'server', getRows }`}</code>.</td>
+    </tr>
+    <tr>
+      <td><code>getServerId?(entity)</code></td>
+      <td>when add/update/delete are enabled</td>
+      <td>Returns the URL id for <code>PUT</code>/<code>DELETE</code>. Default: <code>getEntityId</code>. Override when a row's grid id is a draft temp id and the server id rides separately.</td>
+    </tr>
+    <tr>
+      <td><code>onCommit</code> <em>or</em> <code>onRowPublish</code></td>
+      <td>when editing</td>
+      <td><code>onCommit</code> is the bulk seam (preferred); <code>onRowPublish</code> is the per-row legacy seam.</td>
+    </tr>
+    <tr>
+      <td><code>requiredFields</code>, <code>newRowDefaults</code>, <code>onCreate</code></td>
+      <td>when adding rows</td>
+      <td>Draft &#8594; create lifecycle. See the next section.</td>
+    </tr>
+    <tr>
+      <td><code>onDelete</code></td>
+      <td>when deleting saved rows</td>
+      <td><strong>Designed, not yet wired.</strong> See <a href="https://arda-cards.github.io/documentation/roadmap/in-progress/vendor-page-and-standard-layout/add-rows-and-row-actions-design/">add-rows &amp; row-actions design</a>.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Draft &#8594; create &#8594; delete lifecycle
+
+Persistent grids that allow adding rows use a **draft** lifecycle: a freshly-added row lives only in the client until its required fields complete, at which point the container calls <code>onCreate</code> (a <code>POST</code> seam, separate from the <code>PUT</code> update path).
+
+**Status (2026-06-01):** the **add-only slice** is shipped on canary. Per-row delete, the structural undo of add/remove, and the "Ctrl+Z of a saved delete re-creates via POST" rule are designed but **not yet wired**.
+
+### What the container does
+
+<table>
+  <thead><tr><th>Step</th><th>Behavior</th></tr></thead>
+  <tbody>
+    <tr><td>Add</td><td><code>ref.addRow()</code> &#8594; molecule inserts a row with <code>newRowDefaults</code> + a temp grid id; container marks it <strong>draft</strong> (excluded from the <code>PUT</code> pipeline via an injected <code>isDraft</code> predicate).</td></tr>
+    <tr><td>Compose</td><td>User edits cells on the draft. Edits accumulate locally; the commit pipeline does <strong>not</strong> fire a <code>PUT</code> (no server id yet).</td></tr>
+    <tr><td>Complete</td><td>On row blur (or paste/fill flush), if every field in <code>requiredFields</code> is non-empty, the container calls <code>onCreate(row)</code>.</td></tr>
+    <tr><td>Reconcile</td><td>Container receives the authoritative entity back; merges via <code>applyTransaction({`{ update }`})</code>, marks the row <strong>saved</strong>. <strong>The grid id (<code>eId</code>) is unchanged</strong> &#8212; the server id rides on <code>serverId</code> (or wherever <code>getServerId</code> reads it).</td></tr>
+    <tr><td>Refresh</td><td>Drafts are client-only. A page refresh discards every row that never completed; saved rows persist.</td></tr>
+  </tbody>
+</table>
+
+### Vendor-page wiring (a working example)
+
+```tsx
+const { Component: VendorGrid } = createConnectedDataGrid<VendorRow>({
+  displayName: 'VendorGrid',
+  persistenceKeyPrefix: 'vendor-grid',
+  columnDefs,
+  defaultColDef: { sortable: true, resizable: true },
+  getEntityId: (v) => v.eId,
+  getServerId: (v) => v.serverId,            // separate from the grid id
+  requiredFields: ['name'],                  // the row auto-creates when name is non-empty
+  newRowDefaults: { roles: ['Vendor'], orderMethod: 'Online' },
+});
+
+function VendorsPage() {
+  const ref = useRef<ConnectedDataGridRef>(null);
+
+  return (
+    <VendorGrid
+      ref={ref}
+      dataSource={{ mode: 'client', data: vendors }}
+      enableCellEditing
+      undoRedoLimit={20}
+      cellSelection={{ handle: { mode: 'fill' } }}
+      onCreate={async (row) => {
+        const created = await fetch('/api/arda/business-affiliate', {
+          method: 'POST', body: JSON.stringify({ name: row.name }),
+        }).then((r) => r.json());
+        toast.success('New vendor saved');
+        return { ...row, serverId: created.data.payload.eId };  // eId preserved
+      }}
+      toolbar={
+        <ArdaActionToolbar
+          actions={[{ key: 'add', label: 'Add vendor', icon: Plus,
+                      onAction: () => ref.current?.addRow() }]}
+        />
+      }
+    />
+  );
+}
+```
+
+### Pitfalls
+
+- **Don't swap the grid id for the server id on reconcile.** Keep <code>eId</code> stable; AG Grid treats a changed row id as a new row (losing selection, edit focus, and undo continuity).
+- **Don't tint draft rows.** AG Grid does not re-run <code>getRowClass</code> on React state alone (a redraw is required), and a stuck tint is worse than no tint. The container deliberately leaves drafts untinted.
+- **Don't wire your own <code>onCellValueChanged</code> *and* an update seam without a draft guard.** The container's <code>isDraft</code> predicate is the guard; auto-publish churn on drafts steals cell focus and breaks undo.
+- **Add-only shipped, delete not.** <code>onDelete</code> + the "&#8943;" actions column + structural undo of add/remove are designed but pending. Don't ship a delete affordance without the contract from the design doc.
+
+Full design (including the saved-delete-undo "re-create via POST" rule): [add-rows &amp; row-actions design](https://arda-cards.github.io/documentation/roadmap/in-progress/vendor-page-and-standard-layout/add-rows-and-row-actions-design/).
+
+---
+
+## Story Index
+
+<table>
+  <thead>
+    <tr><th>Story</th><th>What it demonstrates</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><a href="?path=/story/components-canary-organisms-shared-connected-data-grid--default">Default</a></td><td>Client <code>dataSource</code> + bulk <code>onCommit</code> + range selection, fill handle, range paste and undo.</td></tr>
+    <tr><td><a href="?path=/story/components-canary-organisms-shared-connected-data-grid--server-source-placeholder">ServerSourcePlaceholder</a></td><td>The <code>server</code> (SSRM) mode placeholder &#8212; renders no rows until Phase 2.</td></tr>
+    <tr><td><a href="?path=/story/components-canary-organisms-shared-connected-data-grid--legacy-data-prop">LegacyDataProp</a></td><td>Backward-compatible flat <code>data</code> prop (implicit client mode).</td></tr>
+    <tr><td><a href="?path=/story/components-canary-organisms-shared-connected-data-grid--read-only">ReadOnly</a></td><td>No write seam &#8212; the commit pipeline stays inert.</td></tr>
+  </tbody>
+</table>
+
+---
+
+## Usage
+
+```tsx
+import {
+  createConnectedDataGrid,
+  type RowChange,
+  type CommitResult,
+  type ConnectedDataGridRef,
+} from '@arda-cards/design-system/canary';
+import type { Vendor } from '@/types';
+
+const { Component: VendorGrid } = createConnectedDataGrid<Vendor>({
+  displayName: 'VendorGrid',
+  persistenceKeyPrefix: 'vendor-grid',
+  columnDefs: vendorColumnDefs,
+  defaultColDef: { sortable: true, resizable: true },
+  getEntityId: (v) => v.entityId,
+});
+
+function VendorsPage() {
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+
+  const onCommit = async (changes: RowChange<Vendor>[]): Promise<CommitResult[]> => {
+    // Route by size: 1 row → PUT /{id}; many → one atomic PUT /bulk.
+    if (changes.length === 1) {
+      const rec = await api.updateVendor(changes[0].entity);
+      return [{ rowId: changes[0].rowId, status: 'ok', record: rec }];
+    }
+    const records = await api.bulkUpdateVendors(
+      changes.map((c) => ({ eId: c.rowId, payload: c.entity })),
+    );
+    return changes.map((c, i) => ({ rowId: c.rowId, status: 'ok', record: records[i] }));
+  };
+
+  return (
+    <VendorGrid
+      dataSource={{ mode: 'client', data: vendors }}
+      enableCellEditing
+      clipboardPaste="range"
+      undoRedoLimit={10}
+      cellSelection={{ handle: { mode: 'fill' } }}
+      onCommit={onCommit}
+    />
+  );
+}
+```
+
+---
+
+## Related
+
+- [Write-path design (documentation site)](https://arda-cards.github.io/documentation/roadmap/in-progress/vendor-page-and-standard-layout/connected-data-grid-write-path-design/) &#8212; the full design, decisions (DQ-001…DQ-008) and phased roadmap.
+- [Vendor Page &amp; Standard Layout project](https://arda-cards.github.io/documentation/roadmap/in-progress/vendor-page-and-standard-layout/) &#8212; the parent project on the documentation server.
+- [DataGrid Molecule](?path=/docs/components-canary-molecules-datagrid--docs) &#8212; the presentational widget this container composes.
+- [Entity Data Grid (deprecated alias)](?path=/docs/components-canary-organisms-shared-entity-data-grid--docs) &#8212; the prior `createEntityDataGrid` docs; still exported as an alias.

@@ -28,6 +28,8 @@ export interface ArdaBadgeRuntimeConfig {
   count?: number;
   /** Content to render. Ignored when `count` is provided. */
   children?: React.ReactNode;
+  /** When set, renders a dismiss (×) button. Clicking it calls this callback. */
+  onDismiss?: () => void;
 }
 
 /** Combined props for Badge. */
@@ -61,6 +63,7 @@ export function Badge({
   iconColor,
   collapsible,
   children,
+  onDismiss,
   className,
   ...props
 }: BadgeProps) {
@@ -77,12 +80,33 @@ export function Badge({
       className={cn(
         isCount && 'font-mono tabular-nums',
         variant === 'default' && 'bg-sidebar-primary text-sidebar-primary-foreground',
+        onDismiss && 'pr-0.5 gap-0.5 inline-flex items-center',
         className,
       )}
       {...(isCount && { role: 'status' })}
       {...props}
     >
       {display}
+      {onDismiss && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDismiss();
+          }}
+          className="ml-0.5 inline-flex h-3 w-3 items-center justify-center rounded-sm text-current opacity-60 hover:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          aria-label="Remove"
+        >
+          <svg width="8" height="8" viewBox="0 0 8 8" fill="none" aria-hidden="true">
+            <path
+              d="M1 1L7 7M7 1L1 7"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          </svg>
+        </button>
+      )}
     </BadgeBase>
   );
 }

@@ -426,9 +426,7 @@ body .ag-dnd-ghost * {
   border: none !important;
 }
 
-.ag-root-wrapper,
 .ag-root,
-.ag-header,
 .ag-body,
 .ag-body-viewport,
 .ag-center-cols-viewport,
@@ -438,7 +436,28 @@ body .ag-dnd-ghost * {
   border-color: transparent !important;
 }
 
-.ag-root-wrapper *:not(.ag-row):not(.ag-row *) {
+/* The global non-canary ag-theme-arda.css (loaded by .storybook/preview.ts at
+ * the same cascade layer) wipes the borders that the AG Grid v34 Theming API
+ * supplies via --ag-wrapper-border / --ag-header-row-border:
+ *   - sets `border-left: none !important; border-right: none !important;`
+ *     on .ag-root-wrapper (kills width AND style on the sides)
+ *   - sets `border-color: transparent !important` on a broad descendant
+ *     selector that catches .ag-header (specificity 0,3,0).
+ * These rules restore both. The doubled .ag-header.ag-header brings the
+ * header selector to specificity 0,3,0 so it ties the blanket and wins on
+ * source order. */
+.ag-root-wrapper {
+  border: 1px solid var(--ag-border-color) !important;
+}
+.ag-root-wrapper .ag-header.ag-header {
+  border-color: var(--ag-border-color) !important;
+  border-bottom-width: 2px !important;
+}
+
+/* Broad blanket: kill border-color on everything inside the grid except rows
+ * (rows carry their own row borders). Exclude .ag-header so AG Grid Theming
+ * API's header-row-border can render — restored by the counter-rule above. */
+.ag-root-wrapper *:not(.ag-row):not(.ag-row *):not(.ag-header) {
   border-color: transparent !important;
 }
 
@@ -926,6 +945,18 @@ body .ag-dnd-ghost * {
     font-size: 12px;
     min-width: 32px;
   }
+}
+
+/* On any touch-capable device (regardless of viewport width), force the
+ * pagination buttons to a 44×44 minimum tap target. Overrides the visual
+ * 32-min and small font-size set in the narrow-viewport block above. */
+@media (pointer: coarse) {
+  .ag-theme-arda .ag-pagination-footer .pagination-button {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px 10px;
+    font-size: 14px;
+  }
 
   .ag-theme-arda .ag-pagination-footer .pagination-page-info {
     font-size: 11px;
@@ -1024,7 +1055,7 @@ body .ag-dnd-ghost * {
 
   /* Override inherited grab cursor */
   cursor: pointer;
-  color: #737373;
+  color: var(--base-muted-foreground);
   font-size: 16px;
   line-height: 1;
   opacity: 0;
@@ -1047,8 +1078,8 @@ body .ag-dnd-ghost * {
 }
 
 .ag-theme-arda .ag-header-cell .arda-sort-header-btn:hover {
-  background-color: #e5e5e5;
-  color: #0a0a0a;
+  background-color: var(--base-border);
+  color: var(--base-foreground);
   opacity: 1;
 }
 
@@ -1056,8 +1087,8 @@ body .ag-dnd-ghost * {
 .arda-sort-menu-dropdown {
   position: fixed;
   z-index: 9999;
-  background: #fff;
-  border: 1px solid #e5e5e5;
+  background: var(--base-background);
+  border: 1px solid var(--base-border);
   border-radius: 8px;
   box-shadow:
     0 4px 6px -1px rgb(0 0 0 / 10%),
@@ -1079,12 +1110,12 @@ body .ag-dnd-ghost * {
   cursor: pointer;
   font-size: 14px;
   font-family: var(--ag-font-family, 'Geist', sans-serif);
-  color: #0a0a0a;
+  color: var(--base-foreground);
   text-align: left;
 }
 
 .arda-sort-menu-dropdown button:hover {
-  background-color: #f5f5f5;
+  background-color: var(--secondary);
 }
 
 } /* @layer base */
