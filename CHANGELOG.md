@@ -18,6 +18,11 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [6.0.1] - 2026-07-06
+
+### Fixed
+- **`TypeaheadInput` discarded typed input on blur (form mode)** — clicking outside the input after typing reverted the field instead of committing a value. It now resolves the typed text: an exact match (by label or value, case-insensitive) is selected even when `allowCreate` is off; otherwise, with `allowCreate` on, the typed text is committed; otherwise the highlighted result (falling back to the first) is selected; if nothing is loaded to resolve to, it reverts to the confirmed value. `cellEditorMode` and `clearOnFocus` blur behavior are unchanged.
+
 ## [6.0.0] - 2026-06-12
 
 ### Added

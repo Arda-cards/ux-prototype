@@ -311,8 +311,29 @@ export function TypeaheadInput({
             onValueChange(trimmed);
           }
         } else {
-          // Form mode: revert to confirmed value
-          if (inputValueRef.current.trim() !== valueRef.current) {
+          // Form mode: resolve the typed text to a concrete value on blur.
+          //   perfect match (label or value) → select it, even when create is on
+          //   else, create allowed           → commit the typed text
+          //   else, options present          → select the highlighted row
+          //                                     (falls back to the first result)
+          //   else                           → revert to the confirmed value
+          const trimmed = inputValueRef.current.trim();
+          const opts = optionsRef.current;
+          const perfect = opts.find(
+            (o) =>
+              o.value.toLowerCase() === trimmed.toLowerCase() ||
+              o.label.toLowerCase() === trimmed.toLowerCase(),
+          );
+          if (!trimmed) {
+            if (inputValueRef.current !== valueRef.current) setInputValue(valueRef.current);
+          } else if (perfect) {
+            selectOption(perfect);
+          } else if (allowCreate) {
+            createValue(trimmed);
+          } else if (opts.length > 0) {
+            const hi = highlightedRef.current;
+            selectOption((hi >= 0 && hi < opts.length ? opts[hi] : opts[0]) as TypeaheadOption);
+          } else {
             setInputValue(valueRef.current);
           }
         }
@@ -320,7 +341,7 @@ export function TypeaheadInput({
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [open, cellEditorMode, clearOnFocus, onValueChange]);
+  }, [open, cellEditorMode, clearOnFocus, allowCreate, onValueChange, selectOption, createValue]);
 
   // --- Keyboard — uses refs for stable callback ---
   const handleKeyDown = React.useCallback(

@@ -251,7 +251,7 @@ describe('TypeaheadInput', () => {
     expect(onValueChange).toHaveBeenCalledWith('Guava');
   });
 
-  it('reverts to the confirmed value on blur in form mode', async () => {
+  it('reverts to the confirmed value on blur when nothing matches (form mode)', async () => {
     const user = userEvent.setup();
     render(
       <>
@@ -264,6 +264,81 @@ describe('TypeaheadInput', () => {
     await user.type(input, 'xyz');
     await user.click(screen.getByText('outside'));
     expect(input.value).toBe('Apple');
+  });
+
+  it('selects an exact match on blur even when create is off (form mode)', async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    render(
+      <>
+        <Harness onValueChange={onValueChange} />
+        <button type="button">outside</button>
+      </>,
+    );
+    const input = screen.getByRole('combobox') as HTMLInputElement;
+    await user.click(input);
+    await user.type(input, 'Banana');
+    await screen.findByRole('option', { name: 'Banana' });
+    await user.click(screen.getByText('outside'));
+    expect(onValueChange).toHaveBeenLastCalledWith('Banana');
+    expect(input.value).toBe('Banana');
+  });
+
+  it('selects the highlighted row on blur for a partial match (create off)', async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    render(
+      <>
+        <Harness onValueChange={onValueChange} />
+        <button type="button">outside</button>
+      </>,
+    );
+    const input = screen.getByRole('combobox') as HTMLInputElement;
+    await user.click(input);
+    // 'Ap' matches Apple (default-highlighted) and Apricot.
+    await user.type(input, 'Ap');
+    // Wait for the debounced search to apply (Banana should be filtered out).
+    await waitFor(() =>
+      expect(screen.queryByRole('option', { name: 'Banana' })).not.toBeInTheDocument(),
+    );
+    await user.click(screen.getByText('outside'));
+    expect(onValueChange).toHaveBeenLastCalledWith('Apple');
+  });
+
+  it('honors an arrowed-to row on blur instead of the first result (create off)', async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    render(
+      <>
+        <Harness onValueChange={onValueChange} />
+        <button type="button">outside</button>
+      </>,
+    );
+    const input = screen.getByRole('combobox') as HTMLInputElement;
+    await user.click(input);
+    await user.type(input, 'Ap');
+    await screen.findByRole('option', { name: 'Apricot' });
+    // Move highlight from Apple (index 0) down to Apricot (index 1).
+    await user.keyboard('{ArrowDown}');
+    await user.click(screen.getByText('outside'));
+    expect(onValueChange).toHaveBeenLastCalledWith('Apricot');
+  });
+
+  it('commits the typed text on blur when create is on and nothing matches exactly', async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    render(
+      <>
+        <Harness allowCreate onValueChange={onValueChange} />
+        <button type="button">outside</button>
+      </>,
+    );
+    const input = screen.getByRole('combobox') as HTMLInputElement;
+    await user.click(input);
+    await user.type(input, 'Guava');
+    await user.click(screen.getByText('outside'));
+    expect(onValueChange).toHaveBeenLastCalledWith('Guava');
+    expect(input.value).toBe('Guava');
   });
 
   it('accepts the typed value on blur in cell editor mode', async () => {
