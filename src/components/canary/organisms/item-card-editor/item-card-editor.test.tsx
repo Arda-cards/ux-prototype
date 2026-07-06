@@ -36,7 +36,22 @@ vi.mock('@/components/canary/organisms/shared/image-upload-dialog/image-upload-d
 }));
 
 vi.mock('@/components/canary/molecules/typeahead-input/typeahead-input', () => ({
-  TypeaheadInput: () => null,
+  TypeaheadInput: ({
+    value,
+    onValueChange,
+    placeholder,
+  }: {
+    value: string;
+    onValueChange: (val: string) => void;
+    placeholder?: string;
+  }) => (
+    <input
+      data-testid="typeahead-input"
+      aria-label={placeholder}
+      value={value}
+      onChange={(e) => onValueChange(e.target.value)}
+    />
+  ),
 }));
 
 // Mock ImageDropZone so tests can synthesize file/url/error inputs without
@@ -284,5 +299,219 @@ describe('ItemCardEditor — drop-zone direct upload via ImageUploader Context',
       expect(screen.getByTestId('image-upload-dialog')).toBeInTheDocument();
     });
     expect(lastDialogProps?.existingImageUrl).toBe('https://cdn.example.com/existing.jpg');
+  });
+});
+
+describe('ItemCardEditor — MINIMUM → ORDER auto-mirror', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  function getMinQtyInput(): HTMLInputElement {
+    return screen.getByPlaceholderText('Min qty') as HTMLInputElement;
+  }
+  function getOrderQtyInput(): HTMLInputElement {
+    return screen.getByPlaceholderText('Order qty') as HTMLInputElement;
+  }
+  function getUnitInputs(): HTMLInputElement[] {
+    return screen.getAllByTestId('typeahead-input') as HTMLInputElement[];
+  }
+
+  it('mirrors minQty into orderQty while the cell is untouched', () => {
+    const onChange = vi.fn();
+    renderEditor({
+      fields: { ...EMPTY_ITEM_CARD_FIELDS, minQty: '', orderQty: '' },
+      onChange,
+    });
+
+    fireEvent.change(getMinQtyInput(), { target: { value: '5' } });
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ minQty: '5', orderQty: '5' }));
+  });
+
+  it('mirrors minUnit into orderUnit while the cell is untouched', () => {
+    const onChange = vi.fn();
+    renderEditor({
+      fields: { ...EMPTY_ITEM_CARD_FIELDS, minUnit: '', orderUnit: '' },
+      onChange,
+    });
+
+    const [minUnitInput] = getUnitInputs();
+    fireEvent.change(minUnitInput!, { target: { value: 'box' } });
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({ minUnit: 'box', orderUnit: 'box' }),
+    );
+  });
+
+  it('tracks qty and unit independently: touching orderQty does not stop unit mirroring', () => {
+    const onChange = vi.fn();
+    const { rerender } = renderEditor({
+      fields: {
+        ...EMPTY_ITEM_CARD_FIELDS,
+        minQty: '5',
+        orderQty: '5',
+        minUnit: 'box',
+        orderUnit: 'box',
+      },
+      onChange,
+    });
+
+    // User diverges ORDER qty.
+    fireEvent.change(getOrderQtyInput(), { target: { value: '10' } });
+    expect(onChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ minQty: '5', orderQty: '10' }),
+    );
+
+    // Parent re-renders with the new state.
+    rerender(
+      <ItemCardEditor
+        imageConfig={CONFIG}
+        unitLookup={async () => []}
+        fields={{
+          ...EMPTY_ITEM_CARD_FIELDS,
+          minQty: '5',
+          orderQty: '10',
+          minUnit: 'box',
+          orderUnit: 'box',
+        }}
+        onChange={onChange}
+      />,
+    );
+
+    // qty no longer mirrors…
+    fireEvent.change(getMinQtyInput(), { target: { value: '6' } });
+    expect(onChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ minQty: '6', orderQty: '10' }),
+    );
+
+    // …but unit still mirrors.
+    rerender(
+      <ItemCardEditor
+        imageConfig={CONFIG}
+        unitLookup={async () => []}
+        fields={{
+          ...EMPTY_ITEM_CARD_FIELDS,
+          minQty: '6',
+          orderQty: '10',
+          minUnit: 'box',
+          orderUnit: 'box',
+        }}
+        onChange={onChange}
+      />,
+    );
+    const [minUnitInput] = getUnitInputs();
+    fireEvent.change(minUnitInput!, { target: { value: 'pallet' } });
+    expect(onChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ minUnit: 'pallet', orderUnit: 'pallet' }),
+    );
+  });
+
+  it('does not mirror when initial fields are already diverged', () => {
+    const onChange = vi.fn();
+    renderEditor({
+      fields: { ...EMPTY_ITEM_CARD_FIELDS, minQty: '5', orderQty: '10' },
+      onChange,
+    });
+
+    fireEvent.change(getMinQtyInput(), { target: { value: '6' } });
+
+    expect(onChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ minQty: '6', orderQty: '10' }),
+    );
+  });
+
+  it('reseeds touched state when formInstanceKey changes (mirror resumes for equal new fields)', () => {
+    const onChange = vi.fn();
+    const baseProps = {
+      imageConfig: CONFIG,
+      unitLookup: async () => [],
+      onChange,
+    };
+
+    // Start diverged → mirror is dormant.
+    const { rerender } = render(
+      <ItemCardEditor
+        {...baseProps}
+        fields={{ ...EMPTY_ITEM_CARD_FIELDS, minQty: '5', orderQty: '10' }}
+        formInstanceKey="item-A"
+      />,
+    );
+    fireEvent.change(getMinQtyInput(), { target: { value: '6' } });
+    expect(onChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ minQty: '6', orderQty: '10' }),
+    );
+
+    // Switch to a new form instance with equal fields — mirror should resume.
+    rerender(
+      <ItemCardEditor
+        {...baseProps}
+        fields={{ ...EMPTY_ITEM_CARD_FIELDS, minQty: '', orderQty: '' }}
+        formInstanceKey="item-B"
+      />,
+    );
+    fireEvent.change(getMinQtyInput(), { target: { value: '7' } });
+    expect(onChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ minQty: '7', orderQty: '7' }),
+    );
+  });
+
+  it('does not auto-update touched state when fields change without a formInstanceKey bump (documented limitation)', () => {
+    const onChange = vi.fn();
+    const baseProps = {
+      imageConfig: CONFIG,
+      unitLookup: async () => [],
+      onChange,
+    };
+
+    // Mount with equal fields — touched seeded to false.
+    const { rerender } = render(<ItemCardEditor {...baseProps} fields={EMPTY_ITEM_CARD_FIELDS} />);
+
+    // Parent swaps in already-diverged fields without bumping the key.
+    rerender(
+      <ItemCardEditor
+        {...baseProps}
+        fields={{ ...EMPTY_ITEM_CARD_FIELDS, minQty: '5', orderQty: '10' }}
+      />,
+    );
+
+    // Typing minQty still mirrors and overwrites the diverged orderQty — this
+    // is the documented behavior: hosts must bump formInstanceKey to reseed.
+    fireEvent.change(getMinQtyInput(), { target: { value: '7' } });
+    expect(onChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ minQty: '7', orderQty: '7' }),
+    );
+  });
+
+  it('does not mark touched when user types orderQty equal to current minQty', () => {
+    const onChange = vi.fn();
+    const baseProps = {
+      imageConfig: CONFIG,
+      unitLookup: async () => [],
+      onChange,
+    };
+
+    // User types orderQty equal to minQty — no divergence.
+    const { rerender } = render(
+      <ItemCardEditor
+        {...baseProps}
+        fields={{ ...EMPTY_ITEM_CARD_FIELDS, minQty: '5', orderQty: '5' }}
+      />,
+    );
+    fireEvent.change(getOrderQtyInput(), { target: { value: '5' } });
+
+    // Subsequent minQty change must still mirror — touched should not have flipped.
+    rerender(
+      <ItemCardEditor
+        {...baseProps}
+        fields={{ ...EMPTY_ITEM_CARD_FIELDS, minQty: '5', orderQty: '5' }}
+      />,
+    );
+    fireEvent.change(getMinQtyInput(), { target: { value: '8' } });
+    expect(onChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ minQty: '8', orderQty: '8' }),
+    );
   });
 });

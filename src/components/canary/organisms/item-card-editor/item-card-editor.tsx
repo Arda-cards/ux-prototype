@@ -19,20 +19,24 @@ import type {
 } from '@/types/canary/utilities/image-field-config';
 import { useImageUploader } from '@/types/canary/utilities/image-uploader';
 
+import {
+  applyFieldUpdate,
+  deriveOrderTouched,
+  EMPTY_ITEM_CARD_FIELDS,
+  MIN_UNIT,
+  MIN_QTY,
+  ORDER_QTY,
+  ORDER_UNIT,
+  type ItemCardFields,
+} from './item-card-editor-state';
+
 import qrCodeDefaultUrl from './qr-code.png';
 
-// --- Interfaces ---
+// Re-export the data model so existing barrel imports
+// (`./item-card-editor`) keep resolving.
+export { EMPTY_ITEM_CARD_FIELDS, type ItemCardFields };
 
-/** Field values for the item card. */
-export interface ItemCardFields {
-  title: string;
-  minQty: string;
-  minUnit: string;
-  orderQty: string;
-  orderUnit: string;
-  imageUrl: string | null;
-  accentColor: string;
-}
+// --- Interfaces ---
 
 /** Init configuration for ItemCardEditor. */
 export interface ItemCardEditorInitProps {
@@ -78,6 +82,23 @@ export interface ItemCardEditorRuntimeProps {
     iconColor?: string;
     fields: Partial<Record<keyof ItemCardFields, () => void>>;
   };
+  /**
+   * Identity key for the form instance currently being edited (e.g. an item
+   * id, or `'new'` for an empty form). Whenever its value changes, the
+   * editor reseeds its internal "user diverged ORDER from MINIMUM"
+   * tracking from the current `fields`:
+   *
+   * - cells where `minQty === orderQty` (and `minUnit === orderUnit`) resume
+   *   auto-mirroring on subsequent MINIMUM edits;
+   * - cells that already differ are treated as user-diverged and stay
+   *   independent until reseed.
+   *
+   * Required for any host that mounts the editor once and then loads data
+   * asynchronously — `fields` arriving after mount does NOT by itself
+   * change the touched flags. Bump this key on every load/duplicate/reset
+   * path so the editor knows to re-derive.
+   */
+  formInstanceKey?: string | number;
 }
 
 /** Combined props for ItemCardEditor. */
@@ -116,6 +137,7 @@ export function ItemCardEditor({
   onUploadError,
   qrCodeUrl,
   autoFill,
+  formInstanceKey,
 }: ItemCardEditorProps) {
   const uploader = useImageUploader();
   const [dialogOpen, setDialogOpen] = React.useState(false);
@@ -155,9 +177,26 @@ export function ItemCardEditor({
   const onUploadErrorRef = React.useRef(onUploadError);
   onUploadErrorRef.current = onUploadError;
 
+  // Track whether the user has manually diverged the ORDER side of the
+  // card from MINIMUM, per-cell. While a cell is not touched, MINIMUM
+  // edits auto-mirror into ORDER. The transition rules live in
+  // `applyFieldUpdate`; the ref just persists the current touched state
+  // across renders without causing one.
+  const orderTouchedRef = React.useRef(deriveOrderTouched(fields));
+
+  // Reseed from the current `fields` prop on form-identity changes. We omit
+  // `fields` from deps intentionally — async `fields` updates that arrive
+  // without an identity bump must NOT silently re-derive touched flags (that
+  // would let a host's just-typed values reset divergence tracking).
+  React.useEffect(() => {
+    orderTouchedRef.current = deriveOrderTouched(fields);
+  }, [formInstanceKey]);
+
   const updateField = React.useCallback(
     <K extends keyof ItemCardFields>(key: K, value: ItemCardFields[K]) => {
-      onChangeRef.current({ ...fieldsRef.current, [key]: value });
+      const result = applyFieldUpdate(fieldsRef.current, orderTouchedRef.current, key, value);
+      orderTouchedRef.current = result.touched;
+      onChangeRef.current(result.fields);
     },
     [],
   );
@@ -224,16 +263,16 @@ export function ItemCardEditor({
     {
       icon: PackageMinus,
       label: 'Minimum',
-      qtyKey: 'minQty' as const,
-      unitKey: 'minUnit' as const,
+      qtyKey: MIN_QTY,
+      unitKey: MIN_UNIT,
       qtyPlaceholder: 'Min qty',
       unitPlaceholder: 'Units',
     },
     {
       icon: Package,
       label: 'Order',
-      qtyKey: 'orderQty' as const,
-      unitKey: 'orderUnit' as const,
+      qtyKey: ORDER_QTY,
+      unitKey: ORDER_UNIT,
       qtyPlaceholder: 'Order qty',
       unitPlaceholder: 'Units',
     },
@@ -424,14 +463,3 @@ export function ItemCardEditor({
     </>
   );
 }
-
-/** Default empty fields for creating a new item. */
-export const EMPTY_ITEM_CARD_FIELDS: ItemCardFields = {
-  title: '',
-  minQty: '',
-  minUnit: '',
-  orderQty: '',
-  orderUnit: '',
-  imageUrl: null,
-  accentColor: 'GRAY',
-};

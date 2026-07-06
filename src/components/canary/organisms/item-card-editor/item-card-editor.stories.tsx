@@ -68,3 +68,25 @@ export const EditExisting: StoryObj = {
     />
   ),
 };
+
+/**
+ * Edit an item whose MINIMUM and ORDER values already match. Because the
+ * cells are not diverged at load, MINIMUM edits auto-mirror into ORDER
+ * (each cell tracked independently). Editing ORDER away from MINIMUM
+ * stops mirroring on that cell only.
+ */
+export const EditWithEqualValues: StoryObj = {
+  render: () => (
+    <ItemCardEditorDemo
+      initialFields={{
+        title: 'Hex Bolt M10x30',
+        minQty: '100',
+        minUnit: 'each',
+        orderQty: '100',
+        orderUnit: 'each',
+        imageUrl: MOCK_ITEM_IMAGE,
+        accentColor: 'BLUE',
+      }}
+    />
+  ),
+};
