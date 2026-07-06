@@ -297,7 +297,10 @@ describe('TypeaheadInput', () => {
     await user.click(input);
     // 'Ap' matches Apple (default-highlighted) and Apricot.
     await user.type(input, 'Ap');
-    await screen.findByRole('option', { name: 'Apple' });
+    // Wait for the debounced search to apply (Banana should be filtered out).
+    await waitFor(() =>
+      expect(screen.queryByRole('option', { name: 'Banana' })).not.toBeInTheDocument(),
+    );
     await user.click(screen.getByText('outside'));
     expect(onValueChange).toHaveBeenLastCalledWith('Apple');
   });
