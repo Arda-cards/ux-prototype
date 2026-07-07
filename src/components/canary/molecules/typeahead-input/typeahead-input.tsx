@@ -142,16 +142,6 @@ export function TypeaheadInput({
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const popoverRef = React.useRef<HTMLDivElement>(null);
 
-  // Refs for values used in stable callbacks
-  const valueRef = React.useRef(value);
-  valueRef.current = value;
-  const inputValueRef = React.useRef(inputValue);
-  inputValueRef.current = inputValue;
-  const optionsRef = React.useRef(options);
-  optionsRef.current = options;
-  const highlightedRef = React.useRef(highlightedIndex);
-  highlightedRef.current = highlightedIndex;
-
   // Sync external value changes
   React.useEffect(() => {
     setInputValue(value);
@@ -275,21 +265,22 @@ export function TypeaheadInput({
       setInputValue('');
       doSearch('');
     } else {
-      doSearch(inputValueRef.current);
+      doSearch(inputValue);
     }
-  }, [doSearch, clearOnFocus]);
+  }, [doSearch, clearOnFocus, inputValue]);
 
   // Clicking the input reopens the dropdown when it's already focused (focus
   // alone won't re-fire, e.g. after selecting an option closed it).
   const handleInputClick = React.useCallback(() => {
     if (!open) {
       setOpen(true);
-      doSearch(clearOnFocus ? '' : inputValueRef.current);
+      doSearch(clearOnFocus ? '' : inputValue);
       if (clearOnFocus) setInputValue('');
     }
-  }, [open, doSearch, clearOnFocus]);
+  }, [open, doSearch, clearOnFocus, inputValue]);
 
-  // Close on outside click — deps narrowed to [open, cellEditorMode] via refs
+  // Close on outside click. Only subscribed while open; re-subscribing when a
+  // dep (e.g. inputValue) changes is just a cheap listener swap.
   React.useEffect(() => {
     if (!open) return;
     const handleClickOutside = (e: MouseEvent) => {
@@ -303,11 +294,11 @@ export function TypeaheadInput({
         setOpen(false);
         if (clearOnFocus) {
           // clearOnFocus: blur without selecting → restore the original value
-          setInputValue(valueRef.current);
+          setInputValue(value);
         } else if (cellEditorMode) {
           // Cell editor: accept typed value on blur
-          const trimmed = inputValueRef.current.trim();
-          if (trimmed && trimmed !== valueRef.current) {
+          const trimmed = inputValue.trim();
+          if (trimmed && trimmed !== value) {
             onValueChange(trimmed);
           }
         } else {
@@ -317,43 +308,52 @@ export function TypeaheadInput({
           //   else, options present          → select the highlighted row
           //                                     (falls back to the first result)
           //   else                           → revert to the confirmed value
-          const trimmed = inputValueRef.current.trim();
-          const opts = optionsRef.current;
-          const perfect = opts.find(
+          const trimmed = inputValue.trim();
+          const perfect = options.find(
             (o) =>
               o.value.toLowerCase() === trimmed.toLowerCase() ||
               o.label.toLowerCase() === trimmed.toLowerCase(),
           );
           if (!trimmed) {
-            if (inputValueRef.current !== valueRef.current) setInputValue(valueRef.current);
+            if (inputValue !== value) setInputValue(value);
           } else if (perfect) {
             selectOption(perfect);
           } else if (allowCreate) {
             createValue(trimmed);
-          } else if (opts.length > 0) {
-            const hi = highlightedRef.current;
-            selectOption((hi >= 0 && hi < opts.length ? opts[hi] : opts[0]) as TypeaheadOption);
+          } else if (options.length > 0) {
+            const hi = highlightedIndex;
+            selectOption(
+              (hi >= 0 && hi < options.length ? options[hi] : options[0]) as TypeaheadOption,
+            );
           } else {
-            setInputValue(valueRef.current);
+            setInputValue(value);
           }
         }
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [open, cellEditorMode, clearOnFocus, allowCreate, onValueChange, selectOption, createValue]);
+  }, [
+    open,
+    cellEditorMode,
+    clearOnFocus,
+    allowCreate,
+    onValueChange,
+    selectOption,
+    createValue,
+    value,
+    inputValue,
+    options,
+    highlightedIndex,
+  ]);
 
-  // --- Keyboard — uses refs for stable callback ---
+  // --- Keyboard ---
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent) => {
       // clearOnFocus: Delete/Backspace with empty input clears the value and blurs
-      if (
-        clearOnFocus &&
-        (e.key === 'Delete' || e.key === 'Backspace') &&
-        inputValueRef.current === ''
-      ) {
+      if (clearOnFocus && (e.key === 'Delete' || e.key === 'Backspace') && inputValue === '') {
         e.preventDefault();
-        if (valueRef.current !== '') {
+        if (value !== '') {
           onValueChange('');
         }
         setOpen(false);
@@ -365,18 +365,19 @@ export function TypeaheadInput({
         if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
           e.preventDefault();
           setOpen(true);
-          doSearch(inputValueRef.current);
+          doSearch(inputValue);
         }
         return;
       }
 
-      const opts = optionsRef.current;
-      const hi = highlightedRef.current;
+      const opts = options;
+      const hi = highlightedIndex;
+      const trimmed = inputValue.trim();
       const total =
         opts.length +
         (allowCreate &&
-        inputValueRef.current.trim().length > 0 &&
-        !opts.some((o) => o.value.toLowerCase() === inputValueRef.current.trim().toLowerCase())
+        trimmed.length > 0 &&
+        !opts.some((o) => o.value.toLowerCase() === trimmed.toLowerCase())
           ? 1
           : 0);
 
@@ -393,16 +394,14 @@ export function TypeaheadInput({
           e.preventDefault();
           if (hi >= 0 && hi < opts.length) {
             selectOption(opts[hi] as TypeaheadOption);
-          } else if (hi === opts.length && total > opts.length) {
-            createValue(inputValueRef.current.trim());
           } else if (total > opts.length) {
-            createValue(inputValueRef.current.trim());
+            createValue(trimmed);
           }
           break;
         case 'Escape':
           e.preventDefault();
           setOpen(false);
-          setInputValue(valueRef.current);
+          setInputValue(value);
           break;
         case 'Tab':
           // In a grid, let AG Grid handle Tab (commit + move to the next
@@ -417,11 +416,10 @@ export function TypeaheadInput({
             let nextValue: string | null = null;
             if (hi >= 0 && hi < opts.length) {
               nextValue = (opts[hi] as TypeaheadOption).value;
-            } else {
-              const trimmed = inputValueRef.current.trim();
-              if (trimmed) nextValue = trimmed;
+            } else if (trimmed) {
+              nextValue = trimmed;
             }
-            if (nextValue !== null && nextValue !== valueRef.current) {
+            if (nextValue !== null && nextValue !== value) {
               setInputValue(nextValue);
               onValueChange(nextValue);
             }
@@ -431,8 +429,8 @@ export function TypeaheadInput({
           }
           if (hi >= 0 && hi < opts.length) {
             selectOption(opts[hi] as TypeaheadOption);
-          } else if (inputValueRef.current.trim() && allowCreate) {
-            createValue(inputValueRef.current.trim());
+          } else if (trimmed && allowCreate) {
+            createValue(trimmed);
           }
           setOpen(false);
           break;
@@ -447,7 +445,10 @@ export function TypeaheadInput({
       selectOption,
       createValue,
       onValueChange,
-      onCommit,
+      value,
+      inputValue,
+      options,
+      highlightedIndex,
     ],
   );
 

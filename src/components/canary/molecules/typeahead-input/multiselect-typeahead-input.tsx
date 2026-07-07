@@ -146,16 +146,6 @@ export function MultiSelectTypeaheadInput({
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const popoverRef = React.useRef<HTMLDivElement>(null);
 
-  // Refs for stable callbacks
-  const valueRef = React.useRef(value);
-  valueRef.current = value;
-  const inputValueRef = React.useRef(inputValue);
-  inputValueRef.current = inputValue;
-  const optionsRef = React.useRef(options);
-  optionsRef.current = options;
-  const highlightedRef = React.useRef(highlightedIndex);
-  highlightedRef.current = highlightedIndex;
-
   // --- Search ---
   const doSearch = React.useCallback(
     async (search: string) => {
@@ -216,17 +206,16 @@ export function MultiSelectTypeaheadInput({
 
   const toggleOption = React.useCallback(
     (optionValue: string) => {
-      const current = valueRef.current;
-      if (current.includes(optionValue)) {
-        onValueChange(current.filter((v) => v !== optionValue));
+      if (value.includes(optionValue)) {
+        onValueChange(value.filter((v) => v !== optionValue));
       } else {
-        onValueChange([...current, optionValue]);
+        onValueChange([...value, optionValue]);
       }
       // Keep dropdown open, clear search, refocus input
       setInputValue('');
       inputRef.current?.focus();
     },
-    [onValueChange],
+    [onValueChange, value],
   );
 
   // Choosing an option — from Enter or a click. With defaultOne, selecting
@@ -234,8 +223,8 @@ export function MultiSelectTypeaheadInput({
   const chooseOption = React.useCallback(
     (optionValue: string) => {
       if (defaultOne) {
-        if (!valueRef.current.includes(optionValue)) {
-          onValueChange([...valueRef.current, optionValue]);
+        if (!value.includes(optionValue)) {
+          onValueChange([...value, optionValue]);
         }
         setOpen(false);
         setInputValue('');
@@ -244,7 +233,7 @@ export function MultiSelectTypeaheadInput({
         toggleOption(optionValue);
       }
     },
-    [defaultOne, onValueChange, onCommit, toggleOption],
+    [defaultOne, onValueChange, onCommit, toggleOption, value],
   );
 
   // --- Input handlers ---
@@ -260,17 +249,17 @@ export function MultiSelectTypeaheadInput({
 
   const handleFocus = React.useCallback(() => {
     setOpen(true);
-    doSearch(inputValueRef.current);
-  }, [doSearch]);
+    doSearch(inputValue);
+  }, [doSearch, inputValue]);
 
   // Clicking the input reopens the dropdown when it's already focused (focus
   // alone won't re-fire, e.g. after a defaultOne selection closed it).
   const handleInputClick = React.useCallback(() => {
     if (!open) {
       setOpen(true);
-      doSearch(inputValueRef.current);
+      doSearch(inputValue);
     }
-  }, [open, doSearch]);
+  }, [open, doSearch, inputValue]);
 
   // Close on outside click. Attach the listener once on mount and read `open`
   // via a ref so the listener isn't torn down + re-added on every open/close
@@ -311,7 +300,7 @@ export function MultiSelectTypeaheadInput({
   // --- Token keyboard handler ---
   const handleTokenKeyDown = React.useCallback(
     (e: React.KeyboardEvent, tokenIndex: number) => {
-      const tokens = valueRef.current;
+      const tokens = value;
       switch (e.key) {
         case 'ArrowLeft':
           e.preventDefault();
@@ -331,7 +320,7 @@ export function MultiSelectTypeaheadInput({
           e.preventDefault();
           focusInput();
           setOpen(true);
-          doSearch(inputValueRef.current);
+          doSearch(inputValue);
           break;
         case 'Backspace':
         case 'Delete':
@@ -365,22 +354,22 @@ export function MultiSelectTypeaheadInput({
           break;
       }
     },
-    [focusToken, focusInput, doSearch, onValueChange],
+    [focusToken, focusInput, doSearch, onValueChange, value, inputValue],
   );
 
   // --- Input keyboard handler ---
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent) => {
       // Left arrow at cursor position 0 with empty input → focus last token
-      if (e.key === 'ArrowLeft' && inputValueRef.current === '' && valueRef.current.length > 0) {
+      if (e.key === 'ArrowLeft' && inputValue === '' && value.length > 0) {
         e.preventDefault();
-        focusToken(valueRef.current.length - 1);
+        focusToken(value.length - 1);
         return;
       }
 
       // Backspace with empty input removes last token
-      if (e.key === 'Backspace' && inputValueRef.current === '' && valueRef.current.length > 0) {
-        onValueChange(valueRef.current.slice(0, -1));
+      if (e.key === 'Backspace' && inputValue === '' && value.length > 0) {
+        onValueChange(value.slice(0, -1));
         return;
       }
 
@@ -388,13 +377,13 @@ export function MultiSelectTypeaheadInput({
         if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
           e.preventDefault();
           setOpen(true);
-          doSearch(inputValueRef.current);
+          doSearch(inputValue);
         }
         return;
       }
 
-      const opts = optionsRef.current;
-      const hi = highlightedRef.current;
+      const opts = options;
+      const hi = highlightedIndex;
 
       switch (e.key) {
         case 'ArrowDown':
@@ -406,9 +395,9 @@ export function MultiSelectTypeaheadInput({
           break;
         case 'ArrowUp':
           e.preventDefault();
-          if (hi <= 0 && valueRef.current.length > 0) {
+          if (hi <= 0 && value.length > 0) {
             // At top of dropdown → focus last token
-            focusToken(valueRef.current.length - 1);
+            focusToken(value.length - 1);
           } else if (opts.length > 0) {
             setHighlightedIndex((prev) => (prev - 1 + opts.length) % opts.length);
           }
@@ -437,7 +426,19 @@ export function MultiSelectTypeaheadInput({
           break;
       }
     },
-    [open, cellEditorMode, doSearch, focusToken, chooseOption, onValueChange, onCommit],
+    [
+      open,
+      cellEditorMode,
+      doSearch,
+      focusToken,
+      chooseOption,
+      onValueChange,
+      onCommit,
+      value,
+      inputValue,
+      options,
+      highlightedIndex,
+    ],
   );
 
   // Scroll highlighted item into view
@@ -614,7 +615,7 @@ export function MultiSelectTypeaheadInput({
             e.stopPropagation();
             focusToken(i);
             setOpen(true);
-            doSearch(inputValueRef.current);
+            doSearch(inputValue);
           }}
           onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => handleTokenKeyDown(e, i)}
