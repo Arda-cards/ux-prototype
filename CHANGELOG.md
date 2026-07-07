@@ -18,6 +18,11 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [6.0.3] - 2026-07-07
+
+### Fixed
+- **Typeahead inputs no longer mirror state in refs** — `TypeaheadInput` and `MultiSelectTypeaheadInput` duplicated `value`/`inputValue`/`options`/`highlightedIndex` into refs for "stable callbacks" that were never actually stable. Callbacks now read state directly with honest dependency arrays; no behavior change. (Review follow-up.)
+
 ## [6.0.2] - 2026-07-07
 
 ### Fixed
