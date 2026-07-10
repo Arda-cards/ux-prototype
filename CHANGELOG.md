@@ -18,6 +18,20 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [6.1.0] - 2026-07-11
+
+### Added
+- **TokenChip atom (canary)** — the recipient/token pill shared by chip fields and `MultiSelectTypeaheadInput` tokens: neutral rounded-full Badge, hover-revealed border, always-visible × remove, and an optional inline action the chip expands to fit on hover. Internal buttons fire on pointerdown and shield the event so host containers (token focus, dropdown open, double-press edit) don't also react. Docs cover TokenChip vs Badge usage.
+- **MultiSelectTypeaheadInput: `allowCreate`** — typed text with no exact option match gets a create row in the dropdown; Enter also creates (mirrors `TypeaheadInput`).
+- **MultiSelectTypeaheadInput: `tokenAction`** — per-token hover action (e.g. "set this recipient as the vendor default"), with `isVisible` per token.
+- **MultiSelectTypeaheadInput: `optionAction`** — hover/highlight-revealed action at the far right of each dropdown row (icon defaults to ×), e.g. forgetting a stale address; firing it never selects the option and optimistically drops the row.
+- **MultiSelectTypeaheadInput: `bare`** — chromeless variant for composed rows that own their field styling: no border/background/focus ring, tokens always wrap inline (no "+N more" collapse or editing overlay).
+- **MultiSelectTypeaheadInput: `editOnDoubleClick`** — double-clicking a token removes it and puts its text back into the input for editing (Gmail-style chips).
+
+### Fixed
+- **MultiSelectTypeaheadInput: outside click no longer discards typed text** — mirrors `TypeaheadInput`'s blur ladder: perfect match → select; `allowCreate` → commit the exact typed text; otherwise the highlighted (or first) result; otherwise discard.
+- **MultiSelectTypeaheadInput: Chrome saved-address autofill suppressed** — the search input opts out of browser and password-manager autofill (`autocomplete=off` alone regressed against Chrome's address heuristics on email-shaped inputs).
+
 ## [6.0.3] - 2026-07-07
 
 ### Fixed
