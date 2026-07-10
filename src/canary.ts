@@ -8,6 +8,8 @@ export { getCroppedImage } from './types/canary/utilities/get-cropped-image';
 export { setNestedField } from './types/canary/utilities/set-nested-field';
 export { useDraft } from './types/canary/utilities/use-draft';
 export type { UseDraftOptions, DraftState } from './types/canary/utilities/use-draft';
+export { useDebouncedCallback } from './types/canary/utilities/use-debounced-callback';
+export type { DebouncedCallback } from './types/canary/utilities/use-debounced-callback';
 export type {
   FieldError,
   ValidationResult,

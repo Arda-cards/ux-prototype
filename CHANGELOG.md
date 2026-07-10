@@ -22,6 +22,7 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
 
 ### Fixed
 - **Typeahead inputs no longer mirror state in refs** — `TypeaheadInput` and `MultiSelectTypeaheadInput` duplicated `value`/`inputValue`/`options`/`highlightedIndex` into refs to serve `useCallback` wrappers whose identity nothing consumed. Both the mirror refs and the `useCallback` ceremony are gone: handlers are plain functions closing over the current render's state. No behavior change. (Review follow-up.)
+- **Shared `useDebouncedCallback` hook (canary)** — new utility replacing the hand-rolled `debounceRef` + `setTimeout` pattern in `TypeaheadInput`, `MultiSelectTypeaheadInput`, and the item-grid `TypeaheadCellEditor`. Stable-identity debounced wrapper that always invokes the latest callback, exposes `cancel()`, and auto-cancels on unmount. Exported from the `canary` entry point.
 
 ## [6.0.2] - 2026-07-07
 

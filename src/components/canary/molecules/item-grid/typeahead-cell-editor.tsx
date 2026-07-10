@@ -4,6 +4,8 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useGridCellEditor } from 'ag-grid-react';
 import { Plus, Loader2, AlertCircle } from 'lucide-react';
 
+import { useDebouncedCallback } from '@/types/canary/utilities/use-debounced-callback';
+
 // --- Types ---
 
 export interface TypeaheadOption {
@@ -50,8 +52,14 @@ export function TypeaheadCellEditor({
 
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const abortRef = useRef<AbortController>(undefined);
+  // Monotonic token so only the latest lookup may apply its results. The
+  // lookup itself is not cancellable (it takes no AbortSignal); a superseded
+  // request simply has its result ignored. doSearch bumps the token on every
+  // keystroke so an in-flight request is invalidated immediately, not 150ms
+  // later when the debounced lookup fires. No unmount cleanup is needed: the
+  // debounce hook cancels its own timer, and a setState after unmount is a
+  // safe no-op in React 18+.
+  const searchSeqRef = useRef(0);
   const wasCancelledRef = useRef(false);
 
   useGridCellEditor({
@@ -65,10 +73,6 @@ export function TypeaheadCellEditor({
       inputRef.current?.select();
     });
     doSearch(inputValue || '');
-    return () => {
-      clearTimeout(debounceRef.current);
-      abortRef.current?.abort();
-    };
   }, []); // intentionally run only on mount
 
   // Scroll highlighted item into view
@@ -78,35 +82,34 @@ export function TypeaheadCellEditor({
     item?.scrollIntoView({ block: 'nearest' });
   }, [highlightedIndex]);
 
+  const debouncedLookup = useDebouncedCallback(async (search: string) => {
+    const seq = ++searchSeqRef.current;
+
+    try {
+      const results = await lookup(search);
+      if (seq === searchSeqRef.current) {
+        setOptions(results.slice(0, 8));
+        setHighlightedIndex(results.length > 0 ? 0 : -1);
+        setError(false);
+      }
+    } catch {
+      if (seq === searchSeqRef.current) {
+        setOptions([]);
+        setError(true);
+      }
+    } finally {
+      if (seq === searchSeqRef.current) setLoading(false);
+    }
+  }, 150);
+
   const doSearch = useCallback(
     (search: string) => {
-      clearTimeout(debounceRef.current);
-      abortRef.current?.abort();
-
+      searchSeqRef.current += 1; // invalidate any in-flight lookup immediately
       setLoading(true);
       setError(false);
-      debounceRef.current = setTimeout(async () => {
-        const controller = new AbortController();
-        abortRef.current = controller;
-
-        try {
-          const results = await lookup(search);
-          if (!controller.signal.aborted) {
-            setOptions(results.slice(0, 8));
-            setHighlightedIndex(results.length > 0 ? 0 : -1);
-            setError(false);
-          }
-        } catch {
-          if (!controller.signal.aborted) {
-            setOptions([]);
-            setError(true);
-          }
-        } finally {
-          if (!controller.signal.aborted) setLoading(false);
-        }
-      }, 150);
+      debouncedLookup(search);
     },
-    [lookup],
+    [debouncedLookup],
   );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

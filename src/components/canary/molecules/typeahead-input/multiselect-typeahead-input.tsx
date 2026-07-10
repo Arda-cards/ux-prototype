@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Check, Loader2, AlertCircle } from 'lucide-react';
 
 import { cn } from '@/types/canary/utilities/utils';
+import { useDebouncedCallback } from '@/types/canary/utilities/use-debounced-callback';
 import { Badge } from '@/components/canary/atoms/badge/badge';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/canary/primitives/popover';
 
@@ -141,10 +142,15 @@ export function MultiSelectTypeaheadInput({
   const inputRef = React.useRef<HTMLInputElement>(null);
   const tokenRefs = React.useRef<(HTMLSpanElement | null)[]>([]);
   const listRef = React.useRef<HTMLDivElement>(null);
-  const debounceRef = React.useRef<ReturnType<typeof setTimeout>>(undefined);
-  const abortRef = React.useRef<AbortController>(undefined);
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const popoverRef = React.useRef<HTMLDivElement>(null);
+
+  // Monotonic token so only the latest search may apply its results. The
+  // lookup itself is not cancellable (MultiSelectSource takes no AbortSignal);
+  // a superseded request simply has its result ignored. No unmount cleanup is
+  // needed either: the debounce hook cancels its own timer, and a setState
+  // after unmount is a safe no-op in React 18+.
+  const searchSeqRef = React.useRef(0);
 
   // --- Search ---
   // Handlers here and below are plain functions, not useCallback: nothing
@@ -152,44 +158,27 @@ export function MultiSelectTypeaheadInput({
   // holding a reference), so they can simply close over the current render's
   // state.
   const doSearch = async (search: string) => {
-    abortRef.current?.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
+    const seq = ++searchSeqRef.current;
 
     setLoading(true);
     setError(false);
 
     try {
       const results = await lookupFn(search);
-      if (controller.signal.aborted) return;
+      if (seq !== searchSeqRef.current) return; // superseded by a newer search
       const sliced = results.slice(0, maxResults);
       setOptions(sliced);
       setHighlightedIndex(sliced.length > 0 ? 0 : -1);
       setLoading(false);
     } catch {
-      if (controller.signal.aborted) return;
+      if (seq !== searchSeqRef.current) return;
       setError(true);
       setLoading(false);
       setOptions([]);
     }
   };
 
-  const debouncedSearch = (search: string) => {
-    clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => doSearch(search), DEBOUNCE_MS);
-  };
-
-  // Cleanup on unmount. We intentionally do NOT abort the in-flight lookup
-  // here — under React StrictMode the mount effect is double-invoked on the
-  // same DOM, and aborting would cancel the dropdown's initial search while the
-  // re-run focus() is a no-op (input already focused), leaving `loading` stuck.
-  // Search-racing is handled by the abort inside doSearch; stale setState after
-  // a real unmount is a safe no-op in React 18+.
-  React.useEffect(() => {
-    return () => {
-      clearTimeout(debounceRef.current);
-    };
-  }, []);
+  const debouncedSearch = useDebouncedCallback(doSearch, DEBOUNCE_MS);
 
   // Auto-focus input on mount in cell editor mode so the dropdown opens
   // immediately and all tokens are visible for keyboard navigation.

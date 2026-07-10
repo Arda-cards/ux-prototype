@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Plus, Loader2, AlertCircle } from 'lucide-react';
 
 import { cn } from '@/types/canary/utilities/utils';
+import { useDebouncedCallback } from '@/types/canary/utilities/use-debounced-callback';
 import { Input } from '@/components/canary/primitives/input';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/canary/primitives/popover';
 
@@ -137,10 +138,15 @@ export function TypeaheadInput({
 
   const inputRef = React.useRef<HTMLInputElement>(null);
   const listRef = React.useRef<HTMLDivElement>(null);
-  const debounceRef = React.useRef<ReturnType<typeof setTimeout>>(undefined);
-  const abortRef = React.useRef<AbortController>(undefined);
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const popoverRef = React.useRef<HTMLDivElement>(null);
+
+  // Monotonic token so only the latest search may apply its results. The
+  // lookup itself is not cancellable (TypeaheadSource takes no AbortSignal);
+  // a superseded request simply has its result ignored. No unmount cleanup is
+  // needed either: the debounce hook cancels its own timer, and a setState
+  // after unmount is a safe no-op in React 18+.
+  const searchSeqRef = React.useRef(0);
 
   // Sync external value changes
   React.useEffect(() => {
@@ -161,60 +167,27 @@ export function TypeaheadInput({
   // holding a reference), so they can simply close over the current render's
   // state.
   const doSearch = async (search: string) => {
-    abortRef.current?.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
+    const seq = ++searchSeqRef.current;
 
     setLoading(true);
     setError(false);
 
     try {
       const results = await lookupFn(search);
-      if (controller.signal.aborted) return;
+      if (seq !== searchSeqRef.current) return; // superseded by a newer search
       const sliced = results.slice(0, maxResults);
       setOptions(sliced);
       setHighlightedIndex(sliced.length > 0 ? 0 : -1);
       setLoading(false);
     } catch {
-      if (controller.signal.aborted) return;
+      if (seq !== searchSeqRef.current) return;
       setError(true);
       setLoading(false);
       setOptions([]);
     }
   };
 
-  const debouncedSearch = (search: string) => {
-    clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => doSearch(search), DEBOUNCE_MS);
-  };
-
-  // Cleanup on unmount: abort any in-flight lookup so we don't waste server
-  // work or land stale responses on a remount of a similar component.
-  //
-  // React StrictMode complicates this: in dev the mount effect is double-
-  // invoked (mount → cleanup → mount) synchronously on the same DOM. Aborting
-  // in that synthetic cleanup would cancel the dropdown's initial search and
-  // leave `loading` stuck (the remount's focus() is a no-op since the input
-  // is already focused).
-  //
-  // The fix defers the abort one event-loop tick. StrictMode's remount runs
-  // synchronously, so the next effect call cancels the queued abort before it
-  // fires. A real unmount has no follow-up effect, so the abort proceeds.
-  const pendingAbortRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-  React.useEffect(() => {
-    // Remount: cancel any abort queued by a previous synthetic cleanup.
-    if (pendingAbortRef.current) {
-      clearTimeout(pendingAbortRef.current);
-      pendingAbortRef.current = null;
-    }
-    return () => {
-      clearTimeout(debounceRef.current);
-      pendingAbortRef.current = setTimeout(() => {
-        abortRef.current?.abort();
-        pendingAbortRef.current = null;
-      }, 0);
-    };
-  }, []);
+  const debouncedSearch = useDebouncedCallback(doSearch, DEBOUNCE_MS);
 
   // --- Selection ---
   const selectOption = (opt: TypeaheadOption) => {
