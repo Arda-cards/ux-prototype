@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Check, Loader2, AlertCircle } from 'lucide-react';
+import { Check, Loader2, AlertCircle, Plus } from 'lucide-react';
 
 import { cn } from '@/types/canary/utilities/utils';
 import { useDebouncedCallback } from '@/types/canary/utilities/use-debounced-callback';
@@ -35,6 +35,21 @@ function normalizeLookup(
     const q = search.trim().toLowerCase();
     return q ? options.filter((o) => o.label.toLowerCase().includes(q)) : options;
   };
+}
+
+/**
+ * Optional per-token action rendered inside each token badge (revealed on
+ * hover / token focus). Example: a direct-send composer marks one recipient
+ * as the vendor's default.
+ */
+export interface MultiSelectTokenAction {
+  /** Accessible label + tooltip for the action on a given token. */
+  label: (value: string) => string;
+  /** Icon rendered inside the action button (sized by the caller). */
+  icon: React.ReactNode;
+  onAction: (value: string) => void;
+  /** Whether the action shows for this token. Defaults to always visible. */
+  isVisible?: (value: string) => boolean;
 }
 
 export interface MultiSelectTypeaheadInputProps extends Omit<
@@ -75,6 +90,14 @@ export interface MultiSelectTypeaheadInputProps extends Omit<
   onCommit?: () => void;
   /** Maximum number of dropdown results to show. Defaults to 8. */
   maxResults?: number;
+  /**
+   * Allow creating values not in the lookup results. When the typed text has
+   * no exact option match and isn't already selected, the dropdown offers a
+   * create row (mirrors `TypeaheadInput`'s `allowCreate`).
+   */
+  allowCreate?: boolean;
+  /** Per-token hover action (e.g. "set as default"). */
+  tokenAction?: MultiSelectTokenAction;
   /**
    * Cell geometry for `cellEditorMode` (popup). The editor matches the cell's
    * pixel width and uses the row height as its minimum height, so a single-line
@@ -119,6 +142,8 @@ export function MultiSelectTypeaheadInput({
   defaultOne = true,
   onCommit,
   maxResults = DEFAULT_MAX_RESULTS,
+  allowCreate = false,
+  tokenAction,
   cellWidth,
   cellMinHeight,
   className,
@@ -214,6 +239,23 @@ export function MultiSelectTypeaheadInput({
       onCommit?.();
     } else {
       toggleOption(optionValue);
+    }
+  };
+
+  // Creating a typed value (allowCreate) — same close semantics as choosing.
+  const createValue = (raw: string) => {
+    const created = raw.trim();
+    if (!created) return;
+    if (!value.some((v) => v.toLowerCase() === created.toLowerCase())) {
+      onValueChange([...value, created]);
+    }
+    if (defaultOne) {
+      setOpen(false);
+      setInputValue('');
+      onCommit?.();
+    } else {
+      setInputValue('');
+      inputRef.current?.focus();
     }
   };
 
@@ -358,22 +400,30 @@ export function MultiSelectTypeaheadInput({
 
     const opts = options;
     const hi = highlightedIndex;
+    // The create row (allowCreate) occupies index opts.length when active.
+    const trimmed = inputValue.trim();
+    const canCreate =
+      allowCreate &&
+      trimmed.length > 0 &&
+      !opts.some((o) => o.value.toLowerCase() === trimmed.toLowerCase()) &&
+      !value.some((v) => v.toLowerCase() === trimmed.toLowerCase());
+    const total = opts.length + (canCreate ? 1 : 0);
 
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        // Guard against opts.length === 0 (possible while loading/error):
+        // Guard against total === 0 (possible while loading/error):
         // the modulo would produce NaN and break the highlight state.
-        if (opts.length === 0) break;
-        setHighlightedIndex((prev) => (prev + 1) % opts.length);
+        if (total === 0) break;
+        setHighlightedIndex((prev) => (prev + 1) % total);
         break;
       case 'ArrowUp':
         e.preventDefault();
         if (hi <= 0 && value.length > 0) {
           // At top of dropdown → focus last token
           focusToken(value.length - 1);
-        } else if (opts.length > 0) {
-          setHighlightedIndex((prev) => (prev - 1 + opts.length) % opts.length);
+        } else if (total > 0) {
+          setHighlightedIndex((prev) => (prev - 1 + total) % total);
         }
         break;
       case 'Enter':
@@ -382,6 +432,9 @@ export function MultiSelectTypeaheadInput({
           const opt = opts[hi];
           if (hi >= 0 && opt) {
             chooseOption(opt.value);
+          } else if (canCreate) {
+            // Highlight on the create row, or plain Enter on typed text.
+            createValue(inputValue);
           }
         }
         break;
@@ -394,6 +447,10 @@ export function MultiSelectTypeaheadInput({
         // In a grid, let AG Grid handle Tab (commit + move to the next
         // editable cell). Just close the dropdown; do NOT stopEditing here or
         // focus escapes to the next row.
+        if (!cellEditorMode && canCreate) {
+          // Tab with un-committed typed text keeps it (mirrors TypeaheadInput).
+          createValue(inputValue);
+        }
         setOpen(false);
         setInputValue('');
         if (!cellEditorMode) onCommit?.();
@@ -408,7 +465,15 @@ export function MultiSelectTypeaheadInput({
     item?.scrollIntoView({ block: 'nearest' });
   }, [highlightedIndex]);
 
-  const showDropdown = open && (loading || error || options.length > 0);
+  // Create row visibility (the keyboard handler recomputes this inline).
+  const trimmedInput = inputValue.trim();
+  const showCreate =
+    allowCreate &&
+    trimmedInput.length > 0 &&
+    !options.some((o) => o.value.toLowerCase() === trimmedInput.toLowerCase()) &&
+    !value.some((v) => v.toLowerCase() === trimmedInput.toLowerCase());
+
+  const showDropdown = open && (loading || error || options.length > 0 || showCreate);
 
   // Live region announcement
   const statusMessage = loading
@@ -521,7 +586,27 @@ export function MultiSelectTypeaheadInput({
           );
         })}
 
-      {!loading && !error && options.length === 0 && noResults}
+      {!loading && !error && showCreate && (
+        <div
+          id={optionId(options.length)}
+          role="option"
+          aria-selected={highlightedIndex === options.length}
+          className={cn(
+            'flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-primary',
+            highlightedIndex === options.length && 'bg-accent text-primary',
+          )}
+          onPointerDown={(e) => {
+            e.preventDefault();
+            createValue(trimmedInput);
+          }}
+          onMouseEnter={() => setHighlightedIndex(options.length)}
+        >
+          <Plus className="w-4 h-4" aria-hidden="true" />
+          {trimmedInput}
+        </div>
+      )}
+
+      {!loading && !error && options.length === 0 && !showCreate && noResults}
     </div>
   );
 
@@ -582,12 +667,37 @@ export function MultiSelectTypeaheadInput({
           onFocus={() => setFocusedTokenIndex(i)}
           onBlur={() => setFocusedTokenIndex(-1)}
           className={cn(
-            'shrink-0 rounded-md outline-none',
+            'group/token shrink-0 rounded-md outline-none',
             focusedTokenIndex === i && 'ring-2 ring-ring',
           )}
         >
           <Badge variant="secondary" className="text-xs">
             {tokenValue}
+            {tokenAction && (tokenAction.isVisible?.(tokenValue) ?? true) && (
+              <button
+                type="button"
+                tabIndex={-1}
+                aria-label={tokenAction.label(tokenValue)}
+                title={tokenAction.label(tokenValue)}
+                className={cn(
+                  'ml-1 inline-flex items-center rounded-sm text-muted-foreground transition-opacity hover:text-primary',
+                  // Hover/focus-revealed; space is always reserved so the
+                  // token width (and the overflow measurement) stays stable.
+                  'opacity-0 group-hover/token:opacity-100',
+                  focusedTokenIndex === i && 'opacity-100',
+                )}
+                onPointerDown={(e) => {
+                  // Don't let the token's own pointerdown (focus + dropdown
+                  // open) swallow the action.
+                  e.preventDefault();
+                  e.stopPropagation();
+                  tokenAction.onAction(tokenValue);
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {tokenAction.icon}
+              </button>
+            )}
           </Badge>
         </span>
       ))}
@@ -643,6 +753,10 @@ export function MultiSelectTypeaheadInput({
         {value.map((tokenValue) => (
           <Badge key={tokenValue} variant="secondary" className="text-xs">
             {tokenValue}
+            {/* Mirror the reserved action-button space so overflow math matches */}
+            {tokenAction && (tokenAction.isVisible?.(tokenValue) ?? true) && (
+              <span className="ml-1 inline-flex items-center opacity-0">{tokenAction.icon}</span>
+            )}
           </Badge>
         ))}
       </div>

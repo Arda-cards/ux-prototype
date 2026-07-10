@@ -569,6 +569,7 @@ export { MultiSelectTypeaheadInput } from './components/canary/molecules/typeahe
 export type {
   MultiSelectOption,
   MultiSelectSource,
+  MultiSelectTokenAction,
   MultiSelectTypeaheadInputProps,
 } from './components/canary/molecules/typeahead-input/multiselect-typeahead-input';
 

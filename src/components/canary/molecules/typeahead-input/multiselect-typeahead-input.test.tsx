@@ -30,6 +30,8 @@ interface HarnessProps {
   disabled?: boolean;
   maxResults?: number;
   cellEditorMode?: boolean;
+  allowCreate?: boolean;
+  tokenAction?: import('./multiselect-typeahead-input').MultiSelectTokenAction;
 }
 
 function Harness({
@@ -308,5 +310,112 @@ describe('MultiSelectTypeaheadInput', () => {
   it('auto-focuses and opens the dropdown on mount in cell editor mode', async () => {
     render(<Harness cellEditorMode />);
     expect(await screen.findByRole('listbox')).toBeInTheDocument();
+  });
+
+  describe('allowCreate', () => {
+    it('offers a create row for unmatched text and adds it as a token', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      render(<Harness allowCreate defaultOne={false} onValueChange={onValueChange} />);
+      await user.click(screen.getByRole('combobox'));
+      await user.keyboard('pepper@stark.example');
+      const createRow = await screen.findByText('pepper@stark.example');
+      await user.click(createRow.closest('[role="option"]') as HTMLElement);
+      expect(onValueChange).toHaveBeenCalledWith(['pepper@stark.example']);
+      // Input cleared, dropdown stays open (defaultOne={false})
+      expect(screen.getByRole('combobox')).toHaveValue('');
+    });
+
+    it('plain Enter on typed text creates the token', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      render(<Harness allowCreate defaultOne={false} onValueChange={onValueChange} />);
+      await user.click(screen.getByRole('combobox'));
+      await user.keyboard('zzz-unmatched');
+      await screen.findByText('zzz-unmatched');
+      // Wait out the search debounce so the stale focus-search options (and
+      // their highlight) are gone -- otherwise Enter selects, not creates.
+      await waitFor(() => expect(screen.queryByText('Vendor')).toBeNull());
+      await user.keyboard('{Enter}');
+      expect(onValueChange).toHaveBeenCalledWith(['zzz-unmatched']);
+    });
+
+    it('offers no create row when the text matches an option or a selected token', async () => {
+      const user = userEvent.setup();
+      render(<Harness allowCreate initialValue={['taken@x.com']} />);
+      await user.click(screen.getByRole('combobox'));
+      // Exact option match
+      await user.keyboard('Vendor');
+      await screen.findByRole('listbox');
+      const listbox = screen.getByRole('listbox');
+      expect(within(listbox).getAllByText('Vendor')).toHaveLength(1); // only the option, no create row
+      // Already-selected token
+      await user.clear(screen.getByRole('combobox'));
+      await user.keyboard('taken@x.com');
+      await waitFor(() => {
+        const rows = screen.queryAllByRole('option');
+        expect(rows.every((r) => !r.textContent?.includes('taken@x.com'))).toBe(true);
+      });
+    });
+
+    it('does not duplicate an existing token on repeated create (case-insensitive)', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      render(
+        <Harness
+          allowCreate
+          defaultOne={false}
+          initialValue={['a@x.com']}
+          onValueChange={onValueChange}
+        />,
+      );
+      await user.click(screen.getByRole('combobox'));
+      await user.keyboard('A@X.COM');
+      // Wait out the search debounce (see above) before Enter.
+      await waitFor(() => expect(screen.queryByText('Vendor')).toBeNull());
+      await user.keyboard('{Enter}');
+      expect(onValueChange).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('tokenAction', () => {
+    const starAction = (
+      overrides: Partial<import('./multiselect-typeahead-input').MultiSelectTokenAction> = {},
+    ) => ({
+      label: (v: string) => `Set ${v} as default`,
+      icon: <span data-testid="star-icon">*</span>,
+      onAction: vi.fn(),
+      ...overrides,
+    });
+
+    it('renders the action inside each token and fires with the token value', async () => {
+      const user = userEvent.setup();
+      const action = starAction();
+      render(<Harness initialValue={['a@x.com', 'b@x.com']} tokenAction={action} />);
+      const btn = screen.getByRole('button', { name: 'Set b@x.com as default' });
+      await user.pointer({ keys: '[MouseLeft]', target: btn });
+      expect(action.onAction).toHaveBeenCalledWith('b@x.com');
+    });
+
+    it('does not remove the token when the action is clicked', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      const action = starAction();
+      render(
+        <Harness initialValue={['a@x.com']} tokenAction={action} onValueChange={onValueChange} />,
+      );
+      await user.pointer({
+        keys: '[MouseLeft]',
+        target: screen.getByRole('button', { name: 'Set a@x.com as default' }),
+      });
+      expect(onValueChange).not.toHaveBeenCalled();
+    });
+
+    it('hides the action for tokens where isVisible is false', () => {
+      const action = starAction({ isVisible: (v: string) => v !== 'a@x.com' });
+      render(<Harness initialValue={['a@x.com', 'b@x.com']} tokenAction={action} />);
+      expect(screen.queryByRole('button', { name: 'Set a@x.com as default' })).toBeNull();
+      expect(screen.getByRole('button', { name: 'Set b@x.com as default' })).toBeInTheDocument();
+    });
   });
 });
