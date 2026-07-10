@@ -32,6 +32,8 @@ interface HarnessProps {
   cellEditorMode?: boolean;
   allowCreate?: boolean;
   tokenAction?: import('./multiselect-typeahead-input').MultiSelectTokenAction;
+  bare?: boolean;
+  editOnDoubleClick?: boolean;
 }
 
 function Harness({
@@ -391,7 +393,7 @@ describe('MultiSelectTypeaheadInput', () => {
     it('renders the action inside each token and fires with the token value', async () => {
       const user = userEvent.setup();
       const action = starAction();
-      render(<Harness initialValue={['a@x.com', 'b@x.com']} tokenAction={action} />);
+      render(<Harness initialValue={['a@x.com', 'b@x.com']} tokenAction={action} bare />);
       const btn = screen.getByRole('button', { name: 'Set b@x.com as default' });
       await user.pointer({ keys: '[MouseLeft]', target: btn });
       expect(action.onAction).toHaveBeenCalledWith('b@x.com');
@@ -402,7 +404,12 @@ describe('MultiSelectTypeaheadInput', () => {
       const onValueChange = vi.fn();
       const action = starAction();
       render(
-        <Harness initialValue={['a@x.com']} tokenAction={action} onValueChange={onValueChange} />,
+        <Harness
+          initialValue={['a@x.com']}
+          tokenAction={action}
+          onValueChange={onValueChange}
+          bare
+        />,
       );
       await user.pointer({
         keys: '[MouseLeft]',
@@ -413,9 +420,59 @@ describe('MultiSelectTypeaheadInput', () => {
 
     it('hides the action for tokens where isVisible is false', () => {
       const action = starAction({ isVisible: (v: string) => v !== 'a@x.com' });
-      render(<Harness initialValue={['a@x.com', 'b@x.com']} tokenAction={action} />);
+      render(<Harness initialValue={['a@x.com', 'b@x.com']} tokenAction={action} bare />);
       expect(screen.queryByRole('button', { name: 'Set a@x.com as default' })).toBeNull();
       expect(screen.getByRole('button', { name: 'Set b@x.com as default' })).toBeInTheDocument();
+    });
+  });
+
+  describe('bare', () => {
+    it('renders all tokens without the "+N more" collapse when idle', () => {
+      // jsdom reports zero widths, so the default (chromed) variant collapses
+      // everything behind "+N more" while idle — bare must never collapse.
+      render(<Harness initialValue={ROLES} bare />);
+      for (const role of ROLES) {
+        expect(screen.getByRole('button', { name: `${role}, remove` })).toBeInTheDocument();
+      }
+      expect(screen.queryByText(/more/)).toBeNull();
+    });
+
+    it('drops the input chrome from the token container', () => {
+      render(<Harness initialValue={['Vendor']} bare />);
+      const container = screen.getByRole('combobox').parentElement as HTMLElement;
+      expect(container.className).not.toMatch(/border-input/);
+      expect(container.className).toContain('flex-wrap');
+    });
+  });
+
+  describe('editOnDoubleClick', () => {
+    it('double-clicking a token removes it and puts its text in the input', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      // bare keeps tokens mounted in jsdom (zero measured widths would
+      // otherwise collapse the idle field to "+N more" and detach the target).
+      render(
+        <Harness
+          initialValue={['a@x.com', 'b@x.com']}
+          onValueChange={onValueChange}
+          allowCreate
+          editOnDoubleClick
+          bare
+        />,
+      );
+      await user.dblClick(screen.getByRole('button', { name: 'a@x.com, remove' }));
+      expect(onValueChange).toHaveBeenCalledWith(['b@x.com']);
+      expect(screen.getByRole('combobox')).toHaveValue('a@x.com');
+      expect(screen.getByRole('combobox')).toHaveFocus();
+    });
+
+    it('is inert without the prop', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      render(<Harness initialValue={['a@x.com']} onValueChange={onValueChange} bare />);
+      await user.dblClick(screen.getByRole('button', { name: 'a@x.com, remove' }));
+      expect(onValueChange).not.toHaveBeenCalled();
+      expect(screen.getByRole('combobox')).toHaveValue('');
     });
   });
 });

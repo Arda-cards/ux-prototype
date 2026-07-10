@@ -142,6 +142,53 @@ export const TokenAction: StoryObj = {
   },
 };
 
+/**
+ * `bare` + `editOnDoubleClick` — a chromeless labelled recipient row (the
+ * email-composer To field): no input border, tokens always wrap inline,
+ * double-clicking a token puts it back into the input for editing, and the
+ * hover star promotes an address to the default.
+ */
+export const BareRecipientRow: StoryObj = {
+  render: function BareRecipientRowStory() {
+    const emails = [
+      'pepper@starkindustries.com',
+      'orders@starkindustries.com',
+      'happy@starkindustries.com',
+    ];
+    const [value, setValue] = useState(emails.slice(0, 2));
+    const [defaultEmail, setDefaultEmail] = useState(emails[0]);
+
+    return (
+      <div className="w-96 p-8">
+        <div className="flex items-start gap-2 text-sm">
+          <span className="shrink-0 pt-1 font-medium text-foreground">To:</span>
+          <MultiSelectTypeaheadInput
+            className="flex-1 min-w-0"
+            value={value}
+            onValueChange={setValue}
+            lookup={emails}
+            allowCreate
+            defaultOne={false}
+            bare
+            editOnDoubleClick
+            placeholder="Add email..."
+            aria-label="To address"
+            tokenAction={{
+              label: (v) => `Set ${v} as the default`,
+              icon: <Star className="h-3 w-3" aria-hidden="true" />,
+              onAction: setDefaultEmail,
+              isVisible: (v) => v !== defaultEmail,
+            }}
+          />
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Default: <code>{defaultEmail}</code> — double-click a token to edit it.
+        </p>
+      </div>
+    );
+  },
+};
+
 interface SupplierRow {
   [key: string]: unknown;
   name: string;

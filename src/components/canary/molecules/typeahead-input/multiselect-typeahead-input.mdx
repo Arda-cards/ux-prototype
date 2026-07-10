@@ -190,6 +190,18 @@ column `cellEditor`.
       <td>Per-token action revealed on hover/focus: <code>&#123; label(value), icon, onAction(value), isVisible?(value) &#125;</code>. E.g. "set this recipient as the default".</td>
     </tr>
     <tr>
+      <td><code>bare</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Chromeless variant — no border, background, or focus ring; tokens always wrap inline (no "+N more" collapse or editing overlay). For composed rows that own their own field styling. Standalone only.</td>
+    </tr>
+    <tr>
+      <td><code>editOnDoubleClick</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Double-clicking a token removes it and puts its text back into the input for editing. Best with <code>allowCreate</code>.</td>
+    </tr>
+    <tr>
       <td><code>cellEditorMode</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>

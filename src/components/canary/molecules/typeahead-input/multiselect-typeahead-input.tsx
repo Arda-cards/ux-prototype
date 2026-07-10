@@ -99,6 +99,21 @@ export interface MultiSelectTypeaheadInputProps extends Omit<
   /** Per-token hover action (e.g. "set as default"). */
   tokenAction?: MultiSelectTokenAction;
   /**
+   * Chromeless variant — no border, background, padding, or focus ring, and
+   * tokens always wrap inline (no "+N more" collapse or editing overlay).
+   * For composed rows that own their own field styling, e.g. the labelled
+   * recipient rows of an email composer. Standalone only (not for
+   * `cellEditorMode`).
+   */
+  bare?: boolean;
+  /**
+   * Double-clicking a token removes it and puts its text back into the
+   * input for editing (Gmail-style recipient chips). Best with
+   * `allowCreate`, so the edited text can be re-committed even when it
+   * matches no lookup option.
+   */
+  editOnDoubleClick?: boolean;
+  /**
    * Cell geometry for `cellEditorMode` (popup). The editor matches the cell's
    * pixel width and uses the row height as its minimum height, so a single-line
    * popup aligns with the cell and grows taller as tokens wrap onto more lines.
@@ -109,6 +124,9 @@ export interface MultiSelectTypeaheadInputProps extends Omit<
 
 const DEFAULT_MAX_RESULTS = 8;
 const DEBOUNCE_MS = 250;
+// Two presses on the same token within this window count as a double-click
+// (matches typical OS double-click thresholds).
+const DOUBLE_PRESS_MS = 500;
 
 // Hoisted static JSX
 const loadingIndicator = (
@@ -144,6 +162,8 @@ export function MultiSelectTypeaheadInput({
   maxResults = DEFAULT_MAX_RESULTS,
   allowCreate = false,
   tokenAction,
+  bare = false,
+  editOnDoubleClick = false,
   cellWidth,
   cellMinHeight,
   className,
@@ -166,6 +186,8 @@ export function MultiSelectTypeaheadInput({
 
   const inputRef = React.useRef<HTMLInputElement>(null);
   const tokenRefs = React.useRef<(HTMLSpanElement | null)[]>([]);
+  // Last pointerdown on a token — for editOnDoubleClick double-press detection.
+  const lastTokenPress = React.useRef<{ token: string; time: number } | null>(null);
   const listRef = React.useRef<HTMLDivElement>(null);
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const popoverRef = React.useRef<HTMLDivElement>(null);
@@ -497,7 +519,7 @@ export function MultiSelectTypeaheadInput({
   const OVERFLOW_LABEL_WIDTH = 56; // "+N more" text approximate width
 
   React.useEffect(() => {
-    if (isEditing) {
+    if (bare || isEditing) {
       setVisibleCount(value.length);
       return;
     }
@@ -530,10 +552,10 @@ export function MultiSelectTypeaheadInput({
     observer.observe(container);
     requestAnimationFrame(measure);
     return () => observer.disconnect();
-  }, [value, isEditing]);
+  }, [value, isEditing, bare]);
 
-  const visibleTokens = isEditing ? value : value.slice(0, visibleCount);
-  const overflowCount = isEditing ? 0 : value.length - visibleCount;
+  const visibleTokens = bare || isEditing ? value : value.slice(0, visibleCount);
+  const overflowCount = bare || isEditing ? 0 : value.length - visibleCount;
 
   // --- Dropdown list content ---
   const dropdownList = (
@@ -614,14 +636,19 @@ export function MultiSelectTypeaheadInput({
   const inputArea = (
     <div
       className={cn(
-        'flex items-center gap-1 rounded-md border border-input bg-background px-2 py-1 text-sm',
-        // Focus treatment via Tailwind ring — soft (matches form inputs); a
-        // container, so :focus-within. Cell editor mode bumps it to full opacity.
-        'focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50',
+        'flex items-center gap-1 text-sm',
+        // Bare: chromeless, always wrapping — the composed row owns the field
+        // styling. Default: input chrome with a soft :focus-within ring
+        // (matches form inputs; a container, so not :focus). Cell editor mode
+        // bumps the ring to full opacity.
+        bare
+          ? 'flex-wrap bg-transparent'
+          : 'rounded-md border border-input bg-background px-2 py-1 ' +
+              'focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50',
         disabled && 'opacity-50 cursor-not-allowed',
         // Collapsed: single line, clip overflow so the field never grows tall.
         // Editing: wrap tokens onto multiple lines.
-        isEditing ? 'flex-wrap' : 'flex-nowrap overflow-hidden',
+        !bare && (isEditing ? 'flex-wrap' : 'flex-nowrap overflow-hidden'),
         // Cell editor mode renders in an AG Grid popup ('over' the cell). Keep
         // the normal input chrome (rounded border + focus ring from the base) —
         // a popup floats, so AG Grid does not draw a cell edit border around it.
@@ -632,8 +659,10 @@ export function MultiSelectTypeaheadInput({
         // 2px full-opacity accent ring in edit mode (3px reads too bold).
         cellEditorMode && 'min-w-60 px-3 py-1.5 focus-within:ring-2 focus-within:ring-ring',
         // Standalone editing: expand as an absolute overlay so wrapped tokens
-        // don't push surrounding layout.
+        // don't push surrounding layout. Bare mode always wraps inline instead
+        // (pushing layout, like any chip row).
         !cellEditorMode &&
+          !bare &&
           isEditing &&
           'absolute inset-x-0 top-0 z-10 bg-background border border-input rounded-md',
       )}
@@ -658,11 +687,35 @@ export function MultiSelectTypeaheadInput({
             // before the document outside-click closes the dropdown.
             e.preventDefault();
             e.stopPropagation();
+            // Double-press detection lives here rather than onDoubleClick:
+            // preventDefault on pointerdown suppresses the compatibility
+            // mouse-event sequence (click/dblclick) in browsers that follow
+            // the Pointer Events spec.
+            const now = Date.now();
+            const prev = lastTokenPress.current;
+            lastTokenPress.current = { token: tokenValue, time: now };
+            if (
+              editOnDoubleClick &&
+              prev &&
+              prev.token === tokenValue &&
+              now - prev.time < DOUBLE_PRESS_MS
+            ) {
+              // Put the token back into the input for editing.
+              lastTokenPress.current = null;
+              onValueChange(value.filter((v) => v !== tokenValue));
+              setInputValue(tokenValue);
+              setFocusedTokenIndex(-1);
+              inputRef.current?.focus();
+              setOpen(true);
+              doSearch(tokenValue);
+              return;
+            }
             focusToken(i);
             setOpen(true);
             doSearch(inputValue);
           }}
           onClick={(e) => e.stopPropagation()}
+          title={editOnDoubleClick ? 'Double-click to edit' : undefined}
           onKeyDown={(e) => handleTokenKeyDown(e, i)}
           onFocus={() => setFocusedTokenIndex(i)}
           onBlur={() => setFocusedTokenIndex(-1)}
@@ -730,7 +783,7 @@ export function MultiSelectTypeaheadInput({
   return (
     <div
       ref={wrapperRef}
-      className={cn('relative', cellEditorMode ? 'w-fit' : 'min-h-9', className)}
+      className={cn('relative', cellEditorMode ? 'w-fit' : bare ? 'min-h-7' : 'min-h-9', className)}
       data-slot="multiselect-typeahead-input"
       data-state={open ? 'open' : 'closed'}
       data-loading={loading || undefined}
@@ -743,23 +796,26 @@ export function MultiSelectTypeaheadInput({
         {statusMessage}
       </div>
 
-      {/* Hidden measurer — renders all tokens off-screen to measure widths */}
-      <div
-        ref={measurerRef}
-        aria-hidden="true"
-        className="pointer-events-none fixed left-[-9999px] top-0 flex items-center gap-1"
-        style={{ visibility: 'hidden' }}
-      >
-        {value.map((tokenValue) => (
-          <Badge key={tokenValue} variant="secondary" className="text-xs">
-            {tokenValue}
-            {/* Mirror the reserved action-button space so overflow math matches */}
-            {tokenAction && (tokenAction.isVisible?.(tokenValue) ?? true) && (
-              <span className="ml-1 inline-flex items-center opacity-0">{tokenAction.icon}</span>
-            )}
-          </Badge>
-        ))}
-      </div>
+      {/* Hidden measurer — renders all tokens off-screen to measure widths.
+          Bare mode never collapses, so it needs no measurement. */}
+      {!bare && (
+        <div
+          ref={measurerRef}
+          aria-hidden="true"
+          className="pointer-events-none fixed left-[-9999px] top-0 flex items-center gap-1"
+          style={{ visibility: 'hidden' }}
+        >
+          {value.map((tokenValue) => (
+            <Badge key={tokenValue} variant="secondary" className="text-xs">
+              {tokenValue}
+              {/* Mirror the reserved action-button space so overflow math matches */}
+              {tokenAction && (tokenAction.isVisible?.(tokenValue) ?? true) && (
+                <span className="ml-1 inline-flex items-center opacity-0">{tokenAction.icon}</span>
+              )}
+            </Badge>
+          ))}
+        </div>
+      )}
 
       <Popover open={showDropdown}>
         <PopoverAnchor asChild>{inputArea}</PopoverAnchor>
