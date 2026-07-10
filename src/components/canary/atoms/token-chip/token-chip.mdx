@@ -1,0 +1,84 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as TokenChipStories from './token-chip.stories';
+
+<Meta of={TokenChipStories} />
+
+# TokenChip
+
+The recipient/token pill shared by chip fields and
+`MultiSelectTypeaheadInput` tokens: a neutral rounded-full Badge with a
+hover-revealed border, an optional inline action that the chip expands to fit
+on hover, and an always-visible × remove button. One component, so recipient
+rows and typeahead tokens can never drift apart visually.
+
+Internal buttons fire on **pointerdown** and shield the event
+(`preventDefault` + `stopPropagation`), so host containers that react to
+pointerdown — focusing a token, opening a dropdown, double-press editing —
+don't also fire.
+
+## TokenChip vs Badge
+
+Use a TokenChip when the pill **is** a value the user placed into a field and
+can take back out — a recipient address, a tag being composed. It belongs to
+an editing surface, so it carries a × remove button and can host an inline
+action.
+
+Use a [Badge](?path=/docs/components-canary-atoms-badge--docs) when the pill
+**annotates** something the user reads — a status, category, count, or role —
+that is owned and edited elsewhere.
+
+Rule of thumb: if removing it changes *what you're about to submit*, it's a
+TokenChip; if it changes *what you're looking at*, it's a Badge being
+dismissed.
+
+<Canvas of={TokenChipStories.Default} />
+
+<Canvas of={TokenChipStories.WithAction} />
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>value</code></td>
+      <td><code>string</code></td>
+      <td>&#8212;</td>
+      <td>Text shown inside the chip.</td>
+    </tr>
+    <tr>
+      <td><code>onRemove</code></td>
+      <td><code>() =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>When set, renders the trailing × remove button.</td>
+    </tr>
+    <tr>
+      <td><code>removeLabel</code></td>
+      <td><code>string</code></td>
+      <td><code>`Remove $&#123;value&#125;`</code></td>
+      <td>Accessible label for the × button.</td>
+    </tr>
+    <tr>
+      <td><code>action</code></td>
+      <td><code>TokenChipAction | null</code></td>
+      <td>&#8212;</td>
+      <td>Inline action revealed on hover before the ×: <code>&#123; label, icon, onAction &#125;</code>. The chip expands to fit it.</td>
+    </tr>
+    <tr>
+      <td><code>actionVisible</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Force-reveal the action without hover (e.g. while the token has keyboard focus).</td>
+    </tr>
+  </tbody>
+</table>
+
+Remaining props pass through to the underlying Badge/span (e.g. `title`,
+`onDoubleClick`, `className`).

@@ -10,6 +10,22 @@ Small inline status badge with count-capping, icon support, and collapsible expa
 
 **Atom** &#8212; Canary | Import: `import { Badge } from '@arda-cards/design-system/canary'`
 
+## Badge vs TokenChip
+
+A Badge **annotates** something the user reads: a status, a category, a count,
+a role. It describes data owned elsewhere; at most it is dismissible
+(`onDismiss`) when it mirrors a filter or tag applied somewhere else.
+
+A [TokenChip](?path=/docs/components-canary-atoms-tokenchip--docs) **is** a
+value the user placed into a field and can take back out — a recipient
+address, a tag being composed. It always lives inside an editing surface
+(recipient rows, `MultiSelectTypeaheadInput`), carries a × remove button, and
+can host an inline action (e.g. "set as default").
+
+Rule of thumb: if removing it changes *what you're looking at*, it's a Badge
+being dismissed; if removing it changes *what you're about to submit*, it's a
+TokenChip.
+
 ---
 
 ## Playground

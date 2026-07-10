@@ -190,6 +190,12 @@ column `cellEditor`.
       <td>Per-token action revealed on hover/focus: <code>&#123; label(value), icon, onAction(value), isVisible?(value) &#125;</code>. E.g. "set this recipient as the default".</td>
     </tr>
     <tr>
+      <td><code>optionAction</code></td>
+      <td><code>MultiSelectOptionAction</code></td>
+      <td>&#8212;</td>
+      <td>Per-option action at the far right of each dropdown row, revealed on hover/highlight: <code>&#123; label(value), icon?, onAction(value), isVisible?(value) &#125;</code> (icon defaults to ×). Firing it does not select the option and optimistically drops the row; the caller owns updating the lookup source.</td>
+    </tr>
+    <tr>
       <td><code>bare</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>

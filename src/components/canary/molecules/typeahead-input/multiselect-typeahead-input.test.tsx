@@ -32,6 +32,7 @@ interface HarnessProps {
   cellEditorMode?: boolean;
   allowCreate?: boolean;
   tokenAction?: import('./multiselect-typeahead-input').MultiSelectTokenAction;
+  optionAction?: import('./multiselect-typeahead-input').MultiSelectOptionAction;
   bare?: boolean;
   editOnDoubleClick?: boolean;
 }
@@ -423,6 +424,79 @@ describe('MultiSelectTypeaheadInput', () => {
       render(<Harness initialValue={['a@x.com', 'b@x.com']} tokenAction={action} bare />);
       expect(screen.queryByRole('button', { name: 'Set a@x.com as default' })).toBeNull();
       expect(screen.getByRole('button', { name: 'Set b@x.com as default' })).toBeInTheDocument();
+    });
+  });
+
+  describe('optionAction', () => {
+    it('fires with the option value without selecting it, and drops the row', async () => {
+      const user = userEvent.setup();
+      const onAction = vi.fn();
+      const onValueChange = vi.fn();
+      render(
+        <Harness
+          lookup={['a@x.com', 'b@x.com']}
+          onValueChange={onValueChange}
+          optionAction={{ label: (v) => `Forget ${v}`, onAction }}
+          bare
+        />,
+      );
+      await user.click(screen.getByRole('combobox'));
+      await screen.findByRole('listbox');
+      await user.pointer({
+        keys: '[MouseLeft]',
+        target: screen.getByRole('button', { name: 'Forget a@x.com' }),
+      });
+      expect(onAction).toHaveBeenCalledWith('a@x.com');
+      expect(onValueChange).not.toHaveBeenCalled();
+      // The actioned row is dropped from the open result list optimistically.
+      expect(within(screen.getByRole('listbox')).queryByText('a@x.com')).toBeNull();
+      expect(within(screen.getByRole('listbox')).getByText('b@x.com')).toBeInTheDocument();
+    });
+
+    it('hides the action for options where isVisible is false', async () => {
+      const user = userEvent.setup();
+      render(
+        <Harness
+          lookup={['a@x.com', 'b@x.com']}
+          optionAction={{
+            label: (v) => `Forget ${v}`,
+            onAction: vi.fn(),
+            isVisible: (v) => v !== 'a@x.com',
+          }}
+          bare
+        />,
+      );
+      await user.click(screen.getByRole('combobox'));
+      await screen.findByRole('listbox');
+      expect(screen.queryByRole('button', { name: 'Forget a@x.com' })).toBeNull();
+      expect(screen.getByRole('button', { name: 'Forget b@x.com' })).toBeInTheDocument();
+    });
+  });
+
+  describe('token × remove button', () => {
+    it('removes the token without opening the dropdown or firing tokenAction', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      const onAction = vi.fn();
+      render(
+        <Harness
+          initialValue={['a@x.com', 'b@x.com']}
+          onValueChange={onValueChange}
+          tokenAction={{
+            label: (v) => `Set ${v} as default`,
+            icon: <span>*</span>,
+            onAction,
+          }}
+          bare
+        />,
+      );
+      await user.pointer({
+        keys: '[MouseLeft]',
+        target: screen.getByRole('button', { name: 'Remove a@x.com' }),
+      });
+      expect(onValueChange).toHaveBeenCalledWith(['b@x.com']);
+      expect(onAction).not.toHaveBeenCalled();
+      expect(screen.queryByRole('listbox')).toBeNull();
     });
   });
 

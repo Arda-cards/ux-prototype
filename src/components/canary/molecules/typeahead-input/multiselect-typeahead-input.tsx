@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { Check, Loader2, AlertCircle, Plus } from 'lucide-react';
+import { Check, Loader2, AlertCircle, Plus, X } from 'lucide-react';
 
 import { cn } from '@/types/canary/utilities/utils';
 import { useDebouncedCallback } from '@/types/canary/utilities/use-debounced-callback';
-import { Badge } from '@/components/canary/atoms/badge/badge';
+import { TokenChip } from '@/components/canary/atoms/token-chip';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/canary/primitives/popover';
 
 // --- Types ---
@@ -49,6 +49,23 @@ export interface MultiSelectTokenAction {
   icon: React.ReactNode;
   onAction: (value: string) => void;
   /** Whether the action shows for this token. Defaults to always visible. */
+  isVisible?: (value: string) => boolean;
+}
+
+/**
+ * Optional per-option action rendered at the far right of each dropdown row,
+ * revealed while the row is hovered/highlighted. Example: removing a stale
+ * address from the lookup source. Firing it does NOT select the option; the
+ * actioned option is also removed from the current result list optimistically
+ * (the caller owns updating the lookup source for future searches).
+ */
+export interface MultiSelectOptionAction {
+  /** Accessible label + tooltip for the action on a given option. */
+  label: (value: string) => string;
+  /** Icon for the action button. Defaults to an ×. */
+  icon?: React.ReactNode;
+  onAction: (value: string) => void;
+  /** Whether the action shows for this option. Defaults to always visible. */
   isVisible?: (value: string) => boolean;
 }
 
@@ -98,6 +115,8 @@ export interface MultiSelectTypeaheadInputProps extends Omit<
   allowCreate?: boolean;
   /** Per-token hover action (e.g. "set as default"). */
   tokenAction?: MultiSelectTokenAction;
+  /** Per-option hover action in the dropdown (e.g. "remove stale entry"). */
+  optionAction?: MultiSelectOptionAction;
   /**
    * Chromeless variant — no border, background, padding, or focus ring, and
    * tokens always wrap inline (no "+N more" collapse or editing overlay).
@@ -162,6 +181,7 @@ export function MultiSelectTypeaheadInput({
   maxResults = DEFAULT_MAX_RESULTS,
   allowCreate = false,
   tokenAction,
+  optionAction,
   bare = false,
   editOnDoubleClick = false,
   cellWidth,
@@ -584,7 +604,7 @@ export function MultiSelectTypeaheadInput({
               role="option"
               aria-selected={isSelected}
               className={cn(
-                'flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm',
+                'group/option flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm',
                 i === highlightedIndex && 'bg-accent text-accent-foreground',
               )}
               onPointerDown={(e) => {
@@ -603,7 +623,35 @@ export function MultiSelectTypeaheadInput({
               >
                 {isSelected && <Check className="h-3 w-3" aria-hidden="true" />}
               </div>
-              {opt.label}
+              <span className="min-w-0 flex-1 truncate">{opt.label}</span>
+              {optionAction && (optionAction.isVisible?.(opt.value) ?? true) && (
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  aria-label={optionAction.label(opt.value)}
+                  title={optionAction.label(opt.value)}
+                  className={cn(
+                    'ml-auto inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full',
+                    'text-muted-foreground transition-opacity hover:bg-border hover:text-destructive',
+                    // Revealed while the row is hovered or keyboard-highlighted.
+                    'opacity-0 group-hover/option:opacity-100',
+                    i === highlightedIndex && 'opacity-100',
+                  )}
+                  onPointerDown={(e) => {
+                    // Don't let the row's pointerdown select the option.
+                    e.preventDefault();
+                    e.stopPropagation();
+                    optionAction.onAction(opt.value);
+                    // Optimistically drop the row; the caller owns removing it
+                    // from the lookup source for future searches.
+                    setOptions((prev) => prev.filter((o) => o.value !== opt.value));
+                    setHighlightedIndex(-1);
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {optionAction.icon ?? <X className="h-3 w-3" aria-hidden="true" />}
+                </button>
+              )}
             </div>
           );
         })}
@@ -724,34 +772,26 @@ export function MultiSelectTypeaheadInput({
             focusedTokenIndex === i && 'ring-2 ring-ring',
           )}
         >
-          <Badge variant="secondary" className="text-xs">
-            {tokenValue}
-            {tokenAction && (tokenAction.isVisible?.(tokenValue) ?? true) && (
-              <button
-                type="button"
-                tabIndex={-1}
-                aria-label={tokenAction.label(tokenValue)}
-                title={tokenAction.label(tokenValue)}
-                className={cn(
-                  'ml-1 inline-flex items-center rounded-sm text-muted-foreground transition-opacity hover:text-primary',
-                  // Hover/focus-revealed; space is always reserved so the
-                  // token width (and the overflow measurement) stays stable.
-                  'opacity-0 group-hover/token:opacity-100',
-                  focusedTokenIndex === i && 'opacity-100',
-                )}
-                onPointerDown={(e) => {
-                  // Don't let the token's own pointerdown (focus + dropdown
-                  // open) swallow the action.
-                  e.preventDefault();
-                  e.stopPropagation();
-                  tokenAction.onAction(tokenValue);
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {tokenAction.icon}
-              </button>
-            )}
-          </Badge>
+          {/* The shared recipient pill. TokenChip's internal buttons shield
+              pointerdown, so they don't focus the token / open the dropdown /
+              count toward double-press editing. */}
+          <TokenChip
+            value={tokenValue}
+            actionVisible={focusedTokenIndex === i}
+            action={
+              tokenAction && (tokenAction.isVisible?.(tokenValue) ?? true)
+                ? {
+                    label: tokenAction.label(tokenValue),
+                    icon: tokenAction.icon,
+                    onAction: () => tokenAction.onAction(tokenValue),
+                  }
+                : null
+            }
+            onRemove={() => {
+              onValueChange(value.filter((v) => v !== tokenValue));
+              if (value.length <= 1) focusInput();
+            }}
+          />
         </span>
       ))}
       {overflowCount > 0 && (
@@ -774,7 +814,19 @@ export function MultiSelectTypeaheadInput({
         aria-controls={showDropdown ? listboxId : undefined}
         aria-activedescendant={highlightedIndex >= 0 ? optionId(highlightedIndex) : undefined}
         aria-label={ariaLabel ?? placeholder}
+        // Suppress browser + password-manager autofill. autoComplete="off"
+        // alone is not enough: Chrome's saved-address heuristics match
+        // email-shaped inputs (by label/content) and pop its own suggestion
+        // overlay, which committing then turns into an unwanted token. The
+        // "search"-flavored name steers the heuristic away; the data-*
+        // attributes opt out of 1Password/LastPass.
         autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="none"
+        spellCheck={false}
+        name="typeahead-search"
+        data-1p-ignore
+        data-lpignore="true"
         className="flex-1 min-w-[60px] bg-transparent outline-none placeholder:text-muted-foreground h-7"
       />
     </div>
@@ -806,13 +858,9 @@ export function MultiSelectTypeaheadInput({
           style={{ visibility: 'hidden' }}
         >
           {value.map((tokenValue) => (
-            <Badge key={tokenValue} variant="secondary" className="text-xs">
-              {tokenValue}
-              {/* Mirror the reserved action-button space so overflow math matches */}
-              {tokenAction && (tokenAction.isVisible?.(tokenValue) ?? true) && (
-                <span className="ml-1 inline-flex items-center opacity-0">{tokenAction.icon}</span>
-              )}
-            </Badge>
+            // Mirrors the rest-state chip (× only — the token action is
+            // zero-width at rest, so it doesn't count toward overflow math).
+            <TokenChip key={tokenValue} value={tokenValue} onRemove={() => {}} />
           ))}
         </div>
       )}

@@ -42,6 +42,9 @@ export type {
   ArdaBadgeRuntimeConfig,
 } from './components/canary/atoms/badge/badge';
 
+export { TokenChip } from './components/canary/atoms/token-chip';
+export type { TokenChipProps, TokenChipAction } from './components/canary/atoms/token-chip';
+
 export { Button, ArdaButton, buttonVariants } from './components/canary/atoms/button/button';
 export type {
   ButtonProps,
@@ -570,6 +573,7 @@ export type {
   MultiSelectOption,
   MultiSelectSource,
   MultiSelectTokenAction,
+  MultiSelectOptionAction,
   MultiSelectTypeaheadInputProps,
 } from './components/canary/molecules/typeahead-input/multiselect-typeahead-input';
 

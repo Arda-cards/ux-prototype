@@ -143,18 +143,19 @@ export const TokenAction: StoryObj = {
 };
 
 /**
- * `bare` + `editOnDoubleClick` — a chromeless labelled recipient row (the
- * email-composer To field): no input border, tokens always wrap inline,
- * double-clicking a token puts it back into the input for editing, and the
- * hover star promotes an address to the default.
+ * `bare` + `editOnDoubleClick` + `optionAction` — a chromeless labelled
+ * recipient row (the email-composer To field): no input border, tokens always
+ * wrap inline, double-clicking a token puts it back into the input for
+ * editing, the hover star promotes an address to the default, and each
+ * dropdown row reveals an × on hover that forgets a stale address.
  */
 export const BareRecipientRow: StoryObj = {
   render: function BareRecipientRowStory() {
-    const emails = [
+    const [emails, setEmails] = useState([
       'pepper@starkindustries.com',
       'orders@starkindustries.com',
       'happy@starkindustries.com',
-    ];
+    ]);
     const [value, setValue] = useState(emails.slice(0, 2));
     const [defaultEmail, setDefaultEmail] = useState(emails[0]);
 
@@ -179,10 +180,16 @@ export const BareRecipientRow: StoryObj = {
               onAction: setDefaultEmail,
               isVisible: (v) => v !== defaultEmail,
             }}
+            optionAction={{
+              label: (v) => `Forget ${v}`,
+              onAction: (v) => setEmails((prev) => prev.filter((e) => e !== v)),
+              isVisible: (v) => v !== defaultEmail,
+            }}
           />
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
-          Default: <code>{defaultEmail}</code> — double-click a token to edit it.
+          Default: <code>{defaultEmail}</code> — double-click a token to edit it; hover a dropdown
+          row to forget an address.
         </p>
       </div>
     );
