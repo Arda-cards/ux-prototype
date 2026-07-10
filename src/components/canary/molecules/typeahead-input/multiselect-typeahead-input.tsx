@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Check, Loader2, AlertCircle } from 'lucide-react';
 
 import { cn } from '@/types/canary/utilities/utils';
+import { useDebouncedCallback } from '@/types/canary/utilities/use-debounced-callback';
 import { Badge } from '@/components/canary/atoms/badge/badge';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/canary/primitives/popover';
 
@@ -141,67 +142,43 @@ export function MultiSelectTypeaheadInput({
   const inputRef = React.useRef<HTMLInputElement>(null);
   const tokenRefs = React.useRef<(HTMLSpanElement | null)[]>([]);
   const listRef = React.useRef<HTMLDivElement>(null);
-  const debounceRef = React.useRef<ReturnType<typeof setTimeout>>(undefined);
-  const abortRef = React.useRef<AbortController>(undefined);
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const popoverRef = React.useRef<HTMLDivElement>(null);
 
-  // Refs for stable callbacks
-  const valueRef = React.useRef(value);
-  valueRef.current = value;
-  const inputValueRef = React.useRef(inputValue);
-  inputValueRef.current = inputValue;
-  const optionsRef = React.useRef(options);
-  optionsRef.current = options;
-  const highlightedRef = React.useRef(highlightedIndex);
-  highlightedRef.current = highlightedIndex;
+  // Monotonic token so only the latest search may apply its results. The
+  // lookup itself is not cancellable (MultiSelectSource takes no AbortSignal);
+  // a superseded request simply has its result ignored. No unmount cleanup is
+  // needed either: the debounce hook cancels its own timer, and a setState
+  // after unmount is a safe no-op in React 18+.
+  const searchSeqRef = React.useRef(0);
 
   // --- Search ---
-  const doSearch = React.useCallback(
-    async (search: string) => {
-      abortRef.current?.abort();
-      const controller = new AbortController();
-      abortRef.current = controller;
+  // Handlers here and below are plain functions, not useCallback: nothing
+  // consumes their identity (no memoized children, no external subscriptions
+  // holding a reference), so they can simply close over the current render's
+  // state.
+  const doSearch = async (search: string) => {
+    const seq = ++searchSeqRef.current;
 
-      setLoading(true);
-      setError(false);
+    setLoading(true);
+    setError(false);
 
-      try {
-        const results = await lookupFn(search);
-        if (controller.signal.aborted) return;
-        const sliced = results.slice(0, maxResults);
-        setOptions(sliced);
-        setHighlightedIndex(sliced.length > 0 ? 0 : -1);
-        setLoading(false);
-      } catch {
-        if (controller.signal.aborted) return;
-        setError(true);
-        setLoading(false);
-        setOptions([]);
-      }
-    },
-    [lookupFn, maxResults],
-  );
+    try {
+      const results = await lookupFn(search);
+      if (seq !== searchSeqRef.current) return; // superseded by a newer search
+      const sliced = results.slice(0, maxResults);
+      setOptions(sliced);
+      setHighlightedIndex(sliced.length > 0 ? 0 : -1);
+      setLoading(false);
+    } catch {
+      if (seq !== searchSeqRef.current) return;
+      setError(true);
+      setLoading(false);
+      setOptions([]);
+    }
+  };
 
-  const debouncedSearch = React.useCallback(
-    (search: string) => {
-      clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => doSearch(search), DEBOUNCE_MS);
-    },
-    [doSearch],
-  );
-
-  // Cleanup on unmount. We intentionally do NOT abort the in-flight lookup
-  // here — under React StrictMode the mount effect is double-invoked on the
-  // same DOM, and aborting would cancel the dropdown's initial search while the
-  // re-run focus() is a no-op (input already focused), leaving `loading` stuck.
-  // Search-racing is handled by the abort inside doSearch; stale setState after
-  // a real unmount is a safe no-op in React 18+.
-  React.useEffect(() => {
-    return () => {
-      clearTimeout(debounceRef.current);
-    };
-  }, []);
+  const debouncedSearch = useDebouncedCallback(doSearch, DEBOUNCE_MS);
 
   // Auto-focus input on mount in cell editor mode so the dropdown opens
   // immediately and all tokens are visible for keyboard navigation.
@@ -214,63 +191,53 @@ export function MultiSelectTypeaheadInput({
   // --- Selection ---
   const selectedSet = React.useMemo(() => new Set(value), [value]);
 
-  const toggleOption = React.useCallback(
-    (optionValue: string) => {
-      const current = valueRef.current;
-      if (current.includes(optionValue)) {
-        onValueChange(current.filter((v) => v !== optionValue));
-      } else {
-        onValueChange([...current, optionValue]);
-      }
-      // Keep dropdown open, clear search, refocus input
-      setInputValue('');
-      inputRef.current?.focus();
-    },
-    [onValueChange],
-  );
+  const toggleOption = (optionValue: string) => {
+    if (value.includes(optionValue)) {
+      onValueChange(value.filter((v) => v !== optionValue));
+    } else {
+      onValueChange([...value, optionValue]);
+    }
+    // Keep dropdown open, clear search, refocus input
+    setInputValue('');
+    inputRef.current?.focus();
+  };
 
   // Choosing an option — from Enter or a click. With defaultOne, selecting
   // (never unselecting) commits and closes; otherwise it toggles and stays open.
-  const chooseOption = React.useCallback(
-    (optionValue: string) => {
-      if (defaultOne) {
-        if (!valueRef.current.includes(optionValue)) {
-          onValueChange([...valueRef.current, optionValue]);
-        }
-        setOpen(false);
-        setInputValue('');
-        onCommit?.();
-      } else {
-        toggleOption(optionValue);
+  const chooseOption = (optionValue: string) => {
+    if (defaultOne) {
+      if (!value.includes(optionValue)) {
+        onValueChange([...value, optionValue]);
       }
-    },
-    [defaultOne, onValueChange, onCommit, toggleOption],
-  );
+      setOpen(false);
+      setInputValue('');
+      onCommit?.();
+    } else {
+      toggleOption(optionValue);
+    }
+  };
 
   // --- Input handlers ---
-  const handleInputChange = React.useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const val = e.target.value;
-      setInputValue(val);
-      setOpen(true);
-      debouncedSearch(val);
-    },
-    [debouncedSearch],
-  );
-
-  const handleFocus = React.useCallback(() => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setInputValue(val);
     setOpen(true);
-    doSearch(inputValueRef.current);
-  }, [doSearch]);
+    debouncedSearch(val);
+  };
+
+  const handleFocus = () => {
+    setOpen(true);
+    doSearch(inputValue);
+  };
 
   // Clicking the input reopens the dropdown when it's already focused (focus
   // alone won't re-fire, e.g. after a defaultOne selection closed it).
-  const handleInputClick = React.useCallback(() => {
+  const handleInputClick = () => {
     if (!open) {
       setOpen(true);
-      doSearch(inputValueRef.current);
+      doSearch(inputValue);
     }
-  }, [open, doSearch]);
+  };
 
   // Close on outside click. Attach the listener once on mount and read `open`
   // via a ref so the listener isn't torn down + re-added on every open/close
@@ -297,148 +264,142 @@ export function MultiSelectTypeaheadInput({
   }, []);
 
   // --- Focus helpers ---
-  const focusToken = React.useCallback((index: number) => {
+  const focusToken = (index: number) => {
     setFocusedTokenIndex(index);
     setHighlightedIndex(-1);
     tokenRefs.current[index]?.focus();
-  }, []);
+  };
 
-  const focusInput = React.useCallback(() => {
+  const focusInput = () => {
     setFocusedTokenIndex(-1);
     inputRef.current?.focus();
-  }, []);
+  };
 
   // --- Token keyboard handler ---
-  const handleTokenKeyDown = React.useCallback(
-    (e: React.KeyboardEvent, tokenIndex: number) => {
-      const tokens = valueRef.current;
-      switch (e.key) {
-        case 'ArrowLeft':
-          e.preventDefault();
-          if (tokenIndex > 0) {
-            focusToken(tokenIndex - 1);
-          }
-          break;
-        case 'ArrowRight':
-          e.preventDefault();
-          if (tokenIndex < tokens.length - 1) {
-            focusToken(tokenIndex + 1);
-          } else {
-            focusInput();
-          }
-          break;
-        case 'ArrowDown':
-          e.preventDefault();
+  const handleTokenKeyDown = (e: React.KeyboardEvent, tokenIndex: number) => {
+    const tokens = value;
+    switch (e.key) {
+      case 'ArrowLeft':
+        e.preventDefault();
+        if (tokenIndex > 0) {
+          focusToken(tokenIndex - 1);
+        }
+        break;
+      case 'ArrowRight':
+        e.preventDefault();
+        if (tokenIndex < tokens.length - 1) {
+          focusToken(tokenIndex + 1);
+        } else {
           focusInput();
-          setOpen(true);
-          doSearch(inputValueRef.current);
-          break;
-        case 'Backspace':
-        case 'Delete':
-        case 'Enter':
-        case ' ':
-          // Enter / Space are the standard activation keys for a role="button"
-          // element; activating a token removes it, matching Backspace/Delete.
-          e.preventDefault();
-          {
-            const removedValue = tokens[tokenIndex];
-            if (removedValue) {
-              onValueChange(tokens.filter((v) => v !== removedValue));
-            }
-            // Focus neighbor or input
-            if (tokens.length <= 1) {
-              focusInput();
-            } else if (tokenIndex > 0) {
-              // Will shift, so focus same index - 1
-              setTimeout(() => focusToken(tokenIndex - 1), 0);
-            } else {
-              setTimeout(() => focusToken(0), 0);
-            }
+        }
+        break;
+      case 'ArrowDown':
+        e.preventDefault();
+        focusInput();
+        setOpen(true);
+        doSearch(inputValue);
+        break;
+      case 'Backspace':
+      case 'Delete':
+      case 'Enter':
+      case ' ':
+        // Enter / Space are the standard activation keys for a role="button"
+        // element; activating a token removes it, matching Backspace/Delete.
+        e.preventDefault();
+        {
+          const removedValue = tokens[tokenIndex];
+          if (removedValue) {
+            onValueChange(tokens.filter((v) => v !== removedValue));
           }
-          break;
-        default:
-          // Any printable character → focus input and let it handle the key
-          if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+          // Focus neighbor or input
+          if (tokens.length <= 1) {
             focusInput();
-            // Don't prevent default — let the character reach the input
+          } else if (tokenIndex > 0) {
+            // Will shift, so focus same index - 1
+            setTimeout(() => focusToken(tokenIndex - 1), 0);
+          } else {
+            setTimeout(() => focusToken(0), 0);
           }
-          break;
-      }
-    },
-    [focusToken, focusInput, doSearch, onValueChange],
-  );
+        }
+        break;
+      default:
+        // Any printable character → focus input and let it handle the key
+        if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+          focusInput();
+          // Don't prevent default — let the character reach the input
+        }
+        break;
+    }
+  };
 
   // --- Input keyboard handler ---
-  const handleKeyDown = React.useCallback(
-    (e: React.KeyboardEvent) => {
-      // Left arrow at cursor position 0 with empty input → focus last token
-      if (e.key === 'ArrowLeft' && inputValueRef.current === '' && valueRef.current.length > 0) {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Left arrow at cursor position 0 with empty input → focus last token
+    if (e.key === 'ArrowLeft' && inputValue === '' && value.length > 0) {
+      e.preventDefault();
+      focusToken(value.length - 1);
+      return;
+    }
+
+    // Backspace with empty input removes last token
+    if (e.key === 'Backspace' && inputValue === '' && value.length > 0) {
+      onValueChange(value.slice(0, -1));
+      return;
+    }
+
+    if (!open) {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         e.preventDefault();
-        focusToken(valueRef.current.length - 1);
-        return;
+        setOpen(true);
+        doSearch(inputValue);
       }
+      return;
+    }
 
-      // Backspace with empty input removes last token
-      if (e.key === 'Backspace' && inputValueRef.current === '' && valueRef.current.length > 0) {
-        onValueChange(valueRef.current.slice(0, -1));
-        return;
-      }
+    const opts = options;
+    const hi = highlightedIndex;
 
-      if (!open) {
-        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-          e.preventDefault();
-          setOpen(true);
-          doSearch(inputValueRef.current);
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        // Guard against opts.length === 0 (possible while loading/error):
+        // the modulo would produce NaN and break the highlight state.
+        if (opts.length === 0) break;
+        setHighlightedIndex((prev) => (prev + 1) % opts.length);
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        if (hi <= 0 && value.length > 0) {
+          // At top of dropdown → focus last token
+          focusToken(value.length - 1);
+        } else if (opts.length > 0) {
+          setHighlightedIndex((prev) => (prev - 1 + opts.length) % opts.length);
         }
-        return;
-      }
-
-      const opts = optionsRef.current;
-      const hi = highlightedRef.current;
-
-      switch (e.key) {
-        case 'ArrowDown':
-          e.preventDefault();
-          // Guard against opts.length === 0 (possible while loading/error):
-          // the modulo would produce NaN and break the highlight state.
-          if (opts.length === 0) break;
-          setHighlightedIndex((prev) => (prev + 1) % opts.length);
-          break;
-        case 'ArrowUp':
-          e.preventDefault();
-          if (hi <= 0 && valueRef.current.length > 0) {
-            // At top of dropdown → focus last token
-            focusToken(valueRef.current.length - 1);
-          } else if (opts.length > 0) {
-            setHighlightedIndex((prev) => (prev - 1 + opts.length) % opts.length);
+        break;
+      case 'Enter':
+        e.preventDefault();
+        {
+          const opt = opts[hi];
+          if (hi >= 0 && opt) {
+            chooseOption(opt.value);
           }
-          break;
-        case 'Enter':
-          e.preventDefault();
-          {
-            const opt = opts[hi];
-            if (hi >= 0 && opt) {
-              chooseOption(opt.value);
-            }
-          }
-          break;
-        case 'Escape':
-          e.preventDefault();
-          setOpen(false);
-          setInputValue('');
-          break;
-        case 'Tab':
-          // In a grid, let AG Grid handle Tab (commit + move to the next
-          // editable cell). Just close the dropdown; do NOT stopEditing here or
-          // focus escapes to the next row.
-          setOpen(false);
-          setInputValue('');
-          if (!cellEditorMode) onCommit?.();
-          break;
-      }
-    },
-    [open, cellEditorMode, doSearch, focusToken, chooseOption, onValueChange, onCommit],
-  );
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setOpen(false);
+        setInputValue('');
+        break;
+      case 'Tab':
+        // In a grid, let AG Grid handle Tab (commit + move to the next
+        // editable cell). Just close the dropdown; do NOT stopEditing here or
+        // focus escapes to the next row.
+        setOpen(false);
+        setInputValue('');
+        if (!cellEditorMode) onCommit?.();
+        break;
+    }
+  };
 
   // Scroll highlighted item into view
   React.useEffect(() => {
@@ -614,7 +575,7 @@ export function MultiSelectTypeaheadInput({
             e.stopPropagation();
             focusToken(i);
             setOpen(true);
-            doSearch(inputValueRef.current);
+            doSearch(inputValue);
           }}
           onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => handleTokenKeyDown(e, i)}

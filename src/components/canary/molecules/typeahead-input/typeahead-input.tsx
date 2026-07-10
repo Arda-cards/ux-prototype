@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Plus, Loader2, AlertCircle } from 'lucide-react';
 
 import { cn } from '@/types/canary/utilities/utils';
+import { useDebouncedCallback } from '@/types/canary/utilities/use-debounced-callback';
 import { Input } from '@/components/canary/primitives/input';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/canary/primitives/popover';
 
@@ -137,20 +138,15 @@ export function TypeaheadInput({
 
   const inputRef = React.useRef<HTMLInputElement>(null);
   const listRef = React.useRef<HTMLDivElement>(null);
-  const debounceRef = React.useRef<ReturnType<typeof setTimeout>>(undefined);
-  const abortRef = React.useRef<AbortController>(undefined);
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const popoverRef = React.useRef<HTMLDivElement>(null);
 
-  // Refs for values used in stable callbacks
-  const valueRef = React.useRef(value);
-  valueRef.current = value;
-  const inputValueRef = React.useRef(inputValue);
-  inputValueRef.current = inputValue;
-  const optionsRef = React.useRef(options);
-  optionsRef.current = options;
-  const highlightedRef = React.useRef(highlightedIndex);
-  highlightedRef.current = highlightedIndex;
+  // Monotonic token so only the latest search may apply its results. The
+  // lookup itself is not cancellable (TypeaheadSource takes no AbortSignal);
+  // a superseded request simply has its result ignored. No unmount cleanup is
+  // needed either: the debounce hook cancels its own timer, and a setState
+  // after unmount is a safe no-op in React 18+.
+  const searchSeqRef = React.useRef(0);
 
   // Sync external value changes
   React.useEffect(() => {
@@ -166,92 +162,51 @@ export function TypeaheadInput({
   }, [cellEditorMode]);
 
   // --- Search ---
-  const doSearch = React.useCallback(
-    async (search: string) => {
-      abortRef.current?.abort();
-      const controller = new AbortController();
-      abortRef.current = controller;
+  // Handlers here and below are plain functions, not useCallback: nothing
+  // consumes their identity (no memoized children, no external subscriptions
+  // holding a reference), so they can simply close over the current render's
+  // state.
+  const doSearch = async (search: string) => {
+    const seq = ++searchSeqRef.current;
 
-      setLoading(true);
-      setError(false);
+    setLoading(true);
+    setError(false);
 
-      try {
-        const results = await lookupFn(search);
-        if (controller.signal.aborted) return;
-        const sliced = results.slice(0, maxResults);
-        setOptions(sliced);
-        setHighlightedIndex(sliced.length > 0 ? 0 : -1);
-        setLoading(false);
-      } catch {
-        if (controller.signal.aborted) return;
-        setError(true);
-        setLoading(false);
-        setOptions([]);
-      }
-    },
-    [lookupFn, maxResults],
-  );
-
-  const debouncedSearch = React.useCallback(
-    (search: string) => {
-      clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => doSearch(search), DEBOUNCE_MS);
-    },
-    [doSearch],
-  );
-
-  // Cleanup on unmount: abort any in-flight lookup so we don't waste server
-  // work or land stale responses on a remount of a similar component.
-  //
-  // React StrictMode complicates this: in dev the mount effect is double-
-  // invoked (mount → cleanup → mount) synchronously on the same DOM. Aborting
-  // in that synthetic cleanup would cancel the dropdown's initial search and
-  // leave `loading` stuck (the remount's focus() is a no-op since the input
-  // is already focused).
-  //
-  // The fix defers the abort one event-loop tick. StrictMode's remount runs
-  // synchronously, so the next effect call cancels the queued abort before it
-  // fires. A real unmount has no follow-up effect, so the abort proceeds.
-  const pendingAbortRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-  React.useEffect(() => {
-    // Remount: cancel any abort queued by a previous synthetic cleanup.
-    if (pendingAbortRef.current) {
-      clearTimeout(pendingAbortRef.current);
-      pendingAbortRef.current = null;
+    try {
+      const results = await lookupFn(search);
+      if (seq !== searchSeqRef.current) return; // superseded by a newer search
+      const sliced = results.slice(0, maxResults);
+      setOptions(sliced);
+      setHighlightedIndex(sliced.length > 0 ? 0 : -1);
+      setLoading(false);
+    } catch {
+      if (seq !== searchSeqRef.current) return;
+      setError(true);
+      setLoading(false);
+      setOptions([]);
     }
-    return () => {
-      clearTimeout(debounceRef.current);
-      pendingAbortRef.current = setTimeout(() => {
-        abortRef.current?.abort();
-        pendingAbortRef.current = null;
-      }, 0);
-    };
-  }, []);
+  };
+
+  const debouncedSearch = useDebouncedCallback(doSearch, DEBOUNCE_MS);
 
   // --- Selection ---
-  const selectOption = React.useCallback(
-    (opt: TypeaheadOption) => {
-      setInputValue(opt.value);
-      onValueChange(opt.value);
-      setOpen(false);
-      setOptions([]);
-      onCommit?.();
-    },
-    [onValueChange, onCommit],
-  );
+  const selectOption = (opt: TypeaheadOption) => {
+    setInputValue(opt.value);
+    onValueChange(opt.value);
+    setOpen(false);
+    setOptions([]);
+    onCommit?.();
+  };
 
-  const createValue = React.useCallback(
-    (val: string) => {
-      const trimmed = val.trim();
-      if (!trimmed) return;
-      setInputValue(trimmed);
-      onValueChange(trimmed);
-      setOpen(false);
-      setOptions([]);
-      onCommit?.();
-    },
-    [onValueChange, onCommit],
-  );
+  const createValue = (val: string) => {
+    const trimmed = val.trim();
+    if (!trimmed) return;
+    setInputValue(trimmed);
+    onValueChange(trimmed);
+    setOpen(false);
+    setOptions([]);
+    onCommit?.();
+  };
 
   // --- Derived state ---
   const trimmedInput = inputValue.trim();
@@ -259,37 +214,35 @@ export function TypeaheadInput({
   const showCreate = allowCreate && trimmedInput.length > 0 && !exactMatch;
 
   // --- Input handlers ---
-  const handleInputChange = React.useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const val = e.target.value;
-      setInputValue(val);
-      setOpen(true);
-      debouncedSearch(val);
-    },
-    [debouncedSearch],
-  );
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setInputValue(val);
+    setOpen(true);
+    debouncedSearch(val);
+  };
 
-  const handleFocus = React.useCallback(() => {
+  const handleFocus = () => {
     setOpen(true);
     if (clearOnFocus) {
       setInputValue('');
       doSearch('');
     } else {
-      doSearch(inputValueRef.current);
+      doSearch(inputValue);
     }
-  }, [doSearch, clearOnFocus]);
+  };
 
   // Clicking the input reopens the dropdown when it's already focused (focus
   // alone won't re-fire, e.g. after selecting an option closed it).
-  const handleInputClick = React.useCallback(() => {
+  const handleInputClick = () => {
     if (!open) {
       setOpen(true);
-      doSearch(clearOnFocus ? '' : inputValueRef.current);
+      doSearch(clearOnFocus ? '' : inputValue);
       if (clearOnFocus) setInputValue('');
     }
-  }, [open, doSearch, clearOnFocus]);
+  };
 
-  // Close on outside click — deps narrowed to [open, cellEditorMode] via refs
+  // Close on outside click. Only subscribed while open; re-subscribing when a
+  // dep (e.g. inputValue) changes is just a cheap listener swap.
   React.useEffect(() => {
     if (!open) return;
     const handleClickOutside = (e: MouseEvent) => {
@@ -303,11 +256,11 @@ export function TypeaheadInput({
         setOpen(false);
         if (clearOnFocus) {
           // clearOnFocus: blur without selecting → restore the original value
-          setInputValue(valueRef.current);
+          setInputValue(value);
         } else if (cellEditorMode) {
           // Cell editor: accept typed value on blur
-          const trimmed = inputValueRef.current.trim();
-          if (trimmed && trimmed !== valueRef.current) {
+          const trimmed = inputValue.trim();
+          if (trimmed && trimmed !== value) {
             onValueChange(trimmed);
           }
         } else {
@@ -317,139 +270,134 @@ export function TypeaheadInput({
           //   else, options present          → select the highlighted row
           //                                     (falls back to the first result)
           //   else                           → revert to the confirmed value
-          const trimmed = inputValueRef.current.trim();
-          const opts = optionsRef.current;
-          const perfect = opts.find(
+          const trimmed = inputValue.trim();
+          const perfect = options.find(
             (o) =>
               o.value.toLowerCase() === trimmed.toLowerCase() ||
               o.label.toLowerCase() === trimmed.toLowerCase(),
           );
           if (!trimmed) {
-            if (inputValueRef.current !== valueRef.current) setInputValue(valueRef.current);
+            if (inputValue !== value) setInputValue(value);
           } else if (perfect) {
             selectOption(perfect);
           } else if (allowCreate) {
             createValue(trimmed);
-          } else if (opts.length > 0) {
-            const hi = highlightedRef.current;
-            selectOption((hi >= 0 && hi < opts.length ? opts[hi] : opts[0]) as TypeaheadOption);
+          } else if (options.length > 0) {
+            const hi = highlightedIndex;
+            selectOption(
+              (hi >= 0 && hi < options.length ? options[hi] : options[0]) as TypeaheadOption,
+            );
           } else {
-            setInputValue(valueRef.current);
+            setInputValue(value);
           }
         }
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [open, cellEditorMode, clearOnFocus, allowCreate, onValueChange, selectOption, createValue]);
+    // selectOption/createValue are plain per-render functions; the values they
+    // close over are covered by the deps below.
+  }, [
+    open,
+    cellEditorMode,
+    clearOnFocus,
+    allowCreate,
+    onValueChange,
+    onCommit,
+    value,
+    inputValue,
+    options,
+    highlightedIndex,
+  ]);
 
-  // --- Keyboard — uses refs for stable callback ---
-  const handleKeyDown = React.useCallback(
-    (e: React.KeyboardEvent) => {
-      // clearOnFocus: Delete/Backspace with empty input clears the value and blurs
-      if (
-        clearOnFocus &&
-        (e.key === 'Delete' || e.key === 'Backspace') &&
-        inputValueRef.current === ''
-      ) {
+  // --- Keyboard ---
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    // clearOnFocus: Delete/Backspace with empty input clears the value and blurs
+    if (clearOnFocus && (e.key === 'Delete' || e.key === 'Backspace') && inputValue === '') {
+      e.preventDefault();
+      if (value !== '') {
+        onValueChange('');
+      }
+      setOpen(false);
+      inputRef.current?.blur();
+      return;
+    }
+
+    if (!open) {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         e.preventDefault();
-        if (valueRef.current !== '') {
-          onValueChange('');
+        setOpen(true);
+        doSearch(inputValue);
+      }
+      return;
+    }
+
+    const opts = options;
+    const hi = highlightedIndex;
+    const trimmed = inputValue.trim();
+    const total =
+      opts.length +
+      (allowCreate &&
+      trimmed.length > 0 &&
+      !opts.some((o) => o.value.toLowerCase() === trimmed.toLowerCase())
+        ? 1
+        : 0);
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setHighlightedIndex((prev) => (prev + 1) % total);
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setHighlightedIndex((prev) => (prev - 1 + total) % total);
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (hi >= 0 && hi < opts.length) {
+          selectOption(opts[hi] as TypeaheadOption);
+        } else if (total > opts.length) {
+          createValue(trimmed);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setOpen(false);
+        setInputValue(value);
+        break;
+      case 'Tab':
+        // In a grid, let AG Grid handle Tab (commit + move to the next
+        // editable cell). Just close the dropdown; do NOT preventDefault or
+        // stopEditing ourselves, or focus escapes to the next row.
+        if (cellEditorMode) {
+          // Push current intent (selection or typed value) BEFORE AG Grid
+          // reads getValue() — without this AG Grid commits the prior value
+          // because onValueChange only fires on select/create/blur, and the
+          // input box's typing-state never reaches the cell. Do NOT call
+          // onCommit/stopEditing here; AG Grid drives the focus move.
+          let nextValue: string | null = null;
+          if (hi >= 0 && hi < opts.length) {
+            nextValue = (opts[hi] as TypeaheadOption).value;
+          } else if (trimmed) {
+            nextValue = trimmed;
+          }
+          if (nextValue !== null && nextValue !== value) {
+            setInputValue(nextValue);
+            onValueChange(nextValue);
+          }
+          setOpen(false);
+          setOptions([]);
+          break;
+        }
+        if (hi >= 0 && hi < opts.length) {
+          selectOption(opts[hi] as TypeaheadOption);
+        } else if (trimmed && allowCreate) {
+          createValue(trimmed);
         }
         setOpen(false);
-        inputRef.current?.blur();
-        return;
-      }
-
-      if (!open) {
-        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-          e.preventDefault();
-          setOpen(true);
-          doSearch(inputValueRef.current);
-        }
-        return;
-      }
-
-      const opts = optionsRef.current;
-      const hi = highlightedRef.current;
-      const total =
-        opts.length +
-        (allowCreate &&
-        inputValueRef.current.trim().length > 0 &&
-        !opts.some((o) => o.value.toLowerCase() === inputValueRef.current.trim().toLowerCase())
-          ? 1
-          : 0);
-
-      switch (e.key) {
-        case 'ArrowDown':
-          e.preventDefault();
-          setHighlightedIndex((prev) => (prev + 1) % total);
-          break;
-        case 'ArrowUp':
-          e.preventDefault();
-          setHighlightedIndex((prev) => (prev - 1 + total) % total);
-          break;
-        case 'Enter':
-          e.preventDefault();
-          if (hi >= 0 && hi < opts.length) {
-            selectOption(opts[hi] as TypeaheadOption);
-          } else if (hi === opts.length && total > opts.length) {
-            createValue(inputValueRef.current.trim());
-          } else if (total > opts.length) {
-            createValue(inputValueRef.current.trim());
-          }
-          break;
-        case 'Escape':
-          e.preventDefault();
-          setOpen(false);
-          setInputValue(valueRef.current);
-          break;
-        case 'Tab':
-          // In a grid, let AG Grid handle Tab (commit + move to the next
-          // editable cell). Just close the dropdown; do NOT preventDefault or
-          // stopEditing ourselves, or focus escapes to the next row.
-          if (cellEditorMode) {
-            // Push current intent (selection or typed value) BEFORE AG Grid
-            // reads getValue() — without this AG Grid commits the prior value
-            // because onValueChange only fires on select/create/blur, and the
-            // input box's typing-state never reaches the cell. Do NOT call
-            // onCommit/stopEditing here; AG Grid drives the focus move.
-            let nextValue: string | null = null;
-            if (hi >= 0 && hi < opts.length) {
-              nextValue = (opts[hi] as TypeaheadOption).value;
-            } else {
-              const trimmed = inputValueRef.current.trim();
-              if (trimmed) nextValue = trimmed;
-            }
-            if (nextValue !== null && nextValue !== valueRef.current) {
-              setInputValue(nextValue);
-              onValueChange(nextValue);
-            }
-            setOpen(false);
-            setOptions([]);
-            break;
-          }
-          if (hi >= 0 && hi < opts.length) {
-            selectOption(opts[hi] as TypeaheadOption);
-          } else if (inputValueRef.current.trim() && allowCreate) {
-            createValue(inputValueRef.current.trim());
-          }
-          setOpen(false);
-          break;
-      }
-    },
-    [
-      open,
-      allowCreate,
-      cellEditorMode,
-      clearOnFocus,
-      doSearch,
-      selectOption,
-      createValue,
-      onValueChange,
-      onCommit,
-    ],
-  );
+        break;
+    }
+  };
 
   // Scroll highlighted item into view
   React.useEffect(() => {
