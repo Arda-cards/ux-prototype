@@ -427,6 +427,60 @@ describe('MultiSelectTypeaheadInput', () => {
     });
   });
 
+  describe('outside-click commit', () => {
+    it('with allowCreate, clicking out commits the exact typed text as a token', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      render(
+        <div>
+          <Harness onValueChange={onValueChange} allowCreate bare />
+          <button type="button">outside</button>
+        </div>,
+      );
+      await user.click(screen.getByRole('combobox'));
+      await user.keyboard('new@x.com');
+      await screen.findByText('No results');
+      await user.click(screen.getByRole('button', { name: 'outside' }));
+      expect(onValueChange).toHaveBeenCalledWith(['new@x.com']);
+      expect(screen.getByRole('combobox')).toHaveValue('');
+    });
+
+    it('without allowCreate, clicking out selects the highlighted result', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      render(
+        <div>
+          <Harness onValueChange={onValueChange} bare />
+          <button type="button">outside</button>
+        </div>,
+      );
+      await user.click(screen.getByRole('combobox'));
+      await screen.findByRole('listbox');
+      await user.keyboard('Vend');
+      await waitFor(() => expect(screen.queryByText('Customer')).toBeNull());
+      await user.click(screen.getByRole('button', { name: 'outside' }));
+      expect(onValueChange).toHaveBeenCalledWith(['Vendor']);
+    });
+
+    it('without allowCreate and no results, clicking out discards the text', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      render(
+        <div>
+          <Harness onValueChange={onValueChange} bare />
+          <button type="button">outside</button>
+        </div>,
+      );
+      await user.click(screen.getByRole('combobox'));
+      await screen.findByRole('listbox');
+      await user.keyboard('zzz');
+      await screen.findByText('No results');
+      await user.click(screen.getByRole('button', { name: 'outside' }));
+      expect(onValueChange).not.toHaveBeenCalled();
+      expect(screen.getByRole('combobox')).toHaveValue('');
+    });
+  });
+
   describe('optionAction', () => {
     it('fires with the option value without selecting it, and drops the row', async () => {
       const user = userEvent.setup();

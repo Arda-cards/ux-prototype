@@ -323,13 +323,53 @@ export function MultiSelectTypeaheadInput({
     }
   };
 
+  // Clicking out with typed text must not silently discard it (mirrors
+  // TypeaheadInput's form-mode blur resolution):
+  //   perfect match (label or value) → add it, even when create is on
+  //   else, create allowed           → add the exact typed text
+  //   else, options present          → add the highlighted row (falls back
+  //                                    to the first result)
+  //   else                           → discard the text
+  const commitOnOutsideClick = () => {
+    const trimmed = inputValue.trim();
+    if (trimmed) {
+      const addToken = (v: string) => {
+        if (!value.some((x) => x.toLowerCase() === v.toLowerCase())) {
+          onValueChange([...value, v]);
+        }
+      };
+      const perfect = options.find(
+        (o) =>
+          o.value.toLowerCase() === trimmed.toLowerCase() ||
+          o.label.toLowerCase() === trimmed.toLowerCase(),
+      );
+      if (perfect) {
+        addToken(perfect.value);
+      } else if (allowCreate) {
+        addToken(trimmed);
+      } else if (options.length > 0) {
+        const pick =
+          highlightedIndex >= 0 && highlightedIndex < options.length
+            ? options[highlightedIndex]
+            : options[0];
+        if (pick) addToken(pick.value);
+      }
+    }
+    setOpen(false);
+    setInputValue('');
+  };
+
   // Close on outside click. Attach the listener once on mount and read `open`
   // via a ref so the listener isn't torn down + re-added on every open/close
   // cycle — the previous `[open]` dep created a one-frame window during the
   // transition where no listener was active, and a fast click in that window
-  // would slip through and leave the dropdown open.
+  // would slip through and leave the dropdown open. The commit logic needs
+  // current state, so the once-attached listener dispatches through a
+  // latest-callback ref.
   const openRef = React.useRef(open);
   openRef.current = open;
+  const commitOnOutsideClickRef = React.useRef(commitOnOutsideClick);
+  commitOnOutsideClickRef.current = commitOnOutsideClick;
   React.useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (!openRef.current) return;
@@ -339,8 +379,7 @@ export function MultiSelectTypeaheadInput({
         !wrapperRef.current.contains(target) &&
         !popoverRef.current?.contains(target)
       ) {
-        setOpen(false);
-        setInputValue('');
+        commitOnOutsideClickRef.current();
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
