@@ -178,6 +178,18 @@ column `cellEditor`.
       <td>Maximum number of dropdown results to show.</td>
     </tr>
     <tr>
+      <td><code>allowCreate</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Offer an "Add" row (and Enter-create) for typed text with no exact option match that isn't already selected. Mirrors <code>TypeaheadInput</code>'s <code>allowCreate</code>.</td>
+    </tr>
+    <tr>
+      <td><code>tokenAction</code></td>
+      <td><code>MultiSelectTokenAction</code></td>
+      <td>&#8212;</td>
+      <td>Per-token action revealed on hover/focus: <code>&#123; label(value), icon, onAction(value), isVisible?(value) &#125;</code>. E.g. "set this recipient as the default".</td>
+    </tr>
+    <tr>
       <td><code>cellEditorMode</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>

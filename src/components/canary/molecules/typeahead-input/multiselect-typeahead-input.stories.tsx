@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { ColDef } from 'ag-grid-community';
+import { Star } from 'lucide-react';
 
 import { MultiSelectTypeaheadInput } from './multiselect-typeahead-input';
 import { createMultiSelectCellEditor } from './multiselect-cell-editor';
@@ -84,6 +85,61 @@ export const Disabled: StoryObj = {
       placeholder="Select roles..."
     />
   ),
+};
+
+/**
+ * Create values not in the lookup — type a role that has no match (e.g.
+ * "Wholesaler") and the dropdown offers an "Add" row; Enter also creates.
+ */
+export const AllowCreate: StoryObj = {
+  render: () => (
+    <MultiSelectDemo
+      lookup={lookupRoles}
+      allowCreate
+      defaultOne={false}
+      placeholder="Select or add roles..."
+    />
+  ),
+};
+
+/**
+ * Per-token hover action — an email recipient field where hovering a token
+ * reveals a star that promotes that address to the vendor's default (the
+ * current default hides its action via `isVisible`).
+ */
+export const TokenAction: StoryObj = {
+  render: function TokenActionStory() {
+    const emails = [
+      'pepper@starkindustries.com',
+      'orders@starkindustries.com',
+      'happy@starkindustries.com',
+    ];
+    const [value, setValue] = useState(emails.slice(0, 2));
+    const [defaultEmail, setDefaultEmail] = useState(emails[0]);
+
+    return (
+      <div className="w-96 p-8">
+        <MultiSelectTypeaheadInput
+          value={value}
+          onValueChange={setValue}
+          lookup={emails}
+          allowCreate
+          defaultOne={false}
+          placeholder="Add email..."
+          aria-label="To address"
+          tokenAction={{
+            label: (v) => `Set ${v} as the default`,
+            icon: <Star className="h-3 w-3" aria-hidden="true" />,
+            onAction: setDefaultEmail,
+            isVisible: (v) => v !== defaultEmail,
+          }}
+        />
+        <p className="mt-2 text-xs text-muted-foreground">
+          Default: <code>{defaultEmail}</code> — hover any other token to promote it.
+        </p>
+      </div>
+    );
+  },
 };
 
 interface SupplierRow {
