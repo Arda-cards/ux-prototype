@@ -82,7 +82,12 @@ export function TokenChip({
             e.stopPropagation();
             action.onAction();
           }}
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            // Keyboard / assistive-tech activation arrives as a click with
+            // detail 0 and no preceding pointerdown.
+            if (e.detail === 0) action.onAction();
+          }}
         >
           {action.icon}
         </button>
@@ -98,7 +103,10 @@ export function TokenChip({
             e.stopPropagation();
             onRemove();
           }}
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (e.detail === 0) onRemove();
+          }}
         >
           <X className="h-3 w-3" aria-hidden="true" />
         </button>

@@ -29,8 +29,10 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
 - **MultiSelectTypeaheadInput: `editOnDoubleClick`** — double-clicking a token removes it and puts its text back into the input for editing (Gmail-style chips).
 
 ### Fixed
-- **MultiSelectTypeaheadInput: outside click no longer discards typed text** — mirrors `TypeaheadInput`'s blur ladder: perfect match → select; `allowCreate` → commit the exact typed text; otherwise the highlighted (or first) result; otherwise discard.
-- **MultiSelectTypeaheadInput: Chrome saved-address autofill suppressed** — the search input opts out of browser and password-manager autofill (`autocomplete=off` alone regressed against Chrome's address heuristics on email-shaped inputs).
+- **MultiSelectTypeaheadInput: outside click no longer discards typed text** — mirrors `TypeaheadInput`'s blur ladder: perfect match → select; `allowCreate` → commit the exact typed text; otherwise the highlighted (or first) result; otherwise discard. The highlighted-result pick is skipped while results still reflect an older query (mid-debounce/mid-fetch), and committing a token fires `onCommit`.
+- **MultiSelectTypeaheadInput: Chrome saved-address autofill suppressed** — the search input opts out of browser and password-manager autofill AND is `readOnly` until focused (Chrome ignores `autocomplete=off` for address constellations but never previews into read-only inputs).
+- **TokenChip / optionAction keyboard activation** — the inline action, × remove, and dropdown-row action buttons now also fire on keyboard/assistive-tech clicks (previously pointerdown-only).
+- **Tab no longer double-fires `onCommit`** when `allowCreate` + `defaultOne` create a value on Tab.
 
 ## [6.0.3] - 2026-07-07
 

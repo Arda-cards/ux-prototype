@@ -40,6 +40,33 @@ describe('TokenChip', () => {
     expect(onRemove).not.toHaveBeenCalled();
   });
 
+  it('activates remove and action via keyboard clicks (detail 0)', async () => {
+    const { fireEvent } = await import('@testing-library/react');
+    const onRemove = vi.fn();
+    const onAction = vi.fn();
+    render(
+      <TokenChip
+        value="a@x.com"
+        onRemove={onRemove}
+        action={{ label: 'Promote a@x.com', icon: <span>*</span>, onAction }}
+      />,
+    );
+    // fireEvent.click dispatches detail 0 with no pointerdown — the
+    // keyboard/assistive-tech activation path.
+    fireEvent.click(screen.getByRole('button', { name: 'Remove a@x.com' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Promote a@x.com' }));
+    expect(onRemove).toHaveBeenCalledOnce();
+    expect(onAction).toHaveBeenCalledOnce();
+  });
+
+  it('does not double-fire when a pointer press precedes the click', async () => {
+    const user = userEvent.setup();
+    const onRemove = vi.fn();
+    render(<TokenChip value="a@x.com" onRemove={onRemove} />);
+    await user.click(screen.getByRole('button', { name: 'Remove a@x.com' }));
+    expect(onRemove).toHaveBeenCalledOnce();
+  });
+
   it('shields host pointerdown handlers when internal buttons fire', async () => {
     const user = userEvent.setup();
     const hostPointerDown = vi.fn();

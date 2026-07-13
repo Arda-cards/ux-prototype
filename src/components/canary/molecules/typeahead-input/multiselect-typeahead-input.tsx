@@ -200,6 +200,11 @@ export function MultiSelectTypeaheadInput({
   const [error, setError] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const [focusedTokenIndex, setFocusedTokenIndex] = React.useState(-1);
+  // readOnly-until-focus: Chrome's saved-address autofill previews into every
+  // email-shaped input in a form-like constellation at once and ignores
+  // autocomplete="off" — but it never touches read-only inputs. The field
+  // becomes editable in its own focus event, before any keystroke.
+  const [interactive, setInteractive] = React.useState(false);
   const instanceId = React.useId();
   const listboxId = `multiselect-listbox-${instanceId}`;
   const optionId = (index: number) => `multiselect-opt-${instanceId}-${index}`;
@@ -218,6 +223,9 @@ export function MultiSelectTypeaheadInput({
   // needed either: the debounce hook cancels its own timer, and a setState
   // after unmount is a safe no-op in React 18+.
   const searchSeqRef = React.useRef(0);
+  // The search string that produced the current `options` — lets blur-time
+  // resolution tell whether the visible results match what the user typed.
+  const optionsQueryRef = React.useRef<string | null>(null);
 
   // --- Search ---
   // Handlers here and below are plain functions, not useCallback: nothing
@@ -235,6 +243,7 @@ export function MultiSelectTypeaheadInput({
       if (seq !== searchSeqRef.current) return; // superseded by a newer search
       const sliced = results.slice(0, maxResults);
       setOptions(sliced);
+      optionsQueryRef.current = search;
       setHighlightedIndex(sliced.length > 0 ? 0 : -1);
       setLoading(false);
     } catch {
@@ -310,6 +319,7 @@ export function MultiSelectTypeaheadInput({
   };
 
   const handleFocus = () => {
+    setInteractive(true);
     setOpen(true);
     doSearch(inputValue);
   };
@@ -337,17 +347,25 @@ export function MultiSelectTypeaheadInput({
         if (!value.some((x) => x.toLowerCase() === v.toLowerCase())) {
           onValueChange([...value, v]);
         }
+        // Outside click ends the interaction — same commit signal as
+        // Enter-with-defaultOne / Tab. Grids stop editing on their own.
+        if (!cellEditorMode) onCommit?.();
       };
       const perfect = options.find(
         (o) =>
           o.value.toLowerCase() === trimmed.toLowerCase() ||
           o.label.toLowerCase() === trimmed.toLowerCase(),
       );
+      // The highlighted/first pick is only trustworthy when the visible
+      // results were produced by the current text — not mid-debounce or
+      // mid-fetch, when they still reflect an older query. (A perfect match
+      // is exact against the typed text, so staleness can't mislead it.)
+      const resultsAreCurrent = !loading && optionsQueryRef.current === trimmed;
       if (perfect) {
         addToken(perfect.value);
       } else if (allowCreate) {
         addToken(trimmed);
-      } else if (options.length > 0) {
+      } else if (resultsAreCurrent && options.length > 0) {
         const pick =
           highlightedIndex >= 0 && highlightedIndex < options.length
             ? options[highlightedIndex]
@@ -528,13 +546,16 @@ export function MultiSelectTypeaheadInput({
         // In a grid, let AG Grid handle Tab (commit + move to the next
         // editable cell). Just close the dropdown; do NOT stopEditing here or
         // focus escapes to the next row.
-        if (!cellEditorMode && canCreate) {
-          // Tab with un-committed typed text keeps it (mirrors TypeaheadInput).
-          createValue(inputValue);
+        if (!cellEditorMode) {
+          if (canCreate) {
+            // Tab with un-committed typed text keeps it (mirrors TypeaheadInput).
+            createValue(inputValue);
+          }
+          // createValue already commits when defaultOne — don't double-fire.
+          if (!(canCreate && defaultOne)) onCommit?.();
         }
         setOpen(false);
         setInputValue('');
-        if (!cellEditorMode) onCommit?.();
         break;
     }
   };
@@ -616,6 +637,15 @@ export function MultiSelectTypeaheadInput({
   const visibleTokens = bare || isEditing ? value : value.slice(0, visibleCount);
   const overflowCount = bare || isEditing ? 0 : value.length - visibleCount;
 
+  const fireOptionAction = (optionValue: string) => {
+    if (!optionAction) return;
+    optionAction.onAction(optionValue);
+    // Optimistically drop the row; the caller owns removing it from the
+    // lookup source for future searches.
+    setOptions((prev) => prev.filter((o) => o.value !== optionValue));
+    setHighlightedIndex(-1);
+  };
+
   // --- Dropdown list content ---
   const dropdownList = (
     <div ref={listRef} id={listboxId} role="listbox" aria-multiselectable="true">
@@ -680,13 +710,13 @@ export function MultiSelectTypeaheadInput({
                     // Don't let the row's pointerdown select the option.
                     e.preventDefault();
                     e.stopPropagation();
-                    optionAction.onAction(opt.value);
-                    // Optimistically drop the row; the caller owns removing it
-                    // from the lookup source for future searches.
-                    setOptions((prev) => prev.filter((o) => o.value !== opt.value));
-                    setHighlightedIndex(-1);
+                    fireOptionAction(opt.value);
                   }}
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Keyboard / assistive-tech activation (no pointerdown).
+                    if (e.detail === 0) fireOptionAction(opt.value);
+                  }}
                 >
                   {optionAction.icon ?? <X className="h-3 w-3" aria-hidden="true" />}
                 </button>
@@ -843,7 +873,9 @@ export function MultiSelectTypeaheadInput({
         value={inputValue}
         onChange={handleInputChange}
         onFocus={handleFocus}
+        onBlur={() => setInteractive(false)}
         onClick={handleInputClick}
+        readOnly={!interactive}
         onKeyDownCapture={handleKeyDown}
         placeholder={value.length === 0 ? placeholder : ''}
         disabled={disabled}

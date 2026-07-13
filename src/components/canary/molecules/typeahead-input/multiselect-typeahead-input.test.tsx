@@ -462,6 +462,23 @@ describe('MultiSelectTypeaheadInput', () => {
       expect(onValueChange).toHaveBeenCalledWith(['Vendor']);
     });
 
+    it('does not pick a highlighted result that belongs to an older query (mid-debounce)', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      render(
+        <div>
+          <Harness onValueChange={onValueChange} bare />
+          <button type="button">outside</button>
+        </div>,
+      );
+      await user.click(screen.getByRole('combobox'));
+      await screen.findByRole('listbox'); // focus-search ('') resolved: all roles listed
+      await user.keyboard('Vend'); // debounced search not fired yet
+      await user.click(screen.getByRole('button', { name: 'outside' }));
+      // The visible options came from the '' query, not 'Vend' — no pick.
+      expect(onValueChange).not.toHaveBeenCalled();
+    });
+
     it('without allowCreate and no results, clicking out discards the text', async () => {
       const user = userEvent.setup();
       const onValueChange = vi.fn();
