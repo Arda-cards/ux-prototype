@@ -3,9 +3,17 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Star } from 'lucide-react';
 
 import { TokenChip } from './token-chip';
+import { TooltipProvider } from '../../primitives/tooltip';
 
 const meta: Meta = {
   title: 'Components/Canary/Atoms/TokenChip',
+  decorators: [
+    (Story) => (
+      <TooltipProvider>
+        <Story />
+      </TooltipProvider>
+    ),
+  ],
 };
 
 export default meta;

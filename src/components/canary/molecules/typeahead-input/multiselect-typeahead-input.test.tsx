@@ -7,6 +7,7 @@ import {
   type MultiSelectOption,
   type MultiSelectSource,
 } from './multiselect-typeahead-input';
+import { TooltipProvider } from '@/components/canary/primitives/tooltip';
 
 // jsdom doesn't implement scrollIntoView, which the dropdown calls on highlight.
 beforeAll(() => {
@@ -44,17 +45,21 @@ function Harness({
   ...rest
 }: HarnessProps) {
   const [value, setValue] = useState(initialValue);
+  // Token/option tooltips need the consumer-provided TooltipProvider (same
+  // convention as Button's tooltip prop).
   return (
-    <MultiSelectTypeaheadInput
-      value={value}
-      onValueChange={(v) => {
-        setValue(v);
-        onValueChange?.(v);
-      }}
-      lookup={lookup}
-      placeholder="Select roles"
-      {...rest}
-    />
+    <TooltipProvider>
+      <MultiSelectTypeaheadInput
+        value={value}
+        onValueChange={(v) => {
+          setValue(v);
+          onValueChange?.(v);
+        }}
+        lookup={lookup}
+        placeholder="Select roles"
+        {...rest}
+      />
+    </TooltipProvider>
   );
 }
 

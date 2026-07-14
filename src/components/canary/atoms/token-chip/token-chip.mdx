@@ -11,6 +11,11 @@ hover-revealed border, an optional inline action that the chip expands to fit
 on hover, and an always-visible × remove button. One component, so recipient
 rows and typeahead tokens can never drift apart visually.
 
+The action and × buttons show design-system tooltips, so a
+[TooltipProvider](?path=/docs/components-canary-primitives-tooltip--docs)
+must be present in the tree (the app provides one at the layout root — same
+requirement as Button's `tooltip` prop).
+
 Internal buttons fire on **pointerdown** and shield the event
 (`preventDefault` + `stopPropagation`), so host containers that react to
 pointerdown — focusing a token, opening a dropdown, double-press editing —

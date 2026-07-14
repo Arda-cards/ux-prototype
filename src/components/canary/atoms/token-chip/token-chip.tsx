@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 
 import { cn } from '@/types/canary/utilities/utils';
 import { Badge } from '../badge/badge';
+import { Tooltip, TooltipTrigger, TooltipContent } from '../../primitives/tooltip';
 
 // --- Types ---
 
@@ -63,53 +64,62 @@ export function TokenChip({
     >
       <span className="min-w-0 truncate">{value}</span>
       {action && (
-        <button
-          type="button"
-          tabIndex={-1}
-          aria-label={action.label}
-          title={action.label}
-          className={cn(
-            'inline-flex h-4 items-center justify-center overflow-hidden rounded-sm',
-            'text-muted-foreground transition-all hover:text-primary',
-            // Collapsed to zero width at rest (the -ml-1 cancels the badge
-            // gap); the chip expands to fit the icon on hover / actionVisible.
-            '-ml-1 w-0 opacity-0',
-            'group-hover/chip:ml-0 group-hover/chip:w-4 group-hover/chip:opacity-100',
-            actionVisible && 'ml-0 w-4 opacity-100',
-          )}
-          onPointerDown={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            action.onAction();
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-            // Keyboard / assistive-tech activation arrives as a click with
-            // detail 0 and no preceding pointerdown.
-            if (e.detail === 0) action.onAction();
-          }}
-        >
-          {action.icon}
-        </button>
+        <Tooltip delayDuration={500}>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              tabIndex={-1}
+              aria-label={action.label}
+              className={cn(
+                'inline-flex h-4 items-center justify-center overflow-hidden rounded-sm',
+                'text-muted-foreground transition-all hover:text-primary',
+                // Collapsed to zero width at rest (the -ml-1 cancels the badge
+                // gap); the chip expands to fit the icon on hover / actionVisible.
+                '-ml-1 w-0 opacity-0',
+                'group-hover/chip:ml-0 group-hover/chip:w-4 group-hover/chip:opacity-100',
+                actionVisible && 'ml-0 w-4 opacity-100',
+              )}
+              onPointerDown={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                action.onAction();
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                // Keyboard / assistive-tech activation arrives as a click with
+                // detail 0 and no preceding pointerdown.
+                if (e.detail === 0) action.onAction();
+              }}
+            >
+              {action.icon}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>{action.label}</TooltipContent>
+        </Tooltip>
       )}
       {onRemove && (
-        <button
-          type="button"
-          tabIndex={-1}
-          aria-label={removeLabel ?? `Remove ${value}`}
-          className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-border hover:text-foreground"
-          onPointerDown={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onRemove();
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (e.detail === 0) onRemove();
-          }}
-        >
-          <X className="h-3 w-3" aria-hidden="true" />
-        </button>
+        <Tooltip delayDuration={500}>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              tabIndex={-1}
+              aria-label={removeLabel ?? `Remove ${value}`}
+              className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-border hover:text-foreground"
+              onPointerDown={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onRemove();
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (e.detail === 0) onRemove();
+              }}
+            >
+              <X className="h-3 w-3" aria-hidden="true" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>{removeLabel ?? `Remove ${value}`}</TooltipContent>
+        </Tooltip>
       )}
     </Badge>
   );

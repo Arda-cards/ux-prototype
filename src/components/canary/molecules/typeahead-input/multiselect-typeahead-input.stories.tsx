@@ -4,6 +4,7 @@ import type { ColDef } from 'ag-grid-community';
 import { Star } from 'lucide-react';
 
 import { MultiSelectTypeaheadInput } from './multiselect-typeahead-input';
+import { TooltipProvider } from '@/components/canary/primitives/tooltip';
 import { createMultiSelectCellEditor } from './multiselect-cell-editor';
 import { DataGrid } from '../data-grid/data-grid';
 import { lookupRoles } from '@/components/canary/__mocks__/role-lookup';
@@ -40,6 +41,13 @@ const meta: Meta = {
   parameters: {
     msw: { handlers: [roleLookupHandler] },
   },
+  decorators: [
+    (Story) => (
+      <TooltipProvider>
+        <Story />
+      </TooltipProvider>
+    ),
+  ],
 };
 
 export default meta;

@@ -5,6 +5,7 @@ import { cn } from '@/types/canary/utilities/utils';
 import { useDebouncedCallback } from '@/types/canary/utilities/use-debounced-callback';
 import { TokenChip } from '@/components/canary/atoms/token-chip';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/canary/primitives/popover';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/canary/primitives/tooltip';
 
 // --- Types ---
 
@@ -694,32 +695,36 @@ export function MultiSelectTypeaheadInput({
               </div>
               <span className="min-w-0 flex-1 truncate">{opt.label}</span>
               {optionAction && (optionAction.isVisible?.(opt.value) ?? true) && (
-                <button
-                  type="button"
-                  tabIndex={-1}
-                  aria-label={optionAction.label(opt.value)}
-                  title={optionAction.label(opt.value)}
-                  className={cn(
-                    'ml-auto inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full',
-                    'text-muted-foreground transition-opacity hover:bg-border hover:text-destructive',
-                    // Revealed while the row is hovered or keyboard-highlighted.
-                    'opacity-0 group-hover/option:opacity-100',
-                    i === highlightedIndex && 'opacity-100',
-                  )}
-                  onPointerDown={(e) => {
-                    // Don't let the row's pointerdown select the option.
-                    e.preventDefault();
-                    e.stopPropagation();
-                    fireOptionAction(opt.value);
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // Keyboard / assistive-tech activation (no pointerdown).
-                    if (e.detail === 0) fireOptionAction(opt.value);
-                  }}
-                >
-                  {optionAction.icon ?? <X className="h-3 w-3" aria-hidden="true" />}
-                </button>
+                <Tooltip delayDuration={500}>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      tabIndex={-1}
+                      aria-label={optionAction.label(opt.value)}
+                      className={cn(
+                        'ml-auto inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full',
+                        'text-muted-foreground transition-opacity hover:bg-border hover:text-destructive',
+                        // Revealed while the row is hovered or keyboard-highlighted.
+                        'opacity-0 group-hover/option:opacity-100',
+                        i === highlightedIndex && 'opacity-100',
+                      )}
+                      onPointerDown={(e) => {
+                        // Don't let the row's pointerdown select the option.
+                        e.preventDefault();
+                        e.stopPropagation();
+                        fireOptionAction(opt.value);
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Keyboard / assistive-tech activation (no pointerdown).
+                        if (e.detail === 0) fireOptionAction(opt.value);
+                      }}
+                    >
+                      {optionAction.icon ?? <X className="h-3 w-3" aria-hidden="true" />}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>{optionAction.label(opt.value)}</TooltipContent>
+                </Tooltip>
               )}
             </div>
           );

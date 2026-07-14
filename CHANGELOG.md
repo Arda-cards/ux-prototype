@@ -21,7 +21,7 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
 ## [6.1.0] - 2026-07-11
 
 ### Added
-- **TokenChip atom (canary)** — the recipient/token pill shared by chip fields and `MultiSelectTypeaheadInput` tokens: neutral rounded-full Badge, hover-revealed border, always-visible × remove, and an optional inline action the chip expands to fit on hover. Internal buttons fire on pointerdown and shield the event so host containers (token focus, dropdown open, double-press edit) don't also react. Docs cover TokenChip vs Badge usage.
+- **TokenChip atom (canary)** — the recipient/token pill shared by chip fields and `MultiSelectTypeaheadInput` tokens: neutral rounded-full Badge, hover-revealed border, always-visible × remove, and an optional inline action the chip expands to fit on hover. Internal buttons fire on pointerdown and shield the event so host containers (token focus, dropdown open, double-press edit) don't also react; their hints render as design-system tooltips (requires a `TooltipProvider`, like Button's `tooltip` prop). Docs cover TokenChip vs Badge usage.
 - **MultiSelectTypeaheadInput: `allowCreate`** — typed text with no exact option match gets a create row in the dropdown; Enter also creates (mirrors `TypeaheadInput`).
 - **MultiSelectTypeaheadInput: `tokenAction`** — per-token hover action (e.g. "set this recipient as the vendor default"), with `isVisible` per token.
 - **MultiSelectTypeaheadInput: `optionAction`** — hover/highlight-revealed action at the far right of each dropdown row (icon defaults to ×), e.g. forgetting a stale address; firing it never selects the option and optimistically drops the row.

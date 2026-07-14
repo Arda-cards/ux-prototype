@@ -1,7 +1,13 @@
-import { render, screen } from '@testing-library/react';
+import { render as rtlRender, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
+import type { ReactElement } from 'react';
 import { TokenChip } from './token-chip';
+import { TooltipProvider } from '../../primitives/tooltip';
+
+// TokenChip's action/remove tooltips need the consumer-provided provider
+// (same convention as Button's tooltip prop).
+const render = (ui: ReactElement) => rtlRender(<TooltipProvider>{ui}</TooltipProvider>);
 
 describe('TokenChip', () => {
   it('renders the value and fires onRemove from the × button', async () => {
