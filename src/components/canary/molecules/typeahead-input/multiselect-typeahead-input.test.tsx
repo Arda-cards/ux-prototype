@@ -430,6 +430,16 @@ describe('MultiSelectTypeaheadInput', () => {
       expect(screen.queryByRole('button', { name: 'Set a@x.com as default' })).toBeNull();
       expect(screen.getByRole('button', { name: 'Set b@x.com as default' })).toBeInTheDocument();
     });
+
+    it('fires via Shift+Space on a focused token', async () => {
+      const user = userEvent.setup();
+      const action = starAction();
+      render(<Harness initialValue={['a@x.com']} tokenAction={action} bare />);
+      await user.click(screen.getByRole('combobox'));
+      await user.keyboard('{ArrowLeft}'); // focus the token
+      await user.keyboard('{Shift>} {/Shift}');
+      expect(action.onAction).toHaveBeenCalledWith('a@x.com');
+    });
   });
 
   describe('outside-click commit', () => {
@@ -529,6 +539,23 @@ describe('MultiSelectTypeaheadInput', () => {
       expect(within(screen.getByRole('listbox')).getByText('b@x.com')).toBeInTheDocument();
     });
 
+    it('fires via Shift+Delete on the highlighted row', async () => {
+      const user = userEvent.setup();
+      const onDestroy = vi.fn();
+      render(
+        <Harness
+          lookup={['a@x.com', 'b@x.com']}
+          optionDestroy={{ label: (v) => `Forget ${v}`, onDestroy }}
+          bare
+        />,
+      );
+      await user.click(screen.getByRole('combobox'));
+      await screen.findByRole('listbox');
+      await user.keyboard('{Shift>}{Delete}{/Shift}'); // first row is highlighted
+      expect(onDestroy).toHaveBeenCalledWith('a@x.com');
+      expect(within(screen.getByRole('listbox')).queryByText('a@x.com')).toBeNull();
+    });
+
     it('hides the destroy button for options where isVisible is false', async () => {
       const user = userEvent.setup();
       render(
@@ -623,6 +650,64 @@ describe('MultiSelectTypeaheadInput', () => {
       await user.dblClick(screen.getByRole('button', { name: 'a@x.com, remove' }));
       expect(onValueChange).not.toHaveBeenCalled();
       expect(screen.getByRole('combobox')).toHaveValue('');
+    });
+
+    it('Shift+Enter on a focused token pulls it into the input', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      render(
+        <Harness
+          initialValue={['a@x.com', 'b@x.com']}
+          onValueChange={onValueChange}
+          allowCreate
+          editOnDoubleClick
+          bare
+        />,
+      );
+      await user.click(screen.getByRole('combobox'));
+      await user.keyboard('{ArrowLeft}'); // focus last token (b@x.com)
+      await user.keyboard('{Shift>}{Enter}{/Shift}');
+      expect(onValueChange).toHaveBeenCalledWith(['a@x.com']);
+      expect(screen.getByRole('combobox')).toHaveValue('b@x.com');
+      expect(screen.getByRole('combobox')).toHaveFocus();
+    });
+  });
+
+  describe('case-insensitive token identity', () => {
+    it('choosing an option that differs only by case does not add a duplicate', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      render(
+        <Harness
+          initialValue={['alice@x.com']}
+          lookup={['Alice@x.com']}
+          onValueChange={onValueChange}
+        />,
+      );
+      await user.click(screen.getByRole('combobox'));
+      await screen.findByRole('listbox');
+      // Marked selected despite the case difference…
+      expect(optionByLabel('Alice@x.com')).toHaveAttribute('aria-selected', 'true');
+      // …and choosing it adds nothing (defaultOne never unchecks).
+      await user.click(optionByLabel('Alice@x.com'));
+      expect(onValueChange).not.toHaveBeenCalled();
+    });
+
+    it('toggle mode removes the existing token when a case-variant option is clicked', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      render(
+        <Harness
+          initialValue={['alice@x.com']}
+          lookup={['Alice@x.com']}
+          onValueChange={onValueChange}
+          defaultOne={false}
+        />,
+      );
+      await user.click(screen.getByRole('combobox'));
+      await screen.findByRole('listbox');
+      await user.click(optionByLabel('Alice@x.com'));
+      expect(onValueChange).toHaveBeenCalledWith([]);
     });
   });
 });

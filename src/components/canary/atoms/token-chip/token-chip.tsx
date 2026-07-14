@@ -79,7 +79,7 @@ export function TokenChip({
               aria-label={action.label}
               className={cn(
                 'inline-flex h-4 items-center justify-center overflow-hidden rounded-sm',
-                'text-muted-foreground transition-all hover:text-primary',
+                'text-muted-foreground transition-[margin,width,opacity] hover:text-primary',
                 // Collapsed to zero width at rest (the -ml-1 cancels the badge
                 // gap); the chip expands to fit the icon on hover / actionVisible.
                 '-ml-1 w-0 opacity-0',

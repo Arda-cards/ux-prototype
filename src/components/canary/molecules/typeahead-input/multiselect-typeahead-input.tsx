@@ -267,12 +267,27 @@ export function MultiSelectTypeaheadInput({
     }
   }, [cellEditorMode]);
 
+  // `bare` is standalone-only (prose contract on the prop) — surface the
+  // unsupported combination at runtime instead of silently mis-rendering.
+  React.useEffect(() => {
+    if (bare && cellEditorMode) {
+      console.warn(
+        'MultiSelectTypeaheadInput: `bare` and `cellEditorMode` are mutually exclusive — ' +
+          '`bare` is for standalone composed rows. The combined layout is unsupported.',
+      );
+    }
+  }, [bare, cellEditorMode]);
+
   // --- Selection ---
-  const selectedSet = React.useMemo(() => new Set(value), [value]);
+  // Token identity is case-insensitive (emails, role names): every add /
+  // remove / is-selected check must agree on this, or an option differing
+  // only by case slips past the dedup as a near-duplicate token.
+  const hasToken = (v: string) => value.some((x) => x.toLowerCase() === v.toLowerCase());
+  const selectedSet = React.useMemo(() => new Set(value.map((v) => v.toLowerCase())), [value]);
 
   const toggleOption = (optionValue: string) => {
-    if (value.includes(optionValue)) {
-      onValueChange(value.filter((v) => v !== optionValue));
+    if (hasToken(optionValue)) {
+      onValueChange(value.filter((v) => v.toLowerCase() !== optionValue.toLowerCase()));
     } else {
       onValueChange([...value, optionValue]);
     }
@@ -285,7 +300,7 @@ export function MultiSelectTypeaheadInput({
   // (never unselecting) commits and closes; otherwise it toggles and stays open.
   const chooseOption = (optionValue: string) => {
     if (defaultOne) {
-      if (!value.includes(optionValue)) {
+      if (!hasToken(optionValue)) {
         onValueChange([...value, optionValue]);
       }
       setOpen(false);
@@ -300,7 +315,7 @@ export function MultiSelectTypeaheadInput({
   const createValue = (raw: string) => {
     const created = raw.trim();
     if (!created) return;
-    if (!value.some((v) => v.toLowerCase() === created.toLowerCase())) {
+    if (!hasToken(created)) {
       onValueChange([...value, created]);
     }
     if (defaultOne) {
@@ -347,7 +362,7 @@ export function MultiSelectTypeaheadInput({
     const trimmed = inputValue.trim();
     if (trimmed) {
       const addToken = (v: string) => {
-        if (!value.some((x) => x.toLowerCase() === v.toLowerCase())) {
+        if (!hasToken(v)) {
           onValueChange([...value, v]);
         }
         // Outside click ends the interaction — same commit signal as
@@ -419,9 +434,38 @@ export function MultiSelectTypeaheadInput({
     inputRef.current?.focus();
   };
 
+  // Pull a token back into the input for editing (double-press or Shift+Enter
+  // on the focused token, with editOnDoubleClick).
+  const editToken = (tokenValue: string) => {
+    onValueChange(value.filter((v) => v !== tokenValue));
+    setInputValue(tokenValue);
+    setFocusedTokenIndex(-1);
+    inputRef.current?.focus();
+    setOpen(true);
+    doSearch(tokenValue);
+  };
+
   // --- Token keyboard handler ---
   const handleTokenKeyDown = (e: React.KeyboardEvent, tokenIndex: number) => {
     const tokens = value;
+    const token = tokens[tokenIndex];
+
+    // Shift-modified keys drive the chip's secondary affordances — the
+    // keyboard twins of the pointer-only hover reveals. Plain keys keep
+    // their remove/navigate semantics in the switch below.
+    if (e.shiftKey && token) {
+      if (e.key === 'Enter' && editOnDoubleClick) {
+        e.preventDefault();
+        editToken(token);
+        return;
+      }
+      if (e.key === ' ' && tokenAction && (tokenAction.isVisible?.(token) ?? true)) {
+        e.preventDefault();
+        tokenAction.onAction(token);
+        return;
+      }
+    }
+
     switch (e.key) {
       case 'ArrowLeft':
         e.preventDefault();
@@ -510,6 +554,17 @@ export function MultiSelectTypeaheadInput({
       !opts.some((o) => o.value.toLowerCase() === trimmed.toLowerCase()) &&
       !value.some((v) => v.toLowerCase() === trimmed.toLowerCase());
     const total = opts.length + (canCreate ? 1 : 0);
+
+    // Shift+Delete on a highlighted row is the keyboard twin of the
+    // hover-revealed destroy × (which is not tabbable).
+    if (e.key === 'Delete' && e.shiftKey && hi >= 0 && hi < opts.length) {
+      const opt = opts[hi];
+      if (opt && optionDestroy && (optionDestroy.isVisible?.(opt.value) ?? true)) {
+        e.preventDefault();
+        fireOptionDestroy(opt.value);
+        return;
+      }
+    }
 
     switch (e.key) {
       case 'ArrowDown':
@@ -668,13 +723,16 @@ export function MultiSelectTypeaheadInput({
       {!loading &&
         !error &&
         options.map((opt, i) => {
-          const isSelected = selectedSet.has(opt.value);
+          const isSelected = selectedSet.has(opt.value.toLowerCase());
           return (
             <div
               key={opt.value}
               id={optionId(i)}
               role="option"
               aria-selected={isSelected}
+              {...(optionDestroy && (optionDestroy.isVisible?.(opt.value) ?? true)
+                ? { 'aria-keyshortcuts': 'Shift+Delete' }
+                : {})}
               className={cn(
                 'group/option flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm',
                 i === highlightedIndex && 'bg-accent text-accent-foreground',
@@ -802,7 +860,13 @@ export function MultiSelectTypeaheadInput({
           data-token
           role="button"
           aria-label={`${tokenValue}, remove`}
-          aria-keyshortcuts="Delete Backspace Enter Space"
+          aria-keyshortcuts={[
+            'Delete Backspace Enter Space',
+            editOnDoubleClick ? 'Shift+Enter' : '',
+            tokenAction && (tokenAction.isVisible?.(tokenValue) ?? true) ? 'Shift+Space' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
           tabIndex={-1}
           onPointerDown={(e) => {
             // Select the token (focus it for keyboard nav) and open the
@@ -824,14 +888,8 @@ export function MultiSelectTypeaheadInput({
               prev.token === tokenValue &&
               now - prev.time < DOUBLE_PRESS_MS
             ) {
-              // Put the token back into the input for editing.
               lastTokenPress.current = null;
-              onValueChange(value.filter((v) => v !== tokenValue));
-              setInputValue(tokenValue);
-              setFocusedTokenIndex(-1);
-              inputRef.current?.focus();
-              setOpen(true);
-              doSearch(tokenValue);
+              editToken(tokenValue);
               return;
             }
             focusToken(i);
@@ -853,7 +911,7 @@ export function MultiSelectTypeaheadInput({
           <TokenChip
             value={tokenValue}
             actionVisible={focusedTokenIndex === i}
-            {...(editOnDoubleClick ? { tooltip: 'Double-click to edit' } : {})}
+            {...(editOnDoubleClick ? { tooltip: 'Double-click or Shift+Enter to edit' } : {})}
             action={
               tokenAction && (tokenAction.isVisible?.(tokenValue) ?? true)
                 ? {

@@ -15,6 +15,10 @@ and as an AG Grid cell editor.
 
 **Molecule** &#8212; Canary | Import: `import { MultiSelectTypeaheadInput } from '@arda-cards/design-system/canary'`
 
+> Tokens render as `TokenChip` pills whose hints (`tokenAction`, `optionDestroy`,
+> the × remove, the edit hint) are design-system tooltips — a `TooltipProvider`
+> must be present in the tree, the same requirement as `Button`'s `tooltip` prop.
+
 ---
 
 ## Default
@@ -118,8 +122,25 @@ column `cellEditor`.
       <td><code>Tab</code></td>
       <td>Commit and move focus on.</td>
     </tr>
+    <tr>
+      <td><code>Shift+Delete</code></td>
+      <td>On a highlighted dropdown row, fires <code>optionDestroy</code> (keyboard twin of the hover-revealed ×).</td>
+    </tr>
+    <tr>
+      <td><code>Shift+Space</code></td>
+      <td>On a focused token, fires <code>tokenAction</code> (keyboard twin of the hover-revealed action button).</td>
+    </tr>
+    <tr>
+      <td><code>Shift+Enter</code></td>
+      <td>On a focused token with <code>editOnDoubleClick</code>, pulls the token back into the input for editing.</td>
+    </tr>
   </tbody>
 </table>
+
+The hover-revealed buttons (token action, token ×, option destroy) are
+deliberately not in the tab order — tabbing through every internal button
+would wreck form tab flow. The shortcuts above are their keyboard
+equivalents and are announced via <code>aria-keyshortcuts</code>.
 
 ---
 
