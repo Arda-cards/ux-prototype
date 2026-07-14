@@ -1,9 +1,15 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeAll } from 'vitest';
 import { useState } from 'react';
 import { AddressFieldset } from './address-fieldset';
 import type { PostalAddress } from '@/types/canary/model/general/geo/postal-address';
+
+// jsdom doesn't implement scrollIntoView, which the country typeahead's
+// dropdown calls on highlight.
+beforeAll(() => {
+  Element.prototype.scrollIntoView = vi.fn();
+});
 
 function Harness({
   initial = null,
@@ -57,6 +63,20 @@ describe('AddressFieldset', () => {
     render(<Harness initial={{ addressLine1: '1 Main St' }} onChange={onChange} />);
     await user.clear(screen.getByLabelText('Deliver to street address'));
     expect(onChange).toHaveBeenLastCalledWith(null);
+  });
+
+  it('country typeahead fuzzy-matches names and codes and sets the symbol', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<Harness onChange={onChange} />);
+    const country = screen.getByLabelText('Deliver to country');
+    await user.click(country);
+    // Focus-search ('') lists everything; then narrow with a fuzzy query.
+    await screen.findByText('Canada (CA)');
+    await user.keyboard('untd sts'); // subsequence of "united states"
+    const option = await screen.findByText('United States (US)');
+    await user.click(option);
+    expect(onChange).toHaveBeenLastCalledWith({ country: 'US' });
   });
 
   it('disables every field via the fieldset', () => {

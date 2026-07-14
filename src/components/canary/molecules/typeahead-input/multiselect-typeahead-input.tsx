@@ -892,11 +892,12 @@ export function MultiSelectTypeaheadInput({
         aria-label={ariaLabel ?? placeholder}
         // Suppress browser + password-manager autofill. autoComplete="off"
         // alone is not enough: Chrome's saved-address heuristics match
-        // email-shaped inputs (by label/content) and pop its own suggestion
-        // overlay, which committing then turns into an unwanted token. The
-        // "search"-flavored name steers the heuristic away; the data-*
-        // attributes opt out of 1Password/LastPass.
-        autoComplete="off"
+        // email-shaped inputs (by label/content) and keep suggesting saved
+        // contacts even on the focused field. "one-time-code" is a valid
+        // token Chrome respects and never address-fills; readOnly-until-focus
+        // (below) stops the multi-field ghost preview. The data-* attributes
+        // opt out of 1Password/LastPass.
+        autoComplete="one-time-code"
         autoCorrect="off"
         autoCapitalize="none"
         spellCheck={false}

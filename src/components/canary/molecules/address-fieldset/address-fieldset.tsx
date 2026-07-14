@@ -2,12 +2,67 @@ import * as React from 'react';
 
 import { cn } from '@/types/canary/utilities/utils';
 import { Input } from '@/components/canary/primitives/input';
-import { ArdaSelect } from '@/components/canary/atoms/select';
+import {
+  TypeaheadInput,
+  type TypeaheadOption,
+} from '@/components/canary/molecules/typeahead-input/typeahead-input';
 import {
   COUNTRY_SYMBOLS,
   type CountrySymbol,
   type PostalAddress,
 } from '@/types/canary/model/general/geo/postal-address';
+
+/** Display names for the supported country symbols (fuzzy-search haystack). */
+const COUNTRY_NAMES: Record<CountrySymbol, string> = {
+  US: 'United States',
+  CA: 'Canada',
+  DE: 'Germany',
+  EU: 'European Union',
+  GB: 'United Kingdom',
+  JP: 'Japan',
+  AU: 'Australia',
+  CN: 'China',
+  IN: 'India',
+  RU: 'Russia',
+  BR: 'Brazil',
+  ZA: 'South Africa',
+  MX: 'Mexico',
+  KR: 'South Korea',
+  SG: 'Singapore',
+  HK: 'Hong Kong',
+  NZ: 'New Zealand',
+  CH: 'Switzerland',
+  SV: 'El Salvador',
+};
+
+/** Loose subsequence match, e.g. "untd sts" → "united states". */
+function isSubsequence(needle: string, haystack: string): boolean {
+  let i = 0;
+  for (const ch of haystack) {
+    if (ch === needle[i]) i++;
+    if (i === needle.length) return true;
+  }
+  return i === needle.length;
+}
+
+/** Fuzzy country lookup: prefix > substring > subsequence, over name + code. */
+async function lookupCountries(search: string): Promise<TypeaheadOption[]> {
+  const q = search.trim().toLowerCase().replace(/\s+/g, ' ');
+  const scored = COUNTRY_SYMBOLS.flatMap((sym) => {
+    const name = COUNTRY_NAMES[sym];
+    const hay = `${name} ${sym}`.toLowerCase();
+    let score: number;
+    if (!q) score = 0;
+    else if (sym.toLowerCase() === q || hay.startsWith(q)) score = 3;
+    else if (hay.includes(q)) score = 2;
+    else if (isSubsequence(q.replace(/ /g, ''), hay)) score = 1;
+    else return [];
+    return [{ label: `${name} (${sym})`, value: sym, score }];
+  });
+  return scored
+    .sort((a, b) => b.score - a.score || a.label.localeCompare(b.label))
+    .map(({ label, value }) => ({ label, value }));
+}
 
 // --- Types ---
 
@@ -23,8 +78,6 @@ export interface AddressFieldsetProps extends Omit<
   label: string;
   disabled?: boolean;
 }
-
-const COUNTRY_OPTIONS = COUNTRY_SYMBOLS.map((s) => ({ label: s, value: s }));
 
 function isBlank(a: PostalAddress): boolean {
   return !a.addressLine1 && !a.addressLine2 && !a.city && !a.state && !a.postalCode && !a.country;
@@ -58,7 +111,9 @@ export function AddressFieldset({
     onChange(isBlank(next) ? null : next);
   };
 
-  const fieldClass = 'h-8 text-sm';
+  // bg-background: the fields sit on the sidebar's muted surface and
+  // must read as standard (white) form inputs.
+  const fieldClass = 'h-9 bg-background text-sm';
 
   return (
     <fieldset
@@ -110,14 +165,15 @@ export function AddressFieldset({
           autoComplete="off"
         />
         <div className="col-span-6">
-          <ArdaSelect
+          <TypeaheadInput
             value={value?.country ?? ''}
             // '' is scrubbed by set()'s empty-key cleanup, clearing the field
             // (exactOptionalPropertyTypes forbids an explicit undefined).
             onValueChange={(v) => set({ country: v as CountrySymbol })}
-            options={COUNTRY_OPTIONS}
+            lookup={lookupCountries}
             placeholder="Country"
             aria-label={`${label} country`}
+            className={cn('[&_input]:h-9 [&_input]:bg-background')}
           />
         </div>
       </div>
