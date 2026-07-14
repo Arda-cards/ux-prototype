@@ -837,7 +837,6 @@ export function MultiSelectTypeaheadInput({
             doSearch(inputValue);
           }}
           onClick={(e) => e.stopPropagation()}
-          title={editOnDoubleClick ? 'Double-click to edit' : undefined}
           onKeyDown={(e) => handleTokenKeyDown(e, i)}
           onFocus={() => setFocusedTokenIndex(i)}
           onBlur={() => setFocusedTokenIndex(-1)}
@@ -852,6 +851,7 @@ export function MultiSelectTypeaheadInput({
           <TokenChip
             value={tokenValue}
             actionVisible={focusedTokenIndex === i}
+            {...(editOnDoubleClick ? { tooltip: 'Double-click to edit' } : {})}
             action={
               tokenAction && (tokenAction.isVisible?.(tokenValue) ?? true)
                 ? {

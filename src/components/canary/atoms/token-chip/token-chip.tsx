@@ -27,6 +27,12 @@ export interface TokenChipProps extends Omit<React.ComponentProps<'span'>, 'chil
   action?: TokenChipAction | null;
   /** Force-reveal the action without hover (e.g. while the token has keyboard focus). */
   actionVisible?: boolean;
+  /**
+   * Design-system tooltip for the whole chip (e.g. "Double-click to edit").
+   * Rendered with a long delay so it stays a discoverability hint rather
+   * than popping on every hover.
+   */
+  tooltip?: string;
 }
 
 // --- Component ---
@@ -48,10 +54,11 @@ export function TokenChip({
   removeLabel,
   action,
   actionVisible = false,
+  tooltip,
   className,
   ...props
 }: TokenChipProps) {
-  return (
+  const chip = (
     // bg-secondary overrides the Badge secondary variant's accent-light
     // (peach) fill — token chips are neutral grey.
     <Badge
@@ -122,5 +129,13 @@ export function TokenChip({
         </Tooltip>
       )}
     </Badge>
+  );
+
+  if (!tooltip) return chip;
+  return (
+    <Tooltip delayDuration={700}>
+      <TooltipTrigger asChild>{chip}</TooltipTrigger>
+      <TooltipContent>{tooltip}</TooltipContent>
+    </Tooltip>
   );
 }
