@@ -26,6 +26,7 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
 - **MultiSelectTypeaheadInput: `tokenAction`** — per-token hover action (e.g. "set this recipient as the vendor default"), with `isVisible` per token.
 - **MultiSelectTypeaheadInput: `optionAction`** — hover/highlight-revealed action at the far right of each dropdown row (icon defaults to ×), e.g. forgetting a stale address; firing it never selects the option and optimistically drops the row.
 - **MultiSelectTypeaheadInput: `bare`** — chromeless variant for composed rows that own their field styling: no border/background/focus ring, tokens always wrap inline (no "+N more" collapse or editing overlay).
+- **AddressFieldset molecule (canary)** — compact structured postal-address form over the `PostalAddress` value object (street/unit/city/state/ZIP/country); controlled and null-tolerant (all-blank reports `null`). Shared editing surface for PO deliver-to, vendor details, and company settings.
 - **MultiSelectTypeaheadInput: `editOnDoubleClick`** — double-clicking a token removes it and puts its text back into the input for editing (Gmail-style chips).
 
 ### Fixed
