@@ -18,7 +18,7 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
-## [6.1.0] - 2026-07-11
+## [6.1.0-rc.1] - 2026-07-14
 
 ### Added
 - **TokenChip atom (canary)** — the recipient/token pill shared by chip fields and `MultiSelectTypeaheadInput` tokens: neutral rounded-full Badge, hover-revealed border, always-visible × remove, and an optional inline action the chip expands to fit on hover. Internal buttons fire on pointerdown and shield the event so host containers (token focus, dropdown open, double-press edit) don't also react; their hints render as design-system tooltips (requires a `TooltipProvider`, like Button's `tooltip` prop). Docs cover TokenChip vs Badge usage.
