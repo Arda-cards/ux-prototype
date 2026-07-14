@@ -175,6 +175,9 @@ export function AddressFieldset({
             onValueChange={(v) => set({ country: v as CountrySymbol })}
             lookup={lookupCountries}
             maxResults={COUNTRY_SYMBOLS.length}
+            // Select-like: focusing clears the committed code so the full
+            // country list shows; blur without a pick restores it.
+            clearOnFocus
             placeholder="Country"
             aria-label={`${label} country`}
             className={cn('[&_input]:h-9 [&_input]:bg-background')}
