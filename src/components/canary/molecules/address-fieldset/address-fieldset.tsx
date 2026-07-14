@@ -144,7 +144,7 @@ export function AddressFieldset({
           autoComplete="one-time-code"
         />
         <Input
-          className={cn(fieldClass, 'col-span-2')}
+          className={cn(fieldClass, 'col-span-4')}
           value={value?.city ?? ''}
           onChange={(e) => set({ city: e.target.value })}
           placeholder="City"
@@ -152,22 +152,14 @@ export function AddressFieldset({
           autoComplete="one-time-code"
         />
         <Input
-          className={cn(fieldClass, 'col-span-1')}
+          className={cn(fieldClass, 'col-span-2')}
           value={value?.state ?? ''}
           onChange={(e) => set({ state: e.target.value })}
           placeholder="State"
           aria-label={`${label} state`}
           autoComplete="one-time-code"
         />
-        <Input
-          className={cn(fieldClass, 'col-span-2')}
-          value={value?.postalCode ?? ''}
-          onChange={(e) => set({ postalCode: e.target.value })}
-          placeholder="ZIP"
-          aria-label={`${label} postal code`}
-          autoComplete="one-time-code"
-        />
-        <div className="col-span-3">
+        <div className="col-span-4">
           <TypeaheadInput
             value={value?.country ?? ''}
             // '' is scrubbed by set()'s empty-key cleanup, clearing the field
@@ -183,6 +175,14 @@ export function AddressFieldset({
             className={cn('[&_input]:h-9 [&_input]:bg-background')}
           />
         </div>
+        <Input
+          className={cn(fieldClass, 'col-span-2')}
+          value={value?.postalCode ?? ''}
+          onChange={(e) => set({ postalCode: e.target.value })}
+          placeholder="ZIP"
+          aria-label={`${label} postal code`}
+          autoComplete="one-time-code"
+        />
       </div>
     </fieldset>
   );
