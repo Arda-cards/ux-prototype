@@ -24,7 +24,7 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
 - **TokenChip atom (canary)** — the recipient/token pill shared by chip fields and `MultiSelectTypeaheadInput` tokens: neutral rounded-full Badge, hover-revealed border, always-visible × remove, and an optional inline action the chip expands to fit on hover. Internal buttons fire on pointerdown and shield the event so host containers (token focus, dropdown open, double-press edit) don't also react; their hints render as design-system tooltips (requires a `TooltipProvider`, like Button's `tooltip` prop). Docs cover TokenChip vs Badge usage.
 - **MultiSelectTypeaheadInput: `allowCreate`** — typed text with no exact option match gets a create row in the dropdown; Enter also creates (mirrors `TypeaheadInput`).
 - **MultiSelectTypeaheadInput: `tokenAction`** — per-token hover action (e.g. "set this recipient as the vendor default"), with `isVisible` per token.
-- **MultiSelectTypeaheadInput: `optionAction`** — hover/highlight-revealed action at the far right of each dropdown row (icon defaults to ×), e.g. forgetting a stale address; firing it never selects the option and optimistically drops the row.
+- **MultiSelectTypeaheadInput: `optionDestroy`** — hover/highlight-revealed destroy button at the far right of each dropdown row (icon defaults to ×), e.g. forgetting a stale address. Destructive by design (hence the name): firing it never selects the option and optimistically drops the row; the caller owns removing it from the lookup source.
 - **MultiSelectTypeaheadInput: `bare`** — chromeless variant for composed rows that own their field styling: no border/background/focus ring, tokens always wrap inline (no "+N more" collapse or editing overlay).
 - **AddressFieldset molecule (canary)** — compact structured postal-address form over the `PostalAddress` value object (street/unit/city/state/ZIP/country, with a fuzzy country typeahead over names and codes); controlled and null-tolerant (all-blank reports `null`). Shared editing surface for PO deliver-to, vendor details, and company settings.
 - **MultiSelectTypeaheadInput: `editOnDoubleClick`** — double-clicking a token removes it and puts its text back into the input for editing (Gmail-style chips).
@@ -32,8 +32,9 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
 ### Fixed
 - **MultiSelectTypeaheadInput: outside click no longer discards typed text** — mirrors `TypeaheadInput`'s blur ladder: perfect match → select; `allowCreate` → commit the exact typed text; otherwise the highlighted (or first) result; otherwise discard. The highlighted-result pick is skipped while results still reflect an older query (mid-debounce/mid-fetch), and committing a token fires `onCommit`.
 - **MultiSelectTypeaheadInput: Chrome saved-address autofill suppressed** — the search input opts out of browser and password-manager autofill AND is `readOnly` until focused (Chrome ignores `autocomplete=off` for address constellations but never previews into read-only inputs).
-- **TokenChip / optionAction keyboard activation** — the inline action, × remove, and dropdown-row action buttons now also fire on keyboard/assistive-tech clicks (previously pointerdown-only).
+- **TokenChip / optionDestroy keyboard activation** — the inline action, × remove, and dropdown-row destroy buttons now also fire on keyboard/assistive-tech clicks (previously pointerdown-only).
 - **Tab no longer double-fires `onCommit`** when `allowCreate` + `defaultOne` create a value on Tab.
+- **Input/Textarea primitives drop their drop shadow** — flat fields per the design direction.
 
 ## [6.0.3] - 2026-07-07
 

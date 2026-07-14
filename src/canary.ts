@@ -577,7 +577,7 @@ export type {
   MultiSelectOption,
   MultiSelectSource,
   MultiSelectTokenAction,
-  MultiSelectOptionAction,
+  MultiSelectOptionDestroy,
   MultiSelectTypeaheadInputProps,
 } from './components/canary/molecules/typeahead-input/multiselect-typeahead-input';
 

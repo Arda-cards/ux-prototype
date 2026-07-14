@@ -112,7 +112,10 @@ export function AddressFieldset({
   };
 
   // bg-background: the fields sit on the sidebar's muted surface and
-  // must read as standard (white) form inputs.
+  // must read as standard (white) form inputs. autoComplete="one-time-code"
+  // (on every field): Chrome ignores autocomplete=off for address-shaped
+  // clusters — it both suggests saved addresses into them and offers to SAVE
+  // typed ones ("Save address?"); OTC is the one valid token it leaves alone.
   const fieldClass = 'h-9 bg-background text-sm';
 
   return (
@@ -130,7 +133,7 @@ export function AddressFieldset({
           onChange={(e) => set({ addressLine1: e.target.value })}
           placeholder="Street address"
           aria-label={`${label} street address`}
-          autoComplete="off"
+          autoComplete="one-time-code"
         />
         <Input
           className={cn(fieldClass, 'col-span-6')}
@@ -138,15 +141,15 @@ export function AddressFieldset({
           onChange={(e) => set({ addressLine2: e.target.value })}
           placeholder="Apt, suite, unit (optional)"
           aria-label={`${label} address line 2`}
-          autoComplete="off"
+          autoComplete="one-time-code"
         />
         <Input
-          className={cn(fieldClass, 'col-span-3')}
+          className={cn(fieldClass, 'col-span-2')}
           value={value?.city ?? ''}
           onChange={(e) => set({ city: e.target.value })}
           placeholder="City"
           aria-label={`${label} city`}
-          autoComplete="off"
+          autoComplete="one-time-code"
         />
         <Input
           className={cn(fieldClass, 'col-span-1')}
@@ -154,7 +157,7 @@ export function AddressFieldset({
           onChange={(e) => set({ state: e.target.value })}
           placeholder="State"
           aria-label={`${label} state`}
-          autoComplete="off"
+          autoComplete="one-time-code"
         />
         <Input
           className={cn(fieldClass, 'col-span-2')}
@@ -162,15 +165,16 @@ export function AddressFieldset({
           onChange={(e) => set({ postalCode: e.target.value })}
           placeholder="ZIP"
           aria-label={`${label} postal code`}
-          autoComplete="off"
+          autoComplete="one-time-code"
         />
-        <div className="col-span-6">
+        <div className="col-span-3">
           <TypeaheadInput
             value={value?.country ?? ''}
             // '' is scrubbed by set()'s empty-key cleanup, clearing the field
             // (exactOptionalPropertyTypes forbids an explicit undefined).
             onValueChange={(v) => set({ country: v as CountrySymbol })}
             lookup={lookupCountries}
+            maxResults={COUNTRY_SYMBOLS.length}
             placeholder="Country"
             aria-label={`${label} country`}
             className={cn('[&_input]:h-9 [&_input]:bg-background')}

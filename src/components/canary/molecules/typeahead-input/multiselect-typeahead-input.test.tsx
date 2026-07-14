@@ -33,7 +33,7 @@ interface HarnessProps {
   cellEditorMode?: boolean;
   allowCreate?: boolean;
   tokenAction?: import('./multiselect-typeahead-input').MultiSelectTokenAction;
-  optionAction?: import('./multiselect-typeahead-input').MultiSelectOptionAction;
+  optionDestroy?: import('./multiselect-typeahead-input').MultiSelectOptionDestroy;
   bare?: boolean;
   editOnDoubleClick?: boolean;
 }
@@ -503,16 +503,16 @@ describe('MultiSelectTypeaheadInput', () => {
     });
   });
 
-  describe('optionAction', () => {
+  describe('optionDestroy', () => {
     it('fires with the option value without selecting it, and drops the row', async () => {
       const user = userEvent.setup();
-      const onAction = vi.fn();
+      const onDestroy = vi.fn();
       const onValueChange = vi.fn();
       render(
         <Harness
           lookup={['a@x.com', 'b@x.com']}
           onValueChange={onValueChange}
-          optionAction={{ label: (v) => `Forget ${v}`, onAction }}
+          optionDestroy={{ label: (v) => `Forget ${v}`, onDestroy }}
           bare
         />,
       );
@@ -522,21 +522,21 @@ describe('MultiSelectTypeaheadInput', () => {
         keys: '[MouseLeft]',
         target: screen.getByRole('button', { name: 'Forget a@x.com' }),
       });
-      expect(onAction).toHaveBeenCalledWith('a@x.com');
+      expect(onDestroy).toHaveBeenCalledWith('a@x.com');
       expect(onValueChange).not.toHaveBeenCalled();
-      // The actioned row is dropped from the open result list optimistically.
+      // The destroyed row is dropped from the open result list optimistically.
       expect(within(screen.getByRole('listbox')).queryByText('a@x.com')).toBeNull();
       expect(within(screen.getByRole('listbox')).getByText('b@x.com')).toBeInTheDocument();
     });
 
-    it('hides the action for options where isVisible is false', async () => {
+    it('hides the destroy button for options where isVisible is false', async () => {
       const user = userEvent.setup();
       render(
         <Harness
           lookup={['a@x.com', 'b@x.com']}
-          optionAction={{
+          optionDestroy={{
             label: (v) => `Forget ${v}`,
-            onAction: vi.fn(),
+            onDestroy: vi.fn(),
             isVisible: (v) => v !== 'a@x.com',
           }}
           bare

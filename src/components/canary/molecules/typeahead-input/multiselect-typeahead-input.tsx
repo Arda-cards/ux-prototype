@@ -54,19 +54,21 @@ export interface MultiSelectTokenAction {
 }
 
 /**
- * Optional per-option action rendered at the far right of each dropdown row,
- * revealed while the row is hovered/highlighted. Example: removing a stale
- * address from the lookup source. Firing it does NOT select the option; the
- * actioned option is also removed from the current result list optimistically
- * (the caller owns updating the lookup source for future searches).
+ * Optional per-option destroy affordance rendered at the far right of each
+ * dropdown row, revealed while the row is hovered/highlighted. Example:
+ * removing a stale address from the lookup source. Destructive by design —
+ * hence the name: firing it does NOT select the option, and the option is
+ * dropped from the current result list optimistically (the caller owns
+ * removing it from the lookup source for future searches). Non-destructive
+ * per-option actions would need a separate (plural) API.
  */
-export interface MultiSelectOptionAction {
-  /** Accessible label + tooltip for the action on a given option. */
+export interface MultiSelectOptionDestroy {
+  /** Accessible label + tooltip for the destroy button on a given option. */
   label: (value: string) => string;
-  /** Icon for the action button. Defaults to an ×. */
+  /** Icon for the destroy button. Defaults to an ×. */
   icon?: React.ReactNode;
-  onAction: (value: string) => void;
-  /** Whether the action shows for this option. Defaults to always visible. */
+  onDestroy: (value: string) => void;
+  /** Whether the destroy button shows for this option. Defaults to always visible. */
   isVisible?: (value: string) => boolean;
 }
 
@@ -116,8 +118,8 @@ export interface MultiSelectTypeaheadInputProps extends Omit<
   allowCreate?: boolean;
   /** Per-token hover action (e.g. "set as default"). */
   tokenAction?: MultiSelectTokenAction;
-  /** Per-option hover action in the dropdown (e.g. "remove stale entry"). */
-  optionAction?: MultiSelectOptionAction;
+  /** Per-option hover destroy button in the dropdown (e.g. "forget stale entry"). */
+  optionDestroy?: MultiSelectOptionDestroy;
   /**
    * Chromeless variant — no border, background, padding, or focus ring, and
    * tokens always wrap inline (no "+N more" collapse or editing overlay).
@@ -182,7 +184,7 @@ export function MultiSelectTypeaheadInput({
   maxResults = DEFAULT_MAX_RESULTS,
   allowCreate = false,
   tokenAction,
-  optionAction,
+  optionDestroy,
   bare = false,
   editOnDoubleClick = false,
   cellWidth,
@@ -638,9 +640,9 @@ export function MultiSelectTypeaheadInput({
   const visibleTokens = bare || isEditing ? value : value.slice(0, visibleCount);
   const overflowCount = bare || isEditing ? 0 : value.length - visibleCount;
 
-  const fireOptionAction = (optionValue: string) => {
-    if (!optionAction) return;
-    optionAction.onAction(optionValue);
+  const fireOptionDestroy = (optionValue: string) => {
+    if (!optionDestroy) return;
+    optionDestroy.onDestroy(optionValue);
     // Optimistically drop the row; the caller owns removing it from the
     // lookup source for future searches.
     setOptions((prev) => prev.filter((o) => o.value !== optionValue));
@@ -694,13 +696,13 @@ export function MultiSelectTypeaheadInput({
                 {isSelected && <Check className="h-3 w-3" aria-hidden="true" />}
               </div>
               <span className="min-w-0 flex-1 truncate">{opt.label}</span>
-              {optionAction && (optionAction.isVisible?.(opt.value) ?? true) && (
+              {optionDestroy && (optionDestroy.isVisible?.(opt.value) ?? true) && (
                 <Tooltip delayDuration={500}>
                   <TooltipTrigger asChild>
                     <button
                       type="button"
                       tabIndex={-1}
-                      aria-label={optionAction.label(opt.value)}
+                      aria-label={optionDestroy.label(opt.value)}
                       className={cn(
                         'ml-auto inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full',
                         'text-muted-foreground transition-opacity hover:bg-border hover:text-destructive',
@@ -712,18 +714,18 @@ export function MultiSelectTypeaheadInput({
                         // Don't let the row's pointerdown select the option.
                         e.preventDefault();
                         e.stopPropagation();
-                        fireOptionAction(opt.value);
+                        fireOptionDestroy(opt.value);
                       }}
                       onClick={(e) => {
                         e.stopPropagation();
                         // Keyboard / assistive-tech activation (no pointerdown).
-                        if (e.detail === 0) fireOptionAction(opt.value);
+                        if (e.detail === 0) fireOptionDestroy(opt.value);
                       }}
                     >
-                      {optionAction.icon ?? <X className="h-3 w-3" aria-hidden="true" />}
+                      {optionDestroy.icon ?? <X className="h-3 w-3" aria-hidden="true" />}
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent>{optionAction.label(opt.value)}</TooltipContent>
+                  <TooltipContent>{optionDestroy.label(opt.value)}</TooltipContent>
                 </Tooltip>
               )}
             </div>

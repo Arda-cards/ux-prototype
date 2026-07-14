@@ -151,7 +151,7 @@ export const TokenAction: StoryObj = {
 };
 
 /**
- * `bare` + `editOnDoubleClick` + `optionAction` — a chromeless labelled
+ * `bare` + `editOnDoubleClick` + `optionDestroy` — a chromeless labelled
  * recipient row (the email-composer To field): no input border, tokens always
  * wrap inline, double-clicking a token puts it back into the input for
  * editing, the hover star promotes an address to the default, and each
@@ -188,9 +188,9 @@ export const BareRecipientRow: StoryObj = {
               onAction: setDefaultEmail,
               isVisible: (v) => v !== defaultEmail,
             }}
-            optionAction={{
+            optionDestroy={{
               label: (v) => `Forget ${v}`,
-              onAction: (v) => setEmails((prev) => prev.filter((e) => e !== v)),
+              onDestroy: (v) => setEmails((prev) => prev.filter((e) => e !== v)),
               isVisible: (v) => v !== defaultEmail,
             }}
           />
