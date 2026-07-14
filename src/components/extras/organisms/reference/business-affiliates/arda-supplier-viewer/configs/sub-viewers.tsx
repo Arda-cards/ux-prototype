@@ -1,3 +1,4 @@
+import { COUNTRY_NAMES } from '@/types/extras/model/general/geo/postal-address';
 import type { AtomProps, AtomMode } from '@/components/extras/atoms/shared/props';
 import type { CompanyInformation, Contact, PostalAddress, CountrySymbol } from '@/types/extras';
 import { ArdaTextFieldInteractive } from '@/components/extras/atoms/form/text';
@@ -7,27 +8,7 @@ import { ArdaEnumFieldInteractive } from '@/components/extras/atoms/form/enum';
 // Helpers
 // ============================================================================
 
-const COUNTRY_OPTIONS: Readonly<Record<CountrySymbol, string>> = {
-  US: 'United States',
-  CA: 'Canada',
-  DE: 'Germany',
-  EU: 'European Union',
-  GB: 'United Kingdom',
-  JP: 'Japan',
-  AU: 'Australia',
-  CN: 'China',
-  IN: 'India',
-  RU: 'Russia',
-  BR: 'Brazil',
-  ZA: 'South Africa',
-  MX: 'Mexico',
-  KR: 'South Korea',
-  SG: 'Singapore',
-  HK: 'Hong Kong',
-  NZ: 'New Zealand',
-  CH: 'Switzerland',
-  SV: 'El Salvador',
-};
+const COUNTRY_OPTIONS = COUNTRY_NAMES;
 
 /**
  * Set or remove an optional key from an object.

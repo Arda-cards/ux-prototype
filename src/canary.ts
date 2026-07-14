@@ -403,7 +403,11 @@ export type {
 } from './components/canary/molecules/data-grid';
 
 // Geo model (mirrored from extras into canary) — used by combined Address columns.
-export { COUNTRY_SYMBOLS } from './types/canary/model/general/geo/postal-address';
+export {
+  COUNTRY_SYMBOLS,
+  COUNTRY_NAMES,
+  lookupCountries,
+} from './types/canary/model/general/geo/postal-address';
 export type {
   PostalAddress,
   CountrySymbol,
