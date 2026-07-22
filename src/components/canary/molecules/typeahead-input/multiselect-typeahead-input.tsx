@@ -1,10 +1,11 @@
 import * as React from 'react';
-import { Check, Loader2, AlertCircle } from 'lucide-react';
+import { Check, Loader2, AlertCircle, Plus, X } from 'lucide-react';
 
 import { cn } from '@/types/canary/utilities/utils';
 import { useDebouncedCallback } from '@/types/canary/utilities/use-debounced-callback';
-import { Badge } from '@/components/canary/atoms/badge/badge';
+import { TokenChip } from '@/components/canary/atoms/token-chip';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/canary/primitives/popover';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/canary/primitives/tooltip';
 
 // --- Types ---
 
@@ -35,6 +36,40 @@ function normalizeLookup(
     const q = search.trim().toLowerCase();
     return q ? options.filter((o) => o.label.toLowerCase().includes(q)) : options;
   };
+}
+
+/**
+ * Optional per-token action rendered inside each token badge (revealed on
+ * hover / token focus). Example: a direct-send composer marks one recipient
+ * as the vendor's default.
+ */
+export interface MultiSelectTokenAction {
+  /** Accessible label + tooltip for the action on a given token. */
+  label: (value: string) => string;
+  /** Icon rendered inside the action button (sized by the caller). */
+  icon: React.ReactNode;
+  onAction: (value: string) => void;
+  /** Whether the action shows for this token. Defaults to always visible. */
+  isVisible?: (value: string) => boolean;
+}
+
+/**
+ * Optional per-option destroy affordance rendered at the far right of each
+ * dropdown row, revealed while the row is hovered/highlighted. Example:
+ * removing a stale address from the lookup source. Destructive by design —
+ * hence the name: firing it does NOT select the option, and the option is
+ * dropped from the current result list optimistically (the caller owns
+ * removing it from the lookup source for future searches). Non-destructive
+ * per-option actions would need a separate (plural) API.
+ */
+export interface MultiSelectOptionDestroy {
+  /** Accessible label + tooltip for the destroy button on a given option. */
+  label: (value: string) => string;
+  /** Icon for the destroy button. Defaults to an ×. */
+  icon?: React.ReactNode;
+  onDestroy: (value: string) => void;
+  /** Whether the destroy button shows for this option. Defaults to always visible. */
+  isVisible?: (value: string) => boolean;
 }
 
 export interface MultiSelectTypeaheadInputProps extends Omit<
@@ -76,6 +111,31 @@ export interface MultiSelectTypeaheadInputProps extends Omit<
   /** Maximum number of dropdown results to show. Defaults to 8. */
   maxResults?: number;
   /**
+   * Allow creating values not in the lookup results. When the typed text has
+   * no exact option match and isn't already selected, the dropdown offers a
+   * create row (mirrors `TypeaheadInput`'s `allowCreate`).
+   */
+  allowCreate?: boolean;
+  /** Per-token hover action (e.g. "set as default"). */
+  tokenAction?: MultiSelectTokenAction;
+  /** Per-option hover destroy button in the dropdown (e.g. "forget stale entry"). */
+  optionDestroy?: MultiSelectOptionDestroy;
+  /**
+   * Chromeless variant — no border, background, padding, or focus ring, and
+   * tokens always wrap inline (no "+N more" collapse or editing overlay).
+   * For composed rows that own their own field styling, e.g. the labelled
+   * recipient rows of an email composer. Standalone only (not for
+   * `cellEditorMode`).
+   */
+  bare?: boolean;
+  /**
+   * Double-clicking a token removes it and puts its text back into the
+   * input for editing (Gmail-style recipient chips). Best with
+   * `allowCreate`, so the edited text can be re-committed even when it
+   * matches no lookup option.
+   */
+  editOnDoubleClick?: boolean;
+  /**
    * Cell geometry for `cellEditorMode` (popup). The editor matches the cell's
    * pixel width and uses the row height as its minimum height, so a single-line
    * popup aligns with the cell and grows taller as tokens wrap onto more lines.
@@ -86,6 +146,9 @@ export interface MultiSelectTypeaheadInputProps extends Omit<
 
 const DEFAULT_MAX_RESULTS = 8;
 const DEBOUNCE_MS = 250;
+// Two presses on the same token within this window count as a double-click
+// (matches typical OS double-click thresholds).
+const DOUBLE_PRESS_MS = 500;
 
 // Hoisted static JSX
 const loadingIndicator = (
@@ -119,6 +182,11 @@ export function MultiSelectTypeaheadInput({
   defaultOne = true,
   onCommit,
   maxResults = DEFAULT_MAX_RESULTS,
+  allowCreate = false,
+  tokenAction,
+  optionDestroy,
+  bare = false,
+  editOnDoubleClick = false,
   cellWidth,
   cellMinHeight,
   className,
@@ -135,12 +203,19 @@ export function MultiSelectTypeaheadInput({
   const [error, setError] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const [focusedTokenIndex, setFocusedTokenIndex] = React.useState(-1);
+  // readOnly-until-focus: Chrome's saved-address autofill previews into every
+  // email-shaped input in a form-like constellation at once and ignores
+  // autocomplete="off" — but it never touches read-only inputs. The field
+  // becomes editable in its own focus event, before any keystroke.
+  const [interactive, setInteractive] = React.useState(false);
   const instanceId = React.useId();
   const listboxId = `multiselect-listbox-${instanceId}`;
   const optionId = (index: number) => `multiselect-opt-${instanceId}-${index}`;
 
   const inputRef = React.useRef<HTMLInputElement>(null);
   const tokenRefs = React.useRef<(HTMLSpanElement | null)[]>([]);
+  // Last pointerdown on a token — for editOnDoubleClick double-press detection.
+  const lastTokenPress = React.useRef<{ token: string; time: number } | null>(null);
   const listRef = React.useRef<HTMLDivElement>(null);
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const popoverRef = React.useRef<HTMLDivElement>(null);
@@ -151,6 +226,9 @@ export function MultiSelectTypeaheadInput({
   // needed either: the debounce hook cancels its own timer, and a setState
   // after unmount is a safe no-op in React 18+.
   const searchSeqRef = React.useRef(0);
+  // The search string that produced the current `options` — lets blur-time
+  // resolution tell whether the visible results match what the user typed.
+  const optionsQueryRef = React.useRef<string | null>(null);
 
   // --- Search ---
   // Handlers here and below are plain functions, not useCallback: nothing
@@ -168,6 +246,7 @@ export function MultiSelectTypeaheadInput({
       if (seq !== searchSeqRef.current) return; // superseded by a newer search
       const sliced = results.slice(0, maxResults);
       setOptions(sliced);
+      optionsQueryRef.current = search;
       setHighlightedIndex(sliced.length > 0 ? 0 : -1);
       setLoading(false);
     } catch {
@@ -188,12 +267,27 @@ export function MultiSelectTypeaheadInput({
     }
   }, [cellEditorMode]);
 
+  // `bare` is standalone-only (prose contract on the prop) — surface the
+  // unsupported combination at runtime instead of silently mis-rendering.
+  React.useEffect(() => {
+    if (bare && cellEditorMode) {
+      console.warn(
+        'MultiSelectTypeaheadInput: `bare` and `cellEditorMode` are mutually exclusive — ' +
+          '`bare` is for standalone composed rows. The combined layout is unsupported.',
+      );
+    }
+  }, [bare, cellEditorMode]);
+
   // --- Selection ---
-  const selectedSet = React.useMemo(() => new Set(value), [value]);
+  // Token identity is case-insensitive (emails, role names): every add /
+  // remove / is-selected check must agree on this, or an option differing
+  // only by case slips past the dedup as a near-duplicate token.
+  const hasToken = (v: string) => value.some((x) => x.toLowerCase() === v.toLowerCase());
+  const selectedSet = React.useMemo(() => new Set(value.map((v) => v.toLowerCase())), [value]);
 
   const toggleOption = (optionValue: string) => {
-    if (value.includes(optionValue)) {
-      onValueChange(value.filter((v) => v !== optionValue));
+    if (hasToken(optionValue)) {
+      onValueChange(value.filter((v) => v.toLowerCase() !== optionValue.toLowerCase()));
     } else {
       onValueChange([...value, optionValue]);
     }
@@ -206,7 +300,7 @@ export function MultiSelectTypeaheadInput({
   // (never unselecting) commits and closes; otherwise it toggles and stays open.
   const chooseOption = (optionValue: string) => {
     if (defaultOne) {
-      if (!value.includes(optionValue)) {
+      if (!hasToken(optionValue)) {
         onValueChange([...value, optionValue]);
       }
       setOpen(false);
@@ -214,6 +308,23 @@ export function MultiSelectTypeaheadInput({
       onCommit?.();
     } else {
       toggleOption(optionValue);
+    }
+  };
+
+  // Creating a typed value (allowCreate) — same close semantics as choosing.
+  const createValue = (raw: string) => {
+    const created = raw.trim();
+    if (!created) return;
+    if (!hasToken(created)) {
+      onValueChange([...value, created]);
+    }
+    if (defaultOne) {
+      setOpen(false);
+      setInputValue('');
+      onCommit?.();
+    } else {
+      setInputValue('');
+      inputRef.current?.focus();
     }
   };
 
@@ -226,6 +337,7 @@ export function MultiSelectTypeaheadInput({
   };
 
   const handleFocus = () => {
+    setInteractive(true);
     setOpen(true);
     doSearch(inputValue);
   };
@@ -239,13 +351,61 @@ export function MultiSelectTypeaheadInput({
     }
   };
 
+  // Clicking out with typed text must not silently discard it (mirrors
+  // TypeaheadInput's form-mode blur resolution):
+  //   perfect match (label or value) → add it, even when create is on
+  //   else, create allowed           → add the exact typed text
+  //   else, options present          → add the highlighted row (falls back
+  //                                    to the first result)
+  //   else                           → discard the text
+  const commitOnOutsideClick = () => {
+    const trimmed = inputValue.trim();
+    if (trimmed) {
+      const addToken = (v: string) => {
+        if (!hasToken(v)) {
+          onValueChange([...value, v]);
+        }
+        // Outside click ends the interaction — same commit signal as
+        // Enter-with-defaultOne / Tab. Grids stop editing on their own.
+        if (!cellEditorMode) onCommit?.();
+      };
+      const perfect = options.find(
+        (o) =>
+          o.value.toLowerCase() === trimmed.toLowerCase() ||
+          o.label.toLowerCase() === trimmed.toLowerCase(),
+      );
+      // The highlighted/first pick is only trustworthy when the visible
+      // results were produced by the current text — not mid-debounce or
+      // mid-fetch, when they still reflect an older query. (A perfect match
+      // is exact against the typed text, so staleness can't mislead it.)
+      const resultsAreCurrent = !loading && optionsQueryRef.current === trimmed;
+      if (perfect) {
+        addToken(perfect.value);
+      } else if (allowCreate) {
+        addToken(trimmed);
+      } else if (resultsAreCurrent && options.length > 0) {
+        const pick =
+          highlightedIndex >= 0 && highlightedIndex < options.length
+            ? options[highlightedIndex]
+            : options[0];
+        if (pick) addToken(pick.value);
+      }
+    }
+    setOpen(false);
+    setInputValue('');
+  };
+
   // Close on outside click. Attach the listener once on mount and read `open`
   // via a ref so the listener isn't torn down + re-added on every open/close
   // cycle — the previous `[open]` dep created a one-frame window during the
   // transition where no listener was active, and a fast click in that window
-  // would slip through and leave the dropdown open.
+  // would slip through and leave the dropdown open. The commit logic needs
+  // current state, so the once-attached listener dispatches through a
+  // latest-callback ref.
   const openRef = React.useRef(open);
   openRef.current = open;
+  const commitOnOutsideClickRef = React.useRef(commitOnOutsideClick);
+  commitOnOutsideClickRef.current = commitOnOutsideClick;
   React.useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (!openRef.current) return;
@@ -255,8 +415,7 @@ export function MultiSelectTypeaheadInput({
         !wrapperRef.current.contains(target) &&
         !popoverRef.current?.contains(target)
       ) {
-        setOpen(false);
-        setInputValue('');
+        commitOnOutsideClickRef.current();
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -275,9 +434,38 @@ export function MultiSelectTypeaheadInput({
     inputRef.current?.focus();
   };
 
+  // Pull a token back into the input for editing (double-press or Shift+Enter
+  // on the focused token, with editOnDoubleClick).
+  const editToken = (tokenValue: string) => {
+    onValueChange(value.filter((v) => v !== tokenValue));
+    setInputValue(tokenValue);
+    setFocusedTokenIndex(-1);
+    inputRef.current?.focus();
+    setOpen(true);
+    doSearch(tokenValue);
+  };
+
   // --- Token keyboard handler ---
   const handleTokenKeyDown = (e: React.KeyboardEvent, tokenIndex: number) => {
     const tokens = value;
+    const token = tokens[tokenIndex];
+
+    // Shift-modified keys drive the chip's secondary affordances — the
+    // keyboard twins of the pointer-only hover reveals. Plain keys keep
+    // their remove/navigate semantics in the switch below.
+    if (e.shiftKey && token) {
+      if (e.key === 'Enter' && editOnDoubleClick) {
+        e.preventDefault();
+        editToken(token);
+        return;
+      }
+      if (e.key === ' ' && tokenAction && (tokenAction.isVisible?.(token) ?? true)) {
+        e.preventDefault();
+        tokenAction.onAction(token);
+        return;
+      }
+    }
+
     switch (e.key) {
       case 'ArrowLeft':
         e.preventDefault();
@@ -358,22 +546,41 @@ export function MultiSelectTypeaheadInput({
 
     const opts = options;
     const hi = highlightedIndex;
+    // The create row (allowCreate) occupies index opts.length when active.
+    const trimmed = inputValue.trim();
+    const canCreate =
+      allowCreate &&
+      trimmed.length > 0 &&
+      !opts.some((o) => o.value.toLowerCase() === trimmed.toLowerCase()) &&
+      !value.some((v) => v.toLowerCase() === trimmed.toLowerCase());
+    const total = opts.length + (canCreate ? 1 : 0);
+
+    // Shift+Delete on a highlighted row is the keyboard twin of the
+    // hover-revealed destroy × (which is not tabbable).
+    if (e.key === 'Delete' && e.shiftKey && hi >= 0 && hi < opts.length) {
+      const opt = opts[hi];
+      if (opt && optionDestroy && (optionDestroy.isVisible?.(opt.value) ?? true)) {
+        e.preventDefault();
+        fireOptionDestroy(opt.value);
+        return;
+      }
+    }
 
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        // Guard against opts.length === 0 (possible while loading/error):
+        // Guard against total === 0 (possible while loading/error):
         // the modulo would produce NaN and break the highlight state.
-        if (opts.length === 0) break;
-        setHighlightedIndex((prev) => (prev + 1) % opts.length);
+        if (total === 0) break;
+        setHighlightedIndex((prev) => (prev + 1) % total);
         break;
       case 'ArrowUp':
         e.preventDefault();
         if (hi <= 0 && value.length > 0) {
           // At top of dropdown → focus last token
           focusToken(value.length - 1);
-        } else if (opts.length > 0) {
-          setHighlightedIndex((prev) => (prev - 1 + opts.length) % opts.length);
+        } else if (total > 0) {
+          setHighlightedIndex((prev) => (prev - 1 + total) % total);
         }
         break;
       case 'Enter':
@@ -382,6 +589,9 @@ export function MultiSelectTypeaheadInput({
           const opt = opts[hi];
           if (hi >= 0 && opt) {
             chooseOption(opt.value);
+          } else if (canCreate) {
+            // Highlight on the create row, or plain Enter on typed text.
+            createValue(inputValue);
           }
         }
         break;
@@ -394,9 +604,16 @@ export function MultiSelectTypeaheadInput({
         // In a grid, let AG Grid handle Tab (commit + move to the next
         // editable cell). Just close the dropdown; do NOT stopEditing here or
         // focus escapes to the next row.
+        if (!cellEditorMode) {
+          if (canCreate) {
+            // Tab with un-committed typed text keeps it (mirrors TypeaheadInput).
+            createValue(inputValue);
+          }
+          // createValue already commits when defaultOne — don't double-fire.
+          if (!(canCreate && defaultOne)) onCommit?.();
+        }
         setOpen(false);
         setInputValue('');
-        if (!cellEditorMode) onCommit?.();
         break;
     }
   };
@@ -408,7 +625,15 @@ export function MultiSelectTypeaheadInput({
     item?.scrollIntoView({ block: 'nearest' });
   }, [highlightedIndex]);
 
-  const showDropdown = open && (loading || error || options.length > 0);
+  // Create row visibility (the keyboard handler recomputes this inline).
+  const trimmedInput = inputValue.trim();
+  const showCreate =
+    allowCreate &&
+    trimmedInput.length > 0 &&
+    !options.some((o) => o.value.toLowerCase() === trimmedInput.toLowerCase()) &&
+    !value.some((v) => v.toLowerCase() === trimmedInput.toLowerCase());
+
+  const showDropdown = open && (loading || error || options.length > 0 || showCreate);
 
   // Live region announcement
   const statusMessage = loading
@@ -432,7 +657,7 @@ export function MultiSelectTypeaheadInput({
   const OVERFLOW_LABEL_WIDTH = 56; // "+N more" text approximate width
 
   React.useEffect(() => {
-    if (isEditing) {
+    if (bare || isEditing) {
       setVisibleCount(value.length);
       return;
     }
@@ -465,10 +690,19 @@ export function MultiSelectTypeaheadInput({
     observer.observe(container);
     requestAnimationFrame(measure);
     return () => observer.disconnect();
-  }, [value, isEditing]);
+  }, [value, isEditing, bare]);
 
-  const visibleTokens = isEditing ? value : value.slice(0, visibleCount);
-  const overflowCount = isEditing ? 0 : value.length - visibleCount;
+  const visibleTokens = bare || isEditing ? value : value.slice(0, visibleCount);
+  const overflowCount = bare || isEditing ? 0 : value.length - visibleCount;
+
+  const fireOptionDestroy = (optionValue: string) => {
+    if (!optionDestroy) return;
+    optionDestroy.onDestroy(optionValue);
+    // Optimistically drop the row; the caller owns removing it from the
+    // lookup source for future searches.
+    setOptions((prev) => prev.filter((o) => o.value !== optionValue));
+    setHighlightedIndex(-1);
+  };
 
   // --- Dropdown list content ---
   const dropdownList = (
@@ -489,15 +723,18 @@ export function MultiSelectTypeaheadInput({
       {!loading &&
         !error &&
         options.map((opt, i) => {
-          const isSelected = selectedSet.has(opt.value);
+          const isSelected = selectedSet.has(opt.value.toLowerCase());
           return (
             <div
               key={opt.value}
               id={optionId(i)}
               role="option"
               aria-selected={isSelected}
+              {...(optionDestroy && (optionDestroy.isVisible?.(opt.value) ?? true)
+                ? { 'aria-keyshortcuts': 'Shift+Delete' }
+                : {})}
               className={cn(
-                'flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm',
+                'group/option flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm',
                 i === highlightedIndex && 'bg-accent text-accent-foreground',
               )}
               onPointerDown={(e) => {
@@ -516,12 +753,64 @@ export function MultiSelectTypeaheadInput({
               >
                 {isSelected && <Check className="h-3 w-3" aria-hidden="true" />}
               </div>
-              {opt.label}
+              <span className="min-w-0 flex-1 truncate">{opt.label}</span>
+              {optionDestroy && (optionDestroy.isVisible?.(opt.value) ?? true) && (
+                <Tooltip delayDuration={500}>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      tabIndex={-1}
+                      aria-label={optionDestroy.label(opt.value)}
+                      className={cn(
+                        'ml-auto inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full',
+                        'text-muted-foreground transition-opacity hover:bg-border hover:text-destructive',
+                        // Revealed while the row is hovered or keyboard-highlighted.
+                        'opacity-0 group-hover/option:opacity-100',
+                        i === highlightedIndex && 'opacity-100',
+                      )}
+                      onPointerDown={(e) => {
+                        // Don't let the row's pointerdown select the option.
+                        e.preventDefault();
+                        e.stopPropagation();
+                        fireOptionDestroy(opt.value);
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Keyboard / assistive-tech activation (no pointerdown).
+                        if (e.detail === 0) fireOptionDestroy(opt.value);
+                      }}
+                    >
+                      {optionDestroy.icon ?? <X className="h-3 w-3" aria-hidden="true" />}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>{optionDestroy.label(opt.value)}</TooltipContent>
+                </Tooltip>
+              )}
             </div>
           );
         })}
 
-      {!loading && !error && options.length === 0 && noResults}
+      {!loading && !error && showCreate && (
+        <div
+          id={optionId(options.length)}
+          role="option"
+          aria-selected={highlightedIndex === options.length}
+          className={cn(
+            'flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-primary',
+            highlightedIndex === options.length && 'bg-accent text-primary',
+          )}
+          onPointerDown={(e) => {
+            e.preventDefault();
+            createValue(trimmedInput);
+          }}
+          onMouseEnter={() => setHighlightedIndex(options.length)}
+        >
+          <Plus className="w-4 h-4" aria-hidden="true" />
+          {trimmedInput}
+        </div>
+      )}
+
+      {!loading && !error && options.length === 0 && !showCreate && noResults}
     </div>
   );
 
@@ -529,14 +818,19 @@ export function MultiSelectTypeaheadInput({
   const inputArea = (
     <div
       className={cn(
-        'flex items-center gap-1 rounded-md border border-input bg-background px-2 py-1 text-sm',
-        // Focus treatment via Tailwind ring — soft (matches form inputs); a
-        // container, so :focus-within. Cell editor mode bumps it to full opacity.
-        'focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50',
+        'flex items-center gap-1 text-sm',
+        // Bare: chromeless, always wrapping — the composed row owns the field
+        // styling. Default: input chrome with a soft :focus-within ring
+        // (matches form inputs; a container, so not :focus). Cell editor mode
+        // bumps the ring to full opacity.
+        bare
+          ? 'flex-wrap bg-transparent'
+          : 'rounded-md border border-input bg-background px-2 py-1 ' +
+              'focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50',
         disabled && 'opacity-50 cursor-not-allowed',
         // Collapsed: single line, clip overflow so the field never grows tall.
         // Editing: wrap tokens onto multiple lines.
-        isEditing ? 'flex-wrap' : 'flex-nowrap overflow-hidden',
+        !bare && (isEditing ? 'flex-wrap' : 'flex-nowrap overflow-hidden'),
         // Cell editor mode renders in an AG Grid popup ('over' the cell). Keep
         // the normal input chrome (rounded border + focus ring from the base) —
         // a popup floats, so AG Grid does not draw a cell edit border around it.
@@ -547,8 +841,10 @@ export function MultiSelectTypeaheadInput({
         // 2px full-opacity accent ring in edit mode (3px reads too bold).
         cellEditorMode && 'min-w-60 px-3 py-1.5 focus-within:ring-2 focus-within:ring-ring',
         // Standalone editing: expand as an absolute overlay so wrapped tokens
-        // don't push surrounding layout.
+        // don't push surrounding layout. Bare mode always wraps inline instead
+        // (pushing layout, like any chip row).
         !cellEditorMode &&
+          !bare &&
           isEditing &&
           'absolute inset-x-0 top-0 z-10 bg-background border border-input rounded-md',
       )}
@@ -564,7 +860,13 @@ export function MultiSelectTypeaheadInput({
           data-token
           role="button"
           aria-label={`${tokenValue}, remove`}
-          aria-keyshortcuts="Delete Backspace Enter Space"
+          aria-keyshortcuts={[
+            'Delete Backspace Enter Space',
+            editOnDoubleClick ? 'Shift+Enter' : '',
+            tokenAction && (tokenAction.isVisible?.(tokenValue) ?? true) ? 'Shift+Space' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
           tabIndex={-1}
           onPointerDown={(e) => {
             // Select the token (focus it for keyboard nav) and open the
@@ -573,6 +875,23 @@ export function MultiSelectTypeaheadInput({
             // before the document outside-click closes the dropdown.
             e.preventDefault();
             e.stopPropagation();
+            // Double-press detection lives here rather than onDoubleClick:
+            // preventDefault on pointerdown suppresses the compatibility
+            // mouse-event sequence (click/dblclick) in browsers that follow
+            // the Pointer Events spec.
+            const now = Date.now();
+            const prev = lastTokenPress.current;
+            lastTokenPress.current = { token: tokenValue, time: now };
+            if (
+              editOnDoubleClick &&
+              prev &&
+              prev.token === tokenValue &&
+              now - prev.time < DOUBLE_PRESS_MS
+            ) {
+              lastTokenPress.current = null;
+              editToken(tokenValue);
+              return;
+            }
             focusToken(i);
             setOpen(true);
             doSearch(inputValue);
@@ -582,13 +901,31 @@ export function MultiSelectTypeaheadInput({
           onFocus={() => setFocusedTokenIndex(i)}
           onBlur={() => setFocusedTokenIndex(-1)}
           className={cn(
-            'shrink-0 rounded-md outline-none',
+            'group/token shrink-0 rounded-md outline-none',
             focusedTokenIndex === i && 'ring-2 ring-ring',
           )}
         >
-          <Badge variant="secondary" className="text-xs">
-            {tokenValue}
-          </Badge>
+          {/* The shared recipient pill. TokenChip's internal buttons shield
+              pointerdown, so they don't focus the token / open the dropdown /
+              count toward double-press editing. */}
+          <TokenChip
+            value={tokenValue}
+            actionVisible={focusedTokenIndex === i}
+            {...(editOnDoubleClick ? { tooltip: 'Double-click or Shift+Enter to edit' } : {})}
+            action={
+              tokenAction && (tokenAction.isVisible?.(tokenValue) ?? true)
+                ? {
+                    label: tokenAction.label(tokenValue),
+                    icon: tokenAction.icon,
+                    onAction: () => tokenAction.onAction(tokenValue),
+                  }
+                : null
+            }
+            onRemove={() => {
+              onValueChange(value.filter((v) => v !== tokenValue));
+              if (value.length <= 1) focusInput();
+            }}
+          />
         </span>
       ))}
       {overflowCount > 0 && (
@@ -601,7 +938,9 @@ export function MultiSelectTypeaheadInput({
         value={inputValue}
         onChange={handleInputChange}
         onFocus={handleFocus}
+        onBlur={() => setInteractive(false)}
         onClick={handleInputClick}
+        readOnly={!interactive}
         onKeyDownCapture={handleKeyDown}
         placeholder={value.length === 0 ? placeholder : ''}
         disabled={disabled}
@@ -611,7 +950,20 @@ export function MultiSelectTypeaheadInput({
         aria-controls={showDropdown ? listboxId : undefined}
         aria-activedescendant={highlightedIndex >= 0 ? optionId(highlightedIndex) : undefined}
         aria-label={ariaLabel ?? placeholder}
-        autoComplete="off"
+        // Suppress browser + password-manager autofill. autoComplete="off"
+        // alone is not enough: Chrome's saved-address heuristics match
+        // email-shaped inputs (by label/content) and keep suggesting saved
+        // contacts even on the focused field. "one-time-code" is a valid
+        // token Chrome respects and never address-fills; readOnly-until-focus
+        // (below) stops the multi-field ghost preview. The data-* attributes
+        // opt out of 1Password/LastPass.
+        autoComplete="one-time-code"
+        autoCorrect="off"
+        autoCapitalize="none"
+        spellCheck={false}
+        name="typeahead-search"
+        data-1p-ignore
+        data-lpignore="true"
         className="flex-1 min-w-[60px] bg-transparent outline-none placeholder:text-muted-foreground h-7"
       />
     </div>
@@ -620,7 +972,7 @@ export function MultiSelectTypeaheadInput({
   return (
     <div
       ref={wrapperRef}
-      className={cn('relative', cellEditorMode ? 'w-fit' : 'min-h-9', className)}
+      className={cn('relative', cellEditorMode ? 'w-fit' : bare ? 'min-h-7' : 'min-h-9', className)}
       data-slot="multiselect-typeahead-input"
       data-state={open ? 'open' : 'closed'}
       data-loading={loading || undefined}
@@ -633,19 +985,22 @@ export function MultiSelectTypeaheadInput({
         {statusMessage}
       </div>
 
-      {/* Hidden measurer — renders all tokens off-screen to measure widths */}
-      <div
-        ref={measurerRef}
-        aria-hidden="true"
-        className="pointer-events-none fixed left-[-9999px] top-0 flex items-center gap-1"
-        style={{ visibility: 'hidden' }}
-      >
-        {value.map((tokenValue) => (
-          <Badge key={tokenValue} variant="secondary" className="text-xs">
-            {tokenValue}
-          </Badge>
-        ))}
-      </div>
+      {/* Hidden measurer — renders all tokens off-screen to measure widths.
+          Bare mode never collapses, so it needs no measurement. */}
+      {!bare && (
+        <div
+          ref={measurerRef}
+          aria-hidden="true"
+          className="pointer-events-none fixed left-[-9999px] top-0 flex items-center gap-1"
+          style={{ visibility: 'hidden' }}
+        >
+          {value.map((tokenValue) => (
+            // Mirrors the rest-state chip (× only — the token action is
+            // zero-width at rest, so it doesn't count toward overflow math).
+            <TokenChip key={tokenValue} value={tokenValue} onRemove={() => {}} />
+          ))}
+        </div>
+      )}
 
       <Popover open={showDropdown}>
         <PopoverAnchor asChild>{inputArea}</PopoverAnchor>

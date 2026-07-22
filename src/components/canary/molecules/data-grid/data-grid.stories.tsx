@@ -7,6 +7,7 @@ import { createTokenDataType } from './cell-data-types';
 import { createCombinedColumn } from './combined-column';
 import { COUNTRY_SYMBOLS } from '@/types/canary/model/general/geo/postal-address';
 import { createMultiSelectCellEditor } from '../typeahead-input/multiselect-cell-editor';
+import { TooltipProvider } from '@/components/canary/primitives/tooltip';
 import { lookupRoles } from '@/components/canary/__mocks__/role-lookup';
 import { roleLookupHandler } from '@/components/canary/__mocks__/handlers/role-lookup';
 
@@ -425,16 +426,20 @@ export const WithMultiSelectEditor: StoryObj = {
     );
 
     return (
-      <DataGrid
-        rowData={supplierData}
-        columnDefs={supplierColDefs}
-        height={500}
-        editable
-        searchConfig={{
-          fields: ['name', 'city'],
-          placeholder: 'Search suppliers…',
-        }}
-      />
+      // The multiselect editor's TokenChip pills need a consumer-provided
+      // TooltipProvider (same convention as Button's tooltip prop).
+      <TooltipProvider>
+        <DataGrid
+          rowData={supplierData}
+          columnDefs={supplierColDefs}
+          height={500}
+          editable
+          searchConfig={{
+            fields: ['name', 'city'],
+            placeholder: 'Search suppliers…',
+          }}
+        />
+      </TooltipProvider>
     );
   },
 };
@@ -510,16 +515,21 @@ function TokenGridDemo() {
   }, []);
 
   return (
-    <DataGrid<TokenRow>
-      rowData={tokenRows}
-      columnDefs={columnDefs}
-      columnTypes={columnTypes}
-      dataTypeDefinitions={dataTypeDefinitions}
-      cellSelection={{ handle: { mode: 'fill' } }}
-      undoRedoLimit={20}
-      height={500}
-      editable
-    />
+    // The multiselect cell editor renders TokenChip pills whose hints are
+    // design-system tooltips — consumer-provided TooltipProvider, same
+    // convention as Button's tooltip prop.
+    <TooltipProvider>
+      <DataGrid<TokenRow>
+        rowData={tokenRows}
+        columnDefs={columnDefs}
+        columnTypes={columnTypes}
+        dataTypeDefinitions={dataTypeDefinitions}
+        cellSelection={{ handle: { mode: 'fill' } }}
+        undoRedoLimit={20}
+        height={500}
+        editable
+      />
+    </TooltipProvider>
   );
 }
 

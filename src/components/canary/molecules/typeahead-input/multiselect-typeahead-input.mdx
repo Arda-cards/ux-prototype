@@ -15,6 +15,10 @@ and as an AG Grid cell editor.
 
 **Molecule** &#8212; Canary | Import: `import { MultiSelectTypeaheadInput } from '@arda-cards/design-system/canary'`
 
+> Tokens render as `TokenChip` pills whose hints (`tokenAction`, `optionDestroy`,
+> the × remove, the edit hint) are design-system tooltips — a `TooltipProvider`
+> must be present in the tree, the same requirement as `Button`'s `tooltip` prop.
+
 ---
 
 ## Default
@@ -118,8 +122,25 @@ column `cellEditor`.
       <td><code>Tab</code></td>
       <td>Commit and move focus on.</td>
     </tr>
+    <tr>
+      <td><code>Shift+Delete</code></td>
+      <td>On a highlighted dropdown row, fires <code>optionDestroy</code> (keyboard twin of the hover-revealed ×).</td>
+    </tr>
+    <tr>
+      <td><code>Shift+Space</code></td>
+      <td>On a focused token, fires <code>tokenAction</code> (keyboard twin of the hover-revealed action button).</td>
+    </tr>
+    <tr>
+      <td><code>Shift+Enter</code></td>
+      <td>On a focused token with <code>editOnDoubleClick</code>, pulls the token back into the input for editing.</td>
+    </tr>
   </tbody>
 </table>
+
+The hover-revealed buttons (token action, token ×, option destroy) are
+deliberately not in the tab order — tabbing through every internal button
+would wreck form tab flow. The shortcuts above are their keyboard
+equivalents and are announced via <code>aria-keyshortcuts</code>.
 
 ---
 
@@ -176,6 +197,36 @@ column `cellEditor`.
       <td><code>number</code></td>
       <td><code>8</code></td>
       <td>Maximum number of dropdown results to show.</td>
+    </tr>
+    <tr>
+      <td><code>allowCreate</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Offer an "Add" row (and Enter-create) for typed text with no exact option match that isn't already selected. Mirrors <code>TypeaheadInput</code>'s <code>allowCreate</code>.</td>
+    </tr>
+    <tr>
+      <td><code>tokenAction</code></td>
+      <td><code>MultiSelectTokenAction</code></td>
+      <td>&#8212;</td>
+      <td>Per-token action revealed on hover/focus: <code>&#123; label(value), icon, onAction(value), isVisible?(value) &#125;</code>. E.g. "set this recipient as the default".</td>
+    </tr>
+    <tr>
+      <td><code>optionDestroy</code></td>
+      <td><code>MultiSelectOptionDestroy</code></td>
+      <td>&#8212;</td>
+      <td>Per-option destroy button at the far right of each dropdown row, revealed on hover/highlight: <code>&#123; label(value), icon?, onDestroy(value), isVisible?(value) &#125;</code> (icon defaults to ×). Destructive by design: firing it does not select the option and optimistically drops the row; the caller owns removing it from the lookup source.</td>
+    </tr>
+    <tr>
+      <td><code>bare</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Chromeless variant — no border, background, or focus ring; tokens always wrap inline (no "+N more" collapse or editing overlay). For composed rows that own their own field styling. Standalone only.</td>
+    </tr>
+    <tr>
+      <td><code>editOnDoubleClick</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Double-clicking a token removes it and puts its text back into the input for editing. Best with <code>allowCreate</code>.</td>
     </tr>
     <tr>
       <td><code>cellEditorMode</code></td>

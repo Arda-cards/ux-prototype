@@ -1,8 +1,10 @@
 import { useState, useMemo } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { ColDef } from 'ag-grid-community';
+import { Star } from 'lucide-react';
 
 import { MultiSelectTypeaheadInput } from './multiselect-typeahead-input';
+import { TooltipProvider } from '@/components/canary/primitives/tooltip';
 import { createMultiSelectCellEditor } from './multiselect-cell-editor';
 import { DataGrid } from '../data-grid/data-grid';
 import { lookupRoles } from '@/components/canary/__mocks__/role-lookup';
@@ -39,6 +41,13 @@ const meta: Meta = {
   parameters: {
     msw: { handlers: [roleLookupHandler] },
   },
+  decorators: [
+    (Story) => (
+      <TooltipProvider>
+        <Story />
+      </TooltipProvider>
+    ),
+  ],
 };
 
 export default meta;
@@ -84,6 +93,115 @@ export const Disabled: StoryObj = {
       placeholder="Select roles..."
     />
   ),
+};
+
+/**
+ * Create values not in the lookup — type a role that has no match (e.g.
+ * "Wholesaler") and the dropdown offers an "Add" row; Enter also creates.
+ */
+export const AllowCreate: StoryObj = {
+  render: () => (
+    <MultiSelectDemo
+      lookup={lookupRoles}
+      allowCreate
+      defaultOne={false}
+      placeholder="Select or add roles..."
+    />
+  ),
+};
+
+/**
+ * Per-token hover action — an email recipient field where hovering a token
+ * reveals a star that promotes that address to the vendor's default (the
+ * current default hides its action via `isVisible`).
+ */
+export const TokenAction: StoryObj = {
+  render: function TokenActionStory() {
+    const emails = [
+      'pepper@starkindustries.com',
+      'orders@starkindustries.com',
+      'happy@starkindustries.com',
+    ];
+    const [value, setValue] = useState(emails.slice(0, 2));
+    const [defaultEmail, setDefaultEmail] = useState(emails[0]);
+
+    return (
+      <div className="w-96 p-8">
+        <MultiSelectTypeaheadInput
+          value={value}
+          onValueChange={setValue}
+          lookup={emails}
+          allowCreate
+          defaultOne={false}
+          placeholder="Add email..."
+          aria-label="To address"
+          tokenAction={{
+            label: (v) => `Set ${v} as the default`,
+            icon: <Star className="h-3 w-3" aria-hidden="true" />,
+            onAction: setDefaultEmail,
+            isVisible: (v) => v !== defaultEmail,
+          }}
+        />
+        <p className="mt-2 text-xs text-muted-foreground">
+          Default: <code>{defaultEmail}</code> — hover any other token to promote it.
+        </p>
+      </div>
+    );
+  },
+};
+
+/**
+ * `bare` + `editOnDoubleClick` + `optionDestroy` — a chromeless labelled
+ * recipient row (the email-composer To field): no input border, tokens always
+ * wrap inline, double-clicking a token puts it back into the input for
+ * editing, the hover star promotes an address to the default, and each
+ * dropdown row reveals an × on hover that forgets a stale address.
+ */
+export const BareRecipientRow: StoryObj = {
+  render: function BareRecipientRowStory() {
+    const [emails, setEmails] = useState([
+      'pepper@starkindustries.com',
+      'orders@starkindustries.com',
+      'happy@starkindustries.com',
+    ]);
+    const [value, setValue] = useState(emails.slice(0, 2));
+    const [defaultEmail, setDefaultEmail] = useState(emails[0]);
+
+    return (
+      <div className="w-96 p-8">
+        <div className="flex items-start gap-2 text-sm">
+          <span className="shrink-0 pt-1 font-medium text-foreground">To:</span>
+          <MultiSelectTypeaheadInput
+            className="flex-1 min-w-0"
+            value={value}
+            onValueChange={setValue}
+            lookup={emails}
+            allowCreate
+            defaultOne={false}
+            bare
+            editOnDoubleClick
+            placeholder="Add email..."
+            aria-label="To address"
+            tokenAction={{
+              label: (v) => `Set ${v} as the default`,
+              icon: <Star className="h-3 w-3" aria-hidden="true" />,
+              onAction: setDefaultEmail,
+              isVisible: (v) => v !== defaultEmail,
+            }}
+            optionDestroy={{
+              label: (v) => `Forget ${v}`,
+              onDestroy: (v) => setEmails((prev) => prev.filter((e) => e !== v)),
+              isVisible: (v) => v !== defaultEmail,
+            }}
+          />
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Default: <code>{defaultEmail}</code> — double-click a token to edit it; hover a dropdown
+          row to forget an address.
+        </p>
+      </div>
+    );
+  },
 };
 
 interface SupplierRow {

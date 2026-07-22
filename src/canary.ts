@@ -42,6 +42,9 @@ export type {
   ArdaBadgeRuntimeConfig,
 } from './components/canary/atoms/badge/badge';
 
+export { TokenChip } from './components/canary/atoms/token-chip';
+export type { TokenChipProps, TokenChipAction } from './components/canary/atoms/token-chip';
+
 export { Button, ArdaButton, buttonVariants } from './components/canary/atoms/button/button';
 export type {
   ButtonProps,
@@ -147,6 +150,10 @@ export type { ArdaSelectProps } from './components/canary/atoms/select';
 // Atoms: AutoFillLabel
 export { AutoFillLabel } from './components/canary/atoms/auto-fill-label';
 export type { AutoFillLabelProps } from './components/canary/atoms/auto-fill-label';
+
+// Molecules: AddressFieldset
+export { AddressFieldset } from './components/canary/molecules/address-fieldset';
+export type { AddressFieldsetProps } from './components/canary/molecules/address-fieldset';
 
 // Molecules: AutoFillField
 export { AutoFillField } from './components/canary/molecules/auto-fill-field';
@@ -396,7 +403,11 @@ export type {
 } from './components/canary/molecules/data-grid';
 
 // Geo model (mirrored from extras into canary) — used by combined Address columns.
-export { COUNTRY_SYMBOLS } from './types/canary/model/general/geo/postal-address';
+export {
+  COUNTRY_SYMBOLS,
+  COUNTRY_NAMES,
+  lookupCountries,
+} from './types/canary/model/general/geo/postal-address';
 export type {
   PostalAddress,
   CountrySymbol,
@@ -569,6 +580,8 @@ export { MultiSelectTypeaheadInput } from './components/canary/molecules/typeahe
 export type {
   MultiSelectOption,
   MultiSelectSource,
+  MultiSelectTokenAction,
+  MultiSelectOptionDestroy,
   MultiSelectTypeaheadInputProps,
 } from './components/canary/molecules/typeahead-input/multiselect-typeahead-input';
 
