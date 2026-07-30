@@ -144,11 +144,31 @@ prettierConfig, // ── TypeScript strict rules ──────────
     'no-restricted-imports': ['error', {
       patterns: [
         {
-          group: ['**/canary/*', '**/canary/**', '@/components/canary/*', '@/components/canary/**'],
+          // Bare barrel specifiers (e.g. '@/types/canary') must be listed explicitly —
+          // the `/*` and `/**` globs only match paths with a segment AFTER `canary`.
+          group: [
+            '**/canary',
+            '**/canary/*',
+            '**/canary/**',
+            '@/components/canary',
+            '@/components/canary/*',
+            '@/components/canary/**',
+            '@/types/canary',
+            '@/types/canary-date-time',
+          ],
           message: 'Stable code must not import from canary. Promote the component first.',
         },
         {
-          group: ['**/extras/*', '**/extras/**', '@/components/extras/*', '@/components/extras/**'],
+          group: [
+            '**/extras',
+            '**/extras/*',
+            '**/extras/**',
+            '@/components/extras',
+            '@/components/extras/*',
+            '@/components/extras/**',
+            '@/types/extras',
+            '@/types/extras-date-time',
+          ],
           message: 'Stable code must not import from extras. Promote the component first.',
         },
       ],
@@ -157,11 +177,34 @@ prettierConfig, // ── TypeScript strict rules ──────────
 }, // ── Subpath boundaries: canary code must not import from extras ──────
 {
   files: ['src/components/canary/**/*.ts', 'src/components/canary/**/*.tsx', 'src/types/canary/**/*.ts'],
+  // Stories and tests do not ship — they are free to use extras. The rule targets
+  // only source reachable from a published entry point.
+  ignores: ['**/*.stories.ts', '**/*.stories.tsx', '**/*.test.ts', '**/*.test.tsx'],
   rules: {
     'no-restricted-imports': ['error', {
       patterns: [
         {
-          group: ['**/extras/*', '**/extras/**', '@/components/extras/*', '@/components/extras/**', '@/types/extras/*', '@/types/extras/**'],
+          // `extras` is internal to this repo and is NOT part of the published package,
+          // so anything reachable from `index.ts` / `canary.ts` must never import it —
+          // a type-only import still dangles in the emitted .d.ts. See
+          // knowledge-base/component-tracks.md.
+          //
+          // Bare barrel specifiers ('@/types/extras') must be listed explicitly: the
+          // `/*` and `/**` globs only match paths with a segment AFTER `extras`, which
+          // is how `import type { Item } from '@/types/extras'` previously slipped past
+          // this rule and leaked extras into the published canary types.
+          group: [
+            '**/extras',
+            '**/extras/*',
+            '**/extras/**',
+            '@/components/extras',
+            '@/components/extras/*',
+            '@/components/extras/**',
+            '@/types/extras',
+            '@/types/extras/*',
+            '@/types/extras/**',
+            '@/types/extras-date-time',
+          ],
           message: 'Canary code must not import from extras. Port the dependency to canary first.',
         },
       ],

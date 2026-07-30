@@ -90,7 +90,9 @@ src/
 
 ## Published Package
 
-The library is published to GitHub Packages as `@arda-cards/design-system`. It is built with Vite 6 in library mode (ESM + CJS) from three entry points: `src/index.ts` (stable), `src/canary.ts` (experimental), and `src/extras.ts` (supplementary).
+The library is published to GitHub Packages as `@arda-cards/design-system`. It is built with Vite 6 in library mode (ESM + CJS) from two consumer entry points: `src/index.ts` (stable) and `src/canary.ts` (experimental).
+
+> **`src/extras.ts` is internal to this repo and is not for consumer use.** It is still declared as a published subpath for now; removing it is tracked in PDEV-1332. Do not build anything on `@arda-cards/design-system/extras`. See [Extras (internal only)](#extras-internal-only).
 
 ### Export Paths
 
@@ -98,7 +100,7 @@ The library is published to GitHub Packages as `@arda-cards/design-system`. It i
 |---|---|---|
 | `@arda-cards/design-system` | `dist/index.js` (ESM) / `dist/index.cjs` (CJS) | Nominal components, types, and utilities |
 | `@arda-cards/design-system/canary` | `dist/canary.js` (ESM) / `dist/canary.cjs` (CJS) | Experimental components (API may change) |
-| `@arda-cards/design-system/extras` | `dist/extras.js` (ESM) / `dist/extras.cjs` (CJS) | Supplementary components |
+| `@arda-cards/design-system/extras` | `dist/extras.js` (ESM) / `dist/extras.cjs` (CJS) | **Internal only — do not consume.** Slated for removal (PDEV-1332) |
 | `@arda-cards/design-system/styles` | `dist/styles/globals.css` | Tailwind CSS v4 stylesheet |
 
 ### Exported Components
@@ -136,16 +138,17 @@ import { CanaryAtomPlaceholder } from '@arda-cards/design-system/canary';
 
 **Promotion path**: move the component from `src/canary/components/` to `src/components/`, re-export from `src/index.ts`, remove from `src/canary.ts`.
 
-### Extras Export Path
+### Extras (internal only)
 
-The `./extras` subpath contains supplementary components that extend the core library with additional functionality.
+`src/components/extras/` is the off-maturity-track area for examples and reference implementations. **It must never form part of the published package** — publishing it invites consumers to depend on components that are on no stability track.
 
-```typescript
-// Consumer usage
-import { ExtrasAtomPlaceholder } from '@arda-cards/design-system/extras';
-```
+Internal use is expected and fine: Storybook stories, `src/use-cases/`, tests and `src/archive/` all use extras freely, and none of them ship. What is prohibited is shipping code depending on it.
 
-**Dependency direction**: extras components may import from stable (`@/components/`, `@/lib/`), but stable code must never import from `@/extras/`. This is enforced by an ESLint `no-restricted-imports` rule.
+**Dependency direction**: extras may import from stable (`@/components/`, `@/lib/`), but nothing reachable from `index.ts` or `canary.ts` may import from `@/components/extras` or `@/types/extras`. This includes **type-only** imports — `import type` is erased at runtime but still lands in the emitted `.d.ts`, so it breaks consumer typechecks once the source barrel stops being published.
+
+To use something from extras in shipping code, mirror it into the canary tree instead — see `src/types/canary/model/reference/items/item-domain.ts`.
+
+Enforced by `no-restricted-imports` in `eslint.config.mjs`. Note that bare barrel specifiers (`@/types/extras`) must be listed explicitly in the pattern group: `@/types/extras/*` and `@/types/extras/**` only match specifiers with a segment *after* `extras`, and that gap previously let a leak through. See `knowledge-base/component-tracks.md`.
 
 ### Peer Dependencies
 
