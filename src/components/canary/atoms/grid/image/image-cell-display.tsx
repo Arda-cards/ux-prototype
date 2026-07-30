@@ -30,6 +30,11 @@ export interface ImageCellDisplayRuntimeProps {
   onLoad?: (() => void) | undefined;
   /** Human-readable failure reason, shown on hover in the error state. */
   errorReason?: string | undefined;
+  /**
+   * The URL is not resolvable yet (e.g. CDN credentials still in flight), as
+   * opposed to absent. Renders a skeleton and issues no request.
+   */
+  imagePending?: boolean | undefined;
 }
 
 /** Combined props for ImageCellDisplay. */
@@ -55,6 +60,7 @@ export function ImageCellDisplay({
   onError,
   onLoad,
   errorReason,
+  imagePending,
 }: ImageCellDisplayProps) {
   // Normalize the AG Grid value to the `string | null` contract expected
   // by the child components. At runtime the field may be undefined (no
@@ -83,6 +89,7 @@ export function ImageCellDisplay({
             onError={onError}
             onLoad={onLoad}
             errorReason={errorReason}
+            imagePending={imagePending}
           />
         </div>
       </ImageHoverPreview>

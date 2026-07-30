@@ -142,6 +142,68 @@ describe('ImageDisplay', () => {
     expect(screen.queryByLabelText('Image failed to load')).not.toBeInTheDocument();
   });
 
+  // --- Pending state (PDEV-1180) -------------------------------------------
+  // "No image" and "the URL cannot be resolved yet" are different situations
+  // that both arrive as a falsy imageUrl. Conflating them makes a not-yet-ready
+  // image look deleted — which, in an editing surface, risks saving it away.
+
+  it('shows the skeleton and requests nothing while pending', () => {
+    render(
+      <ImageDisplay
+        {...defaultProps}
+        imageUrl="https://example.com/image.jpg"
+        imagePending={true}
+      />,
+    );
+
+    expect(document.querySelector('[data-slot="skeleton"]')).toBeInTheDocument();
+    // No <img> means no network request — this is the point of the gate: an
+    // image requested before its CDN cookies exist 403s and nothing retries it.
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  });
+
+  it('does not claim "no image" while pending', () => {
+    // The initials placeholder is the empty state. Showing it for a pending
+    // image tells the user the item has no picture, which is wrong.
+    render(
+      <ImageDisplay {...defaultProps} entityTypeDisplayName="Item" imageUrl={null} imagePending />,
+    );
+
+    expect(screen.queryByText('I')).not.toBeInTheDocument();
+    expect(document.querySelector('[data-slot="skeleton"]')).toBeInTheDocument();
+  });
+
+  it('shows no error badge while pending', () => {
+    render(
+      <ImageDisplay
+        {...defaultProps}
+        imageUrl="https://example.com/broken.jpg"
+        imagePending
+        errorReason="Image access expired"
+      />,
+    );
+
+    expect(screen.queryByLabelText('Image access expired')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Image failed to load')).not.toBeInTheDocument();
+  });
+
+  it('renders normally once pending clears', () => {
+    const { rerender } = render(
+      <ImageDisplay {...defaultProps} imageUrl="https://example.com/image.jpg" imagePending />,
+    );
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+
+    rerender(
+      <ImageDisplay
+        {...defaultProps}
+        imageUrl="https://example.com/image.jpg"
+        imagePending={false}
+      />,
+    );
+
+    expect(screen.getByRole('img')).toBeInTheDocument();
+  });
+
   it('shows initials placeholder when imageUrl is null', () => {
     render(<ImageDisplay {...defaultProps} entityTypeDisplayName="Item" imageUrl={null} />);
     // Initials present

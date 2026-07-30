@@ -92,6 +92,15 @@ describe('ImageCellDisplay', () => {
     expect(screen.getByLabelText('Image failed to load')).toBeInTheDocument();
   });
 
+  it('forwards imagePending so the cell renders no request while unresolved', () => {
+    const { container } = render(
+      <ImageCellDisplay {...defaultProps} value={MOCK_ITEM_IMAGE} imagePending />,
+    );
+
+    expect(container.querySelector('img')).not.toBeInTheDocument();
+    expect(container.querySelector('[data-slot="skeleton"]')).toBeInTheDocument();
+  });
+
   it('normalizes empty-string value to "no image" (no broken <img src="">)', () => {
     // Regression guard: legacy backend rows may ship an empty string
     // instead of null/undefined. The cell must still render as "no

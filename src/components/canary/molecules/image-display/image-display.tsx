@@ -60,6 +60,18 @@ export interface ImageDisplayRuntimeProps {
    * string it is given.
    */
   errorReason?: string | undefined;
+  /**
+   * The image URL is not resolvable *yet* — as opposed to absent.
+   *
+   * While true the component shows its skeleton and renders no `<img>`, so no
+   * request is issued. Consumers whose URLs need credentials that arrive
+   * asynchronously (e.g. CloudFront signed cookies) use this to avoid firing a
+   * request that would 403 and never be retried.
+   *
+   * Distinct from `imageUrl === null`, which means "this entity has no image".
+   * Conflating the two makes a not-yet-ready image look deleted.
+   */
+  imagePending?: boolean | undefined;
 }
 
 /** Combined props for ImageDisplay. */
@@ -103,6 +115,7 @@ export function ImageDisplay({
   onError,
   onLoad,
   errorReason,
+  imagePending,
 }: ImageDisplayProps) {
   const [loadState, setLoadState] = React.useState<LoadState>(
     imageUrl === null ? 'loaded' : 'loading',
@@ -124,6 +137,10 @@ export function ImageDisplay({
   // explains the failure. `loadState === 'error'` implies a non-null imageUrl,
   // since a null URL resolves straight to 'loaded'.
   const hoverTitle = loadState === 'error' ? errorReason : undefined;
+
+  // While pending we know nothing yet: not that the image is missing, not that
+  // it failed. Show only the skeleton and issue no request.
+  const isPending = imagePending === true;
 
   const handleDoubleClick = isInteractive
     ? () => {
@@ -155,12 +172,12 @@ export function ImageDisplay({
   const content = (
     <>
       {/* Skeleton shimmer — visible only while loading */}
-      {imageUrl !== null && loadState === 'loading' && (
+      {(isPending || (imageUrl !== null && loadState === 'loading')) && (
         <Skeleton className="absolute inset-0 rounded-none" />
       )}
 
       {/* img element — rendered when we have a URL */}
-      {imageUrl !== null && (
+      {imageUrl !== null && !isPending && (
         <img
           src={imageUrl}
           alt={entityTypeDisplayName}
@@ -180,7 +197,7 @@ export function ImageDisplay({
       )}
 
       {/* Initials placeholder — shown for null imageUrl or error state */}
-      {(imageUrl === null || loadState === 'error') && (
+      {!isPending && (imageUrl === null || loadState === 'error') && (
         <span
           className={cn(
             'relative select-none text-muted-foreground font-semibold leading-none',
@@ -192,7 +209,7 @@ export function ImageDisplay({
       )}
 
       {/* Error badge — only for broken URLs, not for null imageUrl */}
-      {imageUrl !== null && loadState === 'error' && (
+      {!isPending && imageUrl !== null && loadState === 'error' && (
         <Badge
           variant="error-overlay"
           className="pointer-events-none"
