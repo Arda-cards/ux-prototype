@@ -79,6 +79,43 @@ export const ErrorState: Story = {
   ),
 };
 
+/**
+ * Error state with an explanatory reason (PDEV-1180). The reason is surfaced on
+ * the container's `title` for hover and on the badge's `aria-label` for
+ * assistive tech &#8212; the badge itself stays `pointer-events-none` so it never
+ * blocks AG Grid's double-click-to-edit.
+ *
+ * Classification lives with the consumer: the app inspects the failed request
+ * (403 vs 404 vs network) and passes the resulting sentence down.
+ */
+export const ErrorStateWithReason: Story = {
+  render: () => (
+    <div className="w-32 h-32">
+      <ImageDisplay
+        imageUrl={MOCK_BROKEN_IMAGE}
+        entityTypeDisplayName="Item"
+        propertyDisplayName="Product Image"
+        errorReason="Image access expired — retrying"
+      />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const root = canvasElement.querySelector('[data-slot="image-display"]');
+
+    // The <img> error fires asynchronously against an unreachable URL.
+    await waitFor(() => {
+      expect(root).toHaveAttribute('title', 'Image access expired — retrying');
+    });
+
+    // Reason reaches assistive tech too, replacing the generic label.
+    await waitFor(() => {
+      expect(
+        canvasElement.querySelector('[aria-label="Image access expired — retrying"]'),
+      ).toBeInTheDocument();
+    });
+  },
+};
+
 /** No image URL &#8212; initials placeholder, no error badge. */
 export const NoImage: Story = {
   render: () => (

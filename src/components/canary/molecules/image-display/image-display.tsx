@@ -38,6 +38,28 @@ export interface ImageDisplayRuntimeProps {
    * On confirm, calls this callback with the upload result.
    */
   onImageChange?: (result: ImageUploadResult) => void;
+  /**
+   * Called when the underlying `<img>` fails to load.
+   *
+   * Augments — does not replace — the internal error state: the initials
+   * placeholder and error badge still render. Consumers use this to drive
+   * recovery, e.g. refreshing CDN signed cookies and retrying after a 403.
+   */
+  // `| undefined` is explicit on these three so wrappers (e.g. ImageCellDisplay)
+  // can forward their own optionals straight through under
+  // `exactOptionalPropertyTypes: true`, rather than conditionally spreading.
+  onError?: (() => void) | undefined;
+  /** Called when the underlying `<img>` loads successfully. */
+  onLoad?: (() => void) | undefined;
+  /**
+   * Human-readable explanation of *why* the image failed, surfaced on hover
+   * and to assistive tech. Only shown in the error state; a null `imageUrl`
+   * is "no image", not a failure, and never displays it.
+   *
+   * Classification lives with the consumer — this component only renders the
+   * string it is given.
+   */
+  errorReason?: string | undefined;
 }
 
 /** Combined props for ImageDisplay. */
@@ -78,6 +100,9 @@ export function ImageDisplay({
   propertyDisplayName: _propertyDisplayName,
   config,
   onImageChange,
+  onError,
+  onLoad,
+  errorReason,
 }: ImageDisplayProps) {
   const [loadState, setLoadState] = React.useState<LoadState>(
     imageUrl === null ? 'loaded' : 'loading',
@@ -92,6 +117,13 @@ export function ImageDisplay({
   const initials = getInitials(entityTypeDisplayName);
 
   const isInteractive = onImageChange !== undefined && config !== undefined;
+
+  // The error badge is `pointer-events-none` so it never blocks AG Grid's
+  // double-click-to-edit — which also means it cannot host a hover tooltip.
+  // Put the reason on the container instead, so hovering anywhere on the cell
+  // explains the failure. `loadState === 'error'` implies a non-null imageUrl,
+  // since a null URL resolves straight to 'loaded'.
+  const hoverTitle = loadState === 'error' ? errorReason : undefined;
 
   const handleDoubleClick = isInteractive
     ? () => {
@@ -136,8 +168,14 @@ export function ImageDisplay({
             'absolute inset-0 w-full h-full object-contain',
             loadState !== 'loaded' && 'invisible',
           )}
-          onLoad={() => setLoadState('loaded')}
-          onError={() => setLoadState('error')}
+          onLoad={() => {
+            setLoadState('loaded');
+            onLoad?.();
+          }}
+          onError={() => {
+            setLoadState('error');
+            onError?.();
+          }}
         />
       )}
 
@@ -158,7 +196,7 @@ export function ImageDisplay({
         <Badge
           variant="error-overlay"
           className="pointer-events-none"
-          aria-label="Image failed to load"
+          aria-label={errorReason ?? 'Image failed to load'}
         >
           !
         </Badge>
@@ -192,6 +230,7 @@ export function ImageDisplay({
         onDoubleClick={handleDoubleClick}
         onKeyDown={handleKeyDown}
         aria-label={`Edit ${entityTypeDisplayName} image — double-click or press Enter`}
+        title={hoverTitle}
       >
         {content}
       </button>
@@ -202,6 +241,7 @@ export function ImageDisplay({
     <div
       data-slot="image-display"
       className={cn('relative w-full h-full rounded bg-muted', 'flex items-center justify-center')}
+      title={hoverTitle}
     >
       {content}
     </div>

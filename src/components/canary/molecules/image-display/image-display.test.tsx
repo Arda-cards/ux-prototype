@@ -64,6 +64,84 @@ describe('ImageDisplay', () => {
     expect(screen.getByLabelText('Image failed to load')).toBeInTheDocument();
   });
 
+  // --- Consumer-driven load/error reporting (PDEV-1180) -------------------
+  // The app needs to know an image failed so it can refresh CDN cookies and
+  // retry. ImageDisplay owns the <img>, so the signal has to come from here.
+
+  it('calls onError when the image fails to load', () => {
+    const onError = vi.fn();
+    render(
+      <ImageDisplay
+        {...defaultProps}
+        imageUrl="https://example.com/broken.jpg"
+        onError={onError}
+      />,
+    );
+
+    fireEvent.error(screen.getByRole('img'));
+
+    expect(onError).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls onLoad when the image loads', () => {
+    const onLoad = vi.fn();
+    render(
+      <ImageDisplay {...defaultProps} imageUrl="https://example.com/image.jpg" onLoad={onLoad} />,
+    );
+
+    fireEvent.load(screen.getByRole('img'));
+
+    expect(onLoad).toHaveBeenCalledTimes(1);
+  });
+
+  it('still renders its own error state when onError is provided', () => {
+    // The callback augments the internal state machine, it does not replace it.
+    render(
+      <ImageDisplay
+        {...defaultProps}
+        entityTypeDisplayName="Item"
+        imageUrl="https://example.com/broken.jpg"
+        onError={vi.fn()}
+      />,
+    );
+
+    fireEvent.error(screen.getByRole('img'));
+
+    expect(screen.getByText('I')).toBeInTheDocument();
+    expect(screen.getByLabelText('Image failed to load')).toBeInTheDocument();
+  });
+
+  it('surfaces errorReason on the error badge for hover', () => {
+    render(
+      <ImageDisplay
+        {...defaultProps}
+        imageUrl="https://example.com/broken.jpg"
+        errorReason="Image access expired — retrying"
+      />,
+    );
+
+    fireEvent.error(screen.getByRole('img'));
+
+    expect(screen.getByLabelText('Image access expired — retrying')).toBeInTheDocument();
+    expect(screen.getByTitle('Image access expired — retrying')).toBeInTheDocument();
+  });
+
+  it('falls back to the generic error label when no errorReason is given', () => {
+    render(<ImageDisplay {...defaultProps} imageUrl="https://example.com/broken.jpg" />);
+
+    fireEvent.error(screen.getByRole('img'));
+
+    expect(screen.getByLabelText('Image failed to load')).toBeInTheDocument();
+  });
+
+  it('does not show an error badge for a null imageUrl even with errorReason set', () => {
+    // "No image" is not a failure — errorReason must not turn it into one.
+    render(<ImageDisplay {...defaultProps} imageUrl={null} errorReason="Image access expired" />);
+
+    expect(screen.queryByLabelText('Image access expired')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Image failed to load')).not.toBeInTheDocument();
+  });
+
   it('shows initials placeholder when imageUrl is null', () => {
     render(<ImageDisplay {...defaultProps} entityTypeDisplayName="Item" imageUrl={null} />);
     // Initials present

@@ -20,6 +20,16 @@ export interface ImageCellDisplayRuntimeProps {
   value: string | null;
   /** Full row data record from AG Grid. */
   data: Record<string, unknown>;
+  /**
+   * Called when the thumbnail fails to load. Forwarded to the underlying
+   * `<img>`. Consumers use this to drive recovery — e.g. refreshing CDN
+   * signed cookies and retrying after a 403.
+   */
+  onError?: (() => void) | undefined;
+  /** Called when the thumbnail loads successfully. */
+  onLoad?: (() => void) | undefined;
+  /** Human-readable failure reason, shown on hover in the error state. */
+  errorReason?: string | undefined;
 }
 
 /** Combined props for ImageCellDisplay. */
@@ -39,7 +49,13 @@ export type ImageCellDisplayProps = ImageCellDisplayStaticProps &
  * { field: 'imageUrl', cellRenderer: ImageCellDisplay, cellRendererParams: { config: ITEM_IMAGE_CONFIG } }
  * ```
  */
-export function ImageCellDisplay({ config, value }: ImageCellDisplayProps) {
+export function ImageCellDisplay({
+  config,
+  value,
+  onError,
+  onLoad,
+  errorReason,
+}: ImageCellDisplayProps) {
   // Normalize the AG Grid value to the `string | null` contract expected
   // by the child components. At runtime the field may be undefined (no
   // imageUrl on the row) or an empty string (legacy backend data); both
@@ -64,6 +80,9 @@ export function ImageCellDisplay({ config, value }: ImageCellDisplayProps) {
             imageUrl={normalizedImageUrl}
             entityTypeDisplayName={config.entityTypeDisplayName}
             propertyDisplayName={config.propertyDisplayName}
+            onError={onError}
+            onLoad={onLoad}
+            errorReason={errorReason}
           />
         </div>
       </ImageHoverPreview>
