@@ -204,6 +204,47 @@ describe('ImageDisplay', () => {
     expect(screen.getByRole('img')).toBeInTheDocument();
   });
 
+  it('does not flash the previous error when pending clears on the same url', () => {
+    // The retry sequence PDEV-1337 will drive: an image fails, the consumer
+    // marks it pending while it refreshes credentials, then clears pending with
+    // the *same* imageUrl. `loadState` is only reset by the imageUrl effect, so
+    // without care the stale 'error' survives and the user sees an error badge
+    // during what is actually a retry.
+    const { rerender } = render(
+      <ImageDisplay
+        {...defaultProps}
+        entityTypeDisplayName="Item"
+        imageUrl="https://example.com/broken.jpg"
+        imagePending={false}
+      />,
+    );
+    fireEvent.error(screen.getByRole('img'));
+    expect(screen.getByLabelText('Image failed to load')).toBeInTheDocument();
+
+    // Consumer takes over: pending while credentials are refreshed.
+    rerender(
+      <ImageDisplay
+        {...defaultProps}
+        entityTypeDisplayName="Item"
+        imageUrl="https://example.com/broken.jpg"
+        imagePending={true}
+      />,
+    );
+
+    // Pending clears, same URL — this is a retry, so it must look like loading.
+    rerender(
+      <ImageDisplay
+        {...defaultProps}
+        entityTypeDisplayName="Item"
+        imageUrl="https://example.com/broken.jpg"
+        imagePending={false}
+      />,
+    );
+
+    expect(screen.queryByLabelText('Image failed to load')).not.toBeInTheDocument();
+    expect(document.querySelector('[data-slot="skeleton"]')).toBeInTheDocument();
+  });
+
   it('shows initials placeholder when imageUrl is null', () => {
     render(<ImageDisplay {...defaultProps} entityTypeDisplayName="Item" imageUrl={null} />);
     // Initials present

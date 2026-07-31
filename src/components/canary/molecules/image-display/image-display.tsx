@@ -122,10 +122,14 @@ export function ImageDisplay({
   );
   const [dialogOpen, setDialogOpen] = React.useState(false);
 
-  // Reset load state whenever imageUrl changes
+  // Reset load state whenever imageUrl changes — and whenever the pending flag
+  // flips. No <img> is mounted while pending, so clearing pending always starts
+  // a fresh load; without resetting here a previous 'error' would survive the
+  // pending window and render a stale error badge during what is actually a
+  // retry (same imageUrl, refreshed credentials).
   React.useEffect(() => {
     setLoadState(imageUrl === null ? 'loaded' : 'loading');
-  }, [imageUrl]);
+  }, [imageUrl, imagePending]);
 
   const initials = getInitials(entityTypeDisplayName);
 
