@@ -58,10 +58,10 @@ describe('ImageDisplay', () => {
     const img = screen.getByRole('img');
     fireEvent.error(img);
 
-    // Initials shown
-    expect(screen.getByText('I')).toBeInTheDocument();
-    // Error badge present
+    // Alert icon, centred in the frame — not initials, which would imply the
+    // item simply has no image.
     expect(screen.getByLabelText('Image failed to load')).toBeInTheDocument();
+    expect(screen.queryByText('I')).not.toBeInTheDocument();
   });
 
   // --- Consumer-driven load/error reporting (PDEV-1180) -------------------
@@ -107,7 +107,6 @@ describe('ImageDisplay', () => {
 
     fireEvent.error(screen.getByRole('img'));
 
-    expect(screen.getByText('I')).toBeInTheDocument();
     expect(screen.getByLabelText('Image failed to load')).toBeInTheDocument();
   });
 
@@ -124,6 +123,21 @@ describe('ImageDisplay', () => {
 
     expect(screen.getByLabelText('Image access expired — retrying')).toBeInTheDocument();
     expect(screen.getByTitle('Image access expired — retrying')).toBeInTheDocument();
+  });
+
+  it('uses no red/destructive treatment for a failed image', () => {
+    // Design note (@nail60): a red badge reads as "action required" for what is
+    // usually a transient, self-recovering failure. The failure is shown as a
+    // muted alert icon in the frame instead.
+    const { container } = render(
+      <ImageDisplay {...defaultProps} imageUrl="https://example.com/broken.jpg" />,
+    );
+
+    fireEvent.error(screen.getByRole('img'));
+
+    expect(container.querySelector('[data-variant="error-overlay"]')).not.toBeInTheDocument();
+    expect(container.querySelector('.bg-destructive')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Image failed to load')).toHaveClass('text-muted-foreground');
   });
 
   it('falls back to the generic error label when no errorReason is given', () => {

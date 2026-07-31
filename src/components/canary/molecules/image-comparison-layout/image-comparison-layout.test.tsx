@@ -68,7 +68,7 @@ describe('ImageComparisonLayout', () => {
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
   });
 
-  it('shows initials placeholder for broken existing image', () => {
+  it('shows the alert icon for a broken existing image', () => {
     render(
       <ImageComparisonLayout {...defaultProps} existingImageUrl={MOCK_BROKEN_IMAGE}>
         <div>new content</div>
@@ -79,14 +79,15 @@ describe('ImageComparisonLayout', () => {
     const images = screen.getAllByRole('img');
     expect(images.length).toBeGreaterThan(0);
 
-    // Trigger error on the broken image — initials placeholder should appear
+    // Trigger error on the broken image — a muted alert icon should appear.
+    // Not initials: those mean "this item has no image", which is a different
+    // situation from one that failed to load.
     const firstImage = images[0];
     expect(firstImage).toBeInTheDocument();
     fireEvent.error(firstImage!);
 
-    // "Item" → initials "I"
-    const initialsEls = screen.getAllByText('I');
-    expect(initialsEls.length).toBeGreaterThan(0);
+    expect(screen.getAllByLabelText('Image failed to load').length).toBeGreaterThan(0);
+    expect(screen.queryByText('I')).not.toBeInTheDocument();
   });
 
   it('labels text is correct ("Current" and "New")', () => {

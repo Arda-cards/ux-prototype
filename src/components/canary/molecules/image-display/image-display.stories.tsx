@@ -66,7 +66,7 @@ export const Loading: Story = {
   },
 };
 
-/** Broken URL &#8212; initials placeholder with error badge. */
+/** Broken URL &#8212; muted alert icon centred in the frame. */
 export const ErrorState: Story = {
   render: () => (
     <div className="w-32 h-32">
@@ -81,9 +81,9 @@ export const ErrorState: Story = {
 
 /**
  * Error state with an explanatory reason (PDEV-1180). The reason is surfaced on
- * the container's `title` for hover and on the badge's `aria-label` for
- * assistive tech &#8212; the badge itself stays `pointer-events-none` so it never
- * blocks AG Grid's double-click-to-edit.
+ * the container's `title` for hover and on the alert icon's `aria-label` for
+ * assistive tech &#8212; the icon stays `pointer-events-none` so it never blocks
+ * AG Grid's double-click-to-edit.
  *
  * Classification lives with the consumer: the app inspects the failed request
  * (403 vs 404 vs network) and passes the resulting sentence down.
@@ -102,21 +102,29 @@ export const ErrorStateWithReason: Story = {
   play: async ({ canvasElement }) => {
     const root = canvasElement.querySelector('[data-slot="image-display"]');
 
-    // The <img> error fires asynchronously against an unreachable URL.
-    await waitFor(() => {
-      expect(root).toHaveAttribute('title', 'Image access expired — retrying');
-    });
+    // The <img> error fires asynchronously against an unreachable URL, and how
+    // long the browser takes to give up varies with the machine. The repo's
+    // other broken-image play functions allow 10s for the same reason.
+    await waitFor(
+      () => {
+        expect(root).toHaveAttribute('title', 'Image access expired — retrying');
+      },
+      { timeout: 10000 },
+    );
 
     // Reason reaches assistive tech too, replacing the generic label.
-    await waitFor(() => {
-      expect(
-        canvasElement.querySelector('[aria-label="Image access expired — retrying"]'),
-      ).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(
+          canvasElement.querySelector('[aria-label="Image access expired — retrying"]'),
+        ).toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
   },
 };
 
-/** No image URL &#8212; initials placeholder, no error badge. */
+/** No image URL &#8212; initials placeholder, no alert icon. */
 export const NoImage: Story = {
   render: () => (
     <div className="w-32 h-32">

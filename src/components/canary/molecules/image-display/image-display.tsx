@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { cn } from '@/types/canary/utilities/utils';
 import { Skeleton } from '@/components/canary/primitives/skeleton';
-import { Badge } from '@/components/canary/atoms/badge/badge-base';
+import { TriangleAlert } from 'lucide-react';
 import { getInitials } from '@/types/canary/utilities/get-initials';
 import { ImageUploadDialog } from '@/components/canary/organisms/shared/image-upload-dialog/image-upload-dialog';
 import type {
@@ -91,10 +91,10 @@ type LoadState = 'loading' | 'loaded' | 'error';
  * Renders an image with three visual states:
  * - **Loaded**: `<img>` fills the container with `object-cover`.
  * - **Loading**: skeleton shimmer overlaid while the image network request is in flight.
- * - **Error**: initials placeholder with a destructive error badge (URL provided but failed to load).
+ * - **Error**: a muted alert icon centred in the frame (URL provided but failed to load).
  *
- * When `imageUrl` is `null` the component shows an initials placeholder without
- * an error badge &#8212; this is the "no image" state, not a broken image.
+ * When `imageUrl` is `null` the component shows an initials placeholder and no
+ * alert icon &#8212; this is the "no image" state, not a broken image.
  *
  * When both `onImageChange` and `config` are provided, the component becomes
  * interactive: double-click or Enter opens an `ImageUploadDialog` internally.
@@ -200,8 +200,10 @@ export function ImageDisplay({
         />
       )}
 
-      {/* Initials placeholder — shown for null imageUrl or error state */}
-      {!isPending && (imageUrl === null || loadState === 'error') && (
+      {/* Initials placeholder — the "no image" state. A failed load shows the
+          alert icon below instead: initials imply the entity simply has no
+          picture, which is not what happened. */}
+      {!isPending && imageUrl === null && (
         <span
           className={cn(
             'relative select-none text-muted-foreground font-semibold leading-none',
@@ -212,15 +214,24 @@ export function ImageDisplay({
         </span>
       )}
 
-      {/* Error badge — only for broken URLs, not for null imageUrl */}
+      {/* Failed load — a muted alert icon centred in the frame, not a corner
+          badge. A red badge reads as "something needs your attention" for what
+          is usually a transient, self-recovering failure. Only for broken URLs,
+          never for a null imageUrl. */}
       {!isPending && imageUrl !== null && loadState === 'error' && (
-        <Badge
-          variant="error-overlay"
-          className="pointer-events-none"
+        <TriangleAlert
+          role="img"
           aria-label={errorReason ?? 'Image failed to load'}
-        >
-          !
-        </Badge>
+          className={cn(
+            'relative pointer-events-none text-muted-foreground',
+            'w-1/3 h-1/3 max-w-8 max-h-8 min-w-4 min-h-4',
+            // Solid triangle with the mark knocked out, per the design note.
+            // lucide ships this icon as an outline, so the fill and the
+            // knock-out are applied to its paths here.
+            '[&>path:first-child]:fill-current',
+            '[&>path:not(:first-child)]:stroke-background',
+          )}
+        />
       )}
 
       {/* ImageUploadDialog — rendered inside the component when edit flow is enabled */}
