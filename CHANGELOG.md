@@ -18,7 +18,7 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
-## [6.2.0-jmpicnic-PDEV1180] - 2026-07-30
+## [6.2.0] - 2026-07-31
 
 ### Added
 - **ImageDisplay / ImageCellDisplay: `onError` and `onLoad`** — the component owns the `<img>`, so a consumer previously had no way to learn that an image failed. Item images are served from CloudFront behind signed cookies that expire; without this signal the app could not refresh credentials and retry, and a 403 stayed on screen until the user reloaded the page. The callbacks augment the internal load state rather than replacing it, so consumers that pass neither are unaffected.
