@@ -18,7 +18,7 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
-## [7.0.0-jmpicnic-PDEV1180] - 2026-08-01
+## [7.0.0] - 2026-08-01
 
 ### Removed
 - **`extras` is no longer published** — `@arda-cards/design-system/extras`, `/types/extras` and `/types/extras-date-time` are gone from the package's `exports` map and are no longer built, so the tarball ships 88 files instead of 97 and contains no `extras.*` or `types-extras.*`. The `extras` track is the off-maturity-track area for examples and reference implementations; publishing it invited consumers to depend on components on no stability track. Everything under `src/components/extras/` and `src/extras.ts` stays in the repo and remains available to Storybook stories, `src/use-cases/`, tests and `src/archive/` — only the published entry point is withdrawn. An org-wide search found no code importing the subpath, so this is a formal break rather than a practical one (PDEV-1332).
