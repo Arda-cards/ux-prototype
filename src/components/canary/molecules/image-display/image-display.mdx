@@ -6,7 +6,7 @@ import * as Stories from './image-display.stories';
 
 # ImageDisplay
 
-Foundational image rendering molecule. Handles all four visual states of an image field: loaded, loading (shimmer), error (broken URL), and no image (null URL).
+Foundational image rendering molecule. Handles every visual state of an image field: loaded, loading (shimmer), pending (URL not resolvable yet), error (broken URL), and no image (null URL).
 
 **Molecule** &#8212; Canary | Import: `@/components/canary/molecules/image-display`
 
@@ -32,7 +32,7 @@ All four states rendered side-by-side.
 
 ### Visual States
 
-`ImageDisplay` manages four distinct rendering states internally, driven entirely by `imageUrl` and the native `<img>` element's load/error events:
+`ImageDisplay` manages its rendering state internally, driven by `imageUrl`, `imagePending`, and the native `<img>` element's load/error events:
 
 <table>
   <thead>
@@ -46,7 +46,12 @@ All four states rendered side-by-side.
     <tr>
       <td><strong>Loading</strong></td>
       <td><code>imageUrl</code> is a non-null string and the image has not yet resolved</td>
-      <td>Skeleton shimmer (<code>animate-pulse bg-muted</code>) fills the container; no initials, no badge</td>
+      <td>Skeleton shimmer (<code>animate-pulse bg-muted</code>) fills the container; no initials, no alert icon</td>
+    </tr>
+    <tr>
+      <td><strong>Pending</strong></td>
+      <td><code>imagePending</code> is <code>true</code> &#8212; the URL is not resolvable <em>yet</em>, as opposed to absent</td>
+      <td>Skeleton shimmer, and <strong>no <code>&lt;img&gt;</code> is mounted</strong>, so no request is issued. Takes precedence over every other state: while pending, nothing is known about the image, so neither the initials nor the alert icon may be shown</td>
     </tr>
     <tr>
       <td><strong>Loaded</strong></td>
@@ -56,21 +61,23 @@ All four states rendered side-by-side.
     <tr>
       <td><strong>Error</strong></td>
       <td><code>imageUrl</code> is a non-null string but the image failed to load (<code>onError</code> fired)</td>
-      <td>Initials derived from <code>entityTypeDisplayName</code> plus a small destructive badge in the corner indicating a broken image</td>
+      <td>A muted alert icon centred in the frame. No initials &#8212; those read as "this entity has no picture", which is not what happened. <code>errorReason</code>, when given, is surfaced on hover and as the icon's accessible label</td>
     </tr>
     <tr>
       <td><strong>No Image</strong></td>
       <td><code>imageUrl</code> is <code>null</code></td>
-      <td>Initials derived from <code>entityTypeDisplayName</code>; no error badge (distinguishes "no image set" from "broken image")</td>
+      <td>Initials derived from <code>entityTypeDisplayName</code>; no alert icon (distinguishes "no image set" from "broken image")</td>
     </tr>
   </tbody>
 </table>
 
-The error badge is deliberately shown only when `imageUrl` is non-null and the load fails. A null URL is a valid "not yet set" state and never triggers an error indication.
+The alert icon is deliberately shown only when `imageUrl` is non-null and the load fails. A null URL is a valid "not yet set" state and never triggers an error indication.
+
+It is a **muted** icon rather than a destructive badge, and it replaces the initials rather than decorating them. Most image failures are transient and self-recovering (an expired CDN credential, say), so a red alarm mis-states the severity and reads as though the entity itself were faulty — while initials read as "this entity has no picture", which is a different fact. Consumers that can explain the failure should pass `errorReason`; it is surfaced on hover and as the icon's accessible label. Consumers that are actively retrying should raise `imagePending` for the duration, so a failure they are about to fix never renders at all.
 
 ### Initials Derivation
 
-The placeholder text shown in the Error and No Image states is produced by `getInitials(entityTypeDisplayName)`. The function takes the first character of each word (up to two words), uppercases the result, and falls back to `"?"` for empty or whitespace-only input. For example: `"Item"` &#8594; `"I"`, `"Spare Part"` &#8594; `"SP"`.
+The placeholder text shown in the No Image state is produced by `getInitials(entityTypeDisplayName)`. The function takes the first character of each word (up to two words), uppercases the result, and falls back to `"?"` for empty or whitespace-only input. For example: `"Item"` &#8594; `"I"`, `"Spare Part"` &#8594; `"SP"`.
 
 ### Container Behavior
 
@@ -120,7 +127,7 @@ provides sufficient contrast even for white product images.
       <td>Runtime</td>
       <td><code>string | null</code></td>
       <td>Required</td>
-      <td>Image URL. <code>null</code> shows initials without an error badge (&#8220;no image&#8221; state). A string that fails to load shows initials with an error badge.</td>
+      <td>Image URL. <code>null</code> shows initials and no alert icon (&#8220;no image&#8221; state). A string that fails to load shows the alert icon instead of initials.</td>
     </tr>
     <tr>
       <td><code>entityTypeDisplayName</code></td>
@@ -149,6 +156,34 @@ provides sufficient contrast even for white product images.
       <td><code>ImageFieldConfig | undefined</code></td>
       <td><code>undefined</code></td>
       <td>Field configuration required for the internal <code>ImageUploadDialog</code>. Must be provided together with <code>onImageChange</code> to enable interactive mode.</td>
+    </tr>
+    <tr>
+      <td><code>onError</code></td>
+      <td>Runtime</td>
+      <td><code>(() =&#62; void) | undefined</code></td>
+      <td><code>undefined</code></td>
+      <td>Called when the underlying <code>&lt;img&gt;</code> fails to load. <strong>Augments</strong> the internal error state rather than replacing it. Consumers use it to drive recovery &#8212; e.g. refreshing CloudFront signed cookies and retrying after a 403.</td>
+    </tr>
+    <tr>
+      <td><code>onLoad</code></td>
+      <td>Runtime</td>
+      <td><code>(() =&#62; void) | undefined</code></td>
+      <td><code>undefined</code></td>
+      <td>Called when the underlying <code>&lt;img&gt;</code> loads successfully. Pairs with <code>onError</code> to close out a recovery attempt.</td>
+    </tr>
+    <tr>
+      <td><code>errorReason</code></td>
+      <td>Runtime</td>
+      <td><code>string | undefined</code></td>
+      <td><code>undefined</code></td>
+      <td>Human-readable explanation of <em>why</em> the image failed, surfaced on hover and to assistive tech. Shown only in the Error state. Classification lives with the consumer &#8212; this component renders the string it is given.</td>
+    </tr>
+    <tr>
+      <td><code>imagePending</code></td>
+      <td>Runtime</td>
+      <td><code>boolean | undefined</code></td>
+      <td><code>undefined</code></td>
+      <td>The URL is not resolvable <em>yet</em>, as opposed to absent. While <code>true</code>, only the skeleton renders and no request is issued. Distinct from <code>imageUrl === null</code>: conflating the two makes a not-yet-ready image look deleted.</td>
     </tr>
   </tbody>
 </table>
