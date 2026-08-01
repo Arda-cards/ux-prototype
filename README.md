@@ -92,7 +92,7 @@ src/
 
 The library is published to GitHub Packages as `@arda-cards/design-system`. It is built with Vite 6 in library mode (ESM + CJS) from two consumer entry points: `src/index.ts` (stable) and `src/canary.ts` (experimental).
 
-> **`src/extras.ts` is internal to this repo and is not for consumer use.** It is still declared as a published subpath for now; removing it is tracked in PDEV-1332. Do not build anything on `@arda-cards/design-system/extras`. See [Extras (internal only)](#extras-internal-only).
+> **`src/extras.ts` is internal to this repo and is not published.** It is not part of the npm package and cannot be imported by consumers. See [Extras (internal only)](#extras-internal-only).
 
 ### Export Paths
 
@@ -100,20 +100,24 @@ The library is published to GitHub Packages as `@arda-cards/design-system`. It i
 |---|---|---|
 | `@arda-cards/design-system` | `dist/index.js` (ESM) / `dist/index.cjs` (CJS) | Nominal components, types, and utilities |
 | `@arda-cards/design-system/canary` | `dist/canary.js` (ESM) / `dist/canary.cjs` (CJS) | Experimental components (API may change) |
-| `@arda-cards/design-system/extras` | `dist/extras.js` (ESM) / `dist/extras.cjs` (CJS) | **Internal only — do not consume.** Slated for removal (PDEV-1332) |
 | `@arda-cards/design-system/styles` | `dist/styles/globals.css` | Tailwind CSS v4 stylesheet |
 
 ### Exported Components
 
-**Atoms** — `ArdaBadge`, `ArdaButton`, `ArdaConfirmDialog`, `ArdaTypeahead`
+**Stable (`@arda-cards/design-system`)** — placeholders only today (`StableAtomPlaceholder`,
+`StableMoleculePlaceholder`, `StableOrganismPlaceholder`). Nothing has been promoted to the stable track yet.
 
-**Molecules** — `ArdaItemCard`, `ArdaTable` (+ Header/Body/Row/Head/Cell), `ArdaSupplyCard`
+**Canary (`@arda-cards/design-system/canary`)** — where the real components live: grids and cell
+renderers, image display and upload, item and supplier surfaces, sidebar, typeaheads, and the canary
+domain types (`Item`, `PostalAddress`, `Money`, `Duration`, and friends). This is what `arda-frontend-app`
+consumes.
 
-**Organisms** — `ArdaSidebar`, `ArdaItemDrawer`, `ArdaSupplierForm`, `ArdaSupplierDrawer`, `ArdaItemsDataGrid`, `ArdaSupplierDataGrid`, `ArdaItemSupplySection`, `ArdaItemSupplyFormDialog`, `createArdaEntityDataGrid` (factory)
+Run `node tools/update-package-contents.js` for the generated, always-current inventory rather than
+relying on a hand-maintained list here.
 
-**Domain types** — `BusinessAffiliate`, `ItemSupply`, `PostalAddress`, `Contact`, `Money`, `Duration`, and related model/reference types
-
-**Utilities** — `cn` (class name merge), `getBrowserTimezone`, `getTimezoneAbbreviation`
+> Earlier revisions of this section listed `ArdaBadge`, `ArdaButton`, `ArdaSidebar`,
+> `createArdaEntityDataGrid` and the `BusinessAffiliate` / `ItemSupply` domain types. Those came from the
+> **extras** entry point, which is no longer published — see below.
 
 ### What Goes Into the Package
 
