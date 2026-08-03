@@ -136,7 +136,7 @@ function MemoModal({
               <textarea
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="w-full min-h-[100px] resize-y border-0 p-0 text-sm leading-5 text-foreground focus:outline-none focus:ring-0"
+                className="w-full min-h-[100px] resize-y border-0 p-0 text-base md:text-sm leading-5 text-foreground focus:outline-none focus:ring-0"
                 placeholder="Add a note..."
                 autoFocus
               />

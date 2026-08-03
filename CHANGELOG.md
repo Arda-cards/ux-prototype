@@ -18,6 +18,11 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [7.0.2] - 2026-08-04
+
+### Fixed
+- **Text-entry controls are ≥16px on mobile (PDEV-1376)** — five canary components passed `text-sm`/hardcoded 14px classes to text inputs or textareas, overriding the Input primitive's `text-base md:text-sm` and triggering iOS Safari's focus auto-zoom (the page then stays zoomed, reading as "starts zoomed in / too wide"). `ItemCardEditor` qty fields, `DataGrid` quick-filter, `createEntityDataGrid` search, `ItemGrid` typeahead cell editor, and the grid memo textarea now use `text-base md:text-sm` — 16px below the `md` breakpoint, unchanged 14px on desktop.
+
 ## [7.0.1] - 2026-08-04
 
 ### Fixed
