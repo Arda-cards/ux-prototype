@@ -90,7 +90,9 @@ src/
 
 ## Published Package
 
-The library is published to GitHub Packages as `@arda-cards/design-system`. It is built with Vite 6 in library mode (ESM + CJS) from three entry points: `src/index.ts` (stable), `src/canary.ts` (experimental), and `src/extras.ts` (supplementary).
+The library is published to GitHub Packages as `@arda-cards/design-system`. It is built with Vite 6 in library mode (ESM + CJS) from two consumer entry points: `src/index.ts` (stable) and `src/canary.ts` (experimental).
+
+> **`src/extras.ts` is internal to this repo and is not published.** It is not part of the npm package and cannot be imported by consumers. See [Extras (internal only)](#extras-internal-only).
 
 ### Export Paths
 
@@ -98,20 +100,24 @@ The library is published to GitHub Packages as `@arda-cards/design-system`. It i
 |---|---|---|
 | `@arda-cards/design-system` | `dist/index.js` (ESM) / `dist/index.cjs` (CJS) | Nominal components, types, and utilities |
 | `@arda-cards/design-system/canary` | `dist/canary.js` (ESM) / `dist/canary.cjs` (CJS) | Experimental components (API may change) |
-| `@arda-cards/design-system/extras` | `dist/extras.js` (ESM) / `dist/extras.cjs` (CJS) | Supplementary components |
 | `@arda-cards/design-system/styles` | `dist/styles/globals.css` | Tailwind CSS v4 stylesheet |
 
 ### Exported Components
 
-**Atoms** — `ArdaBadge`, `ArdaButton`, `ArdaConfirmDialog`, `ArdaTypeahead`
+**Stable (`@arda-cards/design-system`)** — placeholders only today (`StableAtomPlaceholder`,
+`StableMoleculePlaceholder`, `StableOrganismPlaceholder`). Nothing has been promoted to the stable track yet.
 
-**Molecules** — `ArdaItemCard`, `ArdaTable` (+ Header/Body/Row/Head/Cell), `ArdaSupplyCard`
+**Canary (`@arda-cards/design-system/canary`)** — where the real components live: grids and cell
+renderers, image display and upload, item and supplier surfaces, sidebar, typeaheads, and the canary
+domain types (`Item`, `PostalAddress`, `Money`, `Duration`, and friends). This is what `arda-frontend-app`
+consumes.
 
-**Organisms** — `ArdaSidebar`, `ArdaItemDrawer`, `ArdaSupplierForm`, `ArdaSupplierDrawer`, `ArdaItemsDataGrid`, `ArdaSupplierDataGrid`, `ArdaItemSupplySection`, `ArdaItemSupplyFormDialog`, `createArdaEntityDataGrid` (factory)
+Run `node tools/update-package-contents.js` for the generated, always-current inventory rather than
+relying on a hand-maintained list here.
 
-**Domain types** — `BusinessAffiliate`, `ItemSupply`, `PostalAddress`, `Contact`, `Money`, `Duration`, and related model/reference types
-
-**Utilities** — `cn` (class name merge), `getBrowserTimezone`, `getTimezoneAbbreviation`
+> Earlier revisions of this section listed `ArdaBadge`, `ArdaButton`, `ArdaSidebar`,
+> `createArdaEntityDataGrid` and the `BusinessAffiliate` / `ItemSupply` domain types. Those came from the
+> **extras** entry point, which is no longer published — see below.
 
 ### What Goes Into the Package
 
@@ -136,16 +142,17 @@ import { CanaryAtomPlaceholder } from '@arda-cards/design-system/canary';
 
 **Promotion path**: move the component from `src/canary/components/` to `src/components/`, re-export from `src/index.ts`, remove from `src/canary.ts`.
 
-### Extras Export Path
+### Extras (internal only)
 
-The `./extras` subpath contains supplementary components that extend the core library with additional functionality.
+`src/components/extras/` is the off-maturity-track area for examples and reference implementations. **It must never form part of the published package** — publishing it invites consumers to depend on components that are on no stability track.
 
-```typescript
-// Consumer usage
-import { ExtrasAtomPlaceholder } from '@arda-cards/design-system/extras';
-```
+Internal use is expected and fine: Storybook stories, `src/use-cases/`, tests and `src/archive/` all use extras freely, and none of them ship. What is prohibited is shipping code depending on it.
 
-**Dependency direction**: extras components may import from stable (`@/components/`, `@/lib/`), but stable code must never import from `@/extras/`. This is enforced by an ESLint `no-restricted-imports` rule.
+**Dependency direction**: extras may import from stable (`@/components/`, `@/lib/`), but nothing reachable from `index.ts` or `canary.ts` may import from `@/components/extras` or `@/types/extras`. This includes **type-only** imports — `import type` is erased at runtime but still lands in the emitted `.d.ts`, so it breaks consumer typechecks once the source barrel stops being published.
+
+To use something from extras in shipping code, mirror it into the canary tree instead — see `src/types/canary/model/reference/items/item-domain.ts`.
+
+Enforced by `no-restricted-imports` in `eslint.config.mjs`. Note that bare barrel specifiers (`@/types/extras`) must be listed explicitly in the pattern group: `@/types/extras/*` and `@/types/extras/**` only match specifiers with a segment *after* `extras`, and that gap previously let a leak through. See `knowledge-base/component-tracks.md`.
 
 ### Peer Dependencies
 

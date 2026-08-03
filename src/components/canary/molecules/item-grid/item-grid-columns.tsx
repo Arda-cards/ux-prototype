@@ -1,7 +1,7 @@
 import { createElement } from 'react';
 import type { ColDef, ICellRendererParams, ValueSetterParams } from 'ag-grid-community';
 
-import type { Item } from '@/types/extras';
+import type { Item } from '@/types/canary/model/reference/items/item-domain';
 import { TypeaheadCellEditor, type TypeaheadOption } from './typeahead-cell-editor';
 import { SelectCellEditor } from '../../atoms/grid/select/select-cell-editor';
 import { DragHeader } from './drag-header';

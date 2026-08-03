@@ -1,5 +1,5 @@
-import { render } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { render, fireEvent, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 
 import { ImageCellDisplay } from './image-cell-display';
@@ -41,6 +41,64 @@ describe('ImageCellDisplay', () => {
     // AG Grid double-click editing to work unimpeded
     const buttons = container.querySelectorAll('button');
     expect(buttons.length).toBe(0);
+  });
+
+  // --- CDN 403 recovery hooks (PDEV-1180) ---------------------------------
+  // AG Grid image cells are the surface where CDN cookie expiry shows up as
+  // broken images. The consumer needs the failure signal to refresh cookies
+  // and retry, so these must reach the underlying <img>.
+
+  it('forwards onError to the underlying img', () => {
+    const onError = vi.fn();
+    const { container } = render(
+      <ImageCellDisplay {...defaultProps} value={MOCK_ITEM_IMAGE} onError={onError} />,
+    );
+
+    fireEvent.error(container.querySelector('img')!);
+
+    expect(onError).toHaveBeenCalledTimes(1);
+  });
+
+  it('forwards onLoad to the underlying img', () => {
+    const onLoad = vi.fn();
+    const { container } = render(
+      <ImageCellDisplay {...defaultProps} value={MOCK_ITEM_IMAGE} onLoad={onLoad} />,
+    );
+
+    fireEvent.load(container.querySelector('img')!);
+
+    expect(onLoad).toHaveBeenCalledTimes(1);
+  });
+
+  it('forwards errorReason so the failed cell explains itself on hover', () => {
+    const { container } = render(
+      <ImageCellDisplay
+        {...defaultProps}
+        value={MOCK_ITEM_IMAGE}
+        errorReason="Image access expired — retrying"
+      />,
+    );
+
+    fireEvent.error(container.querySelector('img')!);
+
+    expect(screen.getByTitle('Image access expired — retrying')).toBeInTheDocument();
+  });
+
+  it('behaves identically when the new callbacks are omitted', () => {
+    // Back-compat guard: existing consumers pass neither prop.
+    const { container } = render(<ImageCellDisplay {...defaultProps} value={MOCK_ITEM_IMAGE} />);
+
+    expect(() => fireEvent.error(container.querySelector('img')!)).not.toThrow();
+    expect(screen.getByLabelText('Image failed to load')).toBeInTheDocument();
+  });
+
+  it('forwards imagePending so the cell renders no request while unresolved', () => {
+    const { container } = render(
+      <ImageCellDisplay {...defaultProps} value={MOCK_ITEM_IMAGE} imagePending />,
+    );
+
+    expect(container.querySelector('img')).not.toBeInTheDocument();
+    expect(container.querySelector('[data-slot="skeleton"]')).toBeInTheDocument();
   });
 
   it('normalizes empty-string value to "no image" (no broken <img src="">)', () => {

@@ -60,7 +60,7 @@ The package organizes exports into components, types, styles, and assets. Each c
       <td>In-development components (API may change)</td>
     </tr>
     <tr>
-      <td><code>@arda-cards/design-system/extras</code></td>
+      <td><em>not published &#8212; internal to the repo</em></td>
       <td>Extras</td>
       <td>Off-maturity-track reference implementations</td>
     </tr>
@@ -194,8 +194,8 @@ import { TextCellDisplay, NumberCellDisplay, DataGrid } from '@arda-cards/design
 Extras components are off the maturity promotion track. They exist as reference implementations and examples. Use them for rapid prototyping or when no Nominal or Canary equivalent exists:
 
 ```tsx
-import { ArdaButton, ArdaDataGrid } from '@arda-cards/design-system/extras';
-import type { ArdaButtonProps } from '@arda-cards/design-system/extras';
+// The extras track is internal to ux-prototype and is not published.
+// Consumers use the stable or canary entry points instead.
 ```
 
 > **Note:** Extras components are not actively maintained toward promotion. If you depend on an Extras component in production, consider requesting its extraction into the Canary track.
@@ -466,7 +466,7 @@ The design system enforces a **display-only cursor policy** via a global CSS rul
 
 {/* AUTO-GENERATED:START — do not edit manually. Run: node tools/update-package-contents.js */}
 
-## Current Content as of 2026-04-08
+## Current Content as of 2026-08-01
 
 ### Components (JS/TS)
 
@@ -503,15 +503,15 @@ Each entry point ships as ESM (`.js`), CJS (`.cjs`), and TypeScript declarations
   <tbody>
     <tr>
       <td>Utilities and Types</td>
-      <td><code>getInitials</code>, <code>getCroppedImage</code>, <code>setNestedField</code>, <code>useDraft</code></td>
+      <td><code>getInitials</code>, <code>getCroppedImage</code>, <code>setNestedField</code>, <code>useDraft</code>, <code>useDebouncedCallback</code></td>
     </tr>
     <tr>
       <td>Atoms</td>
-      <td><code>Badge</code>, <code>ArdaBadge</code>, <code>Button</code>, <code>ArdaButton</code>, <code>buttonVariants</code>, <code>Drawer</code>, <code>DrawerHeader</code>, <code>DrawerTitle</code>, <code>DrawerDescription</code>, <code>DrawerBody</code>, <code>DrawerFooter</code>, <code>ArdaDrawer</code>, <code>ArdaDrawerHeader</code>, <code>ArdaDrawerTitle</code>, <code>ArdaDrawerDescription</code>, <code>ArdaDrawerBody</code>, <code>ArdaDrawerFooter</code>, <code>IconButton</code>, <code>ArdaIconButton</code>, <code>BrandLogo</code>, <code>BrandIcon</code>, <code>IconLabel</code>, <code>ReadOnlyField</code>, <code>readOnlyFieldVariants</code>, <code>TextCellDisplay</code>, <code>TextCellEditor</code>, <code>createTextCellEditor</code>, <code>NumberCellDisplay</code>, <code>NumberCellEditor</code>, <code>createNumberCellEditor</code>, <code>BooleanCellDisplay</code>, <code>BooleanCellEditor</code>, <code>createBooleanCellEditor</code>, <code>DateCellDisplay</code>, <code>DateCellEditor</code>, <code>createDateCellEditor</code>, <code>SelectCellDisplay</code>, <code>SelectCellEditor</code>, <code>createSelectCellEditor</code>, <code>MemoCellDisplay</code>, <code>MemoCellEditor</code>, <code>createMemoCellEditor</code>, <code>MemoButtonCell</code>, <code>createMemoButtonCellEditor</code>, <code>ColorCellDisplay</code>, <code>ColorCellEditor</code>, <code>createColorCellEditor</code>, <code>DEFAULT_COLOR_MAP</code>, <code>ImageCellDisplay</code>, <code>ImageCellEditor</code>, <code>createImageCellEditor</code>, <code>CopyrightAcknowledgment</code>, <code>ColorPicker</code>, <code>getColorHex</code>, <code>ActionCellRenderer</code></td>
+      <td><code>Badge</code>, <code>ArdaBadge</code>, <code>TokenChip</code>, <code>Button</code>, <code>ArdaButton</code>, <code>buttonVariants</code>, <code>Drawer</code>, <code>DrawerHeader</code>, <code>DrawerTitle</code>, <code>DrawerDescription</code>, <code>DrawerBody</code>, <code>DrawerFooter</code>, <code>ArdaDrawer</code>, <code>ArdaDrawerHeader</code>, <code>ArdaDrawerTitle</code>, <code>ArdaDrawerDescription</code>, <code>ArdaDrawerBody</code>, <code>ArdaDrawerFooter</code>, <code>IconButton</code>, <code>ArdaIconButton</code>, <code>Toggle</code>, <code>toggleVariants</code>, <code>ToggleGroup</code>, <code>ToggleGroupItem</code>, <code>ButtonGroup</code>, <code>ButtonGroupSeparator</code>, <code>Checkbox</code>, <code>SplitButton</code>, <code>TooltipProvider</code>, <code>Input</code>, <code>Select</code>, <code>SelectContent</code>, <code>SelectGroup</code>, <code>SelectItem</code>, <code>SelectLabel</code>, <code>SelectSeparator</code>, <code>SelectTrigger</code>, <code>SelectValue</code>, <code>ArdaSelect</code>, <code>AutoFillLabel</code>, <code>AddressFieldset</code>, <code>AutoFillField</code>, <code>InputGroup</code>, <code>InputGroupAddon</code>, <code>InputGroupButton</code>, <code>InputGroupText</code>, <code>InputGroupInput</code>, <code>InputGroupTextarea</code>, <code>Popover</code>, <code>PopoverTrigger</code>, <code>PopoverAnchor</code>, <code>PopoverContent</code>, <code>DropdownMenu</code>, <code>DropdownMenuTrigger</code>, <code>DropdownMenuContent</code>, <code>DropdownMenuGroup</code>, <code>DropdownMenuItem</code>, <code>DropdownMenuCheckboxItem</code>, <code>DropdownMenuRadioGroup</code>, <code>DropdownMenuRadioItem</code>, <code>DropdownMenuLabel</code>, <code>DropdownMenuSeparator</code>, <code>DropdownMenuShortcut</code>, <code>DropdownMenuSub</code>, <code>DropdownMenuSubTrigger</code>, <code>DropdownMenuSubContent</code>, <code>BrandLogo</code>, <code>BrandIcon</code>, <code>IconLabel</code>, <code>ReadOnlyField</code>, <code>ReadOnlyField</code>, <code>readOnlyFieldVariants</code>, <code>TextCellDisplay</code>, <code>TextCellEditor</code>, <code>createTextCellEditor</code>, <code>NumberCellDisplay</code>, <code>NumberCellEditor</code>, <code>createNumberCellEditor</code>, <code>BooleanCellDisplay</code>, <code>BooleanCellEditor</code>, <code>createBooleanCellEditor</code>, <code>DateCellDisplay</code>, <code>DateCellEditor</code>, <code>createDateCellEditor</code>, <code>SelectCellDisplay</code>, <code>SelectCellEditor</code>, <code>createSelectCellEditor</code>, <code>MemoCellDisplay</code>, <code>MemoCellEditor</code>, <code>createMemoCellEditor</code>, <code>MemoButtonCell</code>, <code>createMemoButtonCellEditor</code>, <code>ColorCellDisplay</code>, <code>ColorCellEditor</code>, <code>createColorCellEditor</code>, <code>DEFAULT_COLOR_MAP</code>, <code>ImageCellDisplay</code>, <code>ImageCellEditor</code>, <code>createImageCellEditor</code>, <code>CopyrightAcknowledgment</code>, <code>ColorPicker</code>, <code>getColorHex</code>, <code>ActionCellRenderer</code></td>
     </tr>
     <tr>
       <td>Molecules</td>
-      <td><code>ImageDisplay</code>, <code>ImageDropZone</code>, <code>ImagePreviewEditor</code>, <code>ImageHoverPreview</code>, <code>ImageInspectorOverlay</code>, <code>ImageComparisonLayout</code>, <code>ImageFormField</code>, <code>DataGrid</code>, <code>GridImage</code>, <code>useColumnPersistence</code></td>
+      <td><code>ImageDisplay</code>, <code>ImageDropZone</code>, <code>ImagePreviewEditor</code>, <code>ImageHoverPreview</code>, <code>ImageInspectorOverlay</code>, <code>ImageComparisonLayout</code>, <code>ImageFormField</code>, <code>DataGrid</code>, <code>GridImage</code>, <code>createTokenDataType</code>, <code>createCombinedColumn</code>, <code>useColumnPersistence</code>, <code>useDragToScroll</code>, <code>useRowEditing</code>, <code>COUNTRY_SYMBOLS</code>, <code>COUNTRY_NAMES</code>, <code>lookupCountries</code>, <code>TokenList</code></td>
     </tr>
     <tr>
       <td>Molecules — Sidebar</td>
@@ -523,7 +523,7 @@ Each entry point ships as ESM (`.js`), CJS (`.cjs`), and TypeScript declarations
     </tr>
     <tr>
       <td>Organisms</td>
-      <td><code>createEntityDataGrid</code>, <code>useDirtyTracking</code>, <code>useRowAutoPublish</code>, <code>ImageUploadDialog</code>, <code>createEntityDataGridShim</code></td>
+      <td><code>// Canonical: ConnectedDataGrid (DQ-008) createConnectedDataGrid</code>, <code>useCommitPipeline</code>, <code>// Deprecated alias createEntityDataGrid</code>, <code>useDirtyTracking</code>, <code>useRowAutoPublish</code>, <code>ImageUploadDialog</code>, <code>ImageUploadProvider</code>, <code>useImageUploader</code>, <code>defaultImageUploader</code>, <code>createEntityDataGridShim</code></td>
     </tr>
     <tr>
       <td>Organisms — Sidebar</td>
@@ -536,6 +536,14 @@ Each entry point ships as ESM (`.js`), CJS (`.cjs`), and TypeScript declarations
     <tr>
       <td>Organisms — ItemDetails</td>
       <td><code>ItemDetails</code>, <code>ArdaItemDetails</code></td>
+    </tr>
+    <tr>
+      <td>Molecules — TypeaheadInput</td>
+      <td><code>TypeaheadInput</code>, <code>createTypeaheadCellEditor</code>, <code>MultiSelectTypeaheadInput</code>, <code>createMultiSelectCellEditor</code></td>
+    </tr>
+    <tr>
+      <td>Organisms — ItemCardEditor</td>
+      <td><code>ItemCardEditor</code>, <code>EMPTY_ITEM_CARD_FIELDS</code></td>
     </tr>
     <tr>
       <td>Organisms — ItemGrid</td>
@@ -689,7 +697,7 @@ Each entry point ships as ESM (`.js`), CJS (`.cjs`), and TypeScript declarations
   <tbody>
     <tr>
       <td><code>./assets/images/*</code></td>
-      <td>26 files &#8212; brand logos, decorative elements, theme icons</td>
+      <td>25 files &#8212; brand logos, decorative elements, theme icons</td>
     </tr>
     <tr>
       <td><code>./assets/canary/images/*</code></td>

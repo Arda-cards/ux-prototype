@@ -18,6 +18,23 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [7.0.0] - 2026-08-01
+
+### Removed
+- **`extras` is no longer published** — `@arda-cards/design-system/extras`, `/types/extras` and `/types/extras-date-time` are gone from the package's `exports` map and are no longer built, so the tarball ships 88 files instead of 97 and contains no `extras.*` or `types-extras.*`. The `extras` track is the off-maturity-track area for examples and reference implementations; publishing it invited consumers to depend on components on no stability track. Everything under `src/components/extras/` and `src/extras.ts` stays in the repo and remains available to Storybook stories, `src/use-cases/`, tests and `src/archive/` — only the published entry point is withdrawn. An org-wide search found no code importing the subpath, so this is a formal break rather than a practical one (PDEV-1332).
+
+### Added
+- **ImageDisplay / ImageCellDisplay: `onError` and `onLoad`** — the component owns the `<img>`, so a consumer previously had no way to learn that an image failed. Item images are served from CloudFront behind signed cookies that expire; without this signal the app could not refresh credentials and retry, and a 403 stayed on screen until the user reloaded the page. The callbacks augment the internal load state rather than replacing it, so consumers that pass neither are unaffected.
+- **ImageDisplay / ImageCellDisplay: `errorReason`** — human-readable explanation shown on hover and to assistive tech when an image has failed, so a broken thumbnail says why instead of showing a bare glyph. Rendered on the container rather than on the error indicator itself, which stays `pointer-events-none` so it never blocks AG Grid's double-click-to-edit. Classification stays with the consumer; the component only renders the string it is given.
+- **ImageDisplay / ImageCellDisplay: `imagePending`** — distinguishes "the URL is not resolvable yet" from "this entity has no image". While pending the component shows its skeleton and renders no `<img>`, so no request is issued that could 403. Conflating the two states makes a not-yet-ready image look deleted, which in an editing surface risks saving the deletion.
+- **Item domain model exported from the canary entry point** — `Item` and its supporting types (`Supply`, `Quantity`, `Money`, `Duration`, `Locator`, and the size/colour enums) are now reachable from `@arda-cards/design-system/canary`. `Item` is the row type of `ItemGrid`, so consumers previously had to reach into the internal `extras` track to type the grid's rows.
+
+### Fixed
+- **ImageDisplay: a failed image shows a muted alert icon in the frame, not a red corner badge** — the destructive badge read as "action required" for what is usually a transient, self-recovering failure. The failure is now a centred `TriangleAlert` in muted foreground, and the initials placeholder is reserved for the genuine "no image" state rather than doubling as the error state. `errorReason` still drives the hover title and the icon's accessible name, so nothing is lost for assistive tech. No prop changes.
+- **ImageDisplay: no stale error indicator when `imagePending` clears on the same URL** — `loadState` was reset only when `imageUrl` changed, so a failure that occurred before a pending window survived it: clearing `imagePending` re-mounted the `<img>` but rendered the previous error badge and initials until the new request resolved, which is misleading during a retry. The load state now resets when the pending flag flips too.
+- **Published canary types no longer depend on the internal `extras` track** — three shipping `ItemGrid` files imported `Item` from `@/types/extras`. The import was type-only, so nothing shipped at runtime, but the emitted `canary.d.ts` referenced a type from a track that is internal to this repo. The model is mirrored into the canary type tree instead, following the existing `postal-address.ts` precedent.
+- **Subpath-boundary lint rule now catches barrel imports** — the `no-restricted-imports` guard for `canary → extras` (and `stable → canary/extras`) only matched specifiers with a path segment *after* the track name, so the bare barrel `@/types/extras` slipped through. That gap is how the leak above survived a lint gate that looked like it covered it. Bare barrel specifiers are now listed explicitly, and stories/tests are exempted since they do not ship.
+
 ## [6.1.0] - 2026-07-14
 
 ### Added

@@ -40,7 +40,11 @@ make publish               # build library and publish to GitHub Packages
 
 ### Exports
 
-The library has three entry points: main (`index.ts`), `canary` (experimental), and `extras` (supplementary). Types mirror this split.
+The library has three source tracks: main (`index.ts`), `canary` (experimental), and `extras` (supplementary). Types mirror this split.
+
+> **`extras/` is internal to this repo and must never form part of the published `@arda-cards/design-system` package.** Stories, `src/use-cases/`, tests and `src/archive/` may use it freely — none of them ship. But nothing reachable from `index.ts` or `canary.ts` may import from `@/components/extras` or `@/types/extras`, **including type-only imports** (they dangle in the emitted `.d.ts`). To use something from extras in shipping code, mirror it into the canary tree — see `src/types/canary/model/reference/items/item-domain.ts`. Enforced by `no-restricted-imports` in `eslint.config.mjs`. Full detail: `knowledge-base/component-tracks.md`.
+>
+> `extras` is still declared as a published entry point in `package.json` / `vite.config.ts`; removing it is tracked in PDEV-1332.
 
 ## Key directories
 
