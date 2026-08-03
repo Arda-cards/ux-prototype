@@ -2,7 +2,6 @@ import * as React from 'react';
 
 import { cn } from '@/types/canary/utilities/utils';
 import { Skeleton } from '@/components/canary/primitives/skeleton';
-import { TriangleAlert } from 'lucide-react';
 import { getInitials } from '@/types/canary/utilities/get-initials';
 import { ImageUploadDialog } from '@/components/canary/organisms/shared/image-upload-dialog/image-upload-dialog';
 import type {
@@ -30,7 +29,7 @@ export interface ImageDisplayInitProps {
 
 /** Runtime configuration for ImageDisplay (live data). */
 export interface ImageDisplayRuntimeProps {
-  /** URL of the image to display. Null means "no image" (shows initials, no error badge). */
+  /** Image URL. `null` is "no image" — initials, no alert icon. */
   imageUrl: string | null;
   /**
    * When provided together with `config`, enables the full edit flow.
@@ -39,37 +38,25 @@ export interface ImageDisplayRuntimeProps {
    */
   onImageChange?: (result: ImageUploadResult) => void;
   /**
-   * Called when the underlying `<img>` fails to load.
-   *
-   * Augments — does not replace — the internal error state: the initials
-   * placeholder and error badge still render. Consumers use this to drive
-   * recovery, e.g. refreshing CDN signed cookies and retrying after a 403.
+   * The `<img>` failed to load. Augments the internal error state rather than
+   * replacing it; consumers use it to refresh CDN credentials and retry.
    */
-  // `| undefined` is explicit on these three so wrappers (e.g. ImageCellDisplay)
-  // can forward their own optionals straight through under
-  // `exactOptionalPropertyTypes: true`, rather than conditionally spreading.
+  // `| undefined` is explicit on these three so wrappers can forward their own
+  // optionals under `exactOptionalPropertyTypes`.
   onError?: (() => void) | undefined;
   /** Called when the underlying `<img>` loads successfully. */
   onLoad?: (() => void) | undefined;
   /**
-   * Human-readable explanation of *why* the image failed, surfaced on hover
-   * and to assistive tech. Only shown in the error state; a null `imageUrl`
-   * is "no image", not a failure, and never displays it.
-   *
-   * Classification lives with the consumer — this component only renders the
-   * string it is given.
+   * Why the image failed, shown on hover and to assistive tech. Error state
+   * only — a null `imageUrl` is "no image", not a failure. The consumer
+   * classifies; this renders.
    */
   errorReason?: string | undefined;
   /**
-   * The image URL is not resolvable *yet* — as opposed to absent.
-   *
-   * While true the component shows its skeleton and renders no `<img>`, so no
-   * request is issued. Consumers whose URLs need credentials that arrive
-   * asynchronously (e.g. CloudFront signed cookies) use this to avoid firing a
-   * request that would 403 and never be retried.
-   *
-   * Distinct from `imageUrl === null`, which means "this entity has no image".
-   * Conflating the two makes a not-yet-ready image look deleted.
+   * The URL is not resolvable *yet*, as opposed to absent: renders the skeleton
+   * and no `<img>`, so nothing is requested before its credentials exist.
+   * Distinct from `imageUrl === null` — conflating them makes a not-yet-ready
+   * image look deleted.
    */
   imagePending?: boolean | undefined;
 }
@@ -88,23 +75,16 @@ type LoadState = 'loading' | 'loaded' | 'error';
 /**
  * ImageDisplay &#8212; foundational image rendering molecule.
  *
- * Renders an image with three visual states:
- * - **Loaded**: `<img>` fills the container with `object-cover`.
- * - **Loading**: skeleton shimmer overlaid while the image network request is in flight.
- * - **Error**: a muted alert icon centred in the frame (URL provided but failed to load).
+ * States: **loaded** (`<img>`), **loading** and **pending** (skeleton),
+ * **error** (muted alert icon), **no image** (initials). Error and no-image are
+ * deliberately distinct — initials would read as "no picture" for a broken one.
  *
- * When `imageUrl` is `null` the component shows an initials placeholder and no
- * alert icon &#8212; this is the "no image" state, not a broken image.
+ * With both `onImageChange` and `config`, double-click or Enter opens an
+ * `ImageUploadDialog` internally (EditExisting, or EmptyImage when `imageUrl`
+ * is null).
  *
- * When both `onImageChange` and `config` are provided, the component becomes
- * interactive: double-click or Enter opens an `ImageUploadDialog` internally.
- * The dialog enters EditExisting mode when there is an existing image, or
- * EmptyImage mode when `imageUrl` is null. On confirm, `onImageChange` is
- * called with the result and the dialog closes.
- *
- * The container fills its parent (`w-full h-full`) so the caller controls sizing.
- * No border is applied deliberately; `bg-muted` provides sufficient contrast even
- * for white images.
+ * Fills its parent, so the caller controls sizing. No border: `bg-muted` gives
+ * enough contrast even for white images.
  */
 export function ImageDisplay({
   imageUrl,
@@ -122,11 +102,9 @@ export function ImageDisplay({
   );
   const [dialogOpen, setDialogOpen] = React.useState(false);
 
-  // Reset load state whenever imageUrl changes — and whenever the pending flag
-  // flips. No <img> is mounted while pending, so clearing pending always starts
-  // a fresh load; without resetting here a previous 'error' would survive the
-  // pending window and render a stale error badge during what is actually a
-  // retry (same imageUrl, refreshed credentials).
+  // Also resets when `imagePending` flips: no <img> is mounted while pending, so
+  // clearing it always starts a fresh load. Without this a prior 'error' would
+  // survive the pending window and show during what is actually a retry.
   React.useEffect(() => {
     setLoadState(imageUrl === null ? 'loaded' : 'loading');
   }, [imageUrl, imagePending]);
@@ -135,15 +113,11 @@ export function ImageDisplay({
 
   const isInteractive = onImageChange !== undefined && config !== undefined;
 
-  // The error badge is `pointer-events-none` so it never blocks AG Grid's
-  // double-click-to-edit — which also means it cannot host a hover tooltip.
-  // Put the reason on the container instead, so hovering anywhere on the cell
-  // explains the failure. `loadState === 'error'` implies a non-null imageUrl,
-  // since a null URL resolves straight to 'loaded'.
+  // On the container, not the icon: the icon is `pointer-events-none` so it never
+  // blocks AG Grid's double-click-to-edit, which also stops it hosting a tooltip.
   const hoverTitle = loadState === 'error' ? errorReason : undefined;
 
-  // While pending we know nothing yet: not that the image is missing, not that
-  // it failed. Show only the skeleton and issue no request.
+  // Pending means nothing is known yet — neither missing nor failed.
   const isPending = imagePending === true;
 
   const handleDoubleClick = isInteractive
@@ -200,9 +174,8 @@ export function ImageDisplay({
         />
       )}
 
-      {/* Initials placeholder — the "no image" state. A failed load shows the
-          alert icon below instead: initials imply the entity simply has no
-          picture, which is not what happened. */}
+      {/* "No image". A failed load shows the alert icon instead — initials would
+          read as "this entity has no picture", which is not what happened. */}
       {!isPending && imageUrl === null && (
         <span
           className={cn(
@@ -214,24 +187,25 @@ export function ImageDisplay({
         </span>
       )}
 
-      {/* Failed load — a muted alert icon centred in the frame, not a corner
-          badge. A red badge reads as "something needs your attention" for what
-          is usually a transient, self-recovering failure. Only for broken URLs,
-          never for a null imageUrl. */}
+      {/* Failed load. Muted and centred, not a red corner badge — most image
+          failures are transient and self-recovering, so an alarm mis-states it.
+          Inline rather than lucide's <TriangleAlert> because lucide ships it as
+          an outline, and filling it meant selecting its paths by position —
+          which silently breaks if the icon's internals change. */}
       {!isPending && imageUrl !== null && loadState === 'error' && (
-        <TriangleAlert
+        <svg
           role="img"
           aria-label={errorReason ?? 'Image failed to load'}
+          viewBox="0 0 24 24"
           className={cn(
-            'relative pointer-events-none text-muted-foreground',
+            'relative pointer-events-none fill-current text-muted-foreground',
             'w-1/3 h-1/3 max-w-8 max-h-8 min-w-4 min-h-4',
-            // Solid triangle with the mark knocked out, per the design note.
-            // lucide ships this icon as an outline, so the fill and the
-            // knock-out are applied to its paths here.
-            '[&>path:first-child]:fill-current',
-            '[&>path:not(:first-child)]:stroke-background',
           )}
-        />
+        >
+          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+          <rect className="fill-background" x="11" y="9" width="2" height="5" rx="1" />
+          <circle className="fill-background" cx="12" cy="17.5" r="1.15" />
+        </svg>
       )}
 
       {/* ImageUploadDialog — rendered inside the component when edit flow is enabled */}
