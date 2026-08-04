@@ -8,6 +8,7 @@ import { ArdaConfirmDialog } from '@/components/canary/atoms/confirm-dialog/conf
 import { Button } from '@/components/canary/primitives/button';
 import { AutoFillField } from '@/components/canary/molecules/auto-fill-field';
 import { Input } from '@/components/canary/primitives/input';
+import { Textarea } from '@/components/canary/primitives/textarea';
 import {
   TypeaheadInput,
   type TypeaheadOption,
@@ -293,11 +294,15 @@ export function ItemCardEditor({
             {...(autoFill?.iconColor ? { iconColor: autoFill.iconColor } : {})}
             className="flex-1 min-w-0"
           >
-            <Input
+            {/* Auto-growing title: wraps and expands so the full item name is
+                always visible (no clipped "goofy long title" surprises before
+                printing). `field-sizing-content` on Textarea grows it to fit. */}
+            <Textarea
               placeholder="Item name*"
               value={fields.title}
               onChange={(e) => updateField('title', e.target.value)}
-              className="font-extrabold text-lg h-10 rounded-lg border-input"
+              rows={1}
+              className="font-extrabold text-lg min-h-10 py-2 leading-snug rounded-lg border-input resize-none"
             />
           </AutoFillField>
           <div className="flex flex-col items-center flex-shrink-0 h-10 justify-between">
