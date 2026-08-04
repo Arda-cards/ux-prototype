@@ -1,4 +1,4 @@
-import type { Item } from '@/types/extras';
+import type { Item } from '@/types/canary/model/reference/items/item-domain';
 
 /**
  * Realistic Item fixtures for stories and tests.

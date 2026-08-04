@@ -414,6 +414,26 @@ export type {
   GeoLocation,
 } from './types/canary/model/general/geo/postal-address';
 
+// Item domain model (mirrored from extras into canary) — `Item` is the row type of
+// ItemGrid, so it must be reachable from this entry point; otherwise consumers cannot
+// type the grid's rows without importing from extras, which is not published.
+export type {
+  Item,
+  ItemStatus,
+  ItemClassification,
+  ItemColor,
+  Supply,
+  Quantity,
+  QuantityUnit,
+  OrderMechanism,
+  CardSize,
+  LabelSize,
+  BreadcrumbSize,
+} from './types/canary/model/reference/items/item-domain';
+export type { Money, Currency } from './types/canary/model/general/money';
+export type { Duration, TimeUnit } from './types/canary/model/general/time/duration';
+export type { Locator } from './types/canary/model/general/locator';
+
 // Molecules: TokenList
 export { TokenList } from './components/canary/molecules/token-list';
 export type { TokenListProps } from './components/canary/molecules/token-list';

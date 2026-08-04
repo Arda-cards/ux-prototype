@@ -4,7 +4,7 @@ import { forwardRef, useMemo, type ReactNode, type Ref, type MutableRefObject } 
 import { Package } from 'lucide-react';
 import type { ColDef, GridApi } from 'ag-grid-community';
 
-import type { Item } from '@/types/extras';
+import type { Item } from '@/types/canary/model/reference/items/item-domain';
 import {
   createEntityDataGrid,
   type EntityDataGridRef,

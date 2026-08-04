@@ -12,6 +12,7 @@ Arda repos, see the `clean-components` skill at
 
 | File | When to read |
 |------|--------------|
+| [component-tracks.md](./component-tracks.md) | Choosing where a component lives, or touching anything under `extras/` — which tracks ship and which do not |
 | [component-abstractions.md](./component-abstractions.md) | Designing or reviewing public component APIs — callback props, controllers, Context providers |
 | [typed-test-mocks.md](./typed-test-mocks.md) | Writing vitest tests that mock interfaces |
 | [image-upload-architecture.md](./image-upload-architecture.md) | Touching ImageUploadDialog, ItemCardEditor, or the ImageUploader interface |

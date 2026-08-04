@@ -58,10 +58,205 @@ describe('ImageDisplay', () => {
     const img = screen.getByRole('img');
     fireEvent.error(img);
 
-    // Initials shown
-    expect(screen.getByText('I')).toBeInTheDocument();
-    // Error badge present
+    // Alert icon, centred in the frame — not initials, which would imply the
+    // item simply has no image.
     expect(screen.getByLabelText('Image failed to load')).toBeInTheDocument();
+    expect(screen.queryByText('I')).not.toBeInTheDocument();
+  });
+
+  // --- Consumer-driven load/error reporting (PDEV-1180) -------------------
+  // The app needs to know an image failed so it can refresh CDN cookies and
+  // retry. ImageDisplay owns the <img>, so the signal has to come from here.
+
+  it('calls onError when the image fails to load', () => {
+    const onError = vi.fn();
+    render(
+      <ImageDisplay
+        {...defaultProps}
+        imageUrl="https://example.com/broken.jpg"
+        onError={onError}
+      />,
+    );
+
+    fireEvent.error(screen.getByRole('img'));
+
+    expect(onError).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls onLoad when the image loads', () => {
+    const onLoad = vi.fn();
+    render(
+      <ImageDisplay {...defaultProps} imageUrl="https://example.com/image.jpg" onLoad={onLoad} />,
+    );
+
+    fireEvent.load(screen.getByRole('img'));
+
+    expect(onLoad).toHaveBeenCalledTimes(1);
+  });
+
+  it('still renders its own error state when onError is provided', () => {
+    // The callback augments the internal state machine, it does not replace it.
+    render(
+      <ImageDisplay
+        {...defaultProps}
+        entityTypeDisplayName="Item"
+        imageUrl="https://example.com/broken.jpg"
+        onError={vi.fn()}
+      />,
+    );
+
+    fireEvent.error(screen.getByRole('img'));
+
+    expect(screen.getByLabelText('Image failed to load')).toBeInTheDocument();
+  });
+
+  it('surfaces errorReason on the error badge for hover', () => {
+    render(
+      <ImageDisplay
+        {...defaultProps}
+        imageUrl="https://example.com/broken.jpg"
+        errorReason="Image access expired — retrying"
+      />,
+    );
+
+    fireEvent.error(screen.getByRole('img'));
+
+    expect(screen.getByLabelText('Image access expired — retrying')).toBeInTheDocument();
+    expect(screen.getByTitle('Image access expired — retrying')).toBeInTheDocument();
+  });
+
+  it('uses no red/destructive treatment for a failed image', () => {
+    // Design note (@nail60): a red badge reads as "action required" for what is
+    // usually a transient, self-recovering failure. The failure is shown as a
+    // muted alert icon in the frame instead.
+    const { container } = render(
+      <ImageDisplay {...defaultProps} imageUrl="https://example.com/broken.jpg" />,
+    );
+
+    fireEvent.error(screen.getByRole('img'));
+
+    expect(container.querySelector('[data-variant="error-overlay"]')).not.toBeInTheDocument();
+    expect(container.querySelector('.bg-destructive')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Image failed to load')).toHaveClass('text-muted-foreground');
+  });
+
+  it('falls back to the generic error label when no errorReason is given', () => {
+    render(<ImageDisplay {...defaultProps} imageUrl="https://example.com/broken.jpg" />);
+
+    fireEvent.error(screen.getByRole('img'));
+
+    expect(screen.getByLabelText('Image failed to load')).toBeInTheDocument();
+  });
+
+  it('does not show an error badge for a null imageUrl even with errorReason set', () => {
+    // "No image" is not a failure — errorReason must not turn it into one.
+    render(<ImageDisplay {...defaultProps} imageUrl={null} errorReason="Image access expired" />);
+
+    expect(screen.queryByLabelText('Image access expired')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Image failed to load')).not.toBeInTheDocument();
+  });
+
+  // --- Pending state (PDEV-1180) -------------------------------------------
+  // "No image" and "the URL cannot be resolved yet" are different situations
+  // that both arrive as a falsy imageUrl. Conflating them makes a not-yet-ready
+  // image look deleted — which, in an editing surface, risks saving it away.
+
+  it('shows the skeleton and requests nothing while pending', () => {
+    render(
+      <ImageDisplay
+        {...defaultProps}
+        imageUrl="https://example.com/image.jpg"
+        imagePending={true}
+      />,
+    );
+
+    expect(document.querySelector('[data-slot="skeleton"]')).toBeInTheDocument();
+    // No <img> means no network request — this is the point of the gate: an
+    // image requested before its CDN cookies exist 403s and nothing retries it.
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  });
+
+  it('does not claim "no image" while pending', () => {
+    // The initials placeholder is the empty state. Showing it for a pending
+    // image tells the user the item has no picture, which is wrong.
+    render(
+      <ImageDisplay {...defaultProps} entityTypeDisplayName="Item" imageUrl={null} imagePending />,
+    );
+
+    expect(screen.queryByText('I')).not.toBeInTheDocument();
+    expect(document.querySelector('[data-slot="skeleton"]')).toBeInTheDocument();
+  });
+
+  it('shows no error badge while pending', () => {
+    render(
+      <ImageDisplay
+        {...defaultProps}
+        imageUrl="https://example.com/broken.jpg"
+        imagePending
+        errorReason="Image access expired"
+      />,
+    );
+
+    expect(screen.queryByLabelText('Image access expired')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Image failed to load')).not.toBeInTheDocument();
+  });
+
+  it('renders normally once pending clears', () => {
+    const { rerender } = render(
+      <ImageDisplay {...defaultProps} imageUrl="https://example.com/image.jpg" imagePending />,
+    );
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+
+    rerender(
+      <ImageDisplay
+        {...defaultProps}
+        imageUrl="https://example.com/image.jpg"
+        imagePending={false}
+      />,
+    );
+
+    expect(screen.getByRole('img')).toBeInTheDocument();
+  });
+
+  it('does not flash the previous error when pending clears on the same url', () => {
+    // The retry sequence PDEV-1337 will drive: an image fails, the consumer
+    // marks it pending while it refreshes credentials, then clears pending with
+    // the *same* imageUrl. `loadState` is only reset by the imageUrl effect, so
+    // without care the stale 'error' survives and the user sees an error badge
+    // during what is actually a retry.
+    const { rerender } = render(
+      <ImageDisplay
+        {...defaultProps}
+        entityTypeDisplayName="Item"
+        imageUrl="https://example.com/broken.jpg"
+        imagePending={false}
+      />,
+    );
+    fireEvent.error(screen.getByRole('img'));
+    expect(screen.getByLabelText('Image failed to load')).toBeInTheDocument();
+
+    // Consumer takes over: pending while credentials are refreshed.
+    rerender(
+      <ImageDisplay
+        {...defaultProps}
+        entityTypeDisplayName="Item"
+        imageUrl="https://example.com/broken.jpg"
+        imagePending={true}
+      />,
+    );
+
+    // Pending clears, same URL — this is a retry, so it must look like loading.
+    rerender(
+      <ImageDisplay
+        {...defaultProps}
+        entityTypeDisplayName="Item"
+        imageUrl="https://example.com/broken.jpg"
+        imagePending={false}
+      />,
+    );
+
+    expect(screen.queryByLabelText('Image failed to load')).not.toBeInTheDocument();
+    expect(document.querySelector('[data-slot="skeleton"]')).toBeInTheDocument();
   });
 
   it('shows initials placeholder when imageUrl is null', () => {

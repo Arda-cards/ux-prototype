@@ -2,8 +2,8 @@
  * GEN-MEDIA-0003::0003.FS — Thumbnail Fallback and Error State
  * Scene: Error Badge
  *
- * Renders ImageDisplay with a broken/unreachable URL, verifying that the
- * initials placeholder is shown with an error badge overlay.
+ * Renders ImageDisplay with a broken/unreachable URL, verifying that a muted
+ * alert icon is shown centred in the frame.
  *
  * Three story variants via createWorkflowStories:
  *   ErrorBadgeInteractive  — live component for manual exploration
@@ -12,6 +12,7 @@
  */
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, waitFor } from 'storybook/test';
+import { TriangleAlert } from 'lucide-react';
 
 import { createWorkflowStories, type WorkflowScene } from '@/use-cases/framework';
 import {
@@ -60,22 +61,20 @@ function ErrorBadgeScene({ sceneIndex }: { sceneIndex: number }) {
         </div>
       );
 
-    // Scene 1: Error state verified — badge + initials
+    // Scene 1: Error state verified — centred alert icon
     case 1:
     default:
       return (
         <div className="flex flex-col items-center gap-4">
           <div className="w-32 h-32 rounded bg-muted border border-border flex items-center justify-center relative overflow-hidden">
-            <span className="text-2xl font-bold text-muted-foreground">I</span>
-            <div
-              className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-destructive flex items-center justify-center"
+            <TriangleAlert
+              role="img"
               aria-label="Image failed to load"
-            >
-              <span className="text-white text-xs font-bold">!</span>
-            </div>
+              className="w-1/3 h-1/3 max-w-8 max-h-8 text-muted-foreground [&>path:first-child]:fill-current [&>path:not(:first-child)]:stroke-background"
+            />
           </div>
           <p className="text-xs text-muted-foreground max-w-48 text-center">
-            &#10003; Error badge visible &#8226; &#10003; Initials placeholder shown &#8226;
+            &#10003; Alert icon centred in the frame &#8226; &#10003; No alarmist red badge &#8226;
             &#10003; Broken image not rendered
           </p>
         </div>
@@ -119,11 +118,13 @@ const {
     goToScene(0);
     await delay();
 
-    // Wait for the error badge to appear after the broken image fails to load
+    // Wait for the alert icon to appear after the broken image fails to load
     await waitFor(
       () => {
-        const badge = document.querySelector('[aria-label="Image failed to load"]') as HTMLElement;
-        expect(badge).toBeVisible();
+        const alertIcon = document.querySelector(
+          '[aria-label="Image failed to load"]',
+        ) as HTMLElement;
+        expect(alertIcon).toBeVisible();
       },
       { timeout: 10000 },
     );
