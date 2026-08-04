@@ -18,7 +18,7 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
-## [7.0.1] - 2026-07-27
+## [7.0.1] - 2026-08-04
 
 ### Fixed
 - **ItemCardEditor title now auto-expands** — the item-name field uses the auto-growing `Textarea` primitive so a long title wraps and grows to stay fully visible instead of being clipped to a single line. Single-line titles keep the same ~2.5rem height; props are unchanged.
