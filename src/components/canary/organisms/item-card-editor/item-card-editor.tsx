@@ -303,7 +303,6 @@ export function ItemCardEditor({
               onChange={(e) => updateField('title', e.target.value)}
               rows={1}
               className="font-extrabold text-lg min-h-10 py-2 leading-snug rounded-lg border-input resize-none"
-              style={{ minHeight: '2.5rem' }}
             />
           </AutoFillField>
           <div className="flex flex-col items-center flex-shrink-0 h-10 justify-between">
