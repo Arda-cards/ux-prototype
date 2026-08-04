@@ -808,7 +808,7 @@ export function createConnectedDataGrid<T extends Record<string, any>>(
                       placeholder={config.searchConfig.placeholder ?? 'Search…'}
                       value={searchInput}
                       onChange={(e) => handleSearchChange(e.target.value)}
-                      className="pl-9 shadow-none flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                      className="pl-9 shadow-none flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base md:text-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                       aria-label={config.searchConfig.placeholder ?? 'Search'}
                     />
                   </div>

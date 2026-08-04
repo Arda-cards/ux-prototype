@@ -334,7 +334,7 @@ export function ItemCardEditor({
                   placeholder={section.qtyPlaceholder}
                   value={fields[section.qtyKey]}
                   onChange={(e) => updateField(section.qtyKey, e.target.value)}
-                  className="text-sm h-9 rounded-lg w-[86px] flex-shrink-0"
+                  className="text-base md:text-sm h-9 rounded-lg w-[86px] flex-shrink-0"
                 />
                 <TypeaheadInput
                   value={fields[section.unitKey]}
