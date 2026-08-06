@@ -131,6 +131,9 @@ export { TooltipProvider } from './components/canary/primitives/tooltip';
 // Primitives: Input
 export { Input } from './components/canary/primitives/input';
 
+// Primitives: Textarea
+export { Textarea } from './components/canary/primitives/textarea';
+
 // Primitives: Select
 export {
   Select as SelectPrimitive,
