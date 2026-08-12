@@ -39,7 +39,12 @@ export { EMPTY_ITEM_CARD_FIELDS, type ItemCardFields };
 
 // --- Interfaces ---
 
-/** Init configuration for ItemCardEditor. */
+/**
+ * Init configuration for ItemCardEditor.
+ *
+ * @deprecated See {@link ItemCardEditor} — moved to arda-frontend-app
+ * (PDEV-1431).
+ */
 export interface ItemCardEditorInitProps {
   /** Image field configuration (accepted formats, aspect ratio, etc.). */
   imageConfig: ImageFieldConfig;
@@ -47,7 +52,12 @@ export interface ItemCardEditorInitProps {
   unitLookup: (search: string) => Promise<TypeaheadOption[]>;
 }
 
-/** Runtime props for ItemCardEditor. */
+/**
+ * Runtime props for ItemCardEditor.
+ *
+ * @deprecated See {@link ItemCardEditor} — moved to arda-frontend-app
+ * (PDEV-1431).
+ */
 export interface ItemCardEditorRuntimeProps {
   /** Current field values. */
   fields: ItemCardFields;
@@ -102,7 +112,12 @@ export interface ItemCardEditorRuntimeProps {
   formInstanceKey?: string | number;
 }
 
-/** Combined props for ItemCardEditor. */
+/**
+ * Combined props for ItemCardEditor.
+ *
+ * @deprecated See {@link ItemCardEditor} — moved to arda-frontend-app
+ * (PDEV-1431).
+ */
 export type ItemCardEditorProps = ItemCardEditorInitProps & ItemCardEditorRuntimeProps;
 
 // --- Upload state (local to the drop-zone slot) ---
@@ -128,6 +143,15 @@ type UploadState = { name: 'Idle' } | { name: 'Uploading' } | { name: 'Error'; m
  * The cropper/editor is reached via the hover overlay on an existing image
  * ("Click to edit/replace"), which opens the `ImageUploadDialog` in its
  * `EditExisting` phase.
+ *
+ * @deprecated This organism is Arda-item-specific — it hard-codes the item
+ * card's title/minimum/order/unit/accent-colour/QR layout and the MIN→ORDER
+ * mirror state machine — so it does not belong in a shared design system.
+ * The maintained copy now lives in `arda-frontend-app` at
+ * `src/components/items/item-card/item-card-editor.tsx`; make item-card
+ * changes there. Retained and exported here only so this repo's existing
+ * `use-cases/reference/items/create-item` stories keep rendering. See
+ * PDEV-1431.
  */
 export function ItemCardEditor({
   imageConfig,

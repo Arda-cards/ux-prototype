@@ -131,6 +131,9 @@ export { TooltipProvider } from './components/canary/primitives/tooltip';
 // Primitives: Input
 export { Input } from './components/canary/primitives/input';
 
+// Primitives: Textarea
+export { Textarea } from './components/canary/primitives/textarea';
+
 // Primitives: Select
 export {
   Select as SelectPrimitive,
@@ -345,6 +348,14 @@ export type { CopyrightAcknowledgmentProps } from './components/canary/atoms/cop
 // Atoms: ColorPicker
 export { ColorPicker, getColorHex } from './components/canary/atoms/color-picker/color-picker';
 export type { ColorPickerProps } from './components/canary/atoms/color-picker/color-picker';
+
+// Atoms: ArdaConfirmDialog
+export { ArdaConfirmDialog } from './components/canary/atoms/confirm-dialog/confirm-dialog';
+export type {
+  ArdaConfirmDialogProps,
+  ArdaConfirmDialogStaticConfig,
+  ArdaConfirmDialogRuntimeConfig,
+} from './components/canary/atoms/confirm-dialog/confirm-dialog';
 
 // Cell atoms: action
 export { ActionCellRenderer } from './components/canary/atoms/grid/action';
@@ -609,6 +620,13 @@ export { createMultiSelectCellEditor } from './components/canary/molecules/typea
 export type { MultiSelectCellEditorConfig } from './components/canary/molecules/typeahead-input/multiselect-cell-editor';
 
 // --- Organisms — ItemCardEditor ---
+//
+// DEPRECATED (PDEV-1431). Item-specific, single-consumer organism; the
+// maintained copy lives in arda-frontend-app at
+// src/components/items/item-card/. Still exported so this repo's
+// use-cases/reference/items/create-item stories keep rendering — do not add
+// new consumers. The `@deprecated` tags are on the declarations themselves
+// (item-card-editor.tsx) so editors surface them at the use site.
 
 export {
   ItemCardEditor,

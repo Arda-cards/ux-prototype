@@ -18,6 +18,15 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [7.1.0] - 2026-08-06
+
+### Added
+- **`ArdaConfirmDialog` is exported from `canary`** — the confirm-dialog atom was already used internally by `ItemCardEditor` but was not reachable from the published entry point, so consumers could not compose it. Exported alongside its `ArdaConfirmDialogProps`, `ArdaConfirmDialogStaticConfig` and `ArdaConfirmDialogRuntimeConfig` types.
+- **The `Textarea` primitive is exported from `canary`** — previously only `InputGroupTextarea` was reachable, so consumers could not use the auto-growing textarea directly even though canary components (`ItemCardEditor`'s title field) already depended on it.
+
+### Deprecated
+- **`ItemCardEditor` and its props types (PDEV-1431)** — the organism is Arda-item-specific (it hard-codes the item card's title/minimum/order/unit/accent-colour/QR layout and the MIN→ORDER mirror state machine) and had exactly one real consumer, so it does not belong in a shared design system. The maintained copy now lives in `arda-frontend-app` at `src/components/items/item-card/`. Still exported and story-covered here so the existing `use-cases/reference/items/create-item` stories keep rendering; no runtime or API change.
+
 ## [7.0.2] - 2026-08-04
 
 ### Fixed
