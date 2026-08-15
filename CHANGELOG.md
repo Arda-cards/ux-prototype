@@ -18,6 +18,12 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [7.2.0] - 2026-08-14
+
+### Added
+- **Thirteen countries added to `CountrySymbol`** — `VN`, `TH`, `ID`, `MY`, `PH`, `TW`, `BD`, `PK`, `KH`, `LK`, `TR`, `IL` and `AE`, with display names, in both the canary and extras type trees. `COUNTRY_SYMBOLS` drives the country picker in the vendor and affiliate grids, so the new entries are selectable wherever an address is edited; `lookupCountries` matches them by name or code like the rest. Vietnam was the reported gap. Mirrors the backend `CountrySymbol` enum.
+- **The extras `Currency` union carries the full supported set again** — it had drifted to nine entries and was missing `RUB`, `BRL`, `ZAR`, `KRW`, `SGD`, `HKD`, `NZD`, `CHF` and `AED`, so money in any of those currencies was untypeable through the extras model. Restored to the backend's full list and extended with the twelve currencies belonging to the countries added above.
+
 ## [7.1.0] - 2026-08-06
 
 ### Added
