@@ -90,7 +90,40 @@ const ORDER_MECHANISMS: { value: OrderMechanism; label: string }[] = [
   { value: 'OTHER', label: 'Other' },
 ];
 
-const CURRENCIES: Currency[] = ['USD', 'CAD', 'EUR', 'GBP', 'JPY', 'AUD', 'CNY', 'INR', 'MXN'];
+// Kept in step with the `Currency` union; this dialog's picker had been stuck on the nine
+// entries the union carried before PDEV-1590 restored the full set.
+const CURRENCIES: Currency[] = [
+  'USD',
+  'CAD',
+  'EUR',
+  'GBP',
+  'JPY',
+  'AUD',
+  'CNY',
+  'INR',
+  'RUB',
+  'BRL',
+  'ZAR',
+  'MXN',
+  'KRW',
+  'SGD',
+  'HKD',
+  'NZD',
+  'CHF',
+  'AED',
+  'VND',
+  'THB',
+  'IDR',
+  'MYR',
+  'PHP',
+  'TWD',
+  'BDT',
+  'PKR',
+  'KHR',
+  'LKR',
+  'TRY',
+  'ILS',
+];
 
 const TIME_UNITS: { value: TimeUnit; label: string }[] = [
   { value: 'HOUR', label: 'Hour' },

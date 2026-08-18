@@ -21,7 +21,20 @@ export type CountrySymbol =
   | 'HK'
   | 'NZ'
   | 'CH'
-  | 'SV';
+  | 'SV'
+  | 'VN'
+  | 'TH'
+  | 'ID'
+  | 'MY'
+  | 'PH'
+  | 'TW'
+  | 'BD'
+  | 'PK'
+  | 'KH'
+  | 'LK'
+  | 'TR'
+  | 'IL'
+  | 'AE';
 
 /** All country symbols, e.g. for a select control. */
 export const COUNTRY_SYMBOLS: readonly CountrySymbol[] = [
@@ -44,6 +57,19 @@ export const COUNTRY_SYMBOLS: readonly CountrySymbol[] = [
   'NZ',
   'CH',
   'SV',
+  'VN',
+  'TH',
+  'ID',
+  'MY',
+  'PH',
+  'TW',
+  'BD',
+  'PK',
+  'KH',
+  'LK',
+  'TR',
+  'IL',
+  'AE',
 ];
 
 /** Display names for the supported country symbols (selects, fuzzy search). */
@@ -67,6 +93,19 @@ export const COUNTRY_NAMES: Readonly<Record<CountrySymbol, string>> = {
   NZ: 'New Zealand',
   CH: 'Switzerland',
   SV: 'El Salvador',
+  VN: 'Vietnam',
+  TH: 'Thailand',
+  ID: 'Indonesia',
+  MY: 'Malaysia',
+  PH: 'Philippines',
+  TW: 'Taiwan',
+  BD: 'Bangladesh',
+  PK: 'Pakistan',
+  KH: 'Cambodia',
+  LK: 'Sri Lanka',
+  TR: 'Turkey',
+  IL: 'Israel',
+  AE: 'United Arab Emirates',
 };
 
 export interface GeoLocation {

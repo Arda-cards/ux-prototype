@@ -18,6 +18,12 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [7.2.0] - 2026-08-14
+
+### Added
+- **Thirteen countries added to `CountrySymbol`** — `VN`, `TH`, `ID`, `MY`, `PH`, `TW`, `BD`, `PK`, `KH`, `LK`, `TR`, `IL` and `AE`, with display names, in both the canary and extras type trees. `COUNTRY_SYMBOLS` drives the country picker in the vendor and affiliate grids, so the new entries are selectable wherever an address is edited; `lookupCountries` matches them by name or code like the rest. Vietnam was the reported gap. Mirrors the backend `CountrySymbol` enum.
+- **The `Currency` union carries the full supported set again, in both the canary and extras type trees** — both had drifted to nine entries, missing `RUB`, `BRL`, `ZAR`, `KRW`, `SGD`, `HKD`, `NZD`, `CHF` and `AED`, so money in any of those was untypeable. The canary copy is the one `canary.ts` re-exports, so the published `Currency` type was the stale one. Restored to the backend's full list and extended with the twelve new currencies the countries above trade in — twelve rather than thirteen because the UAE's `AED` was already supported, having been on the list all along with no country to pair it with. The currency picker in the item-supply dialog was carrying the same nine entries and now offers the full set.
+
 ## [7.1.0] - 2026-08-06
 
 ### Added
