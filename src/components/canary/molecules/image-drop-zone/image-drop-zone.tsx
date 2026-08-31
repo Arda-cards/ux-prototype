@@ -13,6 +13,42 @@ import {
 } from '@/components/canary/atoms/input-group/input-group';
 import type { ImageMimeType, ImageInput } from '@/types/canary/utilities/image-field-config';
 
+// --- File acceptance ---
+
+// Extensions per accepted MIME type, used both for the OS file picker (via
+// useDropzone's `accept` map) and as a fallback when a platform reports an
+// empty or unrecognized MIME type (notably Windows for .heic/.heif files).
+const MIME_EXTENSIONS: Record<ImageMimeType, string[]> = {
+  'image/jpeg': ['.jpg', '.jpeg'],
+  'image/png': ['.png'],
+  'image/webp': ['.webp'],
+  'image/heic': ['.heic'],
+  'image/heif': ['.heif'],
+};
+
+const EXTENSION_TO_MIME: Record<string, ImageMimeType> = Object.entries(MIME_EXTENSIONS).reduce(
+  (acc, [mime, exts]) => {
+    for (const ext of exts) acc[ext] = mime as ImageMimeType;
+    return acc;
+  },
+  {} as Record<string, ImageMimeType>,
+);
+
+/**
+ * A file is accepted when its MIME type is in `acceptedFormats`, or — when
+ * the MIME type is empty/unrecognized — its extension maps to one of them.
+ * Covers platforms (e.g. Windows) that don't register a MIME type for
+ * certain formats such as HEIC/HEIF.
+ */
+function isAcceptedImageFile(file: File, acceptedFormats: ImageMimeType[]): boolean {
+  if (acceptedFormats.includes(file.type as ImageMimeType)) return true;
+  if (file.type && file.type.startsWith('image/')) return false;
+
+  const match = /\.[^.]+$/.exec(file.name.toLowerCase())?.[0];
+  const mimeFromExtension = match ? EXTENSION_TO_MIME[match] : undefined;
+  return mimeFromExtension !== undefined && acceptedFormats.includes(mimeFromExtension);
+}
+
 // --- Interfaces ---
 
 /** Static configuration for ImageDropZone. */
@@ -56,28 +92,42 @@ export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) 
       setError(null);
       dropResultRef.current = 'none';
 
-      if (rejectedFiles.length > 0 && acceptedFiles.length === 0) {
-        // All files rejected — defer to handleDrop for URL fallback or error.
+      // react-dropzone's own extension-aware matcher usually accepts an
+      // empty-MIME file (e.g. HEIC on Windows) already, but re-check any
+      // rejected files in case a platform's matching differs from ours.
+      const recoveredFile =
+        acceptedFiles.length === 0
+          ? rejectedFiles
+              .map((r) => r.file)
+              .find((file) => isAcceptedImageFile(file, acceptedFormats))
+          : undefined;
+
+      const file = acceptedFiles[0] ?? recoveredFile;
+
+      if (file === undefined) {
+        if (rejectedFiles.length > 0) {
+          // All files rejected — defer to handleDrop for URL fallback or error.
+          dropResultRef.current = 'rejected';
+        }
+        return;
+      }
+
+      if (!isAcceptedImageFile(file, acceptedFormats)) {
         dropResultRef.current = 'rejected';
         return;
       }
 
-      if (acceptedFiles.length > 0) {
-        const file = acceptedFiles[0];
-        if (file !== undefined) {
-          if (!acceptedFormats.includes(file.type as ImageMimeType)) {
-            dropResultRef.current = 'rejected';
-            return;
-          }
-          dropResultRef.current = 'handled';
-          setConverting(true);
-          try {
-            const converted = await maybeConvertHeic(file);
-            onInput({ type: 'file', file: converted });
-          } finally {
-            setConverting(false);
-          }
-        }
+      dropResultRef.current = 'handled';
+      setConverting(true);
+      try {
+        const converted = await maybeConvertHeic(file);
+        onInput({ type: 'file', file: converted });
+      } catch {
+        const message = 'Failed to process the dropped image. Please try again.';
+        setError(message);
+        onInput({ type: 'error', message });
+      } finally {
+        setConverting(false);
       }
     },
     [acceptedFormats, onInput],
@@ -86,7 +136,7 @@ export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) 
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,
     accept: acceptedFormats.reduce<Record<string, string[]>>((acc, mime) => {
-      acc[mime] = [];
+      acc[mime] = MIME_EXTENSIONS[mime];
       return acc;
     }, {}),
     noClick: true,
@@ -111,7 +161,7 @@ export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) 
         if (item?.type.startsWith('image/')) {
           const file = item.getAsFile();
           if (file) {
-            if (!acceptedFormats.includes(file.type as ImageMimeType)) {
+            if (!isAcceptedImageFile(file, acceptedFormats)) {
               const formats = acceptedFormats.join(', ');
               setError(`Invalid file type. Accepted formats: ${formats}`);
               onInput({

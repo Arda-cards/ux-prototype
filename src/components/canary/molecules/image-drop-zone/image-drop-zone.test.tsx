@@ -36,6 +36,17 @@ vi.mock('react-dropzone', () => ({
 }));
 // -----------------------------------------------------------------------
 
+// Spy on maybeConvertHeic while keeping its real implementation by default,
+// so the conversion-failure test can override it for a single call.
+vi.mock('@/types/canary/utilities/maybe-convert-heic', async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import('@/types/canary/utilities/maybe-convert-heic')>();
+  return {
+    ...actual,
+    maybeConvertHeic: vi.fn(actual.maybeConvertHeic),
+  };
+});
+
 import { ImageDropZone } from './image-drop-zone';
 
 const ACCEPTED_FORMATS: ImageMimeType[] = ['image/jpeg', 'image/png', 'image/webp'];
@@ -172,5 +183,86 @@ describe('ImageDropZone', () => {
 
     expect(onInput).toHaveBeenCalledWith(expect.objectContaining({ type: 'error' }));
     expect(screen.getByText(/url must start with https:\/\//i)).toBeInTheDocument();
+  });
+
+  describe('HEIC intake', () => {
+    it('converts a HEIC file with a proper MIME type on drop', async () => {
+      const { onInput } = renderDropZone({
+        acceptedFormats: ['image/jpeg', 'image/png', 'image/webp', 'image/heic'],
+      });
+      const file = new File(['heic-bytes'], 'photo.heic', { type: 'image/heic' });
+
+      const onDrop = getOnDrop();
+      expect(onDrop).toBeDefined();
+      await act(async () => {
+        onDrop!([file], []);
+      });
+
+      await waitFor(() => {
+        expect(onInput).toHaveBeenCalledWith({
+          type: 'file',
+          file: expect.objectContaining({ type: 'image/jpeg', name: 'photo.jpg' }),
+        });
+      });
+    });
+
+    // Regression test: Windows does not register a MIME type for .heic
+    // files, so file.type is '' — the drop path must fall back to the
+    // file extension instead of rejecting the file outright.
+    it('converts a HEIC file with an empty MIME type on drop (Windows)', async () => {
+      const { onInput } = renderDropZone({
+        acceptedFormats: ['image/jpeg', 'image/png', 'image/webp', 'image/heic'],
+      });
+      const file = new File(['heic-bytes'], 'photo.heic', { type: '' });
+
+      const onDrop = getOnDrop();
+      expect(onDrop).toBeDefined();
+      await act(async () => {
+        onDrop!([file], []);
+      });
+
+      await waitFor(() => {
+        expect(onInput).toHaveBeenCalledWith({
+          type: 'file',
+          file: expect.objectContaining({ type: 'image/jpeg', name: 'photo.jpg' }),
+        });
+      });
+    });
+
+    it('shows an inline error and emits an error input when conversion fails', async () => {
+      const { maybeConvertHeic } = await import('@/types/canary/utilities/maybe-convert-heic');
+      vi.mocked(maybeConvertHeic).mockRejectedValueOnce(new Error('conversion failed'));
+
+      const { onInput } = renderDropZone({
+        acceptedFormats: ['image/jpeg', 'image/png', 'image/webp', 'image/heic'],
+      });
+      const file = new File(['heic-bytes'], 'photo.heic', { type: 'image/heic' });
+
+      const onDrop = getOnDrop();
+      expect(onDrop).toBeDefined();
+      await act(async () => {
+        onDrop!([file], []);
+      });
+
+      await waitFor(() => {
+        expect(onInput).toHaveBeenCalledWith(expect.objectContaining({ type: 'error' }));
+      });
+      expect(screen.getByText(/failed to process the dropped image/i)).toBeInTheDocument();
+    });
+
+    it('passes a non-HEIC file through untouched', async () => {
+      const { onInput } = renderDropZone();
+      const file = new File(['content'], 'photo.jpg', { type: 'image/jpeg' });
+
+      const onDrop = getOnDrop();
+      expect(onDrop).toBeDefined();
+      await act(async () => {
+        onDrop!([file], []);
+      });
+
+      await waitFor(() => {
+        expect(onInput).toHaveBeenCalledWith({ type: 'file', file });
+      });
+    });
   });
 });
