@@ -52,13 +52,13 @@ function isAcceptedImageFile(file: File, acceptedFormats: ImageMimeType[]): bool
 // --- Interfaces ---
 
 /** Static configuration for ImageDropZone. */
-export interface ImageDropZoneStaticProps {}
-
-/** Init configuration for ImageDropZone. */
-export interface ImageDropZoneInitProps {
-  /** Accepted MIME types for file uploads. */
+export interface ImageDropZoneStaticProps {
+  /** Accepted MIME types for file uploads — a system-defined constraint. */
   acceptedFormats: ImageMimeType[];
 }
+
+/** Init configuration for ImageDropZone. */
+export interface ImageDropZoneInitProps {}
 
 /** Runtime props for ImageDropZone. */
 export interface ImageDropZoneRuntimeProps {
@@ -86,23 +86,37 @@ export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) 
   // Tracks drop outcome — read by handleDrop to decide URL fallback behavior.
   const dropResultRef = React.useRef<string>('none');
 
+  const reportError = React.useCallback(
+    (message: string) => {
+      setError(message);
+      onInput({ type: 'error', message });
+    },
+    [onInput],
+  );
+
+  // Shared tail of every file intake: convert HEIC if needed, then emit.
+  const convertAndEmit = React.useCallback(
+    async (file: File, failureMessage: string) => {
+      setConverting(true);
+      try {
+        const converted = await maybeConvertHeic(file);
+        onInput({ type: 'file', file: converted });
+      } catch {
+        reportError(failureMessage);
+      } finally {
+        setConverting(false);
+      }
+    },
+    [onInput, reportError],
+  );
+
   // --- File drop handler ---
   const onDrop = React.useCallback(
     async (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
       setError(null);
       dropResultRef.current = 'none';
 
-      // react-dropzone's own extension-aware matcher usually accepts an
-      // empty-MIME file (e.g. HEIC on Windows) already, but re-check any
-      // rejected files in case a platform's matching differs from ours.
-      const recoveredFile =
-        acceptedFiles.length === 0
-          ? rejectedFiles
-              .map((r) => r.file)
-              .find((file) => isAcceptedImageFile(file, acceptedFormats))
-          : undefined;
-
-      const file = acceptedFiles[0] ?? recoveredFile;
+      const file = acceptedFiles[0];
 
       if (file === undefined) {
         if (rejectedFiles.length > 0) {
@@ -118,19 +132,9 @@ export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) 
       }
 
       dropResultRef.current = 'handled';
-      setConverting(true);
-      try {
-        const converted = await maybeConvertHeic(file);
-        onInput({ type: 'file', file: converted });
-      } catch {
-        const message = 'Failed to process the dropped image. Please try again.';
-        setError(message);
-        onInput({ type: 'error', message });
-      } finally {
-        setConverting(false);
-      }
+      await convertAndEmit(file, 'Failed to process the dropped image. Please try again.');
     },
-    [acceptedFormats, onInput],
+    [acceptedFormats, convertAndEmit],
   );
 
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
@@ -162,27 +166,10 @@ export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) 
           const file = item.getAsFile();
           if (file) {
             if (!isAcceptedImageFile(file, acceptedFormats)) {
-              const formats = acceptedFormats.join(', ');
-              setError(`Invalid file type. Accepted formats: ${formats}`);
-              onInput({
-                type: 'error',
-                message: `Invalid file type. Accepted formats: ${formats}`,
-              });
+              reportError(`Invalid file type. Accepted formats: ${acceptedFormats.join(', ')}`);
               return;
             }
-            setConverting(true);
-            void maybeConvertHeic(file)
-              .then((converted) => {
-                onInput({ type: 'file', file: converted });
-              })
-              .catch(() => {
-                const message = 'Failed to process image from clipboard. Please try again.';
-                setError(message);
-                onInput({ type: 'error', message });
-              })
-              .finally(() => {
-                setConverting(false);
-              });
+            void convertAndEmit(file, 'Failed to process image from clipboard. Please try again.');
             return;
           }
         }
@@ -207,7 +194,7 @@ export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) 
         setError('No image found in clipboard. Try pasting an image or an HTTPS URL.');
       }
     },
-    [acceptedFormats, onInput],
+    [acceptedFormats, convertAndEmit, reportError, onInput],
   );
 
   // --- URL submission ---
@@ -216,13 +203,11 @@ export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) 
     const trimmed = urlValue.trim();
     if (!trimmed) return;
     if (!trimmed.startsWith('https://')) {
-      const msg = 'URL must start with https://';
-      setError(msg);
-      onInput({ type: 'error', message: msg });
+      reportError('URL must start with https://');
       return;
     }
     onInput({ type: 'url', url: trimmed });
-  }, [urlValue, onInput]);
+  }, [urlValue, onInput, reportError]);
 
   const handleUrlKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
