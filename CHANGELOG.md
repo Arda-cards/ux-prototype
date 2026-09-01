@@ -18,6 +18,12 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [7.2.1] - 2026-08-31
+
+### Fixed
+- **Typeahead dropdowns dismiss when focus leaves the field** — `TypeaheadInput` only closed on an outside mousedown, so blurs that never produce one (programmatic focus moves, clicks on targets that stop event propagation) left the dropdown open. A focusout handler now dismisses and resolves the typed value through the same path as an outside click.
+- **HEIC/HEIF file intake no longer depends solely on MIME type** — `ImageDropZone` and `maybeConvertHeic` gated HEIC handling on `file.type === 'image/heic'`, which some platforms never set (notably Windows, where `.heic` files report an empty MIME type). Both now fall back to the `.heic`/`.heif` file extension, and the `useDropzone` `accept` map now lists real extensions per MIME type so the OS file picker doesn't filter these files out before they reach the component. The drop path also now catches a failed conversion and reports it via an inline error and `onInput({ type: 'error' })`, matching the existing paste-path behavior, instead of leaving an unhandled rejection.
+
 ## [7.2.0] - 2026-08-14
 
 ### Added

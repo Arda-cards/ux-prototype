@@ -13,16 +13,54 @@ import {
 } from '@/components/canary/atoms/input-group/input-group';
 import type { ImageMimeType, ImageInput } from '@/types/canary/utilities/image-field-config';
 
+// --- File acceptance ---
+
+// Extensions per accepted MIME type, used both for the OS file picker (via
+// useDropzone's `accept` map) and as a fallback when a platform reports an
+// empty or unrecognized MIME type (notably Windows for .heic/.heif files).
+const MIME_EXTENSIONS: Record<ImageMimeType, string[]> = {
+  'image/jpeg': ['.jpg', '.jpeg'],
+  'image/png': ['.png'],
+  'image/webp': ['.webp'],
+  'image/heic': ['.heic'],
+  'image/heif': ['.heif'],
+};
+
+const EXTENSION_TO_MIME: Record<string, ImageMimeType> = Object.entries(MIME_EXTENSIONS).reduce(
+  (acc, [mime, exts]) => {
+    for (const ext of exts) acc[ext] = mime as ImageMimeType;
+    return acc;
+  },
+  {} as Record<string, ImageMimeType>,
+);
+
+/**
+ * A file is accepted when its MIME type is in `acceptedFormats`, or — when the
+ * platform provided no usable MIME type (empty, or the generic
+ * application/octet-stream) — its extension maps to one of them. Covers
+ * platforms (e.g. Windows) that don't register a MIME type for HEIC/HEIF. A
+ * concrete but unaccepted MIME type is trusted and rejected, whatever the
+ * filename says.
+ */
+function isAcceptedImageFile(file: File, acceptedFormats: ImageMimeType[]): boolean {
+  if (acceptedFormats.includes(file.type as ImageMimeType)) return true;
+  if (file.type && file.type !== 'application/octet-stream') return false;
+
+  const match = /\.[^.]+$/.exec(file.name.toLowerCase())?.[0];
+  const mimeFromExtension = match ? EXTENSION_TO_MIME[match] : undefined;
+  return mimeFromExtension !== undefined && acceptedFormats.includes(mimeFromExtension);
+}
+
 // --- Interfaces ---
 
 /** Static configuration for ImageDropZone. */
-export interface ImageDropZoneStaticProps {}
-
-/** Init configuration for ImageDropZone. */
-export interface ImageDropZoneInitProps {
-  /** Accepted MIME types for file uploads. */
+export interface ImageDropZoneStaticProps {
+  /** Accepted MIME types for file uploads — a system-defined constraint. */
   acceptedFormats: ImageMimeType[];
 }
+
+/** Init configuration for ImageDropZone. */
+export interface ImageDropZoneInitProps {}
 
 /** Runtime props for ImageDropZone. */
 export interface ImageDropZoneRuntimeProps {
@@ -50,43 +88,61 @@ export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) 
   // Tracks drop outcome — read by handleDrop to decide URL fallback behavior.
   const dropResultRef = React.useRef<string>('none');
 
+  const reportError = React.useCallback(
+    (message: string) => {
+      setError(message);
+      onInput({ type: 'error', message });
+    },
+    [onInput],
+  );
+
+  // Shared tail of every file intake: convert HEIC if needed, then emit.
+  const convertAndEmit = React.useCallback(
+    async (file: File, failureMessage: string) => {
+      setConverting(true);
+      try {
+        const converted = await maybeConvertHeic(file);
+        onInput({ type: 'file', file: converted });
+      } catch {
+        reportError(failureMessage);
+      } finally {
+        setConverting(false);
+      }
+    },
+    [onInput, reportError],
+  );
+
   // --- File drop handler ---
   const onDrop = React.useCallback(
     async (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
       setError(null);
       dropResultRef.current = 'none';
 
-      if (rejectedFiles.length > 0 && acceptedFiles.length === 0) {
-        // All files rejected — defer to handleDrop for URL fallback or error.
+      const file = acceptedFiles[0];
+
+      if (file === undefined) {
+        if (rejectedFiles.length > 0) {
+          // All files rejected — defer to handleDrop for URL fallback or error.
+          dropResultRef.current = 'rejected';
+        }
+        return;
+      }
+
+      if (!isAcceptedImageFile(file, acceptedFormats)) {
         dropResultRef.current = 'rejected';
         return;
       }
 
-      if (acceptedFiles.length > 0) {
-        const file = acceptedFiles[0];
-        if (file !== undefined) {
-          if (!acceptedFormats.includes(file.type as ImageMimeType)) {
-            dropResultRef.current = 'rejected';
-            return;
-          }
-          dropResultRef.current = 'handled';
-          setConverting(true);
-          try {
-            const converted = await maybeConvertHeic(file);
-            onInput({ type: 'file', file: converted });
-          } finally {
-            setConverting(false);
-          }
-        }
-      }
+      dropResultRef.current = 'handled';
+      await convertAndEmit(file, 'Failed to process the dropped image. Please try again.');
     },
-    [acceptedFormats, onInput],
+    [acceptedFormats, convertAndEmit],
   );
 
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,
     accept: acceptedFormats.reduce<Record<string, string[]>>((acc, mime) => {
-      acc[mime] = [];
+      acc[mime] = MIME_EXTENSIONS[mime];
       return acc;
     }, {}),
     noClick: true,
@@ -111,28 +167,11 @@ export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) 
         if (item?.type.startsWith('image/')) {
           const file = item.getAsFile();
           if (file) {
-            if (!acceptedFormats.includes(file.type as ImageMimeType)) {
-              const formats = acceptedFormats.join(', ');
-              setError(`Invalid file type. Accepted formats: ${formats}`);
-              onInput({
-                type: 'error',
-                message: `Invalid file type. Accepted formats: ${formats}`,
-              });
+            if (!isAcceptedImageFile(file, acceptedFormats)) {
+              reportError(`Invalid file type. Accepted formats: ${acceptedFormats.join(', ')}`);
               return;
             }
-            setConverting(true);
-            void maybeConvertHeic(file)
-              .then((converted) => {
-                onInput({ type: 'file', file: converted });
-              })
-              .catch(() => {
-                const message = 'Failed to process image from clipboard. Please try again.';
-                setError(message);
-                onInput({ type: 'error', message });
-              })
-              .finally(() => {
-                setConverting(false);
-              });
+            void convertAndEmit(file, 'Failed to process image from clipboard. Please try again.');
             return;
           }
         }
@@ -157,7 +196,7 @@ export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) 
         setError('No image found in clipboard. Try pasting an image or an HTTPS URL.');
       }
     },
-    [acceptedFormats, onInput],
+    [acceptedFormats, convertAndEmit, reportError, onInput],
   );
 
   // --- URL submission ---
@@ -166,13 +205,11 @@ export function ImageDropZone({ acceptedFormats, onInput }: ImageDropZoneProps) 
     const trimmed = urlValue.trim();
     if (!trimmed) return;
     if (!trimmed.startsWith('https://')) {
-      const msg = 'URL must start with https://';
-      setError(msg);
-      onInput({ type: 'error', message: msg });
+      reportError('URL must start with https://');
       return;
     }
     onInput({ type: 'url', url: trimmed });
-  }, [urlValue, onInput]);
+  }, [urlValue, onInput, reportError]);
 
   const handleUrlKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
