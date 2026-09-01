@@ -186,6 +186,21 @@ describe('ImageDropZone', () => {
   });
 
   describe('HEIC intake', () => {
+    it('rejects a non-image MIME type despite an accepted extension', async () => {
+      const { onInput } = renderDropZone({
+        acceptedFormats: ['image/jpeg', 'image/png', 'image/webp', 'image/heic'],
+      });
+      const file = new File(['pdf-bytes'], 'document.jpg', { type: 'application/pdf' });
+
+      const onDrop = getOnDrop();
+      expect(onDrop).toBeDefined();
+      await act(async () => {
+        onDrop!([file], []);
+      });
+
+      expect(onInput).not.toHaveBeenCalled();
+    });
+
     it('converts a HEIC file with a proper MIME type on drop', async () => {
       const { onInput } = renderDropZone({
         acceptedFormats: ['image/jpeg', 'image/png', 'image/webp', 'image/heic'],

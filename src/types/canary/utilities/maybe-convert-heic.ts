@@ -4,12 +4,15 @@ const HEIC_TYPES: string[] = ['image/heic', 'image/heif'];
 const HEIC_EXTENSION = /\.hei[cf]$/i;
 
 /**
- * True when a file is HEIC/HEIF, judged by MIME type or file extension.
- * Some platforms (notably Windows) report an empty or generic MIME type
- * for .heic/.heif files, so the extension is checked as a fallback.
+ * True when a file is HEIC/HEIF, judged by MIME type — or by extension only
+ * when the platform provided no usable MIME type (empty, or the generic
+ * application/octet-stream, as on Windows). A concrete non-HEIC type is
+ * trusted, so a renamed JPEG is not sent through conversion.
  */
 function isHeicFile(file: File): boolean {
-  return HEIC_TYPES.includes(file.type) || HEIC_EXTENSION.test(file.name);
+  if (HEIC_TYPES.includes(file.type)) return true;
+  if (file.type && file.type !== 'application/octet-stream') return false;
+  return HEIC_EXTENSION.test(file.name);
 }
 
 /** Convert HEIC/HEIF files to JPEG so browsers can render them. */

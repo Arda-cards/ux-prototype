@@ -35,14 +35,16 @@ const EXTENSION_TO_MIME: Record<string, ImageMimeType> = Object.entries(MIME_EXT
 );
 
 /**
- * A file is accepted when its MIME type is in `acceptedFormats`, or — when
- * the MIME type is empty/unrecognized — its extension maps to one of them.
- * Covers platforms (e.g. Windows) that don't register a MIME type for
- * certain formats such as HEIC/HEIF.
+ * A file is accepted when its MIME type is in `acceptedFormats`, or — when the
+ * platform provided no usable MIME type (empty, or the generic
+ * application/octet-stream) — its extension maps to one of them. Covers
+ * platforms (e.g. Windows) that don't register a MIME type for HEIC/HEIF. A
+ * concrete but unaccepted MIME type is trusted and rejected, whatever the
+ * filename says.
  */
 function isAcceptedImageFile(file: File, acceptedFormats: ImageMimeType[]): boolean {
   if (acceptedFormats.includes(file.type as ImageMimeType)) return true;
-  if (file.type && file.type.startsWith('image/')) return false;
+  if (file.type && file.type !== 'application/octet-stream') return false;
 
   const match = /\.[^.]+$/.exec(file.name.toLowerCase())?.[0];
   const mimeFromExtension = match ? EXTENSION_TO_MIME[match] : undefined;

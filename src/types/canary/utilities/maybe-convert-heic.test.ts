@@ -29,6 +29,23 @@ describe('maybeConvertHeic', () => {
     expect(result.name).toBe('photo.jpg');
   });
 
+  it('converts a .heic file with a generic octet-stream MIME type by extension', async () => {
+    const file = new File(['heic-bytes'], 'photo.heic', { type: 'application/octet-stream' });
+
+    const result = await maybeConvertHeic(file);
+
+    expect(result.type).toBe('image/jpeg');
+    expect(result.name).toBe('photo.jpg');
+  });
+
+  it('trusts a concrete non-HEIC MIME type over a .heic filename', async () => {
+    const file = new File(['jpeg-bytes'], 'renamed.heic', { type: 'image/jpeg' });
+
+    const result = await maybeConvertHeic(file);
+
+    expect(result).toBe(file);
+  });
+
   it('passes non-HEIC files through unchanged', async () => {
     const file = new File(['jpeg-bytes'], 'photo.jpg', { type: 'image/jpeg' });
 

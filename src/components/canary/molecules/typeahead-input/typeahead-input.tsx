@@ -241,17 +241,10 @@ export function TypeaheadInput({
     }
   };
 
-  // Mirrors `open` so same-task double fires (outside mousedown + the focusout
-  // it causes) resolve the dismissal exactly once.
-  const openRef = React.useRef(open);
-  openRef.current = open;
-
   // Dismiss the dropdown and resolve the typed text, exactly as a click
-  // outside would. Shared by the outside-click listener and the focusout
-  // handler so every way of leaving the field behaves the same.
+  // outside would. Shared by the outside-click and focus-moved listeners so
+  // every way of leaving the field behaves the same.
   const resolveDismiss = () => {
-    if (!openRef.current) return;
-    openRef.current = false;
     setOpen(false);
     if (clearOnFocus) {
       // clearOnFocus: blur without selecting → restore the original value
@@ -292,36 +285,34 @@ export function TypeaheadInput({
     }
   };
 
-  // Dismiss when focus leaves the field entirely. Tab is handled in keydown;
-  // this covers programmatic focus moves and clicks whose mousedown never
-  // reaches the document listener (targets that stopPropagation). Deferred a
-  // frame so focus has landed before deciding it went outside.
-  const handleFocusOut = () => {
-    if (!openRef.current) return;
-    requestAnimationFrame(() => {
-      const active = document.activeElement;
-      if (wrapperRef.current?.contains(active) || popoverRef.current?.contains(active)) return;
-      resolveDismiss();
-    });
-  };
-
-  // Close on outside click. Only subscribed while open; re-subscribing when a
-  // dep (e.g. inputValue) changes is just a cheap listener swap.
+  // Close when the interaction leaves the field: an outside mousedown, or
+  // focus landing outside (programmatic moves, and clicks whose mousedown
+  // never bubbles to the document). Only subscribed while open; the
+  // `resolved` flag lives with the subscription so one interaction firing
+  // both events resolves the dismissal exactly once.
   React.useEffect(() => {
     if (!open) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as Node;
+    let resolved = false;
+    const dismissIfOutside = (target: Node | null) => {
+      if (resolved || !target) return;
       // Check both the wrapper and the portaled Radix popover content.
       if (
         wrapperRef.current &&
         !wrapperRef.current.contains(target) &&
         !popoverRef.current?.contains(target)
       ) {
+        resolved = true;
         resolveDismiss();
       }
     };
+    const handleClickOutside = (e: MouseEvent) => dismissIfOutside(e.target as Node);
+    const handleFocusIn = (e: FocusEvent) => dismissIfOutside(e.target as Node);
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('focusin', handleFocusIn);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('focusin', handleFocusIn);
+    };
     // resolveDismiss is a plain per-render function; the values it
     // closes over are covered by the deps below.
   }, [
@@ -558,7 +549,6 @@ export function TypeaheadInput({
       data-disabled={disabled || undefined}
       data-cell-editor={cellEditorMode || undefined}
       {...rest}
-      onBlur={handleFocusOut}
     >
       {/* Live region for screen readers */}
       <div className="sr-only" aria-live="polite" aria-atomic="true">
