@@ -241,6 +241,70 @@ export function TypeaheadInput({
     }
   };
 
+  // Mirrors `open` so same-task double fires (outside mousedown + the focusout
+  // it causes) resolve the dismissal exactly once.
+  const openRef = React.useRef(open);
+  openRef.current = open;
+
+  // Dismiss the dropdown and resolve the typed text, exactly as a click
+  // outside would. Shared by the outside-click listener and the focusout
+  // handler so every way of leaving the field behaves the same.
+  const resolveDismiss = () => {
+    if (!openRef.current) return;
+    openRef.current = false;
+    setOpen(false);
+    if (clearOnFocus) {
+      // clearOnFocus: blur without selecting → restore the original value
+      setInputValue(value);
+    } else if (cellEditorMode) {
+      // Cell editor: accept typed value on blur
+      const trimmed = inputValue.trim();
+      if (trimmed && trimmed !== value) {
+        onValueChange(trimmed);
+      }
+    } else {
+      // Form mode: resolve the typed text to a concrete value on blur.
+      //   perfect match (label or value) → select it, even when create is on
+      //   else, create allowed           → commit the typed text
+      //   else, options present          → select the highlighted row
+      //                                     (falls back to the first result)
+      //   else                           → revert to the confirmed value
+      const trimmed = inputValue.trim();
+      const perfect = options.find(
+        (o) =>
+          o.value.toLowerCase() === trimmed.toLowerCase() ||
+          o.label.toLowerCase() === trimmed.toLowerCase(),
+      );
+      if (!trimmed) {
+        if (inputValue !== value) setInputValue(value);
+      } else if (perfect) {
+        selectOption(perfect);
+      } else if (allowCreate) {
+        createValue(trimmed);
+      } else if (options.length > 0) {
+        const hi = highlightedIndex;
+        selectOption(
+          (hi >= 0 && hi < options.length ? options[hi] : options[0]) as TypeaheadOption,
+        );
+      } else {
+        setInputValue(value);
+      }
+    }
+  };
+
+  // Dismiss when focus leaves the field entirely. Tab is handled in keydown;
+  // this covers programmatic focus moves and clicks whose mousedown never
+  // reaches the document listener (targets that stopPropagation). Deferred a
+  // frame so focus has landed before deciding it went outside.
+  const handleFocusOut = () => {
+    if (!openRef.current) return;
+    requestAnimationFrame(() => {
+      const active = document.activeElement;
+      if (wrapperRef.current?.contains(active) || popoverRef.current?.contains(active)) return;
+      resolveDismiss();
+    });
+  };
+
   // Close on outside click. Only subscribed while open; re-subscribing when a
   // dep (e.g. inputValue) changes is just a cheap listener swap.
   React.useEffect(() => {
@@ -253,50 +317,13 @@ export function TypeaheadInput({
         !wrapperRef.current.contains(target) &&
         !popoverRef.current?.contains(target)
       ) {
-        setOpen(false);
-        if (clearOnFocus) {
-          // clearOnFocus: blur without selecting → restore the original value
-          setInputValue(value);
-        } else if (cellEditorMode) {
-          // Cell editor: accept typed value on blur
-          const trimmed = inputValue.trim();
-          if (trimmed && trimmed !== value) {
-            onValueChange(trimmed);
-          }
-        } else {
-          // Form mode: resolve the typed text to a concrete value on blur.
-          //   perfect match (label or value) → select it, even when create is on
-          //   else, create allowed           → commit the typed text
-          //   else, options present          → select the highlighted row
-          //                                     (falls back to the first result)
-          //   else                           → revert to the confirmed value
-          const trimmed = inputValue.trim();
-          const perfect = options.find(
-            (o) =>
-              o.value.toLowerCase() === trimmed.toLowerCase() ||
-              o.label.toLowerCase() === trimmed.toLowerCase(),
-          );
-          if (!trimmed) {
-            if (inputValue !== value) setInputValue(value);
-          } else if (perfect) {
-            selectOption(perfect);
-          } else if (allowCreate) {
-            createValue(trimmed);
-          } else if (options.length > 0) {
-            const hi = highlightedIndex;
-            selectOption(
-              (hi >= 0 && hi < options.length ? options[hi] : options[0]) as TypeaheadOption,
-            );
-          } else {
-            setInputValue(value);
-          }
-        }
+        resolveDismiss();
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-    // selectOption/createValue are plain per-render functions; the values they
-    // close over are covered by the deps below.
+    // resolveDismiss is a plain per-render function; the values it
+    // closes over are covered by the deps below.
   }, [
     open,
     cellEditorMode,
@@ -531,6 +558,7 @@ export function TypeaheadInput({
       data-disabled={disabled || undefined}
       data-cell-editor={cellEditorMode || undefined}
       {...rest}
+      onBlur={handleFocusOut}
     >
       {/* Live region for screen readers */}
       <div className="sr-only" aria-live="polite" aria-atomic="true">

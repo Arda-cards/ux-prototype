@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeAll } from 'vitest';
 import { useState } from 'react';
@@ -355,6 +355,48 @@ describe('TypeaheadInput', () => {
     await user.type(input, 'Kiwi');
     await user.click(screen.getByText('outside'));
     expect(onValueChange).toHaveBeenCalledWith('Kiwi');
+  });
+
+  describe('focus leaving the field', () => {
+    it('dismisses the dropdown and resolves the value when focus moves outside without a click', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      render(
+        <>
+          <Harness onValueChange={onValueChange} />
+          <button type="button">elsewhere</button>
+        </>,
+      );
+      const input = screen.getByRole('combobox') as HTMLInputElement;
+      await user.click(input);
+      await user.keyboard('Apple');
+      expect(await screen.findByText('Apple')).toBeInTheDocument();
+
+      // Move focus programmatically — no mousedown reaches the document
+      // listener, so only the focusout path can dismiss.
+      act(() => {
+        screen.getByText('elsewhere').focus();
+      });
+
+      await waitFor(() => expect(screen.queryByRole('listbox')).not.toBeInTheDocument());
+      expect(onValueChange).toHaveBeenCalledWith('Apple');
+    });
+
+    it('does not dismiss when focus moves into the dropdown', async () => {
+      const user = userEvent.setup();
+      render(<Harness />);
+      const input = screen.getByRole('combobox') as HTMLInputElement;
+      await user.click(input);
+      await user.keyboard('a');
+      const listbox = await screen.findByRole('listbox');
+
+      act(() => {
+        (listbox.querySelector('[role="option"], button') as HTMLElement | null)?.focus();
+      });
+
+      await new Promise((r) => requestAnimationFrame(() => r(undefined)));
+      expect(screen.getByRole('listbox')).toBeInTheDocument();
+    });
   });
 
   describe('clearOnFocus', () => {
