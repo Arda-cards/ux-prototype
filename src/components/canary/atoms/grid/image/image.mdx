@@ -7,7 +7,7 @@ import * as Stories from './image.stories';
 # Image Cell
 
 AG Grid cell renderer and editor for image columns. The display atom wraps
-`ImageDisplay` inside `ImageHoverPreview` to provide a 256&#215;256 popover on hover.
+`ImageDisplay` inside `ImagePreviewPopover` to provide a 256&#215;256 popover on click.
 Double-click opens `ImageUploadDialog` for uploading or changing the image.
 
 **Grid Atom** &#8212; Display + Editor pair pattern.
@@ -18,11 +18,11 @@ Double-click opens `ImageUploadDialog` for uploading or changing the image.
 
 ### ImageCellDisplay
 
-`ImageCellDisplay` is a pure cell renderer. It renders a 28&#215;28px thumbnail (`w-7 h-7`) by composing `ImageHoverPreview` (outer, for the hover popover) and `ImageDisplay` (inner, read-only). The `ImageDisplay` inside the cell renderer is always instantiated without `onImageChange` or `config` &#8212; it is a passive display only. No action icons (eye, trash, pencil) appear inside the cell.
+`ImageCellDisplay` is a pure cell renderer. It renders a 28&#215;28px thumbnail (`w-7 h-7`) by composing `ImagePreviewPopover` (outer, for the click-to-open preview) and `ImageDisplay` (inner, read-only). The `ImageDisplay` inside the cell renderer is always instantiated without `onImageChange` or `config` &#8212; it is a passive display only. No action icons (eye, trash, pencil) appear inside the cell.
 
 Action icons are deliberately absent from the cell renderer. Their presence would intercept mouse events and prevent AG Grid's native double-click cell editing from triggering. Removing them ensures that a double-click on any part of the cell reaches the grid and opens the cell editor.
 
-The hover popover (256&#215;256px) is provided by the outer `ImageHoverPreview` wrapper. The 500ms hover delay and null suppression behaviors described in the `ImageHoverPreview` documentation apply here without modification.
+The preview popover (256&#215;256px) is provided by the outer `ImagePreviewPopover` wrapper. The click interaction and null suppression behaviors described in the `ImagePreviewPopover` documentation apply here without modification. The thumbnail is a button that stops single-click propagation (so opening the preview never selects the row) while double-click still bubbles to the grid editor.
 
 ### ImageCellEditor
 
@@ -63,12 +63,12 @@ Four visual states in a single grid: loaded image, alternate image, null (no ima
 
 ## Interactions
 
-### Hover Preview
+### Click Preview
 
-After hovering over an image cell for ~500 ms, a 256&#215;256 popover appears showing
-the full `ImageDisplay`. Moving the pointer away closes the popover immediately.
+Click an image cell thumbnail to open a 256&#215;256 popover showing the full
+`ImageDisplay`. Click again, click outside, or press Escape to close it.
 
-<Canvas of={Stories.HoverPreview} />
+<Canvas of={Stories.ClickPreview} />
 
 ### Double-Click to Edit
 

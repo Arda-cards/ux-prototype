@@ -70,15 +70,15 @@ export const GridDisplay: Story = {
 };
 
 // ============================================================================
-// 3. HoverPreview — hover instruction
+// 3. ClickPreview — click instruction
 // ============================================================================
 
-export const HoverPreview: Story = {
+export const ClickPreview: Story = {
   render: () => (
     <div>
       <p className="mb-3 text-sm text-muted-foreground">
-        Hover over an image cell and wait ~500ms to see the large preview popover. Moving the mouse
-        away immediately closes the popover.
+        Click an image cell thumbnail to open the large preview popover. Click again, click outside,
+        or press Escape to close it.
       </p>
       <MiniGrid rows={MOCK_ITEMS.slice(0, 2)} height={150} />
     </div>

@@ -1,14 +1,14 @@
 /**
  * GEN-MEDIA-0003::0001.UC — View Image in Grid
- * Scene: Hover Preview
+ * Scene: Click Preview
  *
- * Same grid setup as Grid Thumbnails. The play function hovers over an image
- * cell and verifies that the ImageHoverPreview popover appears.
+ * Same grid setup as Grid Thumbnails. The play function clicks an image
+ * cell and verifies that the ImagePreviewPopover appears.
  *
  * Three story variants via createWorkflowStories:
- *   HoverPreviewInteractive  — live grid for manual exploration
- *   HoverPreviewStepwise     — static snapshots with scene annotations
- *   HoverPreviewAutomated    — automated play driving the live grid
+ *   ClickPreviewInteractive  — live grid for manual exploration
+ *   ClickPreviewStepwise     — static snapshots with scene annotations
+ *   ClickPreviewAutomated    — automated play driving the live grid
  */
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { ColDef } from 'ag-grid-community';
@@ -46,8 +46,8 @@ const columnDefs: ColDef<MockItem>[] = [
 // ---------------------------------------------------------------------------
 
 const { Component: ItemThumbnailGrid } = createEntityDataGrid<MockItem>({
-  displayName: 'Item Thumbnail Grid (Hover)',
-  persistenceKeyPrefix: 'gen-media-0003-0001-hover',
+  displayName: 'Item Thumbnail Grid (Click Preview)',
+  persistenceKeyPrefix: 'gen-media-0003-0001-click-preview',
   columnDefs,
   defaultColDef: { sortable: true, resizable: true },
   getEntityId: (item) => item.id,
@@ -58,13 +58,14 @@ const { Component: ItemThumbnailGrid } = createEntityDataGrid<MockItem>({
 // Live component — used by Interactive and Automated modes
 // ---------------------------------------------------------------------------
 
-function HoverPreviewLive() {
+function ClickPreviewLive() {
   return (
     <div className="p-6 max-w-3xl">
-      <h1 className="text-xl font-semibold tracking-tight mb-1">GEN-MEDIA-0003 — Hover Preview</h1>
+      <h1 className="text-xl font-semibold tracking-tight mb-1">GEN-MEDIA-0003 — Click Preview</h1>
       <p className="text-sm text-muted-foreground mb-4">
-        Hover over an image cell and wait ~500ms to see the large preview popover. Moving the mouse
-        away immediately closes the popover. The first two rows have valid images; row 3 is null.
+        Click an image cell to open the large preview popover. Click the thumbnail again, click
+        outside, or press Escape to close it. The first two rows have valid images; row 3 is null
+        and has no preview to open.
       </p>
       <ItemThumbnailGrid data={MOCK_ITEMS.slice(0, 3)} />
     </div>
@@ -75,17 +76,17 @@ function HoverPreviewLive() {
 // Static scene renderer — used by Stepwise mode
 // ---------------------------------------------------------------------------
 
-function HoverPreviewScene({ sceneIndex }: { sceneIndex: number }) {
+function ClickPreviewScene({ sceneIndex }: { sceneIndex: number }) {
   switch (sceneIndex) {
     // Scene 0: Grid visible
     case 0:
       return (
         <div className="p-6 max-w-3xl">
           <h1 className="text-xl font-semibold tracking-tight mb-1">
-            GEN-MEDIA-0003 — Hover Preview
+            GEN-MEDIA-0003 — Click Preview
           </h1>
           <p className="text-sm text-muted-foreground mb-4">
-            The grid is rendered. Hover over an image cell to trigger the preview popover.
+            The grid is rendered. Click an image cell to open the preview popover.
           </p>
           <div className="border border-border rounded overflow-hidden">
             <div className="grid grid-cols-4 bg-muted text-xs font-semibold px-3 py-2 border-b border-border">
@@ -107,43 +108,16 @@ function HoverPreviewScene({ sceneIndex }: { sceneIndex: number }) {
         </div>
       );
 
-    // Scene 1: Hover over cell
+    // Scene 1: Popover open after click
     case 1:
-      return (
-        <div className="p-6 max-w-3xl">
-          <h1 className="text-xl font-semibold tracking-tight mb-1">
-            GEN-MEDIA-0003 — Hover Preview
-          </h1>
-          <p className="text-sm text-muted-foreground mb-4">
-            Mouse is hovering over the first image cell. The hover delay (~500ms) is counting down.
-          </p>
-          <div className="border border-border rounded overflow-hidden">
-            <div className="grid grid-cols-4 bg-muted text-xs font-semibold px-3 py-2 border-b border-border">
-              <span>Image</span>
-              <span className="col-span-2">Name</span>
-              <span>SKU</span>
-            </div>
-            <div className="grid grid-cols-4 items-center px-3 py-2 border-b border-border text-sm bg-accent/30">
-              <div className="w-8 h-8 rounded bg-primary/20 border-2 border-primary" />
-              <span className="col-span-2 font-medium">Hex Bolt M10x30</span>
-              <span className="font-mono text-xs text-muted-foreground">HB-M10-030</span>
-            </div>
-          </div>
-          <p className="text-xs text-muted-foreground mt-2">
-            Hovering&#8230; popover opens after ~500ms.
-          </p>
-        </div>
-      );
-
-    // Scene 2: Popover appears
-    case 2:
       return (
         <div className="p-6 max-w-3xl relative">
           <h1 className="text-xl font-semibold tracking-tight mb-1">
-            GEN-MEDIA-0003 — Hover Preview
+            GEN-MEDIA-0003 — Click Preview
           </h1>
           <p className="text-sm text-muted-foreground mb-4">
-            The ImageHoverPreview popover is visible, showing the full-size preview image.
+            The first image cell was clicked. The ImagePreviewPopover is visible, showing the
+            full-size preview image.
           </p>
           <div className="border border-border rounded overflow-hidden mb-4">
             <div className="grid grid-cols-4 bg-muted text-xs font-semibold px-3 py-2 border-b border-border">
@@ -165,15 +139,16 @@ function HoverPreviewScene({ sceneIndex }: { sceneIndex: number }) {
         </div>
       );
 
-    // Scene 3: Unhover
-    case 3:
+    // Scene 2: Dismissal
+    case 2:
       return (
         <div className="p-6 max-w-3xl">
           <h1 className="text-xl font-semibold tracking-tight mb-1">
-            GEN-MEDIA-0003 — Hover Preview
+            GEN-MEDIA-0003 — Click Preview
           </h1>
           <p className="text-sm text-muted-foreground mb-4">
-            Mouse moved away from the image cell. Popover is closing.
+            A click outside the popover (or Escape, or a second click on the thumbnail) dismisses
+            it.
           </p>
           <div className="border border-border rounded overflow-hidden">
             <div className="grid grid-cols-4 bg-muted text-xs font-semibold px-3 py-2 border-b border-border">
@@ -190,13 +165,13 @@ function HoverPreviewScene({ sceneIndex }: { sceneIndex: number }) {
         </div>
       );
 
-    // Scene 4: Popover gone
-    case 4:
+    // Scene 3: Popover gone
+    case 3:
     default:
       return (
         <div className="p-6 max-w-3xl">
           <h1 className="text-xl font-semibold tracking-tight mb-1">
-            GEN-MEDIA-0003 — Hover Preview
+            GEN-MEDIA-0003 — Click Preview
           </h1>
           <p className="text-sm text-muted-foreground mb-4">
             Popover has closed. The grid is back to its default state.
@@ -219,7 +194,7 @@ function HoverPreviewScene({ sceneIndex }: { sceneIndex: number }) {
             ))}
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            &#10003; Popover dismissed on unhover.
+            &#10003; Popover dismissed on outside click.
           </p>
         </div>
       );
@@ -232,34 +207,28 @@ function HoverPreviewScene({ sceneIndex }: { sceneIndex: number }) {
 
 const scenes: WorkflowScene[] = [
   {
-    title: 'Scene 1 of 5 \u2014 Grid Visible',
+    title: 'Scene 1 of 4 — Grid Visible',
     description:
-      'The grid is rendered with three rows (rows 1\u20132 have valid images, row 3 has no image). All image cells are visible.',
-    interaction: 'Hover over the first image cell thumbnail to trigger the preview.',
+      'The grid is rendered with three rows (rows 1–2 have valid images, row 3 has no image). All image cells are visible.',
+    interaction: 'Click the first image cell thumbnail to open the preview.',
   },
   {
-    title: 'Scene 2 of 5 \u2014 Hover Over Cell',
+    title: 'Scene 2 of 4 — Popover Appears',
     description:
-      'The mouse is hovering over the first image cell. ImageHoverPreview uses a ~500ms delay before the popover opens, so the preview is not yet visible.',
-    interaction: 'Wait ~500ms for the popover to appear.',
+      'The thumbnail was clicked and the ImagePreviewPopover opened immediately — no hover delay. It renders in a Radix portal outside the canvas element, showing the full-size image preview.',
+    interaction: 'Click outside the popover (or press Escape) to close it.',
   },
   {
-    title: 'Scene 3 of 5 \u2014 Popover Appears',
+    title: 'Scene 3 of 4 — Dismissal',
     description:
-      'The ImageHoverPreview popover is now visible. It renders in a Radix portal outside the canvas element, showing the full-size image preview.',
-    interaction: 'Move the mouse away from the cell to close the popover.',
-  },
-  {
-    title: 'Scene 4 of 5 \u2014 Unhover',
-    description:
-      'The mouse has left the image cell area. The popover begins closing immediately on mouse-leave.',
+      'A click outside the popover, a second click on the thumbnail, or Escape dismisses the preview.',
     interaction: 'Wait for the popover to fully dismiss.',
   },
   {
-    title: 'Scene 5 of 5 \u2014 Popover Gone',
+    title: 'Scene 4 of 4 — Popover Gone',
     description:
       'The popover has closed. The grid is back to its default state. The data-state becomes "closed" or the popover element is removed from the DOM.',
-    interaction: 'The workflow is complete. Hover again to repeat.',
+    interaction: 'The workflow is complete. Click a thumbnail again to repeat.',
   },
 ];
 
@@ -268,13 +237,13 @@ const scenes: WorkflowScene[] = [
 // ---------------------------------------------------------------------------
 
 const {
-  Interactive: HoverPreviewInteractiveStory,
-  Stepwise: HoverPreviewStepwiseStory,
-  Automated: HoverPreviewAutomatedStory,
+  Interactive: ClickPreviewInteractiveStory,
+  Stepwise: ClickPreviewStepwiseStory,
+  Automated: ClickPreviewAutomatedStory,
 } = createWorkflowStories({
   scenes,
-  renderScene: (i) => <HoverPreviewScene sceneIndex={i} />,
-  renderLive: () => <HoverPreviewLive />,
+  renderScene: (i) => <ClickPreviewScene sceneIndex={i} />,
+  renderLive: () => <ClickPreviewLive />,
   delayMs: 1500,
   play: async ({ goToScene, delay }) => {
     for (let i = 0; i < scenes.length; i++) {
@@ -290,7 +259,7 @@ const {
 
 const meta: Meta = {
   title:
-    'Use Cases/General Behaviors/Entity Media/GEN-MEDIA-0003 View Entity Image/0001 View in Grid/Hover Preview',
+    'Use Cases/General Behaviors/Entity Media/GEN-MEDIA-0003 View Entity Image/0001 View in Grid/Click Preview',
   parameters: {
     layout: 'fullscreen',
   },
@@ -302,17 +271,17 @@ export default meta;
 // Exports
 // ---------------------------------------------------------------------------
 
-export const HoverPreviewInteractive: StoryObj = {
-  ...HoverPreviewInteractiveStory,
-  name: 'Hover Preview (Interactive)',
+export const ClickPreviewInteractive: StoryObj = {
+  ...ClickPreviewInteractiveStory,
+  name: 'Click Preview (Interactive)',
 };
 
-export const HoverPreviewStepwise: StoryObj = {
-  ...HoverPreviewStepwiseStory,
-  name: 'Hover Preview (Stepwise)',
+export const ClickPreviewStepwise: StoryObj = {
+  ...ClickPreviewStepwiseStory,
+  name: 'Click Preview (Stepwise)',
 };
 
-export const HoverPreviewAutomated: StoryObj = {
-  ...HoverPreviewAutomatedStory,
-  name: 'Hover Preview (Automated)',
+export const ClickPreviewAutomated: StoryObj = {
+  ...ClickPreviewAutomatedStory,
+  name: 'Click Preview (Automated)',
 };

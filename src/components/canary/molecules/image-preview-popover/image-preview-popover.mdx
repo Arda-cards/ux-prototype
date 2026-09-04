@@ -1,0 +1,142 @@
+{/* image-preview-popover.mdx */}
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as Stories from './image-preview-popover.stories';
+
+<Meta of={Stories} />
+
+# ImagePreviewPopover
+
+Click-to-open popover that shows a larger image preview. Wraps a trigger element
+&#8212; typically a thumbnail &#8212; and displays an `ImageDisplay` at ~256&#215;256 inside
+a `Popover`.
+
+Replaces the hover-to-open `ImageHoverPreview`: click works on touch devices, never
+opens accidentally while the pointer crosses a grid, and only does work the user asked for.
+
+**Molecule** &#8212; Canary | Import: `@/components/canary/molecules/image-preview-popover`
+
+---
+
+## Playground
+
+Adjust `imageUrl`, `entityTypeDisplayName`, and `propertyDisplayName` in the Controls panel.
+Click the thumbnail to open the preview.
+
+<Canvas of={Stories.ClickToPreview} />
+
+---
+
+## Baked-In Behaviors
+
+### Click Interaction
+
+The trigger element is rendered through `PopoverTrigger asChild`, so Radix wires the
+open/close toggle onto it directly: click (or Enter/Space on a `<button>` trigger) toggles
+the preview, and clicking outside or pressing Escape dismisses it. There are no hover
+timers &#8212; nothing opens until the user asks.
+
+Pass a `<button>` as the trigger wherever possible so the preview is keyboard-reachable;
+`asChild` requires a single element that accepts a ref and a click handler.
+
+### Popover Dimensions and Position
+
+The popover content is sized to 256&#215;256 pixels (`w-64 h-64`). It is positioned with
+`sideOffset={-4}`, overlapping the trigger by 4 pixels so the preview reads as an
+expansion of the thumbnail rather than a detached panel.
+
+### Null Suppression
+
+When `imageUrl` is `null`, `undefined`, or an empty string there is nothing to preview:
+the children render unwrapped &#8212; no `Popover` exists, the trigger carries no popup
+semantics, and clicking does nothing. Callers feed this component row data from AG Grid,
+where an absent field shows up as `undefined` at runtime; all three shapes normalize
+to "no image".
+
+### Not a Modal
+
+`ImagePreviewPopover` uses a `Popover`, not a `Dialog`. There is no focus trap and no
+backdrop overlay. Escape and outside-click dismiss it.
+
+### Focus Prevention
+
+The popover's `onOpenAutoFocus` callback calls `e.preventDefault()`. This prevents the
+Radix `Popover.Content` from stealing keyboard focus when it opens, which would be
+disruptive in a grid or form context where the user may be navigating with Tab or
+arrow keys.
+
+---
+
+## Empty State
+
+When `imageUrl` is `null` the popover is suppressed entirely &#8212; the trigger renders
+unwrapped and a click has no effect.
+
+<Canvas of={Stories.NoPreviewWhenEmpty} />
+
+---
+
+## Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Category</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>imageUrl</code></td>
+      <td>Runtime</td>
+      <td><code>string | null</code></td>
+      <td>Required</td>
+      <td>
+        URL of the image to preview. When <code>null</code> or empty the children render
+        unwrapped and no popover exists.
+      </td>
+    </tr>
+    <tr>
+      <td><code>children</code></td>
+      <td>Runtime</td>
+      <td><code>React.ReactElement</code></td>
+      <td>Required</td>
+      <td>
+        Trigger element, rendered via <code>PopoverTrigger asChild</code>. Ideally a
+        <code>button</code> so the preview is keyboard-reachable.
+      </td>
+    </tr>
+    <tr>
+      <td><code>entityTypeDisplayName</code></td>
+      <td>Init</td>
+      <td><code>string</code></td>
+      <td>Required</td>
+      <td>
+        Display name of the entity type (e.g. &#8220;Item&#8221;). Passed to
+        <code>ImageDisplay</code> for initials in the placeholder.
+      </td>
+    </tr>
+    <tr>
+      <td><code>propertyDisplayName</code></td>
+      <td>Init</td>
+      <td><code>string</code></td>
+      <td>Required</td>
+      <td>
+        Display name of the image property (e.g. &#8220;Product Image&#8221;). Passed to
+        <code>ImageDisplay</code>.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Import
+
+```tsx
+import { ImagePreviewPopover } from '@/components/canary/molecules/image-preview-popover';
+// or
+import type { ImagePreviewPopoverProps } from '@/components/canary/molecules/image-preview-popover';
+```
