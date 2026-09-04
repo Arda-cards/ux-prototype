@@ -18,6 +18,11 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [8.0.0] - 2026-09-04
+
+### Changed
+- **Grid image previews open on click, not hover** — `ImageHoverPreview` is renamed to `ImagePreviewPopover` (`ImageHoverPreviewProps` → `ImagePreviewPopoverProps`) and the ~500 ms hover popover is now click-to-open: clicking the trigger toggles the preview; outside click or Escape dismisses it. Click works on touch devices and never opens accidentally while the pointer crosses a grid. `children` must now be a single element (ideally a `button`) rendered via `PopoverTrigger asChild`. `ImageCellDisplay` renders its thumbnail as a button trigger that stops single-click propagation — opening a preview no longer selects the grid row — while double-click still bubbles to the grid's cell editor. An empty `imageUrl` renders the trigger unwrapped with no popover; the "No Image Available" empty-state caption is gone.
+
 ## [7.2.1] - 2026-08-31
 
 ### Fixed
