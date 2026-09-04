@@ -89,7 +89,10 @@ export function ImageCellDisplay({
       className={cn('flex items-center justify-center h-full py-[2px]')}
       style={{ minHeight: 28 }}
     >
-      {normalizedImageUrl !== null ? (
+      {/* No trigger while pending: the popover's ImageDisplay is not given
+          imagePending, so opening it would request the URL before its
+          credentials exist. */}
+      {normalizedImageUrl !== null && !imagePending ? (
         <ImagePreviewPopover
           imageUrl={normalizedImageUrl}
           entityTypeDisplayName={config.entityTypeDisplayName}

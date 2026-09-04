@@ -123,6 +123,14 @@ describe('ImageCellDisplay', () => {
     expect(container.querySelector('[data-slot="skeleton"]')).toBeInTheDocument();
   });
 
+  it('renders no preview trigger while imagePending — opening it would request an unresolved URL', () => {
+    const { container } = render(
+      <ImageCellDisplay {...defaultProps} value={MOCK_ITEM_IMAGE} imagePending />,
+    );
+
+    expect(container.querySelectorAll('button').length).toBe(0);
+  });
+
   it('normalizes empty-string value to "no image" (no broken <img src="">)', () => {
     // Regression guard: legacy backend rows may ship an empty string
     // instead of null/undefined. The cell must still render as "no
