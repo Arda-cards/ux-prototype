@@ -378,8 +378,8 @@ export type { ImageDropZoneProps } from './components/canary/molecules/image-dro
 export { ImagePreviewEditor } from './components/canary/molecules/image-preview-editor';
 export type { ImagePreviewEditorProps } from './components/canary/molecules/image-preview-editor';
 
-export { ImageHoverPreview } from './components/canary/molecules/image-hover-preview';
-export type { ImageHoverPreviewProps } from './components/canary/molecules/image-hover-preview';
+export { ImagePreviewPopover } from './components/canary/molecules/image-preview-popover';
+export type { ImagePreviewPopoverProps } from './components/canary/molecules/image-preview-popover';
 
 export { ImageInspectorOverlay } from './components/canary/molecules/image-inspector-overlay';
 export type { ImageInspectorOverlayProps } from './components/canary/molecules/image-inspector-overlay';

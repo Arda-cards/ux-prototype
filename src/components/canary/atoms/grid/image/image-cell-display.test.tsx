@@ -30,17 +30,39 @@ describe('ImageCellDisplay', () => {
     expect(img?.getAttribute('alt')).toBe(ITEM_IMAGE_CONFIG.entityTypeDisplayName);
   });
 
-  it('wraps thumbnail in ImageHoverPreview', () => {
-    const { container } = render(<ImageCellDisplay {...defaultProps} value={MOCK_ITEM_IMAGE} />);
-    expect(container.querySelector('[data-slot="image-hover-preview"]')).toBeInTheDocument();
+  it('opens the ImagePreviewPopover when the thumbnail is clicked', () => {
+    render(<ImageCellDisplay {...defaultProps} value={MOCK_ITEM_IMAGE} />);
+    const trigger = screen.getByRole('button', {
+      name: `Preview ${ITEM_IMAGE_CONFIG.propertyDisplayName}`,
+    });
+
+    expect(document.querySelector('[data-slot="popover-content"]')).toBeNull();
+    fireEvent.click(trigger);
+    expect(document.querySelector('[data-slot="popover-content"]')).toBeInTheDocument();
   });
 
-  it('does not block click events (no stopPropagation overlays)', () => {
-    const { container } = render(<ImageCellDisplay {...defaultProps} value={MOCK_ITEM_IMAGE} />);
-    // No buttons inside the cell — action icons were removed to allow
-    // AG Grid double-click editing to work unimpeded
-    const buttons = container.querySelectorAll('button');
-    expect(buttons.length).toBe(0);
+  it('renders no preview trigger when value is null', () => {
+    const { container } = render(<ImageCellDisplay {...defaultProps} value={null} />);
+    expect(container.querySelectorAll('button').length).toBe(0);
+  });
+
+  it('stops single-click propagation but lets double-click bubble to the grid editor', () => {
+    const onCellClick = vi.fn();
+    const onCellDoubleClick = vi.fn();
+    const { container } = render(
+      <div onClick={onCellClick} onDoubleClick={onCellDoubleClick}>
+        <ImageCellDisplay {...defaultProps} value={MOCK_ITEM_IMAGE} />
+      </div>,
+    );
+    const trigger = container.querySelector('button')!;
+
+    // Single click opens the preview without selecting the row.
+    fireEvent.click(trigger);
+    expect(onCellClick).not.toHaveBeenCalled();
+
+    // Double-click must still reach AG Grid's cell editor.
+    fireEvent.doubleClick(trigger);
+    expect(onCellDoubleClick).toHaveBeenCalledTimes(1);
   });
 
   // --- CDN 403 recovery hooks (PDEV-1180) ---------------------------------

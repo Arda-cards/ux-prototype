@@ -1,7 +1,7 @@
 import { cn } from '@/types/canary/utilities/utils';
 import type { ImageFieldConfig } from '@/types/canary/utilities/image-field-config';
 import { ImageDisplay } from '@/components/canary/molecules/image-display/image-display';
-import { ImageHoverPreview } from '@/components/canary/molecules/image-hover-preview/image-hover-preview';
+import { ImagePreviewPopover } from '@/components/canary/molecules/image-preview-popover/image-preview-popover';
 
 // --- Interfaces ---
 
@@ -46,8 +46,10 @@ export type ImageCellDisplayProps = ImageCellDisplayStaticProps &
  * ImageCellDisplay &#8212; AG Grid cell renderer for image columns.
  *
  * Renders a thumbnail using ImageDisplay that fills the row height (minus a
- * 2px margin). Wrapped in ImageHoverPreview for a popover on hover.
- * Double-click opens the cell editor (ImageUploadDialog).
+ * 2px margin). When an image is set, the thumbnail is a button that opens an
+ * ImagePreviewPopover on click; single clicks stop propagating so they don't
+ * select the row, while double-click still bubbles to open the cell editor
+ * (ImageUploadDialog).
  *
  * Pass in a column definition:
  * ```ts
@@ -66,9 +68,20 @@ export function ImageCellDisplay({
   // by the child components. At runtime the field may be undefined (no
   // imageUrl on the row) or an empty string (legacy backend data); both
   // must render as "no image" so the cell shows the initials placeholder
-  // and the hover popover shows the empty-state caption — not a broken
-  // <img src="">.
+  // with no preview trigger — not a broken <img src="">.
   const normalizedImageUrl = typeof value === 'string' && value.length > 0 ? value : null;
+
+  const thumbnail = (
+    <ImageDisplay
+      imageUrl={normalizedImageUrl}
+      entityTypeDisplayName={config.entityTypeDisplayName}
+      propertyDisplayName={config.propertyDisplayName}
+      onError={onError}
+      onLoad={onLoad}
+      errorReason={errorReason}
+      imagePending={imagePending}
+    />
+  );
 
   return (
     <div
@@ -76,23 +89,28 @@ export function ImageCellDisplay({
       className={cn('flex items-center justify-center h-full py-[2px]')}
       style={{ minHeight: 28 }}
     >
-      <ImageHoverPreview
-        imageUrl={normalizedImageUrl}
-        entityTypeDisplayName={config.entityTypeDisplayName}
-        propertyDisplayName={config.propertyDisplayName}
-      >
+      {normalizedImageUrl !== null ? (
+        <ImagePreviewPopover
+          imageUrl={normalizedImageUrl}
+          entityTypeDisplayName={config.entityTypeDisplayName}
+          propertyDisplayName={config.propertyDisplayName}
+        >
+          <button
+            type="button"
+            aria-label={`Preview ${config.propertyDisplayName}`}
+            className="rounded overflow-hidden cursor-pointer"
+            style={{ width: 28, height: 28 }}
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            {thumbnail}
+          </button>
+        </ImagePreviewPopover>
+      ) : (
         <div className="rounded" style={{ width: 28, height: 28 }}>
-          <ImageDisplay
-            imageUrl={normalizedImageUrl}
-            entityTypeDisplayName={config.entityTypeDisplayName}
-            propertyDisplayName={config.propertyDisplayName}
-            onError={onError}
-            onLoad={onLoad}
-            errorReason={errorReason}
-            imagePending={imagePending}
-          />
+          {thumbnail}
         </div>
-      </ImageHoverPreview>
+      )}
     </div>
   );
 }

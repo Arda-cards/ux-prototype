@@ -7,18 +7,18 @@ import {
 } from '@/components/canary/__mocks__/image-story-data';
 import { ImageDisplay } from '@/components/canary/molecules/image-display/image-display';
 
-import { ImageHoverPreview } from './image-hover-preview';
+import { ImagePreviewPopover } from './image-preview-popover';
 
 const meta = {
-  title: 'Components/Canary/Molecules/ImageHoverPreview',
-  component: ImageHoverPreview,
+  title: 'Components/Canary/Molecules/ImagePreviewPopover',
+  component: ImagePreviewPopover,
   parameters: {
     layout: 'centered',
     docs: {
       description: {
         component:
-          'Lightweight hover popover showing a larger image preview after ~500 ms. ' +
-          'Wraps any trigger element. No focus trap or backdrop overlay.',
+          'Click-to-open popover showing a larger image preview. ' +
+          'Wraps a trigger element. No focus trap or backdrop overlay.',
       },
     },
   },
@@ -27,59 +27,64 @@ const meta = {
     entityTypeDisplayName: { control: 'text' },
     propertyDisplayName: { control: 'text' },
   },
-} satisfies Meta<typeof ImageHoverPreview>;
+} satisfies Meta<typeof ImagePreviewPopover>;
 
 export default meta;
-type Story = StoryObj<typeof ImageHoverPreview>;
-export const HoverToPreview: Story = {
+type Story = StoryObj<typeof ImagePreviewPopover>;
+
+/**
+ * ClickToPreview &#8212; click the thumbnail to reveal the 256&#215;256 preview popover.
+ * Click again, click outside, or press Escape to close it.
+ */
+export const ClickToPreview: Story = {
   render: () => (
     <div className="flex flex-col items-center gap-3">
-      <ImageHoverPreview
+      <ImagePreviewPopover
         imageUrl={MOCK_LARGE_IMAGE}
         entityTypeDisplayName="Item"
         propertyDisplayName="Product Image"
       >
-        <div className="w-16 h-16 cursor-pointer rounded overflow-hidden">
+        <button type="button" className="w-16 h-16 cursor-pointer rounded overflow-hidden">
           <ImageDisplay
             imageUrl={MOCK_LARGE_IMAGE}
             entityTypeDisplayName="Item"
             propertyDisplayName="Product Image"
           />
-        </div>
-      </ImageHoverPreview>
-      <p className="text-xs text-muted-foreground">Hover the thumbnail to preview</p>
+        </button>
+      </ImagePreviewPopover>
+      <p className="text-xs text-muted-foreground">Click the thumbnail to preview</p>
     </div>
   ),
 };
 
 /**
- * NoPreviewOnError &#8212; when `imageUrl` is null, hovering does nothing.
- * The popover is fully suppressed.
+ * NoPreviewWhenEmpty &#8212; when `imageUrl` is null there is nothing to preview:
+ * the trigger renders unwrapped and clicking does nothing.
  */
-export const NoPreviewOnError: Story = {
+export const NoPreviewWhenEmpty: Story = {
   render: () => (
     <div className="flex flex-col items-center gap-3">
-      <ImageHoverPreview
+      <ImagePreviewPopover
         imageUrl={null}
         entityTypeDisplayName="Item"
         propertyDisplayName="Product Image"
       >
-        <div className="w-16 h-16 cursor-pointer rounded overflow-hidden">
+        <button type="button" className="w-16 h-16 cursor-pointer rounded overflow-hidden">
           <ImageDisplay
             imageUrl={null}
             entityTypeDisplayName="Item"
             propertyDisplayName="Product Image"
           />
-        </div>
-      </ImageHoverPreview>
-      <p className="text-xs text-muted-foreground">imageUrl is null &#8212; hover has no effect</p>
+        </button>
+      </ImagePreviewPopover>
+      <p className="text-xs text-muted-foreground">imageUrl is null &#8212; click has no effect</p>
     </div>
   ),
 };
 
 /**
  * MultipleInRow &#8212; three thumbnails in a flex row, each with an independent
- * hover preview. Hover each thumbnail to see its own popover.
+ * click preview. Click each thumbnail to see its own popover.
  */
 export const MultipleInRow: Story = {
   render: () => {
@@ -93,19 +98,19 @@ export const MultipleInRow: Story = {
       <div className="flex items-end gap-4">
         {items.map((item) => (
           <div key={item.id} className="flex flex-col items-center gap-1">
-            <ImageHoverPreview
+            <ImagePreviewPopover
               imageUrl={item.imageUrl}
               entityTypeDisplayName="Item"
               propertyDisplayName="Product Image"
             >
-              <div className="w-16 h-16 cursor-pointer rounded overflow-hidden">
+              <button type="button" className="w-16 h-16 cursor-pointer rounded overflow-hidden">
                 <ImageDisplay
                   imageUrl={item.imageUrl}
                   entityTypeDisplayName="Item"
                   propertyDisplayName="Product Image"
                 />
-              </div>
-            </ImageHoverPreview>
+              </button>
+            </ImagePreviewPopover>
             <span className="text-xs text-muted-foreground">{item.label}</span>
           </div>
         ))}
@@ -125,19 +130,14 @@ export const Playground: Story = {
     propertyDisplayName: 'Product Image',
   },
   render: (args) => (
-    <ImageHoverPreview {...args}>
-      <div className="w-16 h-16 cursor-pointer">
+    <ImagePreviewPopover {...args}>
+      <button type="button" className="w-16 h-16 cursor-pointer rounded overflow-hidden">
         <ImageDisplay
           imageUrl={args.imageUrl}
           entityTypeDisplayName={args.entityTypeDisplayName}
           propertyDisplayName={args.propertyDisplayName}
         />
-      </div>
-    </ImageHoverPreview>
+      </button>
+    </ImagePreviewPopover>
   ),
 };
-
-/**
- * HoverToPreview &#8212; hover the thumbnail to reveal the 256&#215;256 preview popover.
- * The delay is ~500 ms.
- */
