@@ -70,6 +70,20 @@ export interface TypeaheadInputProps extends Omit<React.ComponentProps<'div'>, '
    */
   clearOnFocus?: boolean;
   /**
+   * When true, focusing highlights (selects) the current text so typing
+   * replaces it. Mutually exclusive with `clearOnFocus`, which empties the
+   * input instead.
+   */
+  selectOnFocus?: boolean;
+  /**
+   * When true, leaving the field with the text emptied commits the clear
+   * (`onValueChange('')`) instead of restoring the previous value. Escape
+   * still restores, and Enter keeps its select-the-highlight semantics. Not
+   * for use with `clearOnFocus`, whose empty-on-focus would turn every visit
+   * into a clear.
+   */
+  clearOnEmptyBlur?: boolean;
+  /**
    * Called when the user commits a value (selecting an option, creating one, or
    * Tab). In a cell editor this signals "stop editing".
    */
@@ -116,6 +130,8 @@ export function TypeaheadInput({
   cellEditorMode = false,
   maxResults = DEFAULT_MAX_RESULTS,
   clearOnFocus = false,
+  selectOnFocus = false,
+  clearOnEmptyBlur = false,
   onCommit,
   cellWidth,
   cellMinHeight,
@@ -228,6 +244,11 @@ export function TypeaheadInput({
       doSearch('');
     } else {
       doSearch(inputValue);
+      if (selectOnFocus) {
+        // rAF: on mouse focus the browser's mouseup would collapse a
+        // selection made synchronously in the focus handler.
+        requestAnimationFrame(() => inputRef.current?.select());
+      }
     }
   };
 
@@ -269,7 +290,13 @@ export function TypeaheadInput({
           o.label.toLowerCase() === trimmed.toLowerCase(),
       );
       if (!trimmed) {
-        if (inputValue !== value) setInputValue(value);
+        if (clearOnEmptyBlur && value !== '') {
+          setInputValue('');
+          onValueChange('');
+          onCommit?.();
+        } else if (inputValue !== value) {
+          setInputValue(value);
+        }
       } else if (perfect) {
         selectOption(perfect);
       } else if (allowCreate) {
@@ -319,6 +346,7 @@ export function TypeaheadInput({
     open,
     cellEditorMode,
     clearOnFocus,
+    clearOnEmptyBlur,
     allowCreate,
     onValueChange,
     onCommit,

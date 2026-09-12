@@ -24,6 +24,8 @@ interface HarnessProps {
   allowCreate?: boolean;
   disabled?: boolean;
   clearOnFocus?: boolean;
+  selectOnFocus?: boolean;
+  clearOnEmptyBlur?: boolean;
   maxResults?: number;
   cellEditorMode?: boolean;
 }
@@ -445,6 +447,76 @@ describe('TypeaheadInput', () => {
       await waitFor(() => expect((input as HTMLInputElement).value).toBe(''));
       await user.keyboard('{Delete}');
       expect(onValueChange).toHaveBeenCalledWith('');
+    });
+  });
+
+  describe('selectOnFocus', () => {
+    it('highlights the current text on focus so typing replaces it', async () => {
+      const user = userEvent.setup();
+      render(<Harness initialValue="Apple" selectOnFocus allowCreate />);
+      const input = screen.getByRole('combobox') as HTMLInputElement;
+      await user.click(input);
+      await waitFor(() => {
+        expect(input.selectionStart).toBe(0);
+        expect(input.selectionEnd).toBe('Apple'.length);
+      });
+      await user.keyboard('Cherry');
+      expect(input.value).toBe('Cherry');
+    });
+  });
+
+  describe('clearOnEmptyBlur', () => {
+    it('commits the clear when the emptied field is blurred', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      render(
+        <>
+          <Harness
+            initialValue="Apple"
+            allowCreate
+            clearOnEmptyBlur
+            onValueChange={onValueChange}
+          />
+          <button type="button">outside</button>
+        </>,
+      );
+      const input = screen.getByRole('combobox') as HTMLInputElement;
+      await user.click(input);
+      await user.clear(input);
+      await user.click(screen.getByText('outside'));
+      expect(onValueChange).toHaveBeenCalledWith('');
+      expect(input.value).toBe('');
+    });
+
+    it('still restores the previous value on Escape', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      render(
+        <Harness initialValue="Apple" allowCreate clearOnEmptyBlur onValueChange={onValueChange} />,
+      );
+      const input = screen.getByRole('combobox') as HTMLInputElement;
+      await user.click(input);
+      await user.clear(input);
+      await user.keyboard('{Escape}');
+      expect(input.value).toBe('Apple');
+      expect(onValueChange).not.toHaveBeenCalled();
+    });
+
+    it('without the prop, an emptied field restores the previous value on blur', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      render(
+        <>
+          <Harness initialValue="Apple" allowCreate onValueChange={onValueChange} />
+          <button type="button">outside</button>
+        </>,
+      );
+      const input = screen.getByRole('combobox') as HTMLInputElement;
+      await user.click(input);
+      await user.clear(input);
+      await user.click(screen.getByText('outside'));
+      expect(onValueChange).not.toHaveBeenCalled();
+      expect(input.value).toBe('Apple');
     });
   });
 });
