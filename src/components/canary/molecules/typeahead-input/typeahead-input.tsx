@@ -78,9 +78,13 @@ export interface TypeaheadInputProps extends Omit<React.ComponentProps<'div'>, '
   /**
    * When true, leaving the field with the text emptied commits the clear
    * (`onValueChange('')`) instead of restoring the previous value. Escape
-   * still restores, and Enter keeps its select-the-highlight semantics. Not
-   * for use with `clearOnFocus`, whose empty-on-focus would turn every visit
-   * into a clear.
+   * still restores, and Enter keeps its select-the-highlight semantics.
+   * Form mode only — ignored under `cellEditorMode`, where the grid owns
+   * commit semantics. Resolves through the same dismissal paths as the
+   * component's blur handling (outside click, focus moving elsewhere, Tab);
+   * a window blur mid-edit leaves the edit unresolved, exactly like the
+   * default revert behavior. Not for use with `clearOnFocus`, whose
+   * empty-on-focus would turn every visit into a clear.
    */
   clearOnEmptyBlur?: boolean;
   /**
@@ -246,8 +250,17 @@ export function TypeaheadInput({
       doSearch(inputValue);
       if (selectOnFocus) {
         // rAF: on mouse focus the browser's mouseup would collapse a
-        // selection made synchronously in the focus handler.
-        requestAnimationFrame(() => inputRef.current?.select());
+        // selection made synchronously in the focus handler. Select only if
+        // the field is still focused with unchanged text — a keystroke landing
+        // before the frame must not have its character swallowed.
+        const el = inputRef.current;
+        const textAtFocus = el?.value;
+        requestAnimationFrame(() => {
+          const cur = inputRef.current;
+          if (cur && document.activeElement === cur && cur.value === textAtFocus) {
+            cur.select();
+          }
+        });
       }
     }
   };

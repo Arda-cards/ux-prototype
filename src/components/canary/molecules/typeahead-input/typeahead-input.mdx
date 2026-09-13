@@ -79,7 +79,10 @@ Two independent, opt-in affordances for form fields:
   previous value. Form-mode blur already resolves every non-empty edit
   (perfect match, create, highlighted row); this closes the one edit that
   could not leave the field. Escape still restores, and Enter keeps its
-  select-the-highlight semantics.
+  select-the-highlight semantics. Form mode only &#8212; ignored under
+  `cellEditorMode`, where the grid owns commit semantics &#8212; and it
+  resolves through the same dismissal paths as the component's default
+  blur-revert (outside click, focus moving elsewhere, Tab).
 
 ---
 
