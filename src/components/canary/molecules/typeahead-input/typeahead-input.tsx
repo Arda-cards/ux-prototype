@@ -241,7 +241,7 @@ export function TypeaheadInput({
     debouncedSearch(val);
   };
 
-  const handleFocus = () => {
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     setOpen(true);
     if (clearOnFocus) {
       setInputValue('');
@@ -249,19 +249,23 @@ export function TypeaheadInput({
     } else {
       doSearch(inputValue);
       if (selectOnFocus) {
-        // rAF: on mouse focus the browser's mouseup would collapse a
-        // selection made synchronously in the focus handler. Select only if
-        // the field is still focused with unchanged text — a keystroke landing
-        // before the frame must not have its character swallowed.
-        const el = inputRef.current;
-        const textAtFocus = el?.value;
-        requestAnimationFrame(() => {
-          const cur = inputRef.current;
-          if (cur && document.activeElement === cur && cur.value === textAtFocus) {
-            cur.select();
-          }
-        });
+        // Synchronous, so no keystroke can land in between; the focusing
+        // click's own mouseup is kept from collapsing it in handleMouseUp.
+        e.currentTarget.select();
       }
+    }
+  };
+
+  // The mouseup that ends a focusing click collapses the selection the focus
+  // handler just made. Prevent it only while the whole value is selected —
+  // true only for that first mouseup, since any later click's mousedown
+  // collapses the selection before its mouseup (caret placement and drag
+  // selection keep working).
+  const handleMouseUp = (e: React.MouseEvent<HTMLInputElement>) => {
+    if (!selectOnFocus) return;
+    const el = e.currentTarget;
+    if (el.value && el.selectionStart === 0 && el.selectionEnd === el.value.length) {
+      e.preventDefault();
     }
   };
 
@@ -557,6 +561,7 @@ export function TypeaheadInput({
       value={inputValue}
       onChange={handleInputChange}
       onFocus={handleFocus}
+      onMouseUp={handleMouseUp}
       onClick={handleInputClick}
       onKeyDownCapture={handleKeyDown}
       placeholder={placeholder}
