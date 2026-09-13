@@ -111,6 +111,8 @@ interface PlaygroundArgs {
   disabled: boolean;
   cellEditorMode: boolean;
   clearOnFocus: boolean;
+  selectOnFocus: boolean;
+  clearOnEmptyBlur: boolean;
   maxResults: number;
 }
 
@@ -142,6 +144,8 @@ function PlaygroundDemo(args: PlaygroundArgs) {
           disabled={args.disabled}
           cellEditorMode={args.cellEditorMode}
           clearOnFocus={args.clearOnFocus}
+          selectOnFocus={args.selectOnFocus}
+          clearOnEmptyBlur={args.clearOnEmptyBlur}
           maxResults={args.maxResults}
         />
       )}
@@ -174,6 +178,8 @@ export const Playground: StoryObj<PlaygroundArgs> = {
     disabled: false,
     cellEditorMode: false,
     clearOnFocus: false,
+    selectOnFocus: false,
+    clearOnEmptyBlur: false,
     maxResults: 8,
   },
   argTypes: {
@@ -185,6 +191,14 @@ export const Playground: StoryObj<PlaygroundArgs> = {
     disabled: { control: 'boolean' },
     cellEditorMode: { control: 'boolean' },
     clearOnFocus: { control: 'boolean', description: 'Single-select only' },
+    selectOnFocus: {
+      control: 'boolean',
+      description: 'Single-select only: highlight text on focus',
+    },
+    clearOnEmptyBlur: {
+      control: 'boolean',
+      description: 'Single-select only: an emptied field commits the clear on blur or Tab',
+    },
     maxResults: { control: { type: 'number', min: 1, max: 20, step: 1 } },
   },
   render: (args) => <PlaygroundDemo {...args} />,

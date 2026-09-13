@@ -70,6 +70,24 @@ export interface TypeaheadInputProps extends Omit<React.ComponentProps<'div'>, '
    */
   clearOnFocus?: boolean;
   /**
+   * When true, focusing highlights (selects) the current text so typing
+   * replaces it. Mutually exclusive with `clearOnFocus`, which empties the
+   * input instead.
+   */
+  selectOnFocus?: boolean;
+  /**
+   * When true, leaving the field with the text emptied commits the clear
+   * (`onValueChange('')`) instead of restoring the previous value. Escape
+   * still restores, and Enter keeps its select-the-highlight semantics.
+   * Form mode only — ignored under `cellEditorMode`, where the grid owns
+   * commit semantics. Resolves through the same dismissal paths as the
+   * component's blur handling (outside click, focus moving elsewhere, Tab);
+   * a window blur mid-edit leaves the edit unresolved, exactly like the
+   * default revert behavior. Not for use with `clearOnFocus`, whose
+   * empty-on-focus would turn every visit into a clear.
+   */
+  clearOnEmptyBlur?: boolean;
+  /**
    * Called when the user commits a value (selecting an option, creating one, or
    * Tab). In a cell editor this signals "stop editing".
    */
@@ -116,6 +134,8 @@ export function TypeaheadInput({
   cellEditorMode = false,
   maxResults = DEFAULT_MAX_RESULTS,
   clearOnFocus = false,
+  selectOnFocus = false,
+  clearOnEmptyBlur = false,
   onCommit,
   cellWidth,
   cellMinHeight,
@@ -221,13 +241,31 @@ export function TypeaheadInput({
     debouncedSearch(val);
   };
 
-  const handleFocus = () => {
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     setOpen(true);
     if (clearOnFocus) {
       setInputValue('');
       doSearch('');
     } else {
       doSearch(inputValue);
+      if (selectOnFocus) {
+        // Synchronous, so no keystroke can land in between; the focusing
+        // click's own mouseup is kept from collapsing it in handleMouseUp.
+        e.currentTarget.select();
+      }
+    }
+  };
+
+  // The mouseup that ends a focusing click collapses the selection the focus
+  // handler just made. Prevent it only while the whole value is selected —
+  // true only for that first mouseup, since any later click's mousedown
+  // collapses the selection before its mouseup (caret placement and drag
+  // selection keep working).
+  const handleMouseUp = (e: React.MouseEvent<HTMLInputElement>) => {
+    if (!selectOnFocus) return;
+    const el = e.currentTarget;
+    if (el.value && el.selectionStart === 0 && el.selectionEnd === el.value.length) {
+      e.preventDefault();
     }
   };
 
@@ -269,7 +307,13 @@ export function TypeaheadInput({
           o.label.toLowerCase() === trimmed.toLowerCase(),
       );
       if (!trimmed) {
-        if (inputValue !== value) setInputValue(value);
+        if (clearOnEmptyBlur && value !== '') {
+          setInputValue('');
+          onValueChange('');
+          onCommit?.();
+        } else if (inputValue !== value) {
+          setInputValue(value);
+        }
       } else if (perfect) {
         selectOption(perfect);
       } else if (allowCreate) {
@@ -319,6 +363,7 @@ export function TypeaheadInput({
     open,
     cellEditorMode,
     clearOnFocus,
+    clearOnEmptyBlur,
     allowCreate,
     onValueChange,
     onCommit,
@@ -407,7 +452,14 @@ export function TypeaheadInput({
           setOptions([]);
           break;
         }
-        if (hi >= 0 && hi < opts.length) {
+        // Emptiness first, matching resolveDismiss: Tab is a leave-the-field
+        // gesture, so an emptied field commits its clear even while a stale
+        // pre-clear result is still highlighted. (Enter keeps highlight-first.)
+        if (clearOnEmptyBlur && !trimmed && value !== '') {
+          setInputValue('');
+          onValueChange('');
+          onCommit?.();
+        } else if (hi >= 0 && hi < opts.length) {
           selectOption(opts[hi] as TypeaheadOption);
         } else if (trimmed && allowCreate) {
           createValue(trimmed);
@@ -509,6 +561,7 @@ export function TypeaheadInput({
       value={inputValue}
       onChange={handleInputChange}
       onFocus={handleFocus}
+      onMouseUp={handleMouseUp}
       onClick={handleInputClick}
       onKeyDownCapture={handleKeyDown}
       placeholder={placeholder}
