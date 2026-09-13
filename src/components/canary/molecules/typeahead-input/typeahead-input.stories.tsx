@@ -197,7 +197,7 @@ export const Playground: StoryObj<PlaygroundArgs> = {
     },
     clearOnEmptyBlur: {
       control: 'boolean',
-      description: 'Single-select only: emptied field commits the clear on blur/Enter',
+      description: 'Single-select only: an emptied field commits the clear on blur or Tab',
     },
     maxResults: { control: { type: 'number', min: 1, max: 20, step: 1 } },
   },

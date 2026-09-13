@@ -435,7 +435,14 @@ export function TypeaheadInput({
           setOptions([]);
           break;
         }
-        if (hi >= 0 && hi < opts.length) {
+        // Emptiness first, matching resolveDismiss: Tab is a leave-the-field
+        // gesture, so an emptied field commits its clear even while a stale
+        // pre-clear result is still highlighted. (Enter keeps highlight-first.)
+        if (clearOnEmptyBlur && !trimmed && value !== '') {
+          setInputValue('');
+          onValueChange('');
+          onCommit?.();
+        } else if (hi >= 0 && hi < opts.length) {
           selectOption(opts[hi] as TypeaheadOption);
         } else if (trimmed && allowCreate) {
           createValue(trimmed);

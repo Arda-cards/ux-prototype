@@ -488,6 +488,29 @@ describe('TypeaheadInput', () => {
       expect(input.value).toBe('');
     });
 
+    it('commits the clear when Tab leaves an emptied field with no results', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      // Empty search yields nothing, so Tab has no highlighted row to select.
+      const emptyOnBlank = (search: string) =>
+        search.trim() ? asyncFruitLookup(search) : Promise.resolve([]);
+      render(
+        <Harness
+          initialValue="Apple"
+          allowCreate
+          clearOnEmptyBlur
+          lookup={emptyOnBlank}
+          onValueChange={onValueChange}
+        />,
+      );
+      const input = screen.getByRole('combobox') as HTMLInputElement;
+      await user.click(input);
+      await user.clear(input);
+      await user.keyboard('{Tab}');
+      expect(onValueChange).toHaveBeenCalledWith('');
+      expect(input.value).toBe('');
+    });
+
     it('still restores the previous value on Escape', async () => {
       const user = userEvent.setup();
       const onValueChange = vi.fn();

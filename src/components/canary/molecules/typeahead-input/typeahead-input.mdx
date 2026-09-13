@@ -18,7 +18,8 @@ editor.
 ## Playground
 
 Use the controls panel to explore every prop: `allowCreate`, `disabled`,
-`cellEditorMode`, `clearOnFocus`, and `maxResults`.
+`cellEditorMode`, `clearOnFocus`, `selectOnFocus`, `clearOnEmptyBlur`, and
+`maxResults`.
 
 <Canvas of={TypeaheadStories.Playground} />
 
@@ -62,6 +63,23 @@ When `clearOnFocus` is enabled, the input behaves like a re-pick selector:
 
 Use this for cells/fields where the common action is replacing the existing
 selection rather than editing its text.
+
+---
+
+## selectOnFocus and clearOnEmptyBlur
+
+Two independent, opt-in affordances for form fields:
+
+- **`selectOnFocus`** &#8212; focusing highlights (selects) the current text so
+  typing replaces it. The text stays visible; clicking away without editing
+  changes nothing. Mutually exclusive with `clearOnFocus`, which empties the
+  input instead.
+- **`clearOnEmptyBlur`** &#8212; leaving the field (blur or Tab) with the text
+  emptied commits the clear (`onValueChange('')`) instead of restoring the
+  previous value. Form-mode blur already resolves every non-empty edit
+  (perfect match, create, highlighted row); this closes the one edit that
+  could not leave the field. Escape still restores, and Enter keeps its
+  select-the-highlight semantics.
 
 ---
 
@@ -190,6 +208,18 @@ to use as a `cellEditor` in a column definition.
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>Clear the input on focus to show an unfiltered list. Restores the original value on Escape/blur; Delete/Backspace on an empty input clears the value and blurs.</td>
+    </tr>
+    <tr>
+      <td><code>selectOnFocus</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Highlight (select) the current text on focus so typing replaces it. Mutually exclusive with <code>clearOnFocus</code>.</td>
+    </tr>
+    <tr>
+      <td><code>clearOnEmptyBlur</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Leaving the field (blur or Tab) with the text emptied commits the clear instead of restoring the previous value. Escape still restores.</td>
     </tr>
     <tr>
       <td><code>className</code></td>
