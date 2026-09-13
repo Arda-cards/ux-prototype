@@ -18,6 +18,12 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [7.3.0] - 2026-09-13
+
+### Added
+- **`TypeaheadInput` gains `selectOnFocus` and `clearOnEmptyBlur`** — `selectOnFocus` highlights the current text on focus so typing replaces it; `clearOnEmptyBlur` makes leaving the field with the text emptied commit the clear (`onValueChange('')`) instead of restoring the previous value. Form-mode blur already committed every non-empty resolution (perfect match, create, highlighted row); a clear was the one edit that couldn't leave the field. Escape still restores, and Enter keeps its select-the-highlight semantics. Both opt-in; no behavior change for existing consumers.
+- **`Input` gains `selectOnFocus`** — same highlight-on-focus affordance for the plain input primitive.
+
 ## [7.2.1] - 2026-08-31
 
 ### Fixed
