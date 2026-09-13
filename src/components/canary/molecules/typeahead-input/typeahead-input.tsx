@@ -39,7 +39,10 @@ function normalizeLookup(source: TypeaheadSource): (search: string) => Promise<T
 export interface TypeaheadInputProps extends Omit<React.ComponentProps<'div'>, 'onChange'> {
   /** Current value. */
   value: string;
-  /** Called when the user selects or creates a value. */
+  /**
+   * Called when the user selects or creates a value — and, with
+   * `clearOnEmptyBlur`, with `''` when an emptied field commits its clear.
+   */
   onValueChange: (value: string) => void;
   /**
    * Options source — an async lookup function, or a static list of options
@@ -251,7 +254,22 @@ export function TypeaheadInput({
       if (selectOnFocus) {
         // Synchronous, so no keystroke can land in between; the focusing
         // click's own mouseup is kept from collapsing it in handleMouseUp.
-        e.currentTarget.select();
+        const el = e.currentTarget;
+        el.select();
+        // Some pointer/touch flows place the caret after this handler runs,
+        // collapsing the selection with no mouseup to guard. Re-assert next
+        // frame — only while still focused with unchanged text, so a fast
+        // keystroke is never swallowed.
+        const textAtFocus = el.value;
+        requestAnimationFrame(() => {
+          if (
+            document.activeElement === el &&
+            el.value === textAtFocus &&
+            !(el.selectionStart === 0 && el.selectionEnd === el.value.length)
+          ) {
+            el.select();
+          }
+        });
       }
     }
   };
