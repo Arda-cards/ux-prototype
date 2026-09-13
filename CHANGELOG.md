@@ -18,6 +18,11 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [7.3.1] - 2026-09-13
+
+### Fixed
+- **`selectOnFocus` survives late caret placement** — some pointer/touch flows place the caret after the focus handler runs, collapsing the selection with no mouseup to guard; a next-frame re-assert (only while still focused with unchanged, not-fully-selected text) restores it without ever swallowing a fast keystroke. `onValueChange`'s docs now say `clearOnEmptyBlur` can emit `''`.
+
 ## [7.3.0] - 2026-09-13
 
 ### Added
