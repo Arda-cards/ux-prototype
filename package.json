@@ -86,7 +86,7 @@
     "test": "bash tools/run-vitest.sh",
     "test:watch": "vitest",
     "test:coverage": "bash tools/run-vitest.sh --coverage",
-    "coverage:summary": "npx vitest --run --coverage 2>&1 | tail -5",
+    "coverage:summary": "bash tools/run-vitest.sh --coverage 2>&1 | tail -5",
     "test:storybook": "test-storybook --testTimeout 30000 --skipTags skip-ci",
     "test:storybook:ci": "concurrently -k -s first \"http-server storybook-static --port 6006 --silent\" \"wait-on tcp:6006 && test-storybook --testTimeout 30000 --skipTags skip-ci\"",
     "test:vrt": "playwright test --project=vrt",
