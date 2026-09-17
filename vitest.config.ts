@@ -14,6 +14,11 @@ export default defineConfig({
     },
   },
   test: {
+    // A93: caps parallelism off-CI so a bare `npx vitest` (bypassing
+    // tools/run-vitest.sh) still gets the fleet's worker cap, even without
+    // the compute-slot admission check. Key omitted rather than `undefined`
+    // (exactOptionalPropertyTypes).
+    ...(process.env.CI ? {} : { maxWorkers: 2 }),
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],

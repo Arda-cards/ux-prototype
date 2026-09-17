@@ -18,6 +18,11 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [7.2.2] - 2026-09-17
+
+### Fixed
+- **Local `npm run test` now routes through the fleet's compute-slot admission gate, capped at 2 workers off-CI** — Vitest's default worker count (cores-minus-one, 9 on a 10-core host) let a single local test run consume most of the machine's CPU with no visibility to other concurrent sessions. `tools/run-vitest.sh` declares the capped worker count to the gate and waits for headroom instead of contending unseen; `vitest.config.ts` also sets `maxWorkers: 2` off-CI as a backstop so a bare `npx vitest` still gets the cap even without the gate. CI is unaffected (`process.env.CI` bypasses both).
+
 ## [7.2.1] - 2026-08-31
 
 ### Fixed
