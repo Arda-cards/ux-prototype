@@ -159,7 +159,7 @@ equivalents and are announced via <code>aria-keyshortcuts</code>.
 
 ### Controlled draft
 
-Pass `inputValue` and `onInputValueChange` together to own the editable draft. The callback receives typing, clear, commit, and token-edit changes. Omitting both keeps the draft internal. Selection remains controlled separately by `value` and `onValueChange`.
+Pass `inputValue` and `onInputValueChange` together to own the editable draft. The callback receives typing, clear, commit, and token-edit changes. Omitting both keeps the draft internal. Selection remains controlled separately by `value` and `onValueChange`. External discard/replacement buttons should consume their `mousedown` event to avoid the outside-click commit running before their click handler.
 
 ## Props
 

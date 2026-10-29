@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, within, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeAll } from 'vitest';
 import { useState } from 'react';
@@ -356,7 +356,7 @@ describe('MultiSelectTypeaheadInput', () => {
       await user.keyboard('Vendor');
       await screen.findByRole('listbox');
       const listbox = screen.getByRole('listbox');
-      expect(within(listbox).getAllByText('Vendor')).toHaveLength(1); // only the option, no create row
+      await waitFor(() => expect(within(listbox).getAllByText('Vendor')).toHaveLength(1));
       // Already-selected token
       await user.clear(screen.getByRole('combobox'));
       await user.keyboard('taken@x.com');
@@ -472,7 +472,7 @@ describe('MultiSelectTypeaheadInput', () => {
       await user.click(screen.getByRole('combobox'));
       await screen.findByRole('listbox');
       await user.keyboard('Vend');
-      await waitFor(() => expect(screen.queryByText('Customer')).toBeNull());
+      await waitFor(() => expect(optionByLabel('Vendor')).toBeInTheDocument());
       await user.click(screen.getByRole('button', { name: 'outside' }));
       expect(onValueChange).toHaveBeenCalledWith(['Vendor']);
     });
@@ -712,23 +712,50 @@ describe('MultiSelectTypeaheadInput', () => {
   });
 });
 
-function ControlledDraftHarness() {
+const EMPTY_CONTROLLED_LOOKUP: MultiSelectOption[] = [];
+
+function ControlledDraftHarness({
+  lookup = EMPTY_CONTROLLED_LOOKUP,
+  initialInput = '',
+  allowCreate = true,
+}: {
+  lookup?: MultiSelectSource;
+  initialInput?: string;
+  allowCreate?: boolean;
+}) {
   const [value, setValue] = useState<string[]>([]);
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState(initialInput);
   return (
     <TooltipProvider>
       <MultiSelectTypeaheadInput
         value={value}
         onValueChange={setValue}
-        lookup={[]}
+        lookup={lookup}
         inputValue={inputValue}
         onInputValueChange={setInputValue}
-        allowCreate
+        allowCreate={allowCreate}
         editOnDoubleClick
         defaultOne={false}
       />
       <output aria-label="Current draft">{inputValue}</output>
-      <button onClick={() => setInputValue('')}>Discard draft</button>
+      <button
+        onMouseDown={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+        }}
+        onClick={() => setInputValue('')}
+      >
+        Discard draft
+      </button>
+      <button
+        onMouseDown={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+        }}
+        onClick={() => setInputValue('Carr')}
+      >
+        Replace draft
+      </button>
       <output aria-label="Selected values">{JSON.stringify(value)}</output>
     </TooltipProvider>
   );
@@ -742,7 +769,7 @@ describe('controlled multiselect draft', () => {
     await user.click(input);
     await user.type(input, 'buyer@example.com');
     expect(screen.getByLabelText('Current draft')).toHaveTextContent('buyer@example.com');
-    fireEvent.click(screen.getByText('Discard draft'));
+    await user.click(screen.getByText('Discard draft'));
     expect(screen.getByLabelText('Selected values')).toHaveTextContent('[]');
     expect(input).toHaveValue('');
   });
@@ -761,4 +788,54 @@ describe('controlled multiselect draft', () => {
     expect(screen.getByLabelText('Current draft')).toHaveTextContent('buyer@example.com');
     expect(screen.getByLabelText('Selected values')).toHaveTextContent('[]');
   });
+});
+
+it('searches a draft replaced by its owner before Enter can select a previous result', async () => {
+  const user = userEvent.setup();
+  let resolveCurrent!: (options: MultiSelectOption[]) => void;
+  const current = new Promise<MultiSelectOption[]>((resolve) => {
+    resolveCurrent = resolve;
+  });
+  const lookup = vi.fn((search: string) => (search === 'Carr' ? current : asyncRoleLookup(search)));
+  render(<ControlledDraftHarness initialInput="Vend" lookup={lookup} allowCreate={false} />);
+  await user.click(screen.getByRole('combobox'));
+  await screen.findByRole('listbox');
+  expect(optionByLabel('Vendor')).toBeInTheDocument();
+  await user.click(screen.getByText('Replace draft'));
+  expect(screen.getByRole('combobox')).toHaveValue('Carr');
+  await waitFor(() => expect(lookup).toHaveBeenCalledWith('Carr'));
+  await user.keyboard('{Enter}');
+  expect(screen.getByLabelText('Selected values')).toHaveTextContent('[]');
+  await act(async () => {
+    resolveCurrent([{ label: 'Carrier', value: 'Carrier' }]);
+    await current;
+  });
+  await waitFor(() => expect(optionByLabel('Carrier')).toBeInTheDocument());
+  await user.keyboard('{Enter}');
+  expect(screen.getByLabelText('Selected values')).toHaveTextContent('["Carrier"]');
+});
+
+it('ignores a deferred result for a draft superseded by its owner', async () => {
+  const user = userEvent.setup();
+  let resolvePrevious!: (options: MultiSelectOption[]) => void;
+  const previous = new Promise<MultiSelectOption[]>((resolve) => {
+    resolvePrevious = resolve;
+  });
+  const lookup = vi.fn((search: string) =>
+    search === 'Vend' ? previous : asyncRoleLookup(search),
+  );
+  render(<ControlledDraftHarness initialInput="Vend" lookup={lookup} />);
+  await user.click(screen.getByRole('combobox'));
+  await waitFor(() => expect(lookup).toHaveBeenCalledWith('Vend'));
+  await user.click(screen.getByText('Replace draft'));
+  await waitFor(() => expect(optionByLabel('Carrier')).toBeInTheDocument());
+  await act(async () => {
+    resolvePrevious([{ label: 'Vendor', value: 'Vendor' }]);
+    await previous;
+  });
+  await waitFor(() =>
+    expect(screen.queryByRole('option', { name: 'Vendor' })).not.toBeInTheDocument(),
+  );
+  await user.keyboard('{Enter}');
+  expect(screen.getByLabelText('Selected values')).toHaveTextContent('["Carrier"]');
 });

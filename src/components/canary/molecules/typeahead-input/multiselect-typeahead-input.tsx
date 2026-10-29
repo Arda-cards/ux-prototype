@@ -231,11 +231,7 @@ export function MultiSelectTypeaheadInput({
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const popoverRef = React.useRef<HTMLDivElement>(null);
 
-  // Monotonic token so only the latest search may apply its results. The
-  // lookup itself is not cancellable (MultiSelectSource takes no AbortSignal);
-  // a superseded request simply has its result ignored. No unmount cleanup is
-  // needed either: the debounce hook cancels its own timer, and a setState
-  // after unmount is a safe no-op in React 18+.
+  // Lookup has no AbortSignal; sequence invalidation discards superseded results.
   const searchSeqRef = React.useRef(0);
   // The search string that produced the current `options` — lets blur-time
   // resolution tell whether the visible results match what the user typed.
@@ -269,6 +265,27 @@ export function MultiSelectTypeaheadInput({
   };
 
   const debouncedSearch = useDebouncedCallback(doSearch, DEBOUNCE_MS);
+  const previousInputValueRef = React.useRef(inputValue);
+
+  React.useEffect(() => {
+    const inputChanged = previousInputValueRef.current !== inputValue;
+    previousInputValueRef.current = inputValue;
+    debouncedSearch.cancel();
+    searchSeqRef.current += 1;
+    optionsQueryRef.current = null;
+    setOptions([]);
+    setHighlightedIndex(-1);
+    setError(false);
+    setLoading(open);
+    if (open) {
+      if (inputChanged) debouncedSearch(inputValue);
+      else void doSearch(inputValue);
+    }
+    return () => {
+      debouncedSearch.cancel();
+      searchSeqRef.current += 1;
+    };
+  }, [inputValue, open, lookupFn, maxResults, debouncedSearch]);
 
   // Auto-focus input on mount in cell editor mode so the dropdown opens
   // immediately and all tokens are visible for keyboard navigation.
@@ -344,13 +361,11 @@ export function MultiSelectTypeaheadInput({
     const val = e.target.value;
     setInputValue(val);
     setOpen(true);
-    debouncedSearch(val);
   };
 
   const handleFocus = () => {
     setInteractive(true);
     setOpen(true);
-    doSearch(inputValue);
   };
 
   // Clicking the input reopens the dropdown when it's already focused (focus
@@ -358,7 +373,6 @@ export function MultiSelectTypeaheadInput({
   const handleInputClick = () => {
     if (!open) {
       setOpen(true);
-      doSearch(inputValue);
     }
   };
 
@@ -453,7 +467,6 @@ export function MultiSelectTypeaheadInput({
     setFocusedTokenIndex(-1);
     inputRef.current?.focus();
     setOpen(true);
-    doSearch(tokenValue);
   };
 
   // --- Token keyboard handler ---
@@ -496,7 +509,6 @@ export function MultiSelectTypeaheadInput({
         e.preventDefault();
         focusInput();
         setOpen(true);
-        doSearch(inputValue);
         break;
       case 'Backspace':
       case 'Delete':
@@ -550,12 +562,11 @@ export function MultiSelectTypeaheadInput({
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         e.preventDefault();
         setOpen(true);
-        doSearch(inputValue);
       }
       return;
     }
 
-    const opts = options;
+    const opts = !loading && optionsQueryRef.current === inputValue ? options : [];
     const hi = highlightedIndex;
     // The create row (allowCreate) occupies index opts.length when active.
     const trimmed = inputValue.trim();
@@ -905,7 +916,6 @@ export function MultiSelectTypeaheadInput({
             }
             focusToken(i);
             setOpen(true);
-            doSearch(inputValue);
           }}
           onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => handleTokenKeyDown(e, i)}
