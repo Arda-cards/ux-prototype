@@ -839,3 +839,40 @@ it('ignores a deferred result for a draft superseded by its owner', async () => 
   await user.keyboard('{Enter}');
   expect(screen.getByLabelText('Selected values')).toHaveTextContent('["Carrier"]');
 });
+
+it.each(['ArrowDown', 'ArrowRight'])(
+  'restores a result highlight after returning from a token with %s',
+  async (returnKey) => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    render(<Harness initialValue={['Customer']} onValueChange={onValueChange} />);
+    const input = screen.getByRole('combobox');
+    await user.click(input);
+    await waitFor(() => expect(optionByLabel('Vendor')).toBeInTheDocument());
+    await user.keyboard('{ArrowLeft}');
+    expect(screen.getByRole('button', { name: 'Customer, remove' })).toHaveFocus();
+    await user.keyboard(`{${returnKey}}`);
+    expect(input).toHaveFocus();
+    await waitFor(() =>
+      expect(input).toHaveAttribute('aria-activedescendant', optionByLabel('Vendor').id),
+    );
+    await user.keyboard('{Enter}');
+    expect(onValueChange).toHaveBeenCalledWith(['Customer', 'Vendor']);
+  },
+);
+
+it('restores a result highlight when the input is clicked after a token', async () => {
+  const user = userEvent.setup();
+  const onValueChange = vi.fn();
+  render(<Harness initialValue={['Customer']} onValueChange={onValueChange} />);
+  const input = screen.getByRole('combobox');
+  await user.click(input);
+  await waitFor(() => expect(optionByLabel('Vendor')).toBeInTheDocument());
+  await user.click(screen.getByRole('button', { name: 'Customer, remove' }));
+  await user.click(input);
+  await waitFor(() =>
+    expect(input).toHaveAttribute('aria-activedescendant', optionByLabel('Vendor').id),
+  );
+  await user.keyboard('{Enter}');
+  expect(onValueChange).toHaveBeenCalledWith(['Customer', 'Vendor']);
+});

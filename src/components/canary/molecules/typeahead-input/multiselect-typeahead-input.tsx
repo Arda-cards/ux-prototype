@@ -213,6 +213,7 @@ export function MultiSelectTypeaheadInput({
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState(false);
   const [open, setOpen] = React.useState(false);
+  const [inputFocusRevision, setInputFocusRevision] = React.useState(0);
   const [focusedTokenIndex, setFocusedTokenIndex] = React.useState(-1);
   // readOnly-until-focus: Chrome's saved-address autofill previews into every
   // email-shaped input in a form-like constellation at once and ignores
@@ -285,7 +286,7 @@ export function MultiSelectTypeaheadInput({
       debouncedSearch.cancel();
       searchSeqRef.current += 1;
     };
-  }, [inputValue, open, lookupFn, maxResults, debouncedSearch]);
+  }, [inputValue, open, inputFocusRevision, lookupFn, maxResults, debouncedSearch]);
 
   // Auto-focus input on mount in cell editor mode so the dropdown opens
   // immediately and all tokens are visible for keyboard navigation.
@@ -364,6 +365,7 @@ export function MultiSelectTypeaheadInput({
   };
 
   const handleFocus = () => {
+    setInputFocusRevision((revision) => revision + 1);
     setInteractive(true);
     setOpen(true);
   };
