@@ -23,6 +23,9 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
 ### Added
 - `MultiSelectTypeaheadInput` accepts a controlled input draft through `inputValue` and `onInputValueChange`. Composed inputs can preserve pasted text and clear the draft after committing it without manipulating internal DOM state. Existing uncontrolled inputs retain their behavior.
 
+### Fixed
+- Browser CI runs on Ubuntu 24.04, which is supported by the pinned Playwright version.
+
 ## [7.3.1] - 2026-09-13
 
 ### Fixed

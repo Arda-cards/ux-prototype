@@ -10,7 +10,7 @@ permissions: {}
 jobs:
   build-and-test:
     if: ${{ ! github.event.pull_request.draft }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:
@@ -33,7 +33,7 @@ jobs:
 
   vrt:
     if: ${{ ! github.event.pull_request.draft }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:
