@@ -44,6 +44,10 @@ export default defineConfig({
         'ag-grid-community',
         'ag-grid-react',
         'lucide-react',
+        // Radix keeps module-level state (open layers, <body>'s original pointer-events);
+        // a bundled copy runs beside the app's and leaves <body> unclickable.
+        'radix-ui',
+        /^@radix-ui\//,
       ],
       output: {
         globals: {
