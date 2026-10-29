@@ -18,6 +18,11 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [8.0.0] - 2026-10-29
+
+### Changed
+- **`radix-ui` is a peer dependency and no longer bundled** — consumers now provide `radix-ui` `^1.4.3`. The bundled copy ran beside the consumer's own Radix with separate module-level state, so a design-system menu that opened an app dialog could leave `<body>` at `pointer-events: none` and the whole page unclickable. With one shared copy, every layer restores `<body>` correctly.
+
 ## [7.3.1] - 2026-09-13
 
 ### Fixed
