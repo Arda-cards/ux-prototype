@@ -273,8 +273,8 @@ export function MultiSelectTypeaheadInput({
     previousInputValueRef.current = inputValue;
     debouncedSearch.cancel();
     searchSeqRef.current += 1;
+    // Retain known exact label/value matches for outside-click resolution during search.
     optionsQueryRef.current = null;
-    setOptions([]);
     setHighlightedIndex(-1);
     setError(false);
     setLoading(open);

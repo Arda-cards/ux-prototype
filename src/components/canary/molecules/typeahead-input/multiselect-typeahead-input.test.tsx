@@ -876,3 +876,39 @@ it('restores a result highlight when the input is clicked after a token', async 
   await user.keyboard('{Enter}');
   expect(onValueChange).toHaveBeenCalledWith(['Customer', 'Vendor']);
 });
+
+it.each([true, false])(
+  'retains an exact known label-to-value match while its next lookup is pending (allowCreate=%s)',
+  async (allowCreate) => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    let resolvePending!: (options: MultiSelectOption[]) => void;
+    const pending = new Promise<MultiSelectOption[]>((resolve) => {
+      resolvePending = resolve;
+    });
+    const knownOption = { label: 'Acme Vendor', value: 'vendor-123' };
+    const lookup = vi.fn((search: string) =>
+      search === '' ? Promise.resolve([knownOption]) : pending,
+    );
+    render(
+      <div>
+        <Harness lookup={lookup} allowCreate={allowCreate} onValueChange={onValueChange} />
+        <button type="button">outside</button>
+      </div>,
+    );
+    const input = screen.getByRole('combobox');
+    await user.click(input);
+    await waitFor(() => expect(optionByLabel('Acme Vendor')).toBeInTheDocument());
+    await user.type(input, 'Acme Vendor');
+    await waitFor(() => expect(lookup).toHaveBeenCalledWith('Acme Vendor'));
+    expect(screen.queryByRole('option')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'outside' }));
+    expect(onValueChange).toHaveBeenCalledWith(['vendor-123']);
+    expect(input).toHaveValue('');
+    await act(async () => {
+      resolvePending([knownOption]);
+      await pending;
+    });
+    expect(onValueChange).toHaveBeenCalledTimes(1);
+  },
+);
