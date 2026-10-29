@@ -1,4 +1,4 @@
-import * as Tooltip from '@radix-ui/react-tooltip';
+import { Tooltip } from 'radix-ui';
 
 /** Design-time configuration for memo cell display. */
 export interface MemoCellDisplayStaticConfig {
