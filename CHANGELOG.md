@@ -18,6 +18,15 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [7.4.0] - 2026-10-29
+
+### Added
+- `MultiSelectTypeaheadInput` accepts controlled drafts through `inputValue` and `onInputValueChange`, while uncontrolled inputs retain internal draft ownership. Draft changes refresh search results and ignore obsolete lookups; returning from a token restores keyboard highlighting. Outside clicks preserve known exact label-to-value matches during pending searches.
+
+### Fixed
+- Browser CI runs on Ubuntu 24.04, which is supported by the pinned Playwright version.
+- Entity-viewer tests await loaded data before editing, preventing validation assertions from racing the initial fetch.
+
 ## [7.3.1] - 2026-09-13
 
 ### Fixed

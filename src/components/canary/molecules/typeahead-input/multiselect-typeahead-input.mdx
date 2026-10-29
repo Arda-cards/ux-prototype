@@ -60,6 +60,18 @@ to one line on blur.
   </thead>
   <tbody>
     <tr>
+      <td><code>inputValue</code></td>
+      <td><code>string</code></td>
+      <td>internal state</td>
+      <td>Controlled input draft; pair with <code>onInputValueChange</code>.</td>
+    </tr>
+    <tr>
+      <td><code>onInputValueChange</code></td>
+      <td><code>(value: string) =&gt; void</code></td>
+      <td>&#8212;</td>
+      <td>Receives typing, clearing, commits and token editing.</td>
+    </tr>
+    <tr>
       <td><code>true</code> (default)</td>
       <td>Selecting an option (Enter or click) adds it, commits, and closes the dropdown. Never unchecks via Enter/click.</td>
     </tr>
@@ -143,6 +155,11 @@ would wreck form tab flow. The shortcuts above are their keyboard
 equivalents and are announced via <code>aria-keyshortcuts</code>.
 
 ---
+
+
+### Controlled draft
+
+Pass `inputValue` and `onInputValueChange` together to own the editable draft. The callback receives typing, clear, commit, and token-edit changes. Omitting both keeps the draft internal. Selection remains controlled separately by `value` and `onValueChange`. External discard/replacement buttons should consume their `mousedown` event to avoid the outside-click commit running before their click handler.
 
 ## Props
 
