@@ -25,6 +25,7 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
 
 ### Fixed
 - Browser CI runs on Ubuntu 24.04, which is supported by the pinned Playwright version.
+- Entity-viewer tests await loaded data before editing, preventing validation assertions from racing the initial fetch.
 
 ## [7.3.1] - 2026-09-13
 

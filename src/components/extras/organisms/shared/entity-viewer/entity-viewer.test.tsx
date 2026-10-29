@@ -218,7 +218,7 @@ describe('useEntityViewer', () => {
         useEntityViewer(designConfig, mountConfig, mockFieldDescriptors),
       );
 
-      await waitFor(() => expect(result.current.state.mode).toBe('display'));
+      await waitFor(() => expect(result.current.state.original).not.toBeNull());
 
       act(() => {
         result.current.actions.enterEditMode();
@@ -236,7 +236,7 @@ describe('useEntityViewer', () => {
         useEntityViewer(designConfig, mountConfig, mockFieldDescriptors),
       );
 
-      await waitFor(() => expect(result.current.state.mode).toBe('display'));
+      await waitFor(() => expect(result.current.state.original).not.toBeNull());
 
       act(() => result.current.actions.enterEditMode());
       act(() => result.current.actions.handleFieldChange('name', 'Changed'));
@@ -255,7 +255,7 @@ describe('useEntityViewer', () => {
         useEntityViewer(designConfig, mountConfig, mockFieldDescriptors),
       );
 
-      await waitFor(() => expect(result.current.state.mode).toBe('display'));
+      await waitFor(() => expect(result.current.state.original).not.toBeNull());
 
       act(() => result.current.actions.enterEditMode());
       act(() => result.current.actions.handleFieldChange('name', 'New Name'));
@@ -274,7 +274,7 @@ describe('useEntityViewer', () => {
 
       const { result } = renderHook(() => useEntityViewer(designConfig, mountConfig));
 
-      await waitFor(() => expect(result.current.state.mode).toBe('display'));
+      await waitFor(() => expect(result.current.state.original).not.toBeNull());
 
       act(() => result.current.actions.enterEditMode());
       act(() => result.current.actions.handleFieldChange('name', 'Updated'));
@@ -306,7 +306,7 @@ describe('useEntityViewer', () => {
 
       const { result } = renderHook(() => useEntityViewer(designConfig, mountConfig, descriptors));
 
-      await waitFor(() => expect(result.current.state.mode).toBe('display'));
+      await waitFor(() => expect(result.current.state.original).not.toBeNull());
 
       await act(async () => result.current.actions.enterEditMode());
       await act(async () => result.current.actions.handleFieldChange('name', ''));
@@ -332,7 +332,7 @@ describe('useEntityViewer', () => {
 
       const { result } = renderHook(() => useEntityViewer(designConfig, mountConfig));
 
-      await waitFor(() => expect(result.current.state.mode).toBe('display'));
+      await waitFor(() => expect(result.current.state.original).not.toBeNull());
 
       act(() => result.current.actions.enterEditMode());
 
@@ -356,7 +356,7 @@ describe('useEntityViewer', () => {
 
       const { result } = renderHook(() => useEntityViewer(designConfig, mountConfig));
 
-      await waitFor(() => expect(result.current.state.mode).toBe('display'));
+      await waitFor(() => expect(result.current.state.original).not.toBeNull());
 
       act(() => result.current.actions.enterEditMode());
 
@@ -382,7 +382,7 @@ describe('useEntityViewer', () => {
 
       const { result } = renderHook(() => useEntityViewer(designConfig, mountConfig));
 
-      await waitFor(() => expect(result.current.state.mode).toBe('display'));
+      await waitFor(() => expect(result.current.state.original).not.toBeNull());
 
       act(() => result.current.actions.enterEditMode());
 
@@ -461,7 +461,7 @@ describe('useEntityViewer', () => {
 
       const { result } = renderHook(() => useEntityViewer(designConfig, mountConfig));
 
-      await waitFor(() => expect(result.current.state.mode).toBe('display'));
+      await waitFor(() => expect(result.current.state.original).not.toBeNull());
 
       expect(result.current.state.isDirty).toBe(false);
     });
@@ -472,7 +472,7 @@ describe('useEntityViewer', () => {
 
       const { result } = renderHook(() => useEntityViewer(designConfig, mountConfig));
 
-      await waitFor(() => expect(result.current.state.mode).toBe('display'));
+      await waitFor(() => expect(result.current.state.original).not.toBeNull());
 
       act(() => result.current.actions.enterEditMode());
       act(() => result.current.actions.handleFieldChange('name', 'Changed'));
@@ -486,7 +486,7 @@ describe('useEntityViewer', () => {
 
       const { result } = renderHook(() => useEntityViewer(designConfig, mountConfig));
 
-      await waitFor(() => expect(result.current.state.mode).toBe('display'));
+      await waitFor(() => expect(result.current.state.original).not.toBeNull());
 
       act(() => result.current.actions.enterEditMode());
       act(() => result.current.actions.handleFieldChange('name', 'Changed'));
@@ -506,7 +506,7 @@ describe('useEntityViewer', () => {
 
       const { result } = renderHook(() => useEntityViewer(designConfig, mountConfig));
 
-      await waitFor(() => expect(result.current.state.mode).toBe('display'));
+      await waitFor(() => expect(result.current.state.original).not.toBeNull());
 
       act(() => result.current.actions.enterEditMode());
       act(() => result.current.actions.handleFieldChange('name', 'Changed'));
@@ -543,7 +543,7 @@ describe('useEntityViewer', () => {
 
       const { result } = renderHook(() => useEntityViewer(designConfig, mountConfig, descriptors));
 
-      await waitFor(() => expect(result.current.state.mode).toBe('display'));
+      await waitFor(() => expect(result.current.state.original).not.toBeNull());
 
       act(() => result.current.actions.enterEditMode());
 
@@ -574,7 +574,7 @@ describe('useEntityViewer', () => {
 
       const { result } = renderHook(() => useEntityViewer(designConfig, mountConfig, descriptors));
 
-      await waitFor(() => expect(result.current.state.mode).toBe('display'));
+      await waitFor(() => expect(result.current.state.original).not.toBeNull());
 
       act(() => result.current.actions.enterEditMode());
       // Set name to empty so validation fails
@@ -599,7 +599,7 @@ describe('useEntityViewer', () => {
 
       const { result } = renderHook(() => useEntityViewer(designConfig, mountConfig));
 
-      await waitFor(() => expect(result.current.state.mode).toBe('display'));
+      await waitFor(() => expect(result.current.state.original).not.toBeNull());
 
       let success = false;
       await act(async () => {
@@ -752,7 +752,7 @@ describe('server-side errors', () => {
 
     const { result } = renderHook(() => useEntityViewer(designConfig, mountConfig));
 
-    await waitFor(() => expect(result.current.state.mode).toBe('display'));
+    await waitFor(() => expect(result.current.state.original).not.toBeNull());
 
     act(() => result.current.actions.enterEditMode());
 
@@ -777,7 +777,7 @@ describe('server-side errors', () => {
 
     const { result } = renderHook(() => useEntityViewer(designConfig, mountConfig));
 
-    await waitFor(() => expect(result.current.state.mode).toBe('display'));
+    await waitFor(() => expect(result.current.state.original).not.toBeNull());
 
     act(() => result.current.actions.enterEditMode());
 
@@ -803,7 +803,7 @@ describe('server-side errors', () => {
 
     const { result } = renderHook(() => useEntityViewer(designConfig, mountConfig));
 
-    await waitFor(() => expect(result.current.state.mode).toBe('display'));
+    await waitFor(() => expect(result.current.state.original).not.toBeNull());
 
     act(() => result.current.actions.enterEditMode());
 
