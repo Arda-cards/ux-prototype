@@ -18,6 +18,11 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [7.4.0] - 2026-10-29
+
+### Added
+- `MultiSelectTypeaheadInput` accepts a controlled input draft through `inputValue` and `onInputValueChange`. Composed inputs can preserve pasted text and clear the draft after committing it without manipulating internal DOM state. Existing uncontrolled inputs retain their behavior.
+
 ## [7.3.1] - 2026-09-13
 
 ### Fixed

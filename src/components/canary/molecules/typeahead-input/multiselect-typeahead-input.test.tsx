@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor, within, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeAll } from 'vitest';
 import { useState } from 'react';
@@ -709,5 +709,56 @@ describe('MultiSelectTypeaheadInput', () => {
       await user.click(optionByLabel('Alice@x.com'));
       expect(onValueChange).toHaveBeenCalledWith([]);
     });
+  });
+});
+
+function ControlledDraftHarness() {
+  const [value, setValue] = useState<string[]>([]);
+  const [inputValue, setInputValue] = useState('');
+  return (
+    <TooltipProvider>
+      <MultiSelectTypeaheadInput
+        value={value}
+        onValueChange={setValue}
+        lookup={[]}
+        inputValue={inputValue}
+        onInputValueChange={setInputValue}
+        allowCreate
+        editOnDoubleClick
+        defaultOne={false}
+      />
+      <output aria-label="Current draft">{inputValue}</output>
+      <button onClick={() => setInputValue('')}>Discard draft</button>
+      <output aria-label="Selected values">{JSON.stringify(value)}</output>
+    </TooltipProvider>
+  );
+}
+
+describe('controlled multiselect draft', () => {
+  it('reports typed draft changes and lets its owner clear the draft without selecting it', async () => {
+    const user = userEvent.setup();
+    render(<ControlledDraftHarness />);
+    const input = screen.getByRole('combobox');
+    await user.click(input);
+    await user.type(input, 'buyer@example.com');
+    expect(screen.getByLabelText('Current draft')).toHaveTextContent('buyer@example.com');
+    fireEvent.click(screen.getByText('Discard draft'));
+    expect(screen.getByLabelText('Selected values')).toHaveTextContent('[]');
+    expect(input).toHaveValue('');
+  });
+
+  it('updates the owner on commit and token editing', async () => {
+    const user = userEvent.setup();
+    render(<ControlledDraftHarness />);
+    const input = screen.getByRole('combobox');
+    await user.click(input);
+    await user.type(input, 'buyer@example.com');
+    await user.keyboard('{Enter}');
+    expect(screen.getByLabelText('Current draft')).toBeEmptyDOMElement();
+    expect(screen.getByLabelText('Selected values')).toHaveTextContent('["buyer@example.com"]');
+    await user.dblClick(screen.getByRole('button', { name: 'buyer@example.com, remove' }));
+    expect(input).toHaveValue('buyer@example.com');
+    expect(screen.getByLabelText('Current draft')).toHaveTextContent('buyer@example.com');
+    expect(screen.getByLabelText('Selected values')).toHaveTextContent('[]');
   });
 });

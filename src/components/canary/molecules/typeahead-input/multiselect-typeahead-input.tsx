@@ -76,6 +76,10 @@ export interface MultiSelectTypeaheadInputProps extends Omit<
   React.ComponentProps<'div'>,
   'onChange'
 > {
+  /** Controlled input draft. Pair with `onInputValueChange`; omit both for internal state. */
+  inputValue?: string;
+  /** Called for typing, clearing, committing and token editing. */
+  onInputValueChange?: (value: string) => void;
   /** Currently selected values. */
   value: string[];
   /** Called when the selection changes. */
@@ -172,6 +176,8 @@ const noResults = <div className="px-3 py-2 text-sm text-muted-foreground">No re
  * Dropdown items show a checkmark when already selected.
  */
 export function MultiSelectTypeaheadInput({
+  inputValue: controlledInputValue,
+  onInputValueChange,
   value,
   onValueChange,
   lookup,
@@ -196,7 +202,12 @@ export function MultiSelectTypeaheadInput({
   // single async lookup function.
   const lookupFn = React.useMemo(() => normalizeLookup(lookup), [lookup]);
 
-  const [inputValue, setInputValue] = React.useState('');
+  const [internalInputValue, setInternalInputValue] = React.useState('');
+  const inputValue = controlledInputValue ?? internalInputValue;
+  const setInputValue = (nextValue: string): void => {
+    if (controlledInputValue === undefined) setInternalInputValue(nextValue);
+    onInputValueChange?.(nextValue);
+  };
   const [options, setOptions] = React.useState<MultiSelectOption[]>([]);
   const [highlightedIndex, setHighlightedIndex] = React.useState(-1);
   const [loading, setLoading] = React.useState(false);
