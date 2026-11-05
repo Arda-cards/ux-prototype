@@ -6,7 +6,7 @@ import { type ColorOption, DEFAULT_COLOR_MAP } from './color-cell-display';
 /** Design-time configuration for color cell editor. */
 export interface ColorCellEditorStaticConfig {
   /* --- View / Layout / Controller --- */
-  /** Configurable color palette. Defaults to the vendored 10-color set. */
+  /** Configurable color palette. Defaults to the 8-color set. */
   colors?: ColorOption[];
 }
 

@@ -18,6 +18,11 @@ Categories, defined in [changemap.json](.github/clq/changemap.json):
   - `Fixed` for any bugfixes.
   - `Security` in case of vulnerabilities.
 
+## [8.0.1] - 2026-11-05
+
+### Fixed
+- **`DEFAULT_COLOR_MAP` no longer offers Black or White** — the backend `ItemColor` enum has eight values, so picking either in `ItemCardEditor`, `ColorPicker`, `ColorSwatchPicker` or `ColorCellEditor` produced a 400 on item update (PDEV-2289, the same mismatch PDEV-271 removed from the app's own palettes). Consumers that need extra colors pass their own `colors`/`colorMap`.
+
 ## [8.0.0] - 2026-10-29
 
 ### Changed

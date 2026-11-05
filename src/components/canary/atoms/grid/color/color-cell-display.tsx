@@ -5,7 +5,7 @@ export interface ColorOption {
   hex: string;
 }
 
-/** Default 10-color palette matching the vendored implementation. */
+/** Default 8-color palette — the `ItemColor` values the backend accepts (PDEV-2289). */
 export const DEFAULT_COLOR_MAP: Record<string, { hex: string; name: string }> = {
   RED: { hex: '#EF4444', name: 'Red' },
   GREEN: { hex: '#22C55E', name: 'Green' },
@@ -15,14 +15,12 @@ export const DEFAULT_COLOR_MAP: Record<string, { hex: string; name: string }> = 
   PURPLE: { hex: '#A855F7', name: 'Purple' },
   PINK: { hex: '#EC4899', name: 'Pink' },
   GRAY: { hex: '#6B7280', name: 'Gray' },
-  BLACK: { hex: '#000000', name: 'Black' },
-  WHITE: { hex: '#FFFFFF', name: 'White' },
 };
 
 /** Design-time configuration for color cell display. */
 export interface ColorCellDisplayStaticConfig {
   /* --- View / Layout / Controller --- */
-  /** Custom color map. Defaults to the vendored 10-color palette. */
+  /** Custom color map. Defaults to the 8-color palette. */
   colorMap?: Record<string, { hex: string; name: string }>;
 }
 

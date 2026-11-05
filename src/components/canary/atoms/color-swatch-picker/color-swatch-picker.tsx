@@ -10,7 +10,7 @@ export interface ColorSwatchPickerProps {
   value: string;
   /** Called when a color is selected. */
   onChange: (color: string) => void;
-  /** Custom color map. Defaults to the standard 10-color palette. */
+  /** Custom color map. Defaults to the standard 8-color palette. */
   colors?: Record<string, { hex: string; name: string }>;
 }
 

@@ -13,7 +13,7 @@ export interface ColorPickerProps extends Omit<React.ComponentProps<'div'>, 'onC
   value: string;
   /** Called when a color is selected. */
   onValueChange: (color: string) => void;
-  /** Custom color map. Defaults to the standard 10-color palette. */
+  /** Custom color map. Defaults to the standard 8-color palette. */
   colors?: Record<string, { hex: string; name: string }>;
   /** Disable the picker. */
   disabled?: boolean;
