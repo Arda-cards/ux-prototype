@@ -36,7 +36,7 @@ describe('ColorCellDisplay', () => {
     expect(screen.getByText('Custom Color')).toBeInTheDocument();
   });
 
-  it('renders all 10 default colors', () => {
+  it('renders all 8 default colors', () => {
     const expected: [string, string][] = [
       ['RED', 'Red'],
       ['GREEN', 'Green'],
@@ -46,8 +46,6 @@ describe('ColorCellDisplay', () => {
       ['PURPLE', 'Purple'],
       ['PINK', 'Pink'],
       ['GRAY', 'Gray'],
-      ['BLACK', 'Black'],
-      ['WHITE', 'White'],
     ];
     for (const [value, label] of expected) {
       const { unmount } = render(<ColorCellDisplay value={value} />);
@@ -67,8 +65,8 @@ describe('ColorCellEditor', () => {
   it('renders empty option and all default colors', () => {
     render(<ColorCellEditor />);
     const options = screen.getAllByRole('option');
-    // 1 empty + 10 colors = 11
-    expect(options).toHaveLength(11);
+    // 1 empty + 8 colors = 9
+    expect(options).toHaveLength(9);
   });
 
   it('exposes getValue via ref', () => {
